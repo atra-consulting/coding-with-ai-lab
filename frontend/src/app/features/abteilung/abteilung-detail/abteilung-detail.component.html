@@ -1,0 +1,26 @@
+@if (loading) {
+  <app-loading-spinner />
+} @else if (abteilung) {
+  <div class="page-header">
+    <h2>{{ abteilung.name }}</h2>
+    <div>
+      <a
+        [routerLink]="['/', 'abteilungen', abteilung.id, 'bearbeiten']"
+        class="btn btn-primary me-2"
+        >Bearbeiten</a
+      >
+      <a routerLink="/abteilungen" class="btn btn-outline-secondary">Zurück</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <p>
+        <strong>Firma:</strong>
+        <a [routerLink]="['/firmen', abteilung.firmaId]">{{ abteilung.firmaName }}</a>
+      </p>
+      <p><strong>Beschreibung:</strong> {{ abteilung.description || '-' }}</p>
+      <p><strong>Anzahl Personen:</strong> {{ abteilung.personenCount }}</p>
+    </div>
+  </div>
+}

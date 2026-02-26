@@ -1,0 +1,24 @@
+<div class="page-header">
+  <h2>Dashboard</h2>
+</div>
+
+@if (loading) {
+  <app-loading-spinner />
+} @else if (stats) {
+  <app-stats-overview [stats]="stats" />
+
+  <div class="row mt-4">
+    <div class="col-lg-6 mb-4">
+      <app-recent-activities [activities]="stats.recentAktivitaeten" />
+    </div>
+    <div class="col-lg-6 mb-4">
+      <app-top-companies [companies]="stats.topFirmen" />
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <app-salary-statistics [departments]="stats.salaryByDepartment" />
+    </div>
+  </div>
+}

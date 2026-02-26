@@ -1,0 +1,70 @@
+<div class="page-header">
+  <h2>Personen</h2>
+  <a routerLink="neu" class="btn btn-primary">Neue Person</a>
+</div>
+
+<div class="table-container">
+  <div class="row mb-3">
+    <div class="col-md-4">
+      <input
+        type="text"
+        class="form-control"
+        placeholder="Suchen..."
+        [(ngModel)]="search"
+        (keyup.enter)="onSearch()"
+      />
+    </div>
+    <div class="col-md-2">
+      <button class="btn btn-outline-secondary" (click)="onSearch()">Suchen</button>
+    </div>
+  </div>
+
+  @if (loading) {
+    <app-loading-spinner />
+  } @else if (page && page.content.length > 0) {
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>E-Mail</th>
+          <th>Firma</th>
+          <th>Position</th>
+          <th>Aktionen</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (person of page.content; track person.id) {
+          <tr class="cursor-pointer" [routerLink]="[person.id]">
+            <td>{{ person.firstName }} {{ person.lastName }}</td>
+            <td>{{ person.email }}</td>
+            <td>{{ person.firmaName }}</td>
+            <td>{{ person.position }}</td>
+            <td class="action-buttons" (click)="$event.stopPropagation()">
+              <a [routerLink]="[person.id, 'bearbeiten']" class="btn btn-sm btn-outline-primary"
+                >Bearbeiten</a
+              >
+              <button class="btn btn-sm btn-outline-danger" (click)="confirmDelete(person)">
+                Löschen
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    @if (page.totalPages > 1) {
+      <div class="d-flex justify-content-center">
+        <ngb-pagination
+          [collectionSize]="page.totalElements"
+          [(page)]="currentPage"
+          [pageSize]="pageSize"
+          (pageChange)="onPageChange($event)"
+          [maxSize]="5"
+          [boundaryLinks]="true"
+        >
+        </ngb-pagination>
+      </div>
+    }
+  } @else {
+    <p class="text-muted">Keine Personen gefunden.</p>
+  }
+</div>

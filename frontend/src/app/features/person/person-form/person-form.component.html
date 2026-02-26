@@ -1,0 +1,84 @@
+<div class="page-header">
+  <h2>{{ isEdit ? 'Person bearbeiten' : 'Neue Person' }}</h2>
+</div>
+
+@if (loading) {
+  <app-loading-spinner />
+} @else {
+  <div class="card">
+    <div class="card-body">
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="firstName" class="form-label">Vorname *</label>
+            <input
+              type="text"
+              class="form-control"
+              id="firstName"
+              formControlName="firstName"
+              [class.is-invalid]="form.get('firstName')?.invalid && form.get('firstName')?.touched"
+            />
+            @if (form.get('firstName')?.invalid && form.get('firstName')?.touched) {
+              <div class="invalid-feedback">Vorname ist erforderlich</div>
+            }
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="lastName" class="form-label">Nachname *</label>
+            <input
+              type="text"
+              class="form-control"
+              id="lastName"
+              formControlName="lastName"
+              [class.is-invalid]="form.get('lastName')?.invalid && form.get('lastName')?.touched"
+            />
+            @if (form.get('lastName')?.invalid && form.get('lastName')?.touched) {
+              <div class="invalid-feedback">Nachname ist erforderlich</div>
+            }
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="email" class="form-label">E-Mail</label>
+            <input type="email" class="form-control" id="email" formControlName="email" />
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="phone" class="form-label">Telefon</label>
+            <input type="text" class="form-control" id="phone" formControlName="phone" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="firmaId" class="form-label">Firma *</label>
+            <select class="form-select" id="firmaId" formControlName="firmaId">
+              <option [ngValue]="null" disabled>Firma auswählen...</option>
+              @for (firma of firmen; track firma.id) {
+                <option [ngValue]="firma.id">{{ firma.name }}</option>
+              }
+            </select>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="abteilungId" class="form-label">Abteilung</label>
+            <select class="form-select" id="abteilungId" formControlName="abteilungId">
+              <option [ngValue]="null">Keine Abteilung</option>
+              @for (abt of abteilungen; track abt.id) {
+                <option [ngValue]="abt.id">{{ abt.name }}</option>
+              }
+            </select>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label for="position" class="form-label">Position</label>
+          <input type="text" class="form-control" id="position" formControlName="position" />
+        </div>
+        <div class="mb-3">
+          <label for="notes" class="form-label">Notizen</label>
+          <textarea class="form-control" id="notes" formControlName="notes" rows="3"></textarea>
+        </div>
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary" [disabled]="form.invalid">Speichern</button>
+          <a routerLink="/personen" class="btn btn-outline-secondary">Abbrechen</a>
+        </div>
+      </form>
+    </div>
+  </div>
+}

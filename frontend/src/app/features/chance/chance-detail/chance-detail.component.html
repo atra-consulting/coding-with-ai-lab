@@ -1,0 +1,44 @@
+@if (loading) {
+  <app-loading-spinner />
+} @else if (chance) {
+  <div class="page-header">
+    <h2>{{ chance.titel }}</h2>
+    <div>
+      <a [routerLink]="['/', 'chancen', chance.id, 'bearbeiten']" class="btn btn-primary me-2"
+        >Bearbeiten</a
+      >
+      <a routerLink="/chancen" class="btn btn-outline-secondary">Zurück</a>
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <p>
+            <strong>Firma:</strong>
+            <a [routerLink]="['/firmen', chance.firmaId]">{{ chance.firmaName }}</a>
+          </p>
+          <p><strong>Kontaktperson:</strong> {{ chance.kontaktPersonName || '-' }}</p>
+          <p>
+            <strong>Phase:</strong>
+            <span class="badge" [class]="getPhaseBadgeClass(chance.phase)">{{ chance.phase }}</span>
+          </p>
+          <p><strong>Wert:</strong> {{ chance.wert | eurCurrency: chance.currency }}</p>
+        </div>
+        <div class="col-md-6">
+          <p><strong>Wahrscheinlichkeit:</strong> {{ chance.wahrscheinlichkeit }}%</p>
+          <p>
+            <strong>Erwartetes Datum:</strong>
+            {{ chance.erwartetesDatum ? (chance.erwartetesDatum | date: 'dd.MM.yyyy') : '-' }}
+          </p>
+          <p><strong>Erstellt:</strong> {{ chance.createdAt | date: 'dd.MM.yyyy' }}</p>
+          <p><strong>Aktualisiert:</strong> {{ chance.updatedAt | date: 'dd.MM.yyyy' }}</p>
+        </div>
+      </div>
+      @if (chance.beschreibung) {
+        <p><strong>Beschreibung:</strong> {{ chance.beschreibung }}</p>
+      }
+    </div>
+  </div>
+}

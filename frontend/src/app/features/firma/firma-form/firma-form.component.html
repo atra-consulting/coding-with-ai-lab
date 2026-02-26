@@ -1,0 +1,64 @@
+<div class="page-header">
+  <h2>{{ isEdit ? 'Firma bearbeiten' : 'Neue Firma' }}</h2>
+</div>
+
+@if (loading) {
+  <app-loading-spinner />
+} @else {
+  <div class="card">
+    <div class="card-body">
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="name" class="form-label">Name *</label>
+            <input
+              type="text"
+              class="form-control"
+              id="name"
+              formControlName="name"
+              [class.is-invalid]="form.get('name')?.invalid && form.get('name')?.touched"
+            />
+            @if (form.get('name')?.invalid && form.get('name')?.touched) {
+              <div class="invalid-feedback">Name ist erforderlich</div>
+            }
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="industry" class="form-label">Branche</label>
+            <input type="text" class="form-control" id="industry" formControlName="industry" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="email" class="form-label">E-Mail</label>
+            <input
+              type="email"
+              class="form-control"
+              id="email"
+              formControlName="email"
+              [class.is-invalid]="form.get('email')?.invalid && form.get('email')?.touched"
+            />
+            @if (form.get('email')?.invalid && form.get('email')?.touched) {
+              <div class="invalid-feedback">Ungültige E-Mail-Adresse</div>
+            }
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="phone" class="form-label">Telefon</label>
+            <input type="text" class="form-control" id="phone" formControlName="phone" />
+          </div>
+        </div>
+        <div class="mb-3">
+          <label for="website" class="form-label">Webseite</label>
+          <input type="text" class="form-control" id="website" formControlName="website" />
+        </div>
+        <div class="mb-3">
+          <label for="notes" class="form-label">Notizen</label>
+          <textarea class="form-control" id="notes" formControlName="notes" rows="3"></textarea>
+        </div>
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary" [disabled]="form.invalid">Speichern</button>
+          <a routerLink="/firmen" class="btn btn-outline-secondary">Abbrechen</a>
+        </div>
+      </form>
+    </div>
+  </div>
+}

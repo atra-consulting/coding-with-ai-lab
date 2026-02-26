@@ -1,0 +1,111 @@
+@if (loading) {
+  <app-loading-spinner />
+} @else if (firma) {
+  <div class="page-header">
+    <h2>{{ firma.name }}</h2>
+    <div>
+      <a [routerLink]="['/', 'firmen', firma.id, 'bearbeiten']" class="btn btn-primary me-2"
+        >Bearbeiten</a
+      >
+      <a routerLink="/firmen" class="btn btn-outline-secondary">Zurück</a>
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <p><strong>Branche:</strong> {{ firma.industry || '-' }}</p>
+          <p><strong>Webseite:</strong> {{ firma.website || '-' }}</p>
+          <p><strong>E-Mail:</strong> {{ firma.email || '-' }}</p>
+        </div>
+        <div class="col-md-6">
+          <p><strong>Telefon:</strong> {{ firma.phone || '-' }}</p>
+          <p><strong>Erstellt:</strong> {{ firma.createdAt | date: 'dd.MM.yyyy' }}</p>
+          <p><strong>Aktualisiert:</strong> {{ firma.updatedAt | date: 'dd.MM.yyyy' }}</p>
+        </div>
+      </div>
+      @if (firma.notes) {
+        <p><strong>Notizen:</strong> {{ firma.notes }}</p>
+      }
+    </div>
+  </div>
+
+  <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs">
+    <li [ngbNavItem]="1">
+      <button ngbNavLink>Personen ({{ firma.personenCount }})</button>
+      <ng-template ngbNavContent>
+        @if (personenPage && personenPage.content.length > 0) {
+          <table class="table table-hover mt-3">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>E-Mail</th>
+                <th>Position</th>
+                <th>Abteilung</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (person of personenPage.content; track person.id) {
+                <tr class="cursor-pointer" [routerLink]="['/personen', person.id]">
+                  <td>{{ person.firstName }} {{ person.lastName }}</td>
+                  <td>{{ person.email }}</td>
+                  <td>{{ person.position }}</td>
+                  <td>{{ person.abteilungName || '-' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+          @if (personenPage.totalPages > 1) {
+            <ngb-pagination
+              [collectionSize]="personenPage.totalElements"
+              [(page)]="personenCurrentPage"
+              [pageSize]="10"
+              (pageChange)="onPersonenPageChange($event)"
+              [maxSize]="5"
+            ></ngb-pagination>
+          }
+        } @else {
+          <p class="text-muted mt-3">Keine Personen vorhanden.</p>
+        }
+      </ng-template>
+    </li>
+    <li [ngbNavItem]="2">
+      <button ngbNavLink>Abteilungen ({{ firma.abteilungenCount }})</button>
+      <ng-template ngbNavContent>
+        @if (abteilungenPage && abteilungenPage.content.length > 0) {
+          <table class="table table-hover mt-3">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Beschreibung</th>
+                <th>Personen</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (abt of abteilungenPage.content; track abt.id) {
+                <tr class="cursor-pointer" [routerLink]="['/abteilungen', abt.id]">
+                  <td>{{ abt.name }}</td>
+                  <td>{{ abt.description || '-' }}</td>
+                  <td>{{ abt.personenCount }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+          @if (abteilungenPage.totalPages > 1) {
+            <ngb-pagination
+              [collectionSize]="abteilungenPage.totalElements"
+              [(page)]="abteilungenCurrentPage"
+              [pageSize]="10"
+              (pageChange)="onAbteilungenPageChange($event)"
+              [maxSize]="5"
+            ></ngb-pagination>
+          }
+        } @else {
+          <p class="text-muted mt-3">Keine Abteilungen vorhanden.</p>
+        }
+      </ng-template>
+    </li>
+  </ul>
+  <div [ngbNavOutlet]="nav"></div>
+}

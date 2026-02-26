@@ -1,0 +1,36 @@
+@if (loading) {
+  <app-loading-spinner />
+} @else if (person) {
+  <div class="page-header">
+    <h2>{{ person.firstName }} {{ person.lastName }}</h2>
+    <div>
+      <a [routerLink]="['/', 'personen', person.id, 'bearbeiten']" class="btn btn-primary me-2"
+        >Bearbeiten</a
+      >
+      <a routerLink="/personen" class="btn btn-outline-secondary">Zurück</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <p><strong>E-Mail:</strong> {{ person.email || '-' }}</p>
+          <p><strong>Telefon:</strong> {{ person.phone || '-' }}</p>
+          <p><strong>Position:</strong> {{ person.position || '-' }}</p>
+        </div>
+        <div class="col-md-6">
+          <p>
+            <strong>Firma:</strong>
+            <a [routerLink]="['/firmen', person.firmaId]">{{ person.firmaName }}</a>
+          </p>
+          <p><strong>Abteilung:</strong> {{ person.abteilungName || '-' }}</p>
+          <p><strong>Erstellt:</strong> {{ person.createdAt | date: 'dd.MM.yyyy' }}</p>
+        </div>
+      </div>
+      @if (person.notes) {
+        <p><strong>Notizen:</strong> {{ person.notes }}</p>
+      }
+    </div>
+  </div>
+}

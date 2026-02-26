@@ -1,0 +1,20 @@
+<div class="card">
+  <div class="card-header">
+    <h5 class="card-title mb-0">Letzte Aktivitäten</h5>
+  </div>
+  <div class="list-group list-group-flush">
+    @for (activity of activities; track activity.id) {
+      <div class="list-group-item d-flex align-items-center">
+        <fa-icon [icon]="getIcon(activity.typ)" class="me-3 text-muted"></fa-icon>
+        <div class="flex-grow-1">
+          <div class="fw-semibold">{{ activity.subject }}</div>
+          <small class="text-muted"
+            >{{ activity.typ }} &middot; {{ activity.datum | date: 'dd.MM.yyyy HH:mm' }}</small
+          >
+        </div>
+      </div>
+    } @empty {
+      <div class="list-group-item text-muted">Keine Aktivitäten vorhanden</div>
+    }
+  </div>
+</div>

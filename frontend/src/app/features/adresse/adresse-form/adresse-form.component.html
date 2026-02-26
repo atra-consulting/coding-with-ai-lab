@@ -1,0 +1,127 @@
+<div class="page-header">
+  <h2>{{ isEdit ? 'Adresse bearbeiten' : 'Neue Adresse' }}</h2>
+</div>
+
+@if (loading) {
+  <app-loading-spinner />
+} @else {
+  <div class="card">
+    <div class="card-body">
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="row">
+          <div class="col-md-8 mb-3">
+            <label for="street" class="form-label">Straße *</label>
+            <input
+              type="text"
+              class="form-control"
+              id="street"
+              formControlName="street"
+              [class.is-invalid]="form.get('street')?.invalid && form.get('street')?.touched"
+            />
+            @if (form.get('street')?.invalid && form.get('street')?.touched) {
+              <div class="invalid-feedback">Straße ist erforderlich</div>
+            }
+          </div>
+          <div class="col-md-4 mb-3">
+            <label for="houseNumber" class="form-label">Hausnummer</label>
+            <input
+              type="text"
+              class="form-control"
+              id="houseNumber"
+              formControlName="houseNumber"
+            />
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label for="postalCode" class="form-label">PLZ *</label>
+            <input
+              type="text"
+              class="form-control"
+              id="postalCode"
+              formControlName="postalCode"
+              [class.is-invalid]="
+                form.get('postalCode')?.invalid && form.get('postalCode')?.touched
+              "
+            />
+            @if (form.get('postalCode')?.invalid && form.get('postalCode')?.touched) {
+              <div class="invalid-feedback">PLZ ist erforderlich</div>
+            }
+          </div>
+          <div class="col-md-4 mb-3">
+            <label for="city" class="form-label">Stadt *</label>
+            <input
+              type="text"
+              class="form-control"
+              id="city"
+              formControlName="city"
+              [class.is-invalid]="form.get('city')?.invalid && form.get('city')?.touched"
+            />
+            @if (form.get('city')?.invalid && form.get('city')?.touched) {
+              <div class="invalid-feedback">Stadt ist erforderlich</div>
+            }
+          </div>
+          <div class="col-md-4 mb-3">
+            <label for="country" class="form-label">Land</label>
+            <input type="text" class="form-control" id="country" formControlName="country" />
+          </div>
+        </div>
+
+        <hr />
+        <h5>Zugehörigkeit</h5>
+
+        <div class="mb-3">
+          <div class="form-check form-check-inline">
+            <input
+              class="form-check-input"
+              type="radio"
+              name="assignmentType"
+              id="typeFirma"
+              [checked]="assignmentType === 'firma'"
+              (change)="onAssignmentChange('firma')"
+            />
+            <label class="form-check-label" for="typeFirma">Firma</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input
+              class="form-check-input"
+              type="radio"
+              name="assignmentType"
+              id="typePerson"
+              [checked]="assignmentType === 'person'"
+              (change)="onAssignmentChange('person')"
+            />
+            <label class="form-check-label" for="typePerson">Person</label>
+          </div>
+        </div>
+
+        @if (assignmentType === 'firma') {
+          <div class="mb-3">
+            <label for="firmaId" class="form-label">Firma</label>
+            <select class="form-select" id="firmaId" formControlName="firmaId">
+              <option [ngValue]="null">-- Keine Firma --</option>
+              @for (firma of firmen; track firma.id) {
+                <option [ngValue]="firma.id">{{ firma.name }}</option>
+              }
+            </select>
+          </div>
+        } @else {
+          <div class="mb-3">
+            <label for="personId" class="form-label">Person</label>
+            <select class="form-select" id="personId" formControlName="personId">
+              <option [ngValue]="null">-- Keine Person --</option>
+              @for (person of personen; track person.id) {
+                <option [ngValue]="person.id">{{ person.lastName }}, {{ person.firstName }}</option>
+              }
+            </select>
+          </div>
+        }
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary" [disabled]="form.invalid">Speichern</button>
+          <a routerLink="/adressen" class="btn btn-outline-secondary">Abbrechen</a>
+        </div>
+      </form>
+    </div>
+  </div>
+}

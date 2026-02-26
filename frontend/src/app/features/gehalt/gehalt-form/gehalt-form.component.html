@@ -1,0 +1,89 @@
+<div class="page-header">
+  <h2>{{ isEdit ? 'Gehalt bearbeiten' : 'Neues Gehalt' }}</h2>
+</div>
+
+@if (loading) {
+  <app-loading-spinner />
+} @else {
+  <div class="card">
+    <div class="card-body">
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="personId" class="form-label">Person *</label>
+            <select
+              class="form-select"
+              id="personId"
+              formControlName="personId"
+              [class.is-invalid]="form.get('personId')?.invalid && form.get('personId')?.touched"
+            >
+              <option [ngValue]="null" disabled>-- Person auswählen --</option>
+              @for (person of personen; track person.id) {
+                <option [ngValue]="person.id">{{ person.lastName }}, {{ person.firstName }}</option>
+              }
+            </select>
+            @if (form.get('personId')?.invalid && form.get('personId')?.touched) {
+              <div class="invalid-feedback">Person ist erforderlich</div>
+            }
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="typ" class="form-label">Typ *</label>
+            <select
+              class="form-select"
+              id="typ"
+              formControlName="typ"
+              [class.is-invalid]="form.get('typ')?.invalid && form.get('typ')?.touched"
+            >
+              <option value="" disabled>-- Typ auswählen --</option>
+              @for (t of gehaltTypen; track t.value) {
+                <option [value]="t.value">{{ t.label }}</option>
+              }
+            </select>
+            @if (form.get('typ')?.invalid && form.get('typ')?.touched) {
+              <div class="invalid-feedback">Typ ist erforderlich</div>
+            }
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label for="amount" class="form-label">Betrag *</label>
+            <input
+              type="number"
+              class="form-control"
+              id="amount"
+              formControlName="amount"
+              step="0.01"
+              [class.is-invalid]="form.get('amount')?.invalid && form.get('amount')?.touched"
+            />
+            @if (form.get('amount')?.invalid && form.get('amount')?.touched) {
+              <div class="invalid-feedback">Betrag ist erforderlich und muss positiv sein</div>
+            }
+          </div>
+          <div class="col-md-4 mb-3">
+            <label for="currency" class="form-label">Währung</label>
+            <input type="text" class="form-control" id="currency" formControlName="currency" />
+          </div>
+          <div class="col-md-4 mb-3">
+            <label for="effectiveDate" class="form-label">Datum *</label>
+            <input
+              type="date"
+              class="form-control"
+              id="effectiveDate"
+              formControlName="effectiveDate"
+              [class.is-invalid]="
+                form.get('effectiveDate')?.invalid && form.get('effectiveDate')?.touched
+              "
+            />
+            @if (form.get('effectiveDate')?.invalid && form.get('effectiveDate')?.touched) {
+              <div class="invalid-feedback">Datum ist erforderlich</div>
+            }
+          </div>
+        </div>
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary" [disabled]="form.invalid">Speichern</button>
+          <a routerLink="/gehaelter" class="btn btn-outline-secondary">Abbrechen</a>
+        </div>
+      </form>
+    </div>
+  </div>
+}

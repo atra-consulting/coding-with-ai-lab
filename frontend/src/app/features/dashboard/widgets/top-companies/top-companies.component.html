@@ -1,0 +1,33 @@
+<div class="card">
+  <div class="card-header">
+    <h5 class="card-title mb-0">Top Firmen</h5>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Firma</th>
+          <th>Personen</th>
+          <th>Vertragswert</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (company of companies; track company.id; let i = $index) {
+          <tr>
+            <td>{{ i + 1 }}</td>
+            <td>
+              <a [routerLink]="['/firmen', company.id]">{{ company.name }}</a>
+            </td>
+            <td>{{ company.personenCount }}</td>
+            <td>{{ company.vertragswert | eurCurrency }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="4" class="text-muted text-center">Keine Daten vorhanden</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
