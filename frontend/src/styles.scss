@@ -1,14 +1,11 @@
 // Global styles
 body {
-  font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  background-color: #f8f9fa;
   min-height: 100vh;
 }
 
 .sidebar {
   min-height: calc(100vh - 56px);
-  background-color: #212529;
+  background-color: #264892;
   width: 250px;
   position: fixed;
   top: 56px;
@@ -25,7 +22,7 @@ body {
 }
 
 .nav-section-header {
-  color: #6c757d;
+  color: #a7c6eb;
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -46,8 +43,8 @@ body {
 
   &.active {
     color: #fff;
-    background-color: rgba(13, 110, 253, 0.3);
-    border-left: 3px solid #0d6efd;
+    background-color: rgba(220, 66, 30, 0.15);
+    border-left: 3px solid #dc421e;
   }
 
   fa-icon {
@@ -86,16 +83,16 @@ body {
   border-left: 4px solid;
 
   &.primary {
-    border-left-color: #0d6efd;
+    border-left-color: #264892;
   }
   &.success {
-    border-left-color: #198754;
+    border-left-color: #a7c6eb;
   }
   &.warning {
-    border-left-color: #ffc107;
+    border-left-color: #f98752;
   }
   &.info {
-    border-left-color: #0dcaf0;
+    border-left-color: #dc421e;
   }
 }
 
