@@ -2,13 +2,13 @@
 
 ## Project
 
-Full-stack CRM application. Spring Boot 3.5.3 (Java 17) backend, Angular 20 frontend. German domain model: Firma, Person, Abteilung, Adresse, Gehalt, Aktivitaet, Vertrag, Chance. H2 file-based database.
+Full-stack CRM application. Spring Boot 3.5.3 (Java 21) backend, Angular 20 frontend. German domain model: Firma, Person, Abteilung, Adresse, Gehalt, Aktivitaet, Vertrag, Chance. H2 file-based database.
 
 ## Build & Run
 
 ```bash
 ./start.sh                                        # Full stack (backend:8080 + frontend:4200)
-cd backend && mvn spring-boot:run                  # Backend only (requires Java 17)
+cd backend && mvn spring-boot:run                  # Backend only (requires Java 21)
 cd frontend && npx ng serve --proxy-config proxy.conf.json  # Frontend only
 cd backend && mvn clean compile                    # Backend compile check
 cd frontend && npx ng build                        # Frontend build check

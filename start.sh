@@ -13,10 +13,13 @@ if ! command -v node &> /dev/null; then
     exit 1
 fi
 
-# Set JAVA_HOME to Java 17 if available
-if [ -d "/Library/Java/JavaVirtualMachines/jdk-17.jdk/Contents/Home" ]; then
-    export JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk-17.jdk/Contents/Home"
-    echo "Using Java 17: $JAVA_HOME"
+# Set JAVA_HOME to Java 21 if available
+if [ -d "/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home" ]; then
+    export JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home"
+    echo "Using Java 21: $JAVA_HOME"
+elif [ -d "$(brew --prefix openjdk@21 2>/dev/null)/libexec/openjdk.jdk/Contents/Home" ]; then
+    export JAVA_HOME="$(brew --prefix openjdk@21)/libexec/openjdk.jdk/Contents/Home"
+    echo "Using Java 21 (Homebrew): $JAVA_HOME"
 fi
 
 # Cleanup function
