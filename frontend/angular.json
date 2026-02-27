@@ -49,7 +49,7 @@
                 "input": "public"
               }
             ],
-            "styles": ["node_modules/bootstrap/scss/bootstrap.scss", "src/styles.scss"]
+            "styles": ["src/_variables.scss", "node_modules/bootstrap/scss/bootstrap.scss", "src/styles.scss"]
           },
           "configurations": {
             "production": {
@@ -110,5 +110,8 @@
         }
       }
     }
+  },
+  "cli": {
+    "analytics": false
   }
 }
