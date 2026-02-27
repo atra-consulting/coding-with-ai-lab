@@ -13,6 +13,13 @@ body {
   z-index: 100;
   padding-top: 1rem;
   overflow-y: auto;
+
+  .sidebar-footer {
+    padding: 1rem;
+    color: rgba(255, 255, 255, 0.25);
+    font-size: 0.7rem;
+    text-align: center;
+  }
 }
 
 .main-content {

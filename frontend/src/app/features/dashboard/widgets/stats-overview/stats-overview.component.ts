@@ -7,11 +7,10 @@ import {
   faUsers,
 } from '@fortawesome/free-solid-svg-icons';
 import { DashboardStats } from '../../../../core/models/dashboard.model';
-import { EurCurrencyPipe } from '../../../../shared/pipes/currency.pipe';
 
 @Component({
   selector: 'app-stats-overview',
-  imports: [EurCurrencyPipe, FaIconComponent],
+  imports: [FaIconComponent],
   templateUrl: './stats-overview.component.html',
 })
 export class StatsOverviewComponent {
