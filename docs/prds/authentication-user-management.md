@@ -265,3 +265,7 @@ Die technischen Architekturentscheidungen zu diesem PRD sind in [ADR-001: Archit
 | Passwort-Hashing     | BCrypt (Spring Security Default)                  |
 | Security-Framework   | Spring Security                                   |
 | Rollen-Architektur   | Enum + zentrales Permission-Mapping               |
+
+## 10. Implementierung
+
+_Noch nicht implementiert._

@@ -221,3 +221,12 @@ Die Spaltenheader verwenden die jeweilige Farbe als Akzent (farbiger oberer Rand
 ## 10. Offene Fragen
 
 _Keine — das Feature baut auf bestehender Infrastruktur auf und erfordert keine architekturellen Entscheidungen._
+
+## 11. Implementierung
+
+**PR**: [#5 — feat: Chancen pipeline Kanban board](https://github.com/atra-consulting/coding-with-ai-lab/pull/5)
+
+**Commits**:
+- `fe0420f` feat: add Chancen pipeline Kanban board
+- `b9b69f3` chore: scale up seed data for Kanban board testing
+- `8af6447` fix: improve load-more button with item counts
