@@ -62,9 +62,12 @@
         </div>
 
         @if (hasMore(phaseConfig.phase)) {
-          <button class="btn btn-sm btn-link w-100" (click)="loadMore(phaseConfig.phase)">
-            Mehr laden
-          </button>
+          <div class="load-more-footer">
+            <span class="text-muted small">{{ getColumnItems(phaseConfig.phase).length }} von {{ getSummary(phaseConfig.phase)?.count || columnPages.get(phaseConfig.phase)?.totalElements || 0 }}</span>
+            <button class="btn btn-sm btn-outline-secondary w-100 mt-1" (click)="loadMore(phaseConfig.phase)">
+              {{ getRemaining(phaseConfig.phase) }} weitere laden
+            </button>
+          </div>
         }
       </div>
     }

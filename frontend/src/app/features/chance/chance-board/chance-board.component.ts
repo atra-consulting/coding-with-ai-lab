@@ -95,6 +95,13 @@ export class ChanceBoardComponent implements OnInit {
     return !!page && !page.last;
   }
 
+  getRemaining(phase: ChancePhase): number {
+    const page = this.columnPages.get(phase);
+    if (!page) return 0;
+    const loaded = (this.columns.get(phase) || []).length;
+    return page.totalElements - loaded;
+  }
+
   getColumnItems(phase: ChancePhase): Chance[] {
     return this.columns.get(phase) || [];
   }
