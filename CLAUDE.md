@@ -22,6 +22,7 @@ Each entity follows: Entity → `*DTO` + `*CreateDTO` (Java records) → `*Mappe
 - **Mapper variants**: Simple (`FirmaMapper.toEntity(dto)`), Single-FK (`AbteilungMapper.toEntity(dto, firma)`), Dual-FK (`ChanceMapper.toEntity(dto, firma, person)`) — service resolves FK entities before passing to mapper.
 - **H2 quirk**: Aggregate `@Query` returning `Object[]` yields `Double` not `BigDecimal`. Cast via `BigDecimal.valueOf(((Number) val).doubleValue())`.
 - **Controllers**: Pagination via `page`/`size`/`sort` query params. Sort arrives as `String[]`, parsed with `Sort.by(Direction.fromString(sort[1]), sort[0])`.
+- **Board endpoints** (Chance): `GET /api/chancen/phase/{phase}` (paginated by phase), `GET /api/chancen/board/summary` (aggregates per phase), `PATCH /api/chancen/{id}/phase` (phase update). Extra DTOs: `PhaseUpdateDTO`, `BoardSummaryDTO`.
 
 ## Frontend Patterns
 
@@ -37,6 +38,7 @@ Each entity follows: Entity → `*DTO` + `*CreateDTO` (Java records) → `*Mappe
 - **Errors**: `apiErrorInterceptor` catches HTTP errors → `NotificationService` shows toasts.
 - **Modals**: `NgbModal` with `ConfirmDialogComponent` for delete confirmations.
 - **Styling**: Bootstrap 5 + SCSS.
+- **Kanban Board**: `@angular/cdk` drag-drop for board views. Board component at `features/chance/chance-board/`. Optimistic drag updates with rollback on error. Columns paginiert via "Mehr laden". Liste/Board toggle via `btn-group` in page header.
 
 ## Adding a New Entity
 
@@ -53,3 +55,4 @@ Frontend (8+ files): Model interface → Service → Route file → List/Detail/
 - `frontend/src/app/app.routes.ts` — all feature routes (lazy-loaded)
 - `frontend/src/app/app.config.ts` — providers including HTTP interceptor
 - `frontend/proxy.conf.json` — `/api/*` → `localhost:8080`
+- `frontend/src/app/features/chance/chance-board/` — Kanban board component (drag & drop pipeline)

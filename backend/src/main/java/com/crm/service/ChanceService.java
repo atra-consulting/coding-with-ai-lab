@@ -1,15 +1,20 @@
 package com.crm.service;
 
+import java.math.BigDecimal;
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.crm.dto.BoardSummaryDTO;
 import com.crm.dto.ChanceCreateDTO;
 import com.crm.dto.ChanceDTO;
 import com.crm.entity.Chance;
 import com.crm.entity.Firma;
 import com.crm.entity.Person;
+import com.crm.entity.enums.ChancePhase;
 import com.crm.exception.ResourceNotFoundException;
 import com.crm.mapper.ChanceMapper;
 import com.crm.repository.ChanceRepository;
@@ -81,5 +86,28 @@ public class ChanceService {
         Chance chance = chanceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Chance", id));
         chanceRepository.delete(chance);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ChanceDTO> findByPhase(ChancePhase phase, Pageable pageable) {
+        return chanceRepository.findByPhase(phase, pageable).map(ChanceMapper::toDTO);
+    }
+
+    @Transactional(readOnly = true)
+    public List<BoardSummaryDTO> getBoardSummary() {
+        return chanceRepository.getBoardSummaryRaw().stream()
+                .map(row -> new BoardSummaryDTO(
+                        (ChancePhase) row[0],
+                        ((Number) row[1]).longValue(),
+                        BigDecimal.valueOf(((Number) row[2]).doubleValue())))
+                .toList();
+    }
+
+    public ChanceDTO updatePhase(Long id, ChancePhase phase) {
+        Chance chance = chanceRepository.findByIdWithRelations(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Chance", id));
+        chance.setPhase(phase);
+        chance = chanceRepository.save(chance);
+        return ChanceMapper.toDTO(chance);
     }
 }
