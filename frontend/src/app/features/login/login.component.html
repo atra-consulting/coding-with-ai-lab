@@ -1,0 +1,68 @@
+<div class="login-page">
+  <div class="login-card">
+    <div class="login-header">
+      <div class="login-icon">
+        <fa-icon [icon]="faDatabase"></fa-icon>
+      </div>
+      <h2>CRM System</h2>
+      <p>Melden Sie sich an, um fortzufahren</p>
+    </div>
+
+    <div class="login-body">
+      @if (errorMessage) {
+        <div class="alert alert-danger d-flex align-items-center" role="alert">
+          <span>{{ errorMessage }}</span>
+        </div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="form-floating mb-3">
+          <input
+            type="text"
+            class="form-control"
+            id="benutzername"
+            formControlName="benutzername"
+            placeholder="Benutzername"
+            autocomplete="username"
+          />
+          <label for="benutzername">Benutzername</label>
+        </div>
+
+        <div class="form-floating mb-4">
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            class="form-control"
+            id="passwort"
+            formControlName="passwort"
+            placeholder="Passwort"
+            autocomplete="current-password"
+          />
+          <label for="passwort">Passwort</label>
+          <button
+            class="password-toggle"
+            type="button"
+            (click)="togglePassword()"
+            tabindex="-1"
+          >
+            <fa-icon [icon]="showPassword ? faEyeSlash : faEye"></fa-icon>
+          </button>
+        </div>
+
+        <button
+          type="submit"
+          class="btn btn-login w-100"
+          [disabled]="form.invalid || loading"
+        >
+          @if (loading) {
+            <span class="spinner-border spinner-border-sm me-2"></span>
+          }
+          Anmelden
+        </button>
+      </form>
+    </div>
+
+    <div class="login-footer">
+      Made by <a href="https://atra.consulting/" target="_blank" rel="noopener noreferrer">atra.consulting</a>
+    </div>
+  </div>
+</div>
