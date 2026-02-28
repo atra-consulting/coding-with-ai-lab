@@ -66,7 +66,7 @@ public class DataSeeder implements CommandLineRunner {
         Random random = new Random(42);
         LocalDate today = LocalDate.now();
 
-        String[] firmaNames = {"Schmidt GmbH", "Mueller & Partner AG", "Weber IT Solutions", "Fischer Consulting", "Schneider Maschinenbau", "Hoffmann Logistik", "Koch Immobilien", "Bauer Finanzberatung", "Richter Medizintechnik", "Klein Software AG", "Wolf Automotive", "Schroeder Handels GmbH", "Neumann Energie", "Schwarz Bauunternehmen", "Zimmermann Versicherungen", "Braun Pharma GmbH", "Krueger Elektronik", "Hartmann Lebensmittel", "Werner Textilien", "Schmitt Stahlbau", "Meier Transport", "Lehmann Chemie AG", "Schmitz Sicherheitstechnik", "Lange Umwelttechnik", "Krause Werbung", "Maier Gastronomie", "Huber Telekommunikation", "Kaiser Architekten", "Fuchs Verlag", "Peters Metallbau", "Lang Optik", "Jung Reinigungstechnik", "Hahn Personalberatung", "Keller Holzbau", "Vogt Gartenbau", "Sauer Drucktechnik", "Arnold Cloud Services", "Ludwig Fahrzeugtechnik", "Friedrich Rechtsanwaelte", "Scholz Industriebedarf", "Moeller Eventmanagement", "Winkler Heizungstechnik", "Gross Design Studio", "Albrecht Recycling", "Schubert Feinmechanik", "Jansen Biotech", "Berger Windkraft", "Simon Datenschutz", "Frank Robotik", "Roth Solartechnik"};
+        String[] firmaNames = {"Schmidt GmbH", "Mueller & Partner AG", "Weber IT Solutions", "Fischer Consulting", "Schneider Maschinenbau", "Hoffmann Logistik", "Koch Immobilien", "Bauer Finanzberatung", "Richter Medizintechnik", "Klein Software AG", "Wolf Automotive", "Schroeder Handels GmbH", "Neumann Energie", "Schwarz Bauunternehmen", "Zimmermann Versicherungen", "Braun Pharma GmbH", "Krueger Elektronik", "Hartmann Lebensmittel", "Werner Textilien", "Schmitt Stahlbau", "Meier Transport", "Lehmann Chemie AG", "Schmitz Sicherheitstechnik", "Lange Umwelttechnik", "Krause Werbung", "Maier Gastronomie", "Huber Telekommunikation", "Kaiser Architekten", "Fuchs Verlag", "Peters Metallbau", "Lang Optik", "Jung Reinigungstechnik", "Hahn Personalberatung", "Keller Holzbau", "Vogt Gartenbau", "Sauer Drucktechnik", "Arnold Cloud Services", "Ludwig Fahrzeugtechnik", "Friedrich Rechtsanwaelte", "Scholz Industriebedarf", "Moeller Eventmanagement", "Winkler Heizungstechnik", "Gross Design Studio", "Albrecht Recycling", "Schubert Feinmechanik", "Jansen Biotech", "Berger Windkraft", "Simon Datenschutz", "Frank Robotik", "Roth Solartechnik", "Baumann Mediengruppe", "Stein Aerospace", "Horn Gebaeudetechnik", "Lorenz Messebau", "Schuster Werkzeugbau", "Seidel Kreativagentur", "Brandt Schifffahrt", "Haas Laborgeraete", "Pfeiffer Agrar", "Koenig Spielwaren", "Beck Moebelbau", "Dietrich Kaelteanlagen", "Kunz Vermessungstechnik", "Frey Augenoptik", "Engel Hotelmanagement", "Herrmann Fassadenbau", "Bock Verkehrstechnik", "Pohl Ladenbau", "Busch Getraenke", "Voigt Sanitaertechnik", "Graf Steuerberatung", "Otto Sportartikel", "Beyer Tontechnik", "Marx Spedition", "Winter Zahnmedizin", "Ebert Drohnentechnik", "Wenzel Papierverarbeitung", "Kraft Tiefbau", "Lindner Baekereimaschinen", "Schreiber Veranstaltungstechnik", "Sommer Kuechenstudio", "Ziegler Aufzugbau", "Walter Autozubehoer", "Nolte Brandschutz", "Bergmann Giessereitechnik", "Wolff Juweliere", "Auer Milchtechnik", "Unger IT-Sicherheit", "Paul Gartenarchitektur", "Seifert Lederwarenmanufaktur", "Walther Bootsbau", "Kirsch Druckluft", "Geiger Naturkosmetik", "Hanke Stahlhandel", "Ullrich Hoergeraete", "Steiner Klimaanlagen", "Thiel Lasertechnik", "Noack Reinraumtechnik", "Kiefer Brauerei", "Dorn Verpackungstechnik"};
         String[] industries = {"IT & Software", "Finanzwesen", "Gesundheitswesen", "Maschinenbau", "Beratung", "Logistik", "Immobilien", "Energie", "Bauwesen", "Pharma", "Elektronik", "Automotive", "Handel", "Versicherungen", "Telekommunikation", "Medien", "Lebensmittel", "Chemie", "Umwelttechnik", "Sicherheitstechnik"};
         String[] abteilungNames = {"Vertrieb", "Marketing", "Entwicklung", "Personal", "Finanzen", "IT", "Produktion", "Qualitaetsmanagement", "Einkauf", "Kundenservice", "Logistik", "Forschung", "Recht", "Geschaeftsfuehrung"};
         String[] firstNames = {"Hans", "Anna", "Peter", "Maria", "Thomas", "Sabine", "Michael", "Claudia", "Stefan", "Monika", "Andreas", "Petra", "Markus", "Susanne", "Christian", "Karin", "Daniel", "Nicole", "Martin", "Birgit", "Frank", "Andrea", "Joerg", "Martina", "Bernd", "Gabriele", "Ralf", "Heike", "Juergen", "Silke"};
@@ -83,7 +83,7 @@ public class DataSeeder implements CommandLineRunner {
         AktivitaetTyp[] aktivitaetTypen = AktivitaetTyp.values();
         GehaltTyp[] gehaltTypen = GehaltTyp.values();
 
-        // 1. Create 50 Firmen
+        // 1. Create 100 Firmen
         List<Firma> firmen = new ArrayList<>();
         for (String name : firmaNames) {
             Firma f = new Firma();
@@ -99,7 +99,7 @@ public class DataSeeder implements CommandLineRunner {
         firmen = firmaRepository.saveAll(firmen);
         firmaRepository.flush();
 
-        // 2. Create ~120 Abteilungen (2-3 per Firma)
+        // 2. Create ~250 Abteilungen (2-3 per Firma)
         List<Abteilung> abteilungen = new ArrayList<>();
         for (Firma firma : firmen) {
             int count = 2 + random.nextInt(2); // 2 or 3
@@ -118,7 +118,7 @@ public class DataSeeder implements CommandLineRunner {
         abteilungen = abteilungRepository.saveAll(abteilungen);
         abteilungRepository.flush();
 
-        // 3. Create 300 Personen (~6 per Firma)
+        // 3. Create ~600 Personen (~6 per Firma)
         List<Person> personen = new ArrayList<>();
         for (Firma firma : firmen) {
             List<Abteilung> firmaAbt = abteilungen.stream().filter(a -> a.getFirma().getId().equals(firma.getId())).toList();
@@ -144,9 +144,9 @@ public class DataSeeder implements CommandLineRunner {
         personen = personRepository.saveAll(personen);
         personRepository.flush();
 
-        // 4. Create 250 Adressen (100 Firma + 150 Person)
+        // 4. Create 500 Adressen (200 Firma + 300 Person)
         List<Adresse> adressen = new ArrayList<>();
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 200; i++) {
             Adresse a = new Adresse();
             int ci = random.nextInt(cities.length);
             a.setStreet(streets[random.nextInt(streets.length)]);
@@ -157,7 +157,7 @@ public class DataSeeder implements CommandLineRunner {
             a.setFirma(firmen.get(random.nextInt(firmen.size())));
             adressen.add(a);
         }
-        for (int i = 0; i < 150; i++) {
+        for (int i = 0; i < 300; i++) {
             Adresse a = new Adresse();
             int ci = random.nextInt(cities.length);
             a.setStreet(streets[random.nextInt(streets.length)]);
@@ -195,9 +195,9 @@ public class DataSeeder implements CommandLineRunner {
         gehaltRepository.saveAll(gehaelter);
         gehaltRepository.flush();
 
-        // 6. Create 500 Aktivitaeten
+        // 6. Create 1000 Aktivitaeten
         List<Aktivitaet> aktivitaeten = new ArrayList<>();
-        for (int i = 0; i < 500; i++) {
+        for (int i = 0; i < 1000; i++) {
             Aktivitaet ak = new Aktivitaet();
             ak.setTyp(aktivitaetTypen[random.nextInt(aktivitaetTypen.length)]);
             Firma firma = firmen.get(random.nextInt(firmen.size()));
@@ -214,9 +214,9 @@ public class DataSeeder implements CommandLineRunner {
         aktivitaetRepository.saveAll(aktivitaeten);
         aktivitaetRepository.flush();
 
-        // 7. Create 100 Vertraege
+        // 7. Create 200 Vertraege
         List<Vertrag> vertraege = new ArrayList<>();
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 200; i++) {
             Vertrag v = new Vertrag();
             v.setTitel(vertragTitel[random.nextInt(vertragTitel.length)] + " #" + (i + 1));
             v.setWert(BigDecimal.valueOf(5000 + random.nextInt(495000)));
@@ -240,9 +240,9 @@ public class DataSeeder implements CommandLineRunner {
         vertragRepository.saveAll(vertraege);
         vertragRepository.flush();
 
-        // 8. Create 80 Chancen
+        // 8. Create 300 Chancen
         List<Chance> chancen = new ArrayList<>();
-        for (int i = 0; i < 80; i++) {
+        for (int i = 0; i < 300; i++) {
             Chance c = new Chance();
             Firma firma = firmen.get(random.nextInt(firmen.size()));
             c.setTitel(chanceTitel[random.nextInt(chanceTitel.length)] + " - " + firma.getName());
