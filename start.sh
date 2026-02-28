@@ -4,6 +4,31 @@ set -euo pipefail
 echo "=== CRM Application Starter ==="
 
 ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
+DB_DIR="${ROOT_DIR}/backend/data"
+
+# Parse arguments
+RESET_DB=false
+for arg in "$@"; do
+  case "$arg" in
+    --reset-db) RESET_DB=true ;;
+    *)
+      echo "Usage: $0 [--reset-db]"
+      echo "  --reset-db  Delete local H2 database (will be recreated with seed data)"
+      exit 1
+      ;;
+  esac
+done
+
+# Optionally reset database
+if [ "$RESET_DB" = true ]; then
+  if [ -d "$DB_DIR" ]; then
+    echo "Deleting database at ${DB_DIR}..."
+    rm -rf "$DB_DIR"
+    echo "Database deleted. Will be recreated on startup."
+  else
+    echo "No database found at ${DB_DIR}, nothing to delete."
+  fi
+fi
 
 # Check prerequisites
 if ! command -v mvn &> /dev/null; then

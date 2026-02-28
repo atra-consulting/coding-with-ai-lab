@@ -19,6 +19,17 @@ body {
     color: rgba(255, 255, 255, 0.25);
     font-size: 0.7rem;
     text-align: center;
+
+    .footer-link {
+      color: inherit;
+      text-decoration: none;
+      cursor: pointer;
+
+      &:hover {
+        color: inherit;
+        text-decoration: none;
+      }
+    }
   }
 }
 
