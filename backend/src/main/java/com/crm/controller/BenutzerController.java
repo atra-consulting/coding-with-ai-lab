@@ -2,12 +2,13 @@ package com.crm.controller;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -17,52 +18,51 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.crm.dto.VertragCreateDTO;
-import com.crm.dto.VertragDTO;
-import com.crm.service.VertragService;
+import com.crm.dto.BenutzerCreateDTO;
+import com.crm.dto.BenutzerDTO;
+import com.crm.service.BenutzerService;
 
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/vertraege")
-@PreAuthorize("hasAnyRole('ADMIN', 'VERTRIEB')")
-public class VertragController {
+@RequestMapping("/api/benutzer")
+@PreAuthorize("hasRole('ADMIN')")
+public class BenutzerController {
 
-    private final VertragService vertragService;
+    private final BenutzerService benutzerService;
 
-    public VertragController(VertragService vertragService) {
-        this.vertragService = vertragService;
+    public BenutzerController(BenutzerService benutzerService) {
+        this.benutzerService = benutzerService;
     }
 
     @GetMapping
-    public Page<VertragDTO> findAll(
+    public Page<BenutzerDTO> findAll(
+            @RequestParam(defaultValue = "") String search,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            @RequestParam(defaultValue = "titel,asc") String[] sort) {
-        Pageable pageable = PageRequest.of(page, size, parseSort(sort));
-        return vertragService.findAll(pageable);
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "benutzername,asc") String[] sort) {
+        return benutzerService.findAll(search, PageRequest.of(page, size, parseSort(sort)));
     }
 
     @GetMapping("/{id}")
-    public VertragDTO findById(@PathVariable Long id) {
-        return vertragService.findById(id);
+    public BenutzerDTO findById(@PathVariable Long id) {
+        return benutzerService.findById(id);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public VertragDTO create(@Valid @RequestBody VertragCreateDTO dto) {
-        return vertragService.create(dto);
+    public BenutzerDTO create(@Valid @RequestBody BenutzerCreateDTO dto) {
+        return benutzerService.create(dto);
     }
 
     @PutMapping("/{id}")
-    public VertragDTO update(@PathVariable Long id, @Valid @RequestBody VertragCreateDTO dto) {
-        return vertragService.update(id, dto);
+    public BenutzerDTO update(@PathVariable Long id, @Valid @RequestBody BenutzerCreateDTO dto) {
+        return benutzerService.update(id, dto);
     }
 
-    @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Long id) {
-        vertragService.delete(id);
+    @PatchMapping("/{id}/toggle-active")
+    public BenutzerDTO toggleActive(@PathVariable Long id, Authentication authentication) {
+        return benutzerService.toggleActive(id, authentication.getName());
     }
 
     private Sort parseSort(String[] sort) {

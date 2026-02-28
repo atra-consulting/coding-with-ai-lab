@@ -7,6 +7,11 @@ export const apiErrorInterceptor: HttpInterceptorFn = (req, next) => {
   const notification = inject(NotificationService);
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
+      // 401 and 403 are handled by auth interceptor
+      if (error.status === 401 || error.status === 403) {
+        return throwError(() => error);
+      }
+
       let message = 'Ein unbekannter Fehler ist aufgetreten';
       if (error.error?.message) {
         message = error.error.message;

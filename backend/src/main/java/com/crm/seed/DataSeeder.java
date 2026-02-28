@@ -6,26 +6,31 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.crm.entity.Abteilung;
 import com.crm.entity.Adresse;
 import com.crm.entity.Aktivitaet;
+import com.crm.entity.Benutzer;
 import com.crm.entity.Chance;
 import com.crm.entity.Firma;
 import com.crm.entity.Gehalt;
 import com.crm.entity.Person;
 import com.crm.entity.Vertrag;
 import com.crm.entity.enums.AktivitaetTyp;
+import com.crm.entity.enums.BenutzerRolle;
 import com.crm.entity.enums.ChancePhase;
 import com.crm.entity.enums.GehaltTyp;
 import com.crm.entity.enums.VertragStatus;
 import com.crm.repository.AbteilungRepository;
 import com.crm.repository.AdresseRepository;
 import com.crm.repository.AktivitaetRepository;
+import com.crm.repository.BenutzerRepository;
 import com.crm.repository.ChanceRepository;
 import com.crm.repository.FirmaRepository;
 import com.crm.repository.GehaltRepository;
@@ -43,11 +48,14 @@ public class DataSeeder implements CommandLineRunner {
     private final AktivitaetRepository aktivitaetRepository;
     private final VertragRepository vertragRepository;
     private final ChanceRepository chanceRepository;
+    private final BenutzerRepository benutzerRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public DataSeeder(FirmaRepository firmaRepository, AbteilungRepository abteilungRepository,
                       PersonRepository personRepository, AdresseRepository adresseRepository,
                       GehaltRepository gehaltRepository, AktivitaetRepository aktivitaetRepository,
-                      VertragRepository vertragRepository, ChanceRepository chanceRepository) {
+                      VertragRepository vertragRepository, ChanceRepository chanceRepository,
+                      BenutzerRepository benutzerRepository, PasswordEncoder passwordEncoder) {
         this.firmaRepository = firmaRepository;
         this.abteilungRepository = abteilungRepository;
         this.personRepository = personRepository;
@@ -56,12 +64,17 @@ public class DataSeeder implements CommandLineRunner {
         this.aktivitaetRepository = aktivitaetRepository;
         this.vertragRepository = vertragRepository;
         this.chanceRepository = chanceRepository;
+        this.benutzerRepository = benutzerRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     @Transactional
     public void run(String... args) {
         if (firmaRepository.count() > 0) return;
+
+        // Seed users
+        seedBenutzer();
 
         Random random = new Random(42);
         LocalDate today = LocalDate.now();
@@ -272,5 +285,47 @@ public class DataSeeder implements CommandLineRunner {
         chanceRepository.flush();
 
         System.out.println("=== DataSeeder: " + firmen.size() + " Firmen, " + abteilungen.size() + " Abteilungen, " + personen.size() + " Personen, " + adressen.size() + " Adressen, " + gehaelter.size() + " Gehaelter, " + aktivitaeten.size() + " Aktivitaeten, " + vertraege.size() + " Vertraege, " + chancen.size() + " Chancen erstellt ===");
+    }
+
+    private void seedBenutzer() {
+        if (benutzerRepository.count() > 0) return;
+
+        Benutzer admin = new Benutzer();
+        admin.setBenutzername("admin");
+        admin.setPasswort(passwordEncoder.encode("admin123"));
+        admin.setVorname("Admin");
+        admin.setNachname("System");
+        admin.setEmail("admin@crm.local");
+        admin.setRollen(Set.of(BenutzerRolle.ADMIN));
+        benutzerRepository.save(admin);
+
+        Benutzer vertrieb = new Benutzer();
+        vertrieb.setBenutzername("vertrieb");
+        vertrieb.setPasswort(passwordEncoder.encode("test123"));
+        vertrieb.setVorname("Vera");
+        vertrieb.setNachname("Vertrieb");
+        vertrieb.setEmail("vertrieb@crm.local");
+        vertrieb.setRollen(Set.of(BenutzerRolle.VERTRIEB));
+        benutzerRepository.save(vertrieb);
+
+        Benutzer personal = new Benutzer();
+        personal.setBenutzername("personal");
+        personal.setPasswort(passwordEncoder.encode("test123"));
+        personal.setVorname("Paul");
+        personal.setNachname("Personal");
+        personal.setEmail("personal@crm.local");
+        personal.setRollen(Set.of(BenutzerRolle.PERSONAL));
+        benutzerRepository.save(personal);
+
+        Benutzer allrounder = new Benutzer();
+        allrounder.setBenutzername("allrounder");
+        allrounder.setPasswort(passwordEncoder.encode("test123"));
+        allrounder.setVorname("Alex");
+        allrounder.setNachname("Allrounder");
+        allrounder.setEmail("allrounder@crm.local");
+        allrounder.setRollen(Set.of(BenutzerRolle.VERTRIEB, BenutzerRolle.PERSONAL));
+        benutzerRepository.save(allrounder);
+
+        System.out.println("=== DataSeeder: 4 Benutzer erstellt ===");
     }
 }

@@ -1,0 +1,107 @@
+@if (loading) {
+  <app-loading-spinner />
+} @else {
+  <div class="page-header">
+    <h2>{{ isEdit ? 'Benutzer bearbeiten' : 'Neuer Benutzer' }}</h2>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="benutzername" class="form-label">Benutzername</label>
+            <input
+              type="text"
+              class="form-control"
+              id="benutzername"
+              formControlName="benutzername"
+              [readonly]="isEdit"
+            />
+            @if (form.get('benutzername')?.invalid && form.get('benutzername')?.touched) {
+              <div class="text-danger small">Benutzername ist erforderlich</div>
+            }
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label for="passwort" class="form-label">
+              Passwort
+              @if (isEdit) {
+                <small class="text-muted">(leer lassen um es nicht zu ändern)</small>
+              }
+            </label>
+            <input
+              type="password"
+              class="form-control"
+              id="passwort"
+              formControlName="passwort"
+              autocomplete="new-password"
+            />
+            @if (form.get('passwort')?.errors?.['minlength'] && form.get('passwort')?.touched) {
+              <div class="text-danger small">Passwort muss mindestens 8 Zeichen lang sein</div>
+            }
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="vorname" class="form-label">Vorname</label>
+            <input type="text" class="form-control" id="vorname" formControlName="vorname" />
+            @if (form.get('vorname')?.invalid && form.get('vorname')?.touched) {
+              <div class="text-danger small">Vorname ist erforderlich</div>
+            }
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label for="nachname" class="form-label">Nachname</label>
+            <input type="text" class="form-control" id="nachname" formControlName="nachname" />
+            @if (form.get('nachname')?.invalid && form.get('nachname')?.touched) {
+              <div class="text-danger small">Nachname ist erforderlich</div>
+            }
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="email" class="form-label">E-Mail</label>
+          <input type="email" class="form-control" id="email" formControlName="email" />
+          @if (form.get('email')?.errors?.['required'] && form.get('email')?.touched) {
+            <div class="text-danger small">E-Mail ist erforderlich</div>
+          }
+          @if (form.get('email')?.errors?.['email'] && form.get('email')?.touched) {
+            <div class="text-danger small">Ungültige E-Mail-Adresse</div>
+          }
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Rollen</label>
+          <div>
+            @for (rolle of availableRollen; track rolle) {
+              <div class="form-check form-check-inline">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  [id]="'rolle_' + rolle"
+                  [checked]="hasRolle(rolle)"
+                  (change)="onRolleChange(rolle, $event)"
+                />
+                <label class="form-check-label" [for]="'rolle_' + rolle">{{ rolle }}</label>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="mb-3 form-check">
+          <input type="checkbox" class="form-check-input" id="aktiv" formControlName="aktiv" />
+          <label class="form-check-label" for="aktiv">Aktiv</label>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary" [disabled]="form.invalid">
+            {{ isEdit ? 'Speichern' : 'Erstellen' }}
+          </button>
+          <a routerLink="/benutzer" class="btn btn-outline-secondary">Abbrechen</a>
+        </div>
+      </form>
+    </div>
+  </div>
+}
