@@ -326,6 +326,15 @@ public class DataSeeder implements CommandLineRunner {
         allrounder.setRollen(Set.of(BenutzerRolle.VERTRIEB, BenutzerRolle.PERSONAL));
         benutzerRepository.save(allrounder);
 
-        System.out.println("=== DataSeeder: 4 Benutzer erstellt ===");
+        Benutzer demo = new Benutzer();
+        demo.setBenutzername("demo");
+        demo.setPasswort(passwordEncoder.encode("demo1234"));
+        demo.setVorname("David");
+        demo.setNachname("Demo");
+        demo.setEmail("demo@crm.local");
+        demo.setRollen(Set.of(BenutzerRolle.ADMIN));
+        benutzerRepository.save(demo);
+
+        System.out.println("=== DataSeeder: 5 Benutzer erstellt ===");
     }
 }

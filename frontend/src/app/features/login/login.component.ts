@@ -1,6 +1,7 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { faDatabase, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { AuthService } from '../../core/services/auth.service';
@@ -11,11 +12,12 @@ import { AuthService } from '../../core/services/auth.service';
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private http = inject(HttpClient);
 
   faDatabase = faDatabase;
   faEye = faEye;
@@ -29,6 +31,18 @@ export class LoginComponent {
   errorMessage = '';
   showPassword = false;
   loading = false;
+  demoEnabled = false;
+
+  ngOnInit(): void {
+    this.http.get<{ enabled: boolean }>('/api/auth/demo-mode').subscribe({
+      next: (res) => (this.demoEnabled = res.enabled),
+      error: () => (this.demoEnabled = false),
+    });
+  }
+
+  fillDemo(): void {
+    this.form.patchValue({ benutzername: 'demo', passwort: 'demo1234' });
+  }
 
   onSubmit(): void {
     if (this.form.invalid) return;

@@ -19,6 +19,7 @@
 ```
 
 Das Skript startet Backend (Port 8080) und Frontend (Port 4200) und wartet, bis beide bereit sind.
+Im Demo-Modus (Standard) wird auf der Login-Seite ein Button **„Demodaten ausfüllen"** angezeigt, der Benutzername und Passwort automatisch einträgt.
 
 | URL | Beschreibung |
 |-----|-------------|
@@ -26,12 +27,25 @@ Das Skript startet Backend (Port 8080) und Frontend (Port 4200) und wartet, bis 
 | http://localhost:8080 | Backend API |
 | http://localhost:8080/h2-console | H2-Datenbank-Konsole |
 
-### Datenbank zurücksetzen
+### Demo-Login
 
-Die H2-Datenbank liegt unter `backend/data/`. Um sie zu löschen und beim nächsten Start mit frischen Seed-Daten neu aufzubauen:
+Im Demo-Modus steht ein vorkonfigurierter Benutzer zur Verfügung:
+
+| Benutzername | Passwort | Rolle |
+|--------------|----------|-------|
+| `demo` | `demo1234` | ADMIN |
+
+### Startskript-Flags
+
+| Flag | Beschreibung |
+|------|-------------|
+| `--reset-db` | H2-Datenbank löschen (wird beim nächsten Start neu aufgebaut) |
+| `--no-demo` | Demo-Modus deaktivieren (versteckt den Demo-Button auf der Login-Seite) |
 
 ```bash
-./start.sh --reset-db
+./start.sh              # Standardstart mit Demo-Modus
+./start.sh --reset-db   # Datenbank zurücksetzen
+./start.sh --no-demo    # Ohne Demo-Modus
 ```
 
 ### Einzeln starten

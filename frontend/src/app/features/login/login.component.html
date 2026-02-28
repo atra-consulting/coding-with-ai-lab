@@ -59,6 +59,18 @@
           Anmelden
         </button>
       </form>
+
+      @if (demoEnabled) {
+        <div class="mt-3 text-center">
+          <button
+            type="button"
+            class="btn btn-outline-secondary btn-sm"
+            (click)="fillDemo()"
+          >
+            Demodaten ausfüllen
+          </button>
+        </div>
+      }
     </div>
 
     <div class="login-footer">
