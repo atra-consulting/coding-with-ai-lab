@@ -1,7 +1,9 @@
 package com.crm.controller;
 
 import java.util.List;
+import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +36,9 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/auth")
 public class AuthController {
 
+    @Value("${app.demo-mode:false}")
+    private boolean demoMode;
+
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
@@ -44,6 +49,11 @@ public class AuthController {
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.refreshTokenService = refreshTokenService;
+    }
+
+    @GetMapping("/demo-mode")
+    public Map<String, Boolean> getDemoMode() {
+        return Map.of("enabled", demoMode);
     }
 
     @PostMapping("/login")

@@ -8,12 +8,15 @@ DB_DIR="${ROOT_DIR}/backend/data"
 
 # Parse arguments
 RESET_DB=false
+DEMO_MODE=true
 for arg in "$@"; do
   case "$arg" in
     --reset-db) RESET_DB=true ;;
+    --no-demo) DEMO_MODE=false ;;
     *)
-      echo "Usage: $0 [--reset-db]"
+      echo "Usage: $0 [--reset-db] [--no-demo]"
       echo "  --reset-db  Delete local H2 database (will be recreated with seed data)"
+      echo "  --no-demo   Disable demo mode (hides demo login button)"
       exit 1
       ;;
   esac
@@ -77,7 +80,7 @@ trap cleanup SIGINT SIGTERM
 # Start backend
 echo "Starting backend..."
 cd "${ROOT_DIR}/backend"
-mvn spring-boot:run &
+mvn spring-boot:run -Dspring-boot.run.arguments=--app.demo-mode=${DEMO_MODE} &
 BACKEND_PID=$!
 cd "${ROOT_DIR}"
 
