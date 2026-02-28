@@ -44,7 +44,7 @@ export class SidebarComponent {
       ],
     },
     {
-      title: 'Stammdaten',
+      title: 'Kunden & Kontakte',
       items: [
         { label: 'Firmen', route: '/firmen', icon: faBuilding, permission: 'FIRMEN' },
         { label: 'Personen', route: '/personen', icon: faUsers, permission: 'PERSONEN' },
@@ -53,12 +53,17 @@ export class SidebarComponent {
       ],
     },
     {
-      title: 'Finanzen',
+      title: 'Vertrieb',
       items: [
-        { label: 'Gehälter', route: '/gehaelter', icon: faMoneyBillWave, permission: 'GEHAELTER' },
+        { label: 'Chancen', route: '/chancen', icon: faChartLine, permission: 'CHANCEN' },
         { label: 'Aktivitäten', route: '/aktivitaeten', icon: faCalendarCheck, permission: 'AKTIVITAETEN' },
         { label: 'Verträge', route: '/vertraege', icon: faFileContract, permission: 'VERTRAEGE' },
-        { label: 'Chancen', route: '/chancen', icon: faChartLine, permission: 'CHANCEN' },
+      ],
+    },
+    {
+      title: 'Personal',
+      items: [
+        { label: 'Gehälter', route: '/gehaelter', icon: faMoneyBillWave, permission: 'GEHAELTER' },
       ],
     },
     {
