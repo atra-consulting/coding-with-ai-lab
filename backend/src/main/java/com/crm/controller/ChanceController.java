@@ -1,5 +1,7 @@
 package com.crm.controller;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -16,8 +18,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.crm.dto.BoardSummaryDTO;
 import com.crm.dto.ChanceCreateDTO;
 import com.crm.dto.ChanceDTO;
+import com.crm.dto.PhaseUpdateDTO;
+import com.crm.entity.enums.ChancePhase;
 import com.crm.service.ChanceService;
 
 import jakarta.validation.Valid;
@@ -39,6 +44,26 @@ public class ChanceController {
             @RequestParam(defaultValue = "titel,asc") String[] sort) {
         Pageable pageable = PageRequest.of(page, size, parseSort(sort));
         return chanceService.findAll(pageable);
+    }
+
+    @GetMapping("/board/summary")
+    public List<BoardSummaryDTO> getBoardSummary() {
+        return chanceService.getBoardSummary();
+    }
+
+    @GetMapping("/phase/{phase}")
+    public Page<ChanceDTO> findByPhase(
+            @PathVariable ChancePhase phase,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "wert,desc") String[] sort) {
+        Pageable pageable = PageRequest.of(page, size, parseSort(sort));
+        return chanceService.findByPhase(phase, pageable);
+    }
+
+    @PutMapping("/{id}/phase")
+    public ChanceDTO updatePhase(@PathVariable Long id, @Valid @RequestBody PhaseUpdateDTO dto) {
+        return chanceService.updatePhase(id, dto.phase());
     }
 
     @GetMapping("/{id}")

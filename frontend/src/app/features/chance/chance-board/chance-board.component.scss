@@ -1,0 +1,78 @@
+.board-container {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding-bottom: 1rem;
+  min-height: 60vh;
+}
+
+.board-column {
+  min-width: 220px;
+  max-width: 280px;
+  flex: 1 0 220px;
+  display: flex;
+  flex-direction: column;
+  background: #f8f9fa;
+  border-radius: 0.5rem;
+}
+
+.column-header {
+  padding: 0.75rem;
+  border-top: 3px solid;
+  border-radius: 0.5rem 0.5rem 0 0;
+}
+
+.column-header.border-primary { border-top-color: var(--bs-primary); }
+.column-header.border-info { border-top-color: var(--bs-info); }
+.column-header.border-warning { border-top-color: var(--bs-warning); }
+.column-header.border-secondary { border-top-color: var(--bs-secondary); }
+.column-header.border-success { border-top-color: var(--bs-success); }
+.column-header.border-danger { border-top-color: var(--bs-danger); }
+
+.column-content {
+  flex: 1;
+  padding: 0.5rem;
+  overflow-y: auto;
+  min-height: 100px;
+}
+
+.board-card {
+  margin-bottom: 0.5rem;
+  cursor: grab;
+  transition: box-shadow 0.15s;
+
+  &:active {
+    cursor: grabbing;
+  }
+
+  &:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  }
+
+  .card-body {
+    padding: 0.75rem;
+    cursor: pointer;
+  }
+}
+
+.cdk-drag-placeholder {
+  border: 2px dashed #ced4da;
+  border-radius: 0.375rem;
+  min-height: 60px;
+  margin-bottom: 0.5rem;
+  background: #e9ecef;
+  opacity: 0.6;
+}
+
+.cdk-drag-preview {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  border-radius: 0.375rem;
+}
+
+.cdk-drag-animating {
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.column-content.cdk-drop-list-dragging .board-card:not(.cdk-drag-placeholder) {
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}

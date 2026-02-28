@@ -1,0 +1,72 @@
+<div class="page-header">
+  <h2>Chancen</h2>
+  <div class="d-flex gap-3 align-items-center">
+    <div class="btn-group">
+      <a routerLink="/chancen" class="btn btn-outline-secondary">Liste</a>
+      <a routerLink="/chancen/board" class="btn btn-outline-secondary active">Board</a>
+    </div>
+    <a routerLink="/chancen/neu" class="btn btn-primary">Neue Chance</a>
+  </div>
+</div>
+
+@if (loading) {
+  <app-loading-spinner />
+} @else {
+  <div class="board-container">
+    @for (phaseConfig of phases; track phaseConfig.phase) {
+      <div class="board-column">
+        <div class="column-header border-{{ phaseConfig.colorClass }}">
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="badge bg-{{ phaseConfig.colorClass }}" [class.text-dark]="phaseConfig.colorClass === 'warning'">
+              {{ phaseConfig.label }}
+            </span>
+            <span class="text-muted small">{{ getSummary(phaseConfig.phase)?.count || 0 }}</span>
+          </div>
+          @if (getSummary(phaseConfig.phase); as s) {
+            <div class="column-total text-muted small mt-1">
+              {{ s.totalWert | eurCurrency }}
+            </div>
+          }
+        </div>
+
+        <div
+          cdkDropList
+          [id]="'drop-' + phaseConfig.phase"
+          [cdkDropListData]="getColumnItems(phaseConfig.phase)"
+          [cdkDropListConnectedTo]="dropListIds"
+          (cdkDropListDropped)="onDrop($event)"
+          class="column-content"
+        >
+          @for (chance of getColumnItems(phaseConfig.phase); track chance.id) {
+            <div class="card board-card" cdkDrag>
+              <div class="card-body" [routerLink]="['/chancen', chance.id]">
+                <h6 class="card-title mb-1">{{ chance.titel }}</h6>
+                <div class="text-muted small">{{ chance.firmaName }}</div>
+                @if (chance.wert) {
+                  <div class="fw-semibold mt-1">{{ chance.wert | eurCurrency: chance.currency }}</div>
+                }
+                @if (chance.wahrscheinlichkeit) {
+                  <div class="mt-1">
+                    <div class="progress" style="height: 4px">
+                      <div
+                        class="progress-bar"
+                        role="progressbar"
+                        [style.width.%]="chance.wahrscheinlichkeit"
+                      ></div>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        @if (hasMore(phaseConfig.phase)) {
+          <button class="btn btn-sm btn-link w-100" (click)="loadMore(phaseConfig.phase)">
+            Mehr laden
+          </button>
+        }
+      </div>
+    }
+  </div>
+}
