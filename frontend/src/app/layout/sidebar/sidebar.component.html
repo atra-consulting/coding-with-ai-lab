@@ -1,60 +1,18 @@
 <nav class="sidebar d-flex flex-column">
-  <div class="nav-section-header">Übersicht</div>
-  <ul class="nav flex-column">
-    <li class="nav-item">
-      <a class="nav-link" routerLink="/dashboard" routerLinkActive="active">
-        <fa-icon [icon]="faTachometerAlt"></fa-icon> Dashboard
-      </a>
-    </li>
-  </ul>
-
-  <div class="nav-section-header mt-3">Stammdaten</div>
-  <ul class="nav flex-column">
-    <li class="nav-item">
-      <a class="nav-link" routerLink="/firmen" routerLinkActive="active">
-        <fa-icon [icon]="faBuilding"></fa-icon> Firmen
-      </a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" routerLink="/personen" routerLinkActive="active">
-        <fa-icon [icon]="faUsers"></fa-icon> Personen
-      </a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" routerLink="/abteilungen" routerLinkActive="active">
-        <fa-icon [icon]="faSitemap"></fa-icon> Abteilungen
-      </a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" routerLink="/adressen" routerLinkActive="active">
-        <fa-icon [icon]="faMapMarkerAlt"></fa-icon> Adressen
-      </a>
-    </li>
-  </ul>
-
-  <div class="nav-section-header mt-3">Finanzen</div>
-  <ul class="nav flex-column">
-    <li class="nav-item">
-      <a class="nav-link" routerLink="/gehaelter" routerLinkActive="active">
-        <fa-icon [icon]="faMoneyBillWave"></fa-icon> Gehälter
-      </a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" routerLink="/aktivitaeten" routerLinkActive="active">
-        <fa-icon [icon]="faCalendarCheck"></fa-icon> Aktivitäten
-      </a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" routerLink="/vertraege" routerLinkActive="active">
-        <fa-icon [icon]="faFileContract"></fa-icon> Verträge
-      </a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" routerLink="/chancen" routerLinkActive="active">
-        <fa-icon [icon]="faChartLine"></fa-icon> Chancen
-      </a>
-    </li>
-  </ul>
+  @for (section of sections; track section.title) {
+    @if (hasVisibleItems(section)) {
+      <div class="nav-section-header" [class.mt-3]="!$first">{{ section.title }}</div>
+      <ul class="nav flex-column">
+        @for (item of visibleItems(section.items); track item.route) {
+          <li class="nav-item">
+            <a class="nav-link" [routerLink]="item.route" routerLinkActive="active">
+              <fa-icon [icon]="item.icon"></fa-icon> {{ item.label }}
+            </a>
+          </li>
+        }
+      </ul>
+    }
+  }
 
   <div class="mt-auto sidebar-footer">
     Made by <a href="https://atra.consulting/" target="_blank" rel="noopener noreferrer" class="footer-link">atra.consulting</a>

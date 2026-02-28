@@ -4,5 +4,13 @@
       <fa-icon [icon]="faDatabase" class="me-2"></fa-icon>
       CRM System
     </a>
+    @if (userName()) {
+      <div class="d-flex align-items-center">
+        <span class="text-white me-3">{{ userName() }}</span>
+        <button class="btn btn-outline-light btn-sm" (click)="logout()">
+          <fa-icon [icon]="faSignOutAlt" class="me-1"></fa-icon> Abmelden
+        </button>
+      </div>
+    }
   </div>
 </nav>

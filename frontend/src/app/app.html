@@ -1,8 +1,13 @@
-<app-navbar />
-<app-notification />
-<div class="d-flex">
-  <app-sidebar />
-  <div class="main-content flex-grow-1">
-    <router-outlet />
+@if (isAuthenticated()) {
+  <app-navbar />
+  <app-notification />
+  <div class="d-flex">
+    <app-sidebar />
+    <div class="main-content flex-grow-1">
+      <router-outlet />
+    </div>
   </div>
-</div>
+} @else {
+  <app-notification />
+  <router-outlet />
+}
