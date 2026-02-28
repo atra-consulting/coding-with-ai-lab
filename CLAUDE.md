@@ -46,6 +46,12 @@ Backend (7 files): Entity → DTO + CreateDTO → Mapper → Repository → Serv
 
 Frontend (8+ files): Model interface → Service → Route file → List/Detail/Form components → register in `app.routes.ts`.
 
+## Commits & PRDs
+
+- **Commit → PRD**: Wenn ein Commit eine PRD implementiert, Footer-Zeile in der Commit-Message: `PRD: docs/prds/<name>.md`
+- **PRD → Commits**: Jede PRD enthält eine `## Implementierung`-Section mit Links zu den zugehörigen Commits und PRs.
+- Beim Committen immer prüfen: Gibt es eine PRD unter `docs/prds/`, die zu dieser Änderung gehört? Falls ja, beides verknüpfen.
+
 ## Key Files
 
 - `backend/src/main/resources/application.properties` — DB config, `open-in-view=false`

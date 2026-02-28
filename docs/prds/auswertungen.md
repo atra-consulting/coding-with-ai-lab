@@ -301,3 +301,7 @@ Für Phase 2 ist ein konfigurierbarer Report-Builder geplant:
 ## 10. Offene Fragen
 
 _Keine — Phase 1 nutzt ausschließlich vorhandene Chancen-Daten und erfordert keine architekturellen Entscheidungen über das beschriebene hinaus._
+
+## 11. Implementierung
+
+_Noch nicht implementiert._
