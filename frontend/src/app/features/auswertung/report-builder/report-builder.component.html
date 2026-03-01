@@ -1,0 +1,234 @@
+<div class="container-fluid" (click)="closeDropdowns()">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="mb-0">Report-Builder</h2>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item">Auswertungen</li>
+          <li class="breadcrumb-item active">Report-Builder</li>
+        </ol>
+      </nav>
+    </div>
+    <button class="btn btn-primary" (click)="saveReport()">
+      <fa-icon [icon]="faFloppyDisk" class="me-1"></fa-icon>
+      Speichern
+    </button>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="row g-3 align-items-end">
+        <!-- Dimension -->
+        <div class="col-auto">
+          <label class="form-label form-label-sm mb-1">Gruppieren</label>
+          <select class="form-select form-select-sm" [(ngModel)]="selectedDimension" (ngModelChange)="onDimensionChange()">
+            @for (dim of dimensionen; track dim.value) {
+              <option [value]="dim.value">{{ dim.label }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Metriken -->
+        <div class="col-auto">
+          <label class="form-label form-label-sm mb-1">Metrik</label>
+          <div class="d-flex flex-wrap gap-1 align-items-center">
+            @for (metrik of selectedMetriken; track metrik) {
+              <span class="badge bg-primary d-flex align-items-center gap-1 metrik-chip">
+                {{ getMetrikLabel(metrik) }}
+                @if (selectedMetriken.length > 1) {
+                  <button type="button" class="btn-close btn-close-white btn-close-sm" (click)="removeMetrik(metrik); $event.stopPropagation()"></button>
+                }
+              </span>
+            }
+            @if (availableMetriken.length > 0) {
+              <div class="position-relative" (click)="$event.stopPropagation()">
+                <button type="button" class="btn btn-outline-secondary btn-sm" (click)="toggleMetrikDropdown()">
+                  <fa-icon [icon]="faPlus" class="me-1"></fa-icon>Metrik
+                </button>
+                @if (showMetrikDropdown) {
+                  <div class="dropdown-menu show position-absolute" style="z-index: 1050;">
+                    @for (m of availableMetriken; track m.value) {
+                      <button type="button" class="dropdown-item" (click)="addMetrik(m.value)">{{ m.label }}</button>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Zeitraum -->
+        <div class="col-auto">
+          <label class="form-label form-label-sm mb-1">Zeitraum</label>
+          <select class="form-select form-select-sm" [(ngModel)]="selectedZeitraum" (ngModelChange)="onZeitraumChange()">
+            @for (z of zeitraumOptionen; track z.value) {
+              <option [value]="z.value">{{ z.label }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Custom date range -->
+        @if (selectedZeitraum === 'benutzerdefiniert') {
+          <div class="col-auto">
+            <label class="form-label form-label-sm mb-1">Von</label>
+            <input type="date" class="form-control form-control-sm" [(ngModel)]="datumVon" (ngModelChange)="onDatumChange()">
+          </div>
+          <div class="col-auto">
+            <label class="form-label form-label-sm mb-1">Bis</label>
+            <input type="date" class="form-control form-control-sm" [(ngModel)]="datumBis" (ngModelChange)="onDatumChange()">
+          </div>
+        }
+
+        <!-- Phasen Filter -->
+        <div class="col-auto">
+          <label class="form-label form-label-sm mb-1">Phase</label>
+          <div class="position-relative" (click)="$event.stopPropagation()">
+            <button type="button" class="btn btn-outline-secondary btn-sm" (click)="togglePhasenDropdown()">
+              {{ phasenFilterLabel }}
+            </button>
+            @if (showPhasenDropdown) {
+              <div class="dropdown-menu show position-absolute p-2" style="z-index: 1050; min-width: 180px;">
+                @for (phase of allPhases; track phase) {
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" [id]="'phase-' + phase"
+                           [checked]="isPhaseSelected(phase)" (change)="togglePhase(phase)">
+                    <label class="form-check-label" [for]="'phase-' + phase">
+                      {{ phaseLabels[phase] }}
+                    </label>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Anzeige -->
+        <div class="col-auto">
+          <label class="form-label form-label-sm mb-1">Anzeige</label>
+          <select class="form-select form-select-sm" [(ngModel)]="selectedAnzeige" (ngModelChange)="onAnzeigeChange()">
+            @for (a of anzeigeOptionen; track a.value) {
+              <option [value]="a.value">{{ a.label }}</option>
+            }
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Result area -->
+  <div class="position-relative">
+    <!-- Loading overlay -->
+    @if (loading) {
+      <div class="loading-overlay">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Laden...</span>
+        </div>
+      </div>
+    }
+
+    @if (result) {
+      <!-- Chart -->
+      @if (chartConfig && selectedAnzeige !== 'tabelle') {
+        <div class="card mb-4">
+          <div class="card-body">
+            <div class="chart-container">
+              <canvas baseChart [type]="chartConfig.type" [data]="chartConfig.data" [options]="chartConfig.options"></canvas>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Table -->
+      <div class="card mb-4">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-striped table-hover mb-0">
+              <thead>
+                <tr>
+                  <th class="sortable-header" (click)="sortBy('label')">
+                    {{ getDimensionLabel() }}
+                    <fa-icon [icon]="getSortIcon('label')" class="ms-1 sort-icon"></fa-icon>
+                  </th>
+                  @for (metrik of result.metriken; track metrik) {
+                    <th class="text-end sortable-header" (click)="sortBy(metrik)">
+                      {{ getMetrikLabel(metrik) }}
+                      <fa-icon [icon]="getSortIcon(metrik)" class="ms-1 sort-icon"></fa-icon>
+                    </th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (zeile of sortedZeilen; track $index) {
+                  <tr>
+                    <td>
+                      @if (selectedDimension === 'PHASE' && getPhaseBadgeClass(zeile.label)) {
+                        <span class="badge {{ getPhaseBadgeClass(zeile.label) }}">{{ phaseLabels[zeile.label] || zeile.label }}</span>
+                      } @else {
+                        {{ zeile.label }}
+                      }
+                    </td>
+                    @for (metrik of result.metriken; track metrik) {
+                      <td class="text-end">
+                        @if (zeile.werte[metrik] == null) {
+                          <span class="text-muted">—</span>
+                        } @else if (isRateMetrik(metrik)) {
+                          {{ zeile.werte[metrik] | number:'1.1-1':'de' }} %
+                        } @else if (isCurrencyMetrik(metrik)) {
+                          {{ zeile.werte[metrik] | currency:'EUR':'symbol':'1.0-0':'de' }}
+                        } @else {
+                          {{ zeile.werte[metrik] | number:'1.0-0':'de' }}
+                        }
+                      </td>
+                    }
+                  </tr>
+                }
+              </tbody>
+              <tfoot>
+                <tr class="table-active fw-bold">
+                  <td>GESAMT</td>
+                  @for (metrik of result.metriken; track metrik) {
+                    <td class="text-end">
+                      @if (getTotal(metrik) == null) {
+                        <span class="text-muted">—</span>
+                      } @else if (isRateMetrik(metrik)) {
+                        {{ getTotal(metrik) | number:'1.1-1':'de' }} %
+                      } @else if (isCurrencyMetrik(metrik)) {
+                        {{ getTotal(metrik) | currency:'EUR':'symbol':'1.0-0':'de' }}
+                      } @else {
+                        {{ getTotal(metrik) | number:'1.0-0':'de' }}
+                      }
+                    </td>
+                  }
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Saved Reports Bar -->
+  <div class="card">
+    <div class="card-body">
+      <div class="d-flex align-items-center gap-2 flex-wrap">
+        <span class="text-muted me-1">Gespeicherte Reports:</span>
+        @for (report of savedReports; track report.id) {
+          <button type="button" class="btn btn-sm d-flex align-items-center gap-1"
+                  [class]="currentReportId === report.id ? 'btn-primary' : 'btn-outline-secondary'"
+                  (click)="loadReport(report)">
+            {{ report.name }}
+            <span class="delete-report-btn" (click)="deleteReport(report, $event)">
+              <fa-icon [icon]="faTimes" size="xs"></fa-icon>
+            </span>
+          </button>
+        }
+        <button type="button" class="btn btn-outline-primary btn-sm" (click)="newReport()">
+          <fa-icon [icon]="faPlus" class="me-1"></fa-icon>Neuer Report
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

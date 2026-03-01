@@ -2,20 +2,48 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CurrencyPipe, DecimalPipe } from '@angular/common';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
-
-Chart.register(...registerables);
+import { CdkDragDrop, CdkDrag, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import {
   faChartBar,
+  faChartPie,
   faEuroSign,
+  faGripVertical,
   faHandshake,
+  faBuilding,
+  faPen,
+  faPlus,
+  faRotateLeft,
+  faCheck,
+  faTable,
+  faTimes,
   faTrophy,
 } from '@fortawesome/free-solid-svg-icons';
 import { forkJoin } from 'rxjs';
 import { AuswertungService } from '../../../core/services/auswertung.service';
+import { DashboardConfigService } from '../../../core/services/dashboard-config.service';
 import { PhaseAggregate, PipelineKpis, TopFirma } from '../../../core/models/auswertung.model';
 import { ChancePhase } from '../../../core/models/chance.model';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
+
+Chart.register(...registerables);
+
+interface WidgetDefinition {
+  id: string;
+  title: string;
+  icon: IconDefinition;
+}
+
+const WIDGET_REGISTRY: WidgetDefinition[] = [
+  { id: 'kpi-cards', title: 'KPI-Kacheln', icon: faEuroSign },
+  { id: 'bar-chart', title: 'Pipeline-Wert nach Phase', icon: faChartBar },
+  { id: 'doughnut-chart', title: 'Verteilung nach Phase', icon: faChartPie },
+  { id: 'top-firmen', title: 'Top 10 Firmen', icon: faBuilding },
+  { id: 'pivot-table', title: 'Übersicht nach Phase', icon: faTable },
+];
+
+const DEFAULT_WIDGET_ORDER = ['kpi-cards', 'bar-chart', 'doughnut-chart', 'top-firmen', 'pivot-table'];
 
 const PHASE_CONFIG: { phase: ChancePhase; label: string; color: string }[] = [
   { phase: 'NEU', label: 'Neu', color: '#0d6efd' },
@@ -28,23 +56,34 @@ const PHASE_CONFIG: { phase: ChancePhase; label: string; color: string }[] = [
 
 @Component({
   selector: 'app-pipeline-dashboard',
-  imports: [CurrencyPipe, DecimalPipe, BaseChartDirective, FaIconComponent, LoadingSpinnerComponent],
+  imports: [CurrencyPipe, DecimalPipe, BaseChartDirective, FaIconComponent, LoadingSpinnerComponent, CdkDrag, CdkDropList],
   templateUrl: './pipeline-dashboard.component.html',
   styleUrl: './pipeline-dashboard.component.scss',
 })
 export class PipelineDashboardComponent implements OnInit {
   private auswertungService = inject(AuswertungService);
+  private dashboardConfigService = inject(DashboardConfigService);
 
   loading = true;
+  editMode = false;
   kpis: PipelineKpis | null = null;
   phaseAggregates: PhaseAggregate[] = [];
   topFirmen: TopFirma[] = [];
+
+  // Widget state
+  visibleWidgets: string[] = [...DEFAULT_WIDGET_ORDER];
 
   // Icons
   faEuroSign = faEuroSign;
   faHandshake = faHandshake;
   faTrophy = faTrophy;
   faChartBar = faChartBar;
+  faGripVertical = faGripVertical;
+  faPen = faPen;
+  faPlus = faPlus;
+  faRotateLeft = faRotateLeft;
+  faCheck = faCheck;
+  faTimes = faTimes;
 
   // Chart configs
   barChartConfig: ChartConfiguration<'bar'> = { type: 'bar', data: { labels: [], datasets: [] } };
@@ -57,16 +96,28 @@ export class PipelineDashboardComponent implements OnInit {
   totalDurchschnittWert = 0;
   totalSummeGewichtet = 0;
 
+  // Add-widget dropdown
+  showAddDropdown = false;
+
   ngOnInit(): void {
     forkJoin({
       kpis: this.auswertungService.getPipelineKpis(),
       phases: this.auswertungService.getPhaseAggregates(),
       firmen: this.auswertungService.getTopFirmen(10),
+      config: this.dashboardConfigService.getConfig(),
     }).subscribe({
-      next: ({ kpis, phases, firmen }) => {
+      next: ({ kpis, phases, firmen, config }) => {
         this.kpis = kpis;
         this.phaseAggregates = this.sortByPhaseOrder(phases);
         this.topFirmen = firmen;
+
+        if (config?.visibleWidgets?.length) {
+          // Filter out any invalid widget IDs
+          this.visibleWidgets = config.visibleWidgets.filter(
+            (id) => WIDGET_REGISTRY.some((w) => w.id === id)
+          );
+        }
+
         this.calculateTotals();
         this.buildBarChart();
         this.buildDoughnutChart();
@@ -79,6 +130,53 @@ export class PipelineDashboardComponent implements OnInit {
     });
   }
 
+  // Widget management
+  isWidgetVisible(id: string): boolean {
+    return this.visibleWidgets.includes(id);
+  }
+
+  getWidgetTitle(id: string): string {
+    return WIDGET_REGISTRY.find((w) => w.id === id)?.title ?? id;
+  }
+
+  get removedWidgets(): WidgetDefinition[] {
+    return WIDGET_REGISTRY.filter((w) => !this.visibleWidgets.includes(w.id));
+  }
+
+  toggleEditMode(): void {
+    this.editMode = !this.editMode;
+    this.showAddDropdown = false;
+    if (!this.editMode) {
+      this.saveConfig();
+    }
+  }
+
+  onWidgetDrop(event: CdkDragDrop<string[]>): void {
+    moveItemInArray(this.visibleWidgets, event.previousIndex, event.currentIndex);
+  }
+
+  removeWidget(id: string): void {
+    this.visibleWidgets = this.visibleWidgets.filter((w) => w !== id);
+  }
+
+  addWidget(id: string): void {
+    this.visibleWidgets.push(id);
+    this.showAddDropdown = false;
+  }
+
+  resetWidgets(): void {
+    this.visibleWidgets = [...DEFAULT_WIDGET_ORDER];
+  }
+
+  toggleAddDropdown(): void {
+    this.showAddDropdown = !this.showAddDropdown;
+  }
+
+  private saveConfig(): void {
+    this.dashboardConfigService.saveConfig({ visibleWidgets: this.visibleWidgets }).subscribe();
+  }
+
+  // Phase helpers
   getPhaseLabel(phase: ChancePhase): string {
     return PHASE_CONFIG.find((p) => p.phase === phase)?.label ?? phase;
   }

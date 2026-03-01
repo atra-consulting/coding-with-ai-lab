@@ -7,6 +7,7 @@ import {
   faCalendarCheck,
   faChartLine,
   faChartPie,
+  faCubes,
   faFileContract,
   faMapMarkerAlt,
   faMoneyBillWave,
@@ -65,6 +66,7 @@ export class SidebarComponent {
       title: 'Auswertungen',
       items: [
         { label: 'Pipeline', route: '/auswertungen/pipeline', icon: faChartPie },
+        { label: 'Report-Builder', route: '/auswertungen/report-builder', icon: faCubes },
       ],
     },
     {

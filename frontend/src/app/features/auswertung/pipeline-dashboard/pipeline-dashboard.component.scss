@@ -11,3 +11,79 @@
 .chart-container-lg {
   height: 400px;
 }
+
+// Edit mode
+.widget-wrapper {
+  &.edit-mode {
+    border: 2px dashed #dee2e6;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    margin-bottom: 0.75rem;
+    background: #fff;
+    transition: border-color 0.2s;
+
+    &:hover {
+      border-color: #264892;
+    }
+  }
+}
+
+.widget-edit-header {
+  display: flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.drag-handle {
+  cursor: grab;
+  color: #adb5bd;
+  margin-right: 0.75rem;
+  font-size: 1.1rem;
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.widget-title {
+  flex: 1;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #495057;
+}
+
+.remove-btn {
+  padding: 0.125rem 0.375rem;
+  text-decoration: none;
+}
+
+// Drag placeholder
+.cdk-drag-placeholder {
+  border: 2px dashed #264892;
+  border-radius: 0.5rem;
+  background: #f0f4ff;
+  min-height: 60px;
+}
+
+.cdk-drag-preview {
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+  border-radius: 0.5rem;
+  background: #fff;
+  border: 2px solid #264892;
+  padding: 0.5rem;
+}
+
+.cdk-drag-animating {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+// Widget dropdown
+.widget-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  min-width: 14rem;
+}

@@ -8,6 +8,7 @@
 | 002 | Authentifizierung & Benutzerverwaltung   | Umgesetzt        | [#9](https://github.com/atra-consulting/coding-with-ai-lab/pull/9)   | [002-authentication-user-management.md](002-authentication-user-management.md) |
 | 003 | Auswertungen — Pipeline Analytics        | Umgesetzt        | [#11](https://github.com/atra-consulting/coding-with-ai-lab/pull/11) | [003-auswertungen.md](003-auswertungen.md)                         |
 | 004 | Konfigurierbares Pipeline-Dashboard      | Offen            | —    | [004-auswertungen-konfigurierbar.md](004-auswertungen-konfigurierbar.md) |
+| 005 | Report-Builder — Dynamische Auswertungen | Offen            | —    | [005-report-builder.md](005-report-builder.md)                     |
 
 ## Konventionen
 

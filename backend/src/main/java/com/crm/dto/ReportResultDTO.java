@@ -1,0 +1,12 @@
+package com.crm.dto;
+
+import java.util.List;
+
+import com.crm.entity.enums.ReportDimension;
+import com.crm.entity.enums.ReportMetrik;
+
+public record ReportResultDTO(
+        ReportDimension dimension,
+        List<ReportMetrik> metriken,
+        List<ReportZeileDTO> zeilen) {
+}
