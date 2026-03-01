@@ -7,7 +7,7 @@
 
 | Schicht  | Technologie |
 |----------|-------------|
-| Backend  | Spring Boot 3.5 · Java 21 |
+| Backend  | Spring Boot 3.5.3 · Java 21 |
 | Frontend | Angular 20 · Bootstrap 5 · SCSS |
 | Datenbank | H2 (file-based, automatisch befüllt) |
 
@@ -66,7 +66,8 @@ cd frontend && npx ng serve --proxy-config proxy.conf.json
 ├── frontend/         Angular SPA
 ├── docs/
 │   ├── adr/          Architecture Decision Records
-│   └── prds/         Product Requirement Documents
+│   ├── prds/         Product Requirement Documents
+│   └── uxdr/         UX Design Records
 ├── start.sh          Full-Stack-Startskript
 └── CLAUDE.md         Anweisungen für AI-Coding-Assistenten
 ```
@@ -78,7 +79,12 @@ Die Anwendung bildet ein deutschsprachiges CRM ab:
 **Stammdaten** — Firma, Person, Abteilung, Adresse
 **Finanzen & Vertrieb** — Gehalt, Aktivitaet, Vertrag, Chance
 
-Die Chancen-Pipeline verfügt über ein **Kanban-Board** mit Drag & Drop.
+## Features
+
+- **Chancen-Pipeline** — Kanban-Board mit Drag & Drop und paginierte Listen-Ansicht
+- **Dashboard** — Konfigurierbares Dashboard mit Widgets
+- **Auswertungen** — Pipeline-Dashboard und Report Builder mit dynamischen Abfragen
+- **Benutzerverwaltung** — Authentication mit Login, Rollen und Demo-Modus
 
 ## Architektur
 
