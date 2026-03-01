@@ -1,4 +1,4 @@
-# PRD: Authentifizierung & Benutzerverwaltung
+# PRD-002: Authentifizierung & Benutzerverwaltung
 
 ## 1. Übersicht
 
@@ -268,4 +268,8 @@ Die technischen Architekturentscheidungen zu diesem PRD sind in [ADR-001: Archit
 
 ## 10. Implementierung
 
-_Noch nicht implementiert._
+**PR**: [#9 — feat: Authentication & User Management](https://github.com/atra-consulting/coding-with-ai-lab/pull/9)
+
+**Commits**:
+- `c982e6f` feat: add JWT authentication, role-based access control and user management
+- `c79e20b` style: redesign login page with branded card layout

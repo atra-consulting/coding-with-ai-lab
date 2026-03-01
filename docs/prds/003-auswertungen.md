@@ -1,4 +1,4 @@
-# PRD: Auswertungen — Chancen-Pipeline Analytics
+# PRD-003: Auswertungen — Chancen-Pipeline Analytics
 
 ## 1. Übersicht
 
@@ -304,4 +304,8 @@ _Keine — Phase 1 nutzt ausschließlich vorhandene Chancen-Daten und erfordert 
 
 ## 11. Implementierung
 
-_Noch nicht implementiert._
+**PR**: [#11 — feat: Pipeline Analytics Dashboard](https://github.com/atra-consulting/coding-with-ai-lab/pull/11)
+
+**Commits**:
+- `43ccbf7` feat: add pipeline analytics dashboard with KPIs, charts and pivot table
+- `1c397c7` style: reorganize sidebar navigation into clearer sections

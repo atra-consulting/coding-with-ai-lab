@@ -2,7 +2,7 @@
 
 **Status**: Entschieden
 **Datum**: 2026-02-28
-**Bezug**: [PRD: Authentifizierung & Benutzerverwaltung](../prds/authentication-user-management.md)
+**Bezug**: [PRD-002: Authentifizierung & Benutzerverwaltung](../prds/002-authentication-user-management.md)
 
 ## Kontext
 

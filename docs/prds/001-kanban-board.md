@@ -1,4 +1,4 @@
-# PRD: Chancen-Pipeline als Kanban-Board
+# PRD-001: Chancen-Pipeline als Kanban-Board
 
 ## 1. Übersicht
 
