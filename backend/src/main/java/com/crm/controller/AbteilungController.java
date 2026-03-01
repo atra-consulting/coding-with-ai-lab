@@ -23,8 +23,11 @@ import com.crm.service.AbteilungService;
 
 import jakarta.validation.Valid;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 @RestController
 @RequestMapping("/api/abteilungen")
+@PreAuthorize("hasAnyRole('ADMIN', 'VERTRIEB', 'PERSONAL')")
 public class AbteilungController {
 
     private final AbteilungService abteilungService;

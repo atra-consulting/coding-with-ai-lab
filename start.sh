@@ -80,7 +80,7 @@ trap cleanup SIGINT SIGTERM
 # Start backend
 echo "Starting backend..."
 cd "${ROOT_DIR}/backend"
-mvn spring-boot:run -Dspring-boot.run.arguments=--app.demo-mode=${DEMO_MODE} &
+mvn spring-boot:run -Dspring-boot.run.arguments="--app.demo-mode=${DEMO_MODE}" -Dspring-boot.run.profiles=dev &
 BACKEND_PID=$!
 cd "${ROOT_DIR}"
 

@@ -1,6 +1,5 @@
 package com.crm.config;
 
-import java.io.IOException;
 import java.util.List;
 
 import org.springframework.context.annotation.Bean;
@@ -33,6 +32,9 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final BenutzerDetailsService benutzerDetailsService;
 
+    @org.springframework.beans.factory.annotation.Value("${spring.h2.console.enabled:false}")
+    private boolean h2ConsoleEnabled;
+
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
                           BenutzerDetailsService benutzerDetailsService) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
@@ -45,7 +47,11 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .headers(headers -> headers.frameOptions(frame -> frame.disable()))
+                .headers(headers -> {
+                    if (h2ConsoleEnabled) {
+                        headers.frameOptions(frame -> frame.disable());
+                    }
+                })
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint((request, response, authException) -> {
                             response.setContentType("application/json");
@@ -53,12 +59,14 @@ public class SecurityConfig {
                             response.getWriter().write("{\"status\":401,\"message\":\"Nicht authentifiziert\"}");
                         })
                 )
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/h2-console/**").permitAll()
-                        .requestMatchers("/api/**").authenticated()
-                        .anyRequest().permitAll()
-                )
+                .authorizeHttpRequests(auth -> {
+                    auth.requestMatchers("/api/auth/**").permitAll();
+                    if (h2ConsoleEnabled) {
+                        auth.requestMatchers("/h2-console/**").permitAll();
+                    }
+                    auth.requestMatchers("/api/**").authenticated();
+                    auth.anyRequest().permitAll();
+                })
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

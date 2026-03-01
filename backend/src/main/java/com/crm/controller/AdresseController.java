@@ -21,8 +21,11 @@ import com.crm.service.AdresseService;
 
 import jakarta.validation.Valid;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 @RestController
 @RequestMapping("/api/adressen")
+@PreAuthorize("hasAnyRole('ADMIN', 'VERTRIEB', 'PERSONAL')")
 public class AdresseController {
 
     private final AdresseService adresseService;

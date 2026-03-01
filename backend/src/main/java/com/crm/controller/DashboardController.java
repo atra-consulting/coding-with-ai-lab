@@ -2,6 +2,7 @@ package com.crm.controller;
 
 import java.util.List;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,6 +13,7 @@ import com.crm.service.DashboardService;
 
 @RestController
 @RequestMapping("/api/dashboard")
+@PreAuthorize("hasAnyRole('ADMIN', 'VERTRIEB', 'PERSONAL')")
 public class DashboardController {
 
     private final DashboardService dashboardService;
@@ -31,6 +33,7 @@ public class DashboardController {
     }
 
     @GetMapping("/salary-statistics")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PERSONAL')")
     public List<DashboardStatsDTO.DepartmentSalaryDTO> getSalaryStatistics() {
         return dashboardService.getSalaryStatistics();
     }

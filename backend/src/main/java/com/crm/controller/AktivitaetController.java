@@ -22,8 +22,11 @@ import com.crm.service.AktivitaetService;
 
 import jakarta.validation.Valid;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 @RestController
 @RequestMapping("/api/aktivitaeten")
+@PreAuthorize("hasAnyRole('ADMIN', 'VERTRIEB', 'PERSONAL')")
 public class AktivitaetController {
 
     private final AktivitaetService aktivitaetService;
