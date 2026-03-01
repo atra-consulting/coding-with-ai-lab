@@ -6,6 +6,7 @@ import {
   faBuilding,
   faCalendarCheck,
   faChartLine,
+  faChartPie,
   faFileContract,
   faMapMarkerAlt,
   faMoneyBillWave,
@@ -58,6 +59,12 @@ export class SidebarComponent {
         { label: 'Chancen', route: '/chancen', icon: faChartLine, permission: 'CHANCEN' },
         { label: 'Aktivitäten', route: '/aktivitaeten', icon: faCalendarCheck, permission: 'AKTIVITAETEN' },
         { label: 'Verträge', route: '/vertraege', icon: faFileContract, permission: 'VERTRAEGE' },
+      ],
+    },
+    {
+      title: 'Auswertungen',
+      items: [
+        { label: 'Pipeline', route: '/auswertungen/pipeline', icon: faChartPie },
       ],
     },
     {
