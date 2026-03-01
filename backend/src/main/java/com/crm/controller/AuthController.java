@@ -39,6 +39,9 @@ public class AuthController {
     @Value("${app.demo-mode:false}")
     private boolean demoMode;
 
+    @Value("${app.cookie.secure:true}")
+    private boolean cookieSecure;
+
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
@@ -160,7 +163,7 @@ public class AuthController {
     private ResponseCookie createRefreshTokenCookie(String value, long maxAge) {
         return ResponseCookie.from("refreshToken", value)
                 .httpOnly(true)
-                .secure(false)
+                .secure(cookieSecure)
                 .path("/api/auth")
                 .maxAge(maxAge)
                 .sameSite("Strict")

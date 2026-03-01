@@ -25,8 +25,11 @@ import com.crm.service.PersonService;
 
 import jakarta.validation.Valid;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 @RestController
 @RequestMapping("/api/firmen")
+@PreAuthorize("hasAnyRole('ADMIN', 'VERTRIEB', 'PERSONAL')")
 public class FirmaController {
 
     private final FirmaService firmaService;
