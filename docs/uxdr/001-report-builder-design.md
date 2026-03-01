@@ -272,3 +272,26 @@ Die Konfiguration erfolgt direkt über dem Ergebnis als kompakte Toolbar-Zeile. 
 Für die Geschäftsführung (will Ergebnisse, nicht konfigurieren) lösen die **Saved Reports** das Problem — sie laden einen gespeicherten Report und sehen sofort das Ergebnis.
 
 **Entscheidung**: Option C — Inline-Konfigurator. Siehe [PRD-005: Report-Builder](../prds/005-report-builder.md).
+
+---
+
+## Nachtrag: Slide-over statt eigene Seite (2026-03-01)
+
+Nach der ersten Implementierung als separate Route (`/auswertungen/report-builder`) wurde festgestellt, dass eine eigene Seite den Nutzer aus dem Dashboard-Kontext reißt. Der Report Builder fühlt sich losgelöst an, obwohl er konzeptionell zum Auswertungsbereich gehört.
+
+**Evaluierte Alternativen:**
+
+| Ansatz | Beschreibung | Bewertung |
+|--------|-------------|-----------|
+| Slide-over Panel | Von rechts einfahrendes Panel (ca. 60% Viewport-Breite) | Bleibt im Dashboard-Kontext, fühlt sich wie ein Werkzeug an |
+| Report als Widget | Report Builder als Dashboard-Widget | Zu wenig Platz für Toolbar + Ergebnis |
+| Tabs | Tab-Wechsel Pipeline/Report Builder | Immer noch eine gewisse Trennung |
+| Fullscreen-Modal | 90%-Modal über dem Dashboard | Verdeckt Dashboard komplett |
+
+**Entscheidung**: Slide-over Panel — der Report Builder wird als Panel geöffnet, das von rechts über das Dashboard gleitet. Das Pipeline-Dashboard bleibt im Hintergrund sichtbar. Der Inline-Konfigurator (Option C) bleibt als Toolbar-Design innerhalb des Panels erhalten.
+
+**Vorteile:**
+- Nutzer bleibt im Dashboard-Kontext
+- Der Report Builder wirkt wie ein temporäres Werkzeug, nicht wie eine eigene Applikation
+- Schließen des Panels bringt sofort zum Dashboard zurück
+- Kein separater Sidebar-Eintrag nötig — ein Button im Dashboard öffnet das Panel

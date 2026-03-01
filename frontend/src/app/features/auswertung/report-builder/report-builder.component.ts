@@ -1,7 +1,7 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, input, output } from '@angular/core';
 import { CurrencyPipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { CdkDragDrop, CdkDrag, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
@@ -9,11 +9,13 @@ import {
   faChartBar,
   faChartLine,
   faChartPie,
+  faEye,
+  faEyeSlash,
   faFloppyDisk,
+  faGripVertical,
   faPlus,
   faTable,
   faTimes,
-  faTrash,
   faSort,
   faSortUp,
   faSortDown,
@@ -119,6 +121,8 @@ const CHART_COLORS = [
     CurrencyPipe,
     DecimalPipe,
     FormsModule,
+    CdkDrag,
+    CdkDropList,
     BaseChartDirective,
     FaIconComponent,
   ],
@@ -130,10 +134,12 @@ export class ReportBuilderComponent implements OnInit, OnDestroy {
   private savedReportService = inject(SavedReportService);
   private notificationService = inject(NotificationService);
   private modalService = inject(NgbModal);
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
   private destroy$ = new Subject<void>();
   private queryTrigger$ = new Subject<void>();
+
+  // Slide-over state
+  open = input(false);
+  closed = output<void>();
 
   // Config options
   dimensionen = DIMENSIONEN;
@@ -167,15 +173,20 @@ export class ReportBuilderComponent implements OnInit, OnDestroy {
   showMetrikDropdown = false;
   showPhasenDropdown = false;
 
+  // Table toggle
+  showTable = true;
+
   // Chart
   chartConfig: ChartConfiguration | null = null;
 
   // Icons
   faFloppyDisk = faFloppyDisk;
+  faGripVertical = faGripVertical;
   faPlus = faPlus;
   faTimes = faTimes;
-  faTrash = faTrash;
   faTable = faTable;
+  faEye = faEye;
+  faEyeSlash = faEyeSlash;
   faChartBar = faChartBar;
   faChartLine = faChartLine;
   faChartPie = faChartPie;
@@ -189,22 +200,9 @@ export class ReportBuilderComponent implements OnInit, OnDestroy {
       takeUntil(this.destroy$),
     ).subscribe(() => this.executeQuery());
 
-    // Load saved reports
     this.savedReportService.getAll().subscribe({
       next: (reports) => {
         this.savedReports = reports;
-
-        // Check for report query param
-        const reportId = this.route.snapshot.queryParamMap.get('report');
-        if (reportId) {
-          const report = this.savedReports.find(r => r.id === +reportId);
-          if (report) {
-            this.loadReport(report);
-            return;
-          }
-        }
-
-        // Execute default query
         this.triggerQuery();
       },
       error: () => {
@@ -216,6 +214,18 @@ export class ReportBuilderComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  close(): void {
+    this.closed.emit();
+  }
+
+  onBackdropClick(): void {
+    this.close();
+  }
+
+  onPanelClick(event: Event): void {
+    event.stopPropagation();
   }
 
   // Toolbar actions
@@ -261,6 +271,16 @@ export class ReportBuilderComponent implements OnInit, OnDestroy {
 
   get availableMetriken(): MetrikOption[] {
     return METRIKEN.filter(m => !this.selectedMetriken.includes(m.value));
+  }
+
+  onMetrikDrop(event: CdkDragDrop<ReportMetrik[]>): void {
+    moveItemInArray(this.selectedMetriken, event.previousIndex, event.currentIndex);
+    this.selectedMetriken = [...this.selectedMetriken];
+    this.buildChart();
+  }
+
+  toggleTable(): void {
+    this.showTable = !this.showTable;
   }
 
   toggleMetrikDropdown(): void {
@@ -362,7 +382,6 @@ export class ReportBuilderComponent implements OnInit, OnDestroy {
     return ['SUMME_WERT', 'DURCHSCHNITT_WERT', 'GEWICHTETER_WERT'].includes(metrik);
   }
 
-  // Phase badge for PHASE dimension
   getPhaseBadgeClass(label: string): string {
     const map: Record<string, string> = {
       NEU: 'bg-primary',
@@ -406,10 +425,6 @@ export class ReportBuilderComponent implements OnInit, OnDestroy {
         }
       }
       this.triggerQuery();
-      this.router.navigate([], {
-        queryParams: { report: report.id },
-        queryParamsHandling: 'merge',
-      });
     } catch {
       this.notificationService.error('Report-Konfiguration konnte nicht geladen werden.');
     }
@@ -424,7 +439,6 @@ export class ReportBuilderComponent implements OnInit, OnDestroy {
     this.datumVon = '';
     this.datumBis = '';
     this.selectedPhasen = new Set(ALL_PHASES);
-    this.router.navigate([], { queryParams: {} });
     this.triggerQuery();
   }
 
@@ -458,10 +472,6 @@ export class ReportBuilderComponent implements OnInit, OnDestroy {
         next: (created) => {
           this.savedReports = [created, ...this.savedReports];
           this.currentReportId = created.id;
-          this.router.navigate([], {
-            queryParams: { report: created.id },
-            queryParamsHandling: 'merge',
-          });
           this.notificationService.success('Report gespeichert.');
         },
         error: () => this.notificationService.error('Fehler beim Speichern.'),
@@ -482,7 +492,6 @@ export class ReportBuilderComponent implements OnInit, OnDestroy {
             this.savedReports = this.savedReports.filter(r => r.id !== report.id);
             if (this.currentReportId === report.id) {
               this.currentReportId = null;
-              this.router.navigate([], { queryParams: {} });
             }
             this.notificationService.success('Report gelöscht.');
           },
@@ -493,13 +502,11 @@ export class ReportBuilderComponent implements OnInit, OnDestroy {
     );
   }
 
-  // Close dropdowns on outside click
   closeDropdowns(): void {
     this.showMetrikDropdown = false;
     this.showPhasenDropdown = false;
   }
 
-  // Private helpers
   private triggerQuery(): void {
     this.queryTrigger$.next();
   }
