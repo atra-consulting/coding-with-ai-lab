@@ -7,19 +7,33 @@
     <div>
       @if (editMode) {
         <div class="btn-group me-2 position-relative">
-          <button class="btn btn-outline-primary btn-sm" (click)="toggleAddDropdown()" [disabled]="removedWidgets.length === 0">
+          <button class="btn btn-outline-primary btn-sm" (click)="toggleAddDropdown()" [disabled]="removedWidgets.length === 0 && removedReportWidgets.length === 0">
             <fa-icon [icon]="faPlus" class="me-1"></fa-icon> Widget
           </button>
-          @if (showAddDropdown && removedWidgets.length > 0) {
+          @if (showAddDropdown && (removedWidgets.length > 0 || removedReportWidgets.length > 0)) {
             <div class="dropdown-menu show widget-dropdown">
               @for (widget of removedWidgets; track widget.id) {
                 <button class="dropdown-item" (click)="addWidget(widget.id)">
                   <fa-icon [icon]="widget.icon" class="me-2"></fa-icon> {{ widget.title }}
                 </button>
               }
+              @if (removedReportWidgets.length > 0) {
+                @if (removedWidgets.length > 0) {
+                  <div class="dropdown-divider"></div>
+                }
+                <h6 class="dropdown-header">Gespeicherte Reports</h6>
+                @for (report of removedReportWidgets; track report.id) {
+                  <button class="dropdown-item" (click)="addWidget('report-' + report.id)">
+                    <fa-icon [icon]="faChartBar" class="me-2"></fa-icon> {{ report.name }}
+                  </button>
+                }
+              }
             </div>
           }
         </div>
+        <button class="btn btn-outline-primary btn-sm me-2" (click)="openReportBuilder()">
+          <fa-icon [icon]="faCubes" class="me-1"></fa-icon> Report-Builder
+        </button>
         <button class="btn btn-outline-secondary btn-sm me-2" (click)="resetWidgets()">
           <fa-icon [icon]="faRotateLeft" class="me-1"></fa-icon> Zurücksetzen
         </button>
@@ -212,9 +226,15 @@
                 </div>
               </div>
             }
+            @default {
+              <app-report-widget [widgetId]="widgetId" [savedReports]="savedReports" />
+            }
           }
         </div>
       }
     </div>
   }
 }
+
+<!-- Report Builder Slide-over -->
+<app-report-builder [open]="reportBuilderOpen" (closed)="closeReportBuilder()" />

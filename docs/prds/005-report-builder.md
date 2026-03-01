@@ -2,7 +2,7 @@
 
 ## 1. Übersicht
 
-Das CRM erhält einen konfigurierbaren Report-Builder, mit dem Nutzer eigene Auswertungen zusammenstellen können. Über eine Inline-Toolbar (Pivot-Tabellen-Stil, siehe [UXDR-001](../uxdr/001-report-builder-design.md)) wählen Nutzer Dimension, Metriken, Filter und Visualisierung — das Ergebnis aktualisiert sich live darunter. Fertige Auswertungen können als „Saved Reports" gespeichert und jederzeit wieder aufgerufen werden.
+Das CRM erhält einen konfigurierbaren Report-Builder, mit dem Nutzer eigene Auswertungen zusammenstellen können. Der Report-Builder wird als **Slide-over Panel** angezeigt, das von rechts über das Pipeline-Dashboard gleitet (siehe [UXDR-001 Nachtrag](../uxdr/001-report-builder-design.md#nachtrag-slide-over-statt-eigene-seite-2026-03-01)). Über eine Inline-Toolbar (Pivot-Tabellen-Stil) wählen Nutzer Dimension, Metriken, Filter und Visualisierung — das Ergebnis aktualisiert sich live darunter. Fertige Auswertungen können als „Saved Reports" gespeichert und jederzeit wieder aufgerufen werden.
 
 Dies ist Phase 3 des Auswertungs-Moduls, aufbauend auf dem statischen Dashboard (PRD-003) und der Dashboard-Konfigurierbarkeit (PRD-004).
 
@@ -159,35 +159,45 @@ Gespeicherte Reports werden als eigene Entity mit Benutzer-Beziehung modelliert.
 
 ### 6.2 Frontend
 
-#### 6.2.1 Neue Route und Navigation
+#### 6.2.1 Slide-over Panel
 
-**Route**: `/auswertungen/report-builder`
+Der Report-Builder wird nicht als eigene Seite, sondern als **Slide-over Panel** implementiert, das von rechts über das Pipeline-Dashboard gleitet. So bleibt der Nutzer im Dashboard-Kontext.
 
-**Sidebar**: Neuer Eintrag „Report-Builder" unter dem bestehenden „Pipeline"-Eintrag in der Sektion „Auswertungen".
+**Öffnen**: Ein Button „Report-Builder" im Dashboard-Header öffnet das Panel.
 
-**Saved Report laden**: `/auswertungen/report-builder?report={id}` — lädt den gespeicherten Report und füllt die Toolbar vor.
+**Schließen**: Klick auf ✕ im Panel-Header oder Klick auf den abgedunkelten Hintergrund (Backdrop) schließt das Panel.
+
+**Breite**: ca. 60% der Viewport-Breite (min. 600px, max. 900px).
+
+**Saved Report laden**: Das Panel kann mit einem vorausgewählten Report geöffnet werden, der die Toolbar vorbefüllt.
+
+**Keine eigene Route**: Das Panel hat keine eigene URL. Es ist ein UI-Element des Pipeline-Dashboards.
+
+**Kein separater Sidebar-Eintrag**: Kein eigener Menüpunkt nötig — der Einstieg erfolgt über den Button im Dashboard.
 
 #### 6.2.2 Inline-Konfigurator (Toolbar)
 
-Kompakte Toolbar oberhalb des Ergebnisbereichs mit Dropdowns:
+Kompakte Toolbar im oberen Bereich des Slide-over Panels mit Dropdowns:
 
 ```
-┌──────────────────────────────────────────────────────────────────────────────┐
-│  Auswertungen > Report-Builder                                [Speichern]   │
-├──────────────────────────────────────────────────────────────────────────────┤
-│                                                                              │
-│  Gruppieren: [Phase      ▼]    Metrik: [Summe Wert ▼] [Anzahl ▼] [+]       │
-│  Zeitraum:   [Alle Daten ▼]    Filter: [Alle Phasen ▼]                      │
-│  Anzeige:    [Tabelle    ▼]                                                  │
-│                                                                              │
-├──────────────────────────────────────────────────────────────────────────────┤
-│                                                                              │
-│  [Ergebnisbereich — Tabelle oder Chart]                                      │
-│                                                                              │
-├──────────────────────────────────────────────────────────────────────────────┤
-│ Gespeicherte Reports:                                                        │
-│ [📊 Pipeline nach Quartal] [📊 Top Firmen Q1] [+ Neuer Report]             │
-└──────────────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────┐
+│  Report-Builder                        [💾] [✕]  │
+├──────────────────────────────────────────────────┤
+│                                                    │
+│  Gruppieren: [Phase      ▼]                        │
+│  Metrik:     [Summe Wert ✕] [Anzahl ✕] [+ ▼]    │
+│  Zeitraum:   [Alle Daten ▼]                        │
+│  Phase:      [Alle Phasen ▼]                       │
+│  Anzeige:    [Tabelle    ▼]                        │
+│                                                    │
+├──────────────────────────────────────────────────┤
+│                                                    │
+│  [Ergebnisbereich — Tabelle oder Chart]            │
+│                                                    │
+├──────────────────────────────────────────────────┤
+│  Gespeicherte Reports:                             │
+│  [📊 Pipeline Q1] [📊 Top Firmen] [+ Neu]        │
+└──────────────────────────────────────────────────┘
 ```
 
 **Toolbar-Elemente**:
@@ -210,12 +220,13 @@ Kompakte Toolbar oberhalb des Ergebnisbereichs mit Dropdowns:
 Die Metriken werden als Chips (kleine Badges) dargestellt. Aktive Metriken sind farbig hervorgehoben, inaktive ausgegraut.
 
 ```
-Metrik: [Summe Wert ✕] [Anzahl ✕]  [+ Metrik hinzufügen ▼]
+Metrik: [≡ Summe Wert ✕] [≡ Anzahl ✕]  [+ Metrik hinzufügen ▼]
 ```
 
 - Klick auf ein ✕ entfernt die Metrik.
 - „+ Metrik hinzufügen" öffnet ein Dropdown mit den verbleibenden Metriken.
 - Mindestens eine Metrik muss ausgewählt sein (letzte kann nicht entfernt werden).
+- **Drag & Drop Reihenfolge**: Bei mehreren Metriken erscheint ein Grip-Handle (≡) an jedem Chip. Die Chips können per Drag & Drop umsortiert werden. Die **erste Metrik** bestimmt, welche Metrik im Chart visualisiert wird (siehe 6.2.5). Das Label „(erste = Chart-Metrik)" über den Chips verdeutlicht dies.
 
 #### 6.2.4 Ergebnisdarstellung — Tabelle
 
@@ -250,7 +261,9 @@ Die Chart-Darstellung nutzt die gleichen Daten wie die Tabelle:
 | Liniendiagramm | X = Dimension, Y = erste Metrik | Sinnvoll bei Zeitdimensionen (Monat, Quartal, Jahr) |
 | Kreisdiagramm | Segmente = Dimension, Größe = erste Metrik | Bei wenigen Gruppen (< 10) |
 
-**Hinweis**: Bei mehreren gewählten Metriken wird nur die erste Metrik im Chart visualisiert. Unterhalb des Charts wird immer die vollständige Tabelle mit allen Metriken angezeigt.
+**Hinweis**: Bei mehreren gewählten Metriken wird nur die **erste Metrik** (gemäß Chip-Reihenfolge, steuerbar per Drag & Drop, siehe 6.2.3) im Chart visualisiert.
+
+**Tabelle ein-/ausblenden**: Wenn eine Chart-Anzeige gewählt ist, erscheint ein Toggle-Button „Tabelle einblenden/ausblenden" zwischen Chart und Tabelle. Per Klick kann der Nutzer die Tabelle unter dem Chart ein- oder ausblenden. Bei Anzeige „Tabelle" gibt es keinen Toggle — die Tabelle ist immer sichtbar.
 
 #### 6.2.6 Saved Reports
 
@@ -267,74 +280,112 @@ Gespeicherte Reports:
 - ✕ löscht den Report (mit Bestätigungsdialog).
 - „+ Neuer Report" setzt die Toolbar auf Defaults zurück.
 
-#### 6.2.7 Leerzustand
+#### 6.2.7 Reports als Dashboard-Widgets
+
+Gespeicherte Reports können als Widgets direkt im Pipeline-Dashboard eingebettet werden. Dies verbindet den Report-Builder nahtlos mit dem Dashboard.
+
+**Widget-Hinzufügen** (Edit-Mode):
+- Im Edit-Mode zeigt das „+ Widget"-Dropdown neben den statischen Widgets auch eine Sektion „Gespeicherte Reports" mit allen noch nicht eingebetteten Reports.
+- Klick fügt den Report als Widget mit ID `report-{id}` in die `visibleWidgets`-Liste ein.
+
+**Report-Builder Button** (Edit-Mode):
+- Der Report-Builder-Button ist nur im Edit-Mode sichtbar, da er zum Anpassen-Workflow gehört.
+
+**Widget-Darstellung**:
+- Report-Widgets zeigen je nach gespeicherter Anzeige-Einstellung ein Chart (Balken/Linie/Kreis) oder eine kompakte Tabelle.
+- Der Widget-Titel entspricht dem Report-Namen.
+
+**Edge Cases**:
+- Report gelöscht → Widget wird beim nächsten Schließen des Report-Builders automatisch aus dem Dashboard entfernt.
+- Report umbenannt → Widget-Titel aktualisiert sich nach Report-Builder-Close.
+- Report-Config geändert → Widget rendert nach Refresh die aktualisierte Auswertung.
+
+**Keine Backend-Änderung nötig**: Die bestehende `DashboardConfig` speichert bereits beliebige String-Arrays und akzeptiert Report-Widget-IDs ohne Anpassung.
+
+#### 6.2.8 Leerzustand
 
 Beim ersten Besuch (keine gespeicherten Reports) wird die Toolbar mit Defaults befüllt (Phase, Summe Wert, Tabelle) und das Ergebnis sofort angezeigt — kein leerer Zustand.
 
 ## 7. UX-Wireframe
 
-### Gesamtansicht mit Tabelle
+### Dashboard mit geschlossenem Panel
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│  Auswertungen > Report-Builder                                [💾 Speichern]│
+│  Pipeline-Dashboard                       [Anpassen] [Report-Builder]        │
 ├──────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
-│  Gruppieren: [Phase      ▼]    Metrik: [Summe Wert ✕] [Anzahl ✕] [+ ▼]    │
-│  Zeitraum:   [Alle Daten ▼]    Phase:  [Alle Phasen ▼]                      │
-│  Anzeige:    [Tabelle    ▼]                                                  │
+│  [KPI-Kacheln]  [Bar-Chart]  [Doughnut]  [Top Firmen]  [Pivot-Tabelle]     │
 │                                                                              │
-│  ┌──────────────────────────────────────────────────────────────────────┐    │
-│  │ Phase          │ Summe Wert     │ Anzahl │                           │    │
-│  ├────────────────┼────────────────┼────────┤                           │    │
-│  │ ■ Neu          │ € 145.000,00   │ 12     │                           │    │
-│  │ ■ Qualifiziert │ € 120.000,00   │  8     │                           │    │
-│  │ ■ Angebot      │ €  89.000,00   │  5     │                           │    │
-│  │ ■ Verhandlung  │ €  67.000,00   │  3     │                           │    │
-│  │ ■ Gewonnen     │ € 234.000,00   │ 12     │                           │    │
-│  │ ■ Verloren     │ €  52.000,00   │  6     │                           │    │
-│  ├────────────────┼────────────────┼────────┤                           │    │
-│  │ GESAMT         │ € 707.000,00   │ 46     │                           │    │
-│  └──────────────────────────────────────────────────────────────────────┘    │
-│                                                                              │
-│  Gespeicherte Reports:                                                       │
-│  [📊 Pipeline nach Quartal] [📊 Top Firmen offen] [+ Neuer Report]         │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Gesamtansicht mit Chart + Tabelle
+### Dashboard mit offenem Slide-over Panel (Tabelle)
 ```
-┌──────────────────────────────────────────────────────────────────────────────┐
-│  Auswertungen > Report-Builder                                [💾 Speichern]│
-├──────────────────────────────────────────────────────────────────────────────┤
-│                                                                              │
-│  Gruppieren: [Quartal    ▼]    Metrik: [Summe Wert ✕] [+ ▼]                │
-│  Zeitraum:   [Letztes Jahr ▼]  Phase:  [Alle Phasen ▼]                      │
-│  Anzeige:    [Liniendiagramm ▼]                                              │
-│                                                                              │
-│  ┌──────────────────────────────────────────────────────────────────────┐    │
-│  │ €                                                                    │    │
-│  │ 250k ┤                                              ●               │    │
-│  │ 200k ┤                            ●                                  │    │
-│  │ 150k ┤              ●                                                │    │
-│  │ 100k ┤ ●                                                             │    │
-│  │      └────────────────────────────────────────────────────           │    │
-│  │        Q1 2025    Q2 2025    Q3 2025    Q4 2025                      │    │
-│  └──────────────────────────────────────────────────────────────────────┘    │
-│                                                                              │
-│  ┌──────────────────────────────────────────────────────────────────────┐    │
-│  │ Quartal   │ Summe Wert     │                                         │    │
-│  ├───────────┼────────────────┤                                         │    │
-│  │ Q1 2025   │ € 105.000,00   │                                         │    │
-│  │ Q2 2025   │ € 148.000,00   │                                         │    │
-│  │ Q3 2025   │ € 198.000,00   │                                         │    │
-│  │ Q4 2025   │ € 256.000,00   │                                         │    │
-│  ├───────────┼────────────────┤                                         │    │
-│  │ GESAMT    │ € 707.000,00   │                                         │    │
-│  └──────────────────────────────────────────────────────────────────────┘    │
-│                                                                              │
-│  Gespeicherte Reports:                                                       │
-│  [📊 Pipeline nach Quartal] [📊 Top Firmen offen] [+ Neuer Report]         │
-└──────────────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────┬───────────────────────────────────────────┐
+│  Pipeline-Dashboard              │  Report-Builder                  [💾] [✕] │
+│  (abgedunkelt, nicht interaktiv) ├───────────────────────────────────────────┤
+│                                  │                                           │
+│                                  │  Gruppieren: [Phase      ▼]              │
+│  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░  │  Metrik:     [Summe Wert ✕] [Anzahl ✕]  │
+│  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░  │               [+ Metrik ▼]              │
+│  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░  │  Zeitraum:   [Alle Daten ▼]             │
+│  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░  │  Phase:      [Alle Phasen ▼]            │
+│  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░  │  Anzeige:    [Tabelle    ▼]             │
+│  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░  │                                           │
+│  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░  │  ┌─────────────────────────────────────┐ │
+│  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░  │  │ Phase        │ Summe Wert │ Anzahl │ │
+│  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░  │  ├──────────────┼────────────┼────────┤ │
+│  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░  │  │ ■ Neu        │ € 145.000  │ 12     │ │
+│  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░  │  │ ■ Qualif.    │ € 120.000  │  8     │ │
+│  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░  │  │ ■ Angebot    │ €  89.000  │  5     │ │
+│  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░  │  │ ■ Verhandl.  │ €  67.000  │  3     │ │
+│  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░  │  │ ■ Gewonnen   │ € 234.000  │ 12     │ │
+│  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░  │  │ ■ Verloren   │ €  52.000  │  6     │ │
+│                                  │  ├──────────────┼────────────┼────────┤ │
+│                                  │  │ GESAMT       │ € 707.000  │ 46     │ │
+│                                  │  └─────────────────────────────────────┘ │
+│                                  │                                           │
+│                                  │  Gespeicherte Reports:                    │
+│                                  │  [📊 Pipeline Q1] [📊 Top Firmen] [+]   │
+└──────────────────────────────────┴───────────────────────────────────────────┘
+```
+
+### Slide-over Panel mit Chart + Tabelle
+```
+┌───────────────────────────────────────────┐
+│  Report-Builder                  [💾] [✕] │
+├───────────────────────────────────────────┤
+│                                           │
+│  Gruppieren: [Quartal    ▼]              │
+│  Metrik:     [Summe Wert ✕] [+ ▼]       │
+│  Zeitraum:   [Letztes Jahr ▼]            │
+│  Phase:      [Alle Phasen ▼]             │
+│  Anzeige:    [Liniendiagramm ▼]          │
+│                                           │
+│  ┌─────────────────────────────────────┐ │
+│  │ €                                    │ │
+│  │ 250k ┤                         ●    │ │
+│  │ 200k ┤               ●              │ │
+│  │ 150k ┤      ●                       │ │
+│  │ 100k ┤ ●                            │ │
+│  │      └────────────────────────────  │ │
+│  │        Q1      Q2      Q3     Q4    │ │
+│  └─────────────────────────────────────┘ │
+│                                           │
+│  ┌─────────────────────────────────────┐ │
+│  │ Quartal  │ Summe Wert              │ │
+│  ├──────────┼──────────────┤           │ │
+│  │ Q1 2025  │ € 105.000    │           │ │
+│  │ Q2 2025  │ € 148.000    │           │ │
+│  │ Q3 2025  │ € 198.000    │           │ │
+│  │ Q4 2025  │ € 256.000    │           │ │
+│  ├──────────┼──────────────┤           │ │
+│  │ GESAMT   │ € 707.000    │           │ │
+│  └─────────────────────────────────────┘ │
+│                                           │
+│  Gespeicherte Reports:                    │
+│  [📊 Pipeline Q1] [📊 Top Firmen] [+]   │
+└───────────────────────────────────────────┘
 ```
 
 ## 8. Technische Umsetzung
@@ -359,19 +410,22 @@ Beim ersten Besuch (keine gespeicherten Reports) wird die Toolbar mit Defaults b
 13. `service/SavedReportService.java` — CRUD-Logik.
 14. `controller/SavedReportController.java` — CRUD-Endpoints.
 
-**Frontend (5 Dateien)**:
+**Frontend (6 Dateien)**:
 1. `core/models/report.model.ts` — TypeScript-Interfaces für Query, Result, SavedReport.
 2. `core/services/report.service.ts` — HTTP-Client für Report-Query.
 3. `core/services/saved-report.service.ts` — HTTP-Client für Saved Reports CRUD.
-4. `features/auswertung/report-builder/report-builder.component.ts` — Komponente mit Toolbar-Logik, Chart-Bau, Saved-Report-Verwaltung.
-5. `features/auswertung/report-builder/report-builder.component.html` — Template.
-6. `features/auswertung/report-builder/report-builder.component.scss` — Styling.
+4. `features/auswertung/report-builder/report-builder.component.ts` — Slide-over-Komponente mit Toolbar-Logik, Chart-Bau, Saved-Report-Verwaltung.
+5. `features/auswertung/report-builder/report-builder.component.html` — Template (Slide-over Panel).
+6. `features/auswertung/report-builder/report-builder.component.scss` — Styling (Panel-Animation, Backdrop).
 
 ### 8.2 Geänderte Dateien
 
 **Frontend**:
-- `auswertung.routes.ts` — Neue Route `/report-builder`.
-- `sidebar.component.ts` — Neuer Eintrag „Report-Builder".
+- `pipeline-dashboard.component.ts/html` — Button „Report-Builder" im Header, Einbindung der Slide-over-Komponente, `reportBuilderOpen`-State.
+
+**Nicht mehr geändert** (gegenüber vorheriger Version):
+- ~~`auswertung.routes.ts`~~ — Keine eigene Route nötig.
+- ~~`sidebar.component.ts`~~ — Kein separater Sidebar-Eintrag nötig.
 
 ### 8.3 Dynamische Query-Erstellung (Backend)
 
@@ -398,20 +452,26 @@ Jede Dimension und Metrik hat eine definierte Mapping-Funktion, die den JPQL-Fra
 ## 9. Akzeptanzkriterien
 
 1. **Dimensionswahl**: Dropdown mit 6 Dimensionen. Wechsel aktualisiert das Ergebnis sofort.
-2. **Metrikenwahl**: Mindestens eine, bis zu alle fünf Metriken gleichzeitig wählbar. Chips mit Entfernen-Funktion.
+2. **Metrikenwahl**: Mindestens eine, bis zu alle fünf Metriken gleichzeitig wählbar. Chips mit Entfernen-Funktion. Drag & Drop zum Umsortieren der Reihenfolge (erste Metrik = Chart-Metrik).
 3. **Filter — Phasen**: Multi-Select-Dropdown, um bestimmte Phasen ein-/auszuschließen. Default: alle.
 4. **Filter — Zeitraum**: Dropdown mit Presets („Alle Daten", „Letztes Quartal", „Letztes Jahr") plus „Benutzerdefiniert" mit Datepicker.
 5. **Visualisierung — Tabelle**: Korrekte Tabelle mit Dimensionslabel, allen gewählten Metriken und Summenzeile.
-6. **Visualisierung — Charts**: Balken-, Linien- und Kreisdiagramm zeigen die erste Metrik. Tabelle immer zusätzlich sichtbar.
+6. **Visualisierung — Charts**: Balken-, Linien- und Kreisdiagramm zeigen die erste Metrik. Tabelle per Toggle ein-/ausblendbar.
 7. **Saved Reports — Speichern**: Report-Name vergeben, Konfiguration wird im Backend persistiert.
 8. **Saved Reports — Laden**: Klick auf gespeicherten Report füllt Toolbar und zeigt Ergebnis.
 9. **Saved Reports — Löschen**: Mit Bestätigungsdialog.
 10. **Saved Reports — Aktualisieren**: Bestehenden Report überschreiben.
 11. **Live-Update**: Jede Toolbar-Änderung löst einen neuen API-Call aus. Ladespinner über dem Ergebnis.
 12. **Leerer Zustand**: Beim ersten Besuch werden Default-Werte verwendet — kein leeres Dashboard.
-13. **Navigation**: „Report-Builder" in der Sidebar unter „Auswertungen" erreichbar.
+13. **Slide-over Panel**: Button im Dashboard-Header öffnet das Panel. ✕ oder Backdrop-Klick schließt es. Smooth Slide-Animation.
 14. **Autorisierung**: Benutzer sehen nur eigene Saved Reports.
-15. **Responsive**: Toolbar bricht auf kleinen Bildschirmen sinnvoll um.
+15. **Responsive**: Panel nimmt auf kleinen Bildschirmen die volle Breite ein.
+16. **Metriken-Reihenfolge**: Drag & Drop der Metrik-Chips ändert die Reihenfolge. Erste Metrik wird im Chart visualisiert.
+17. **Tabelle Toggle**: In Chart-Ansichten kann die Tabelle per Button ein-/ausgeblendet werden.
+18. **Report-Widgets**: Gespeicherte Reports können im Edit-Mode als Dashboard-Widgets hinzugefügt werden.
+19. **Report-Widget-Darstellung**: Eingebettete Reports zeigen Chart oder Tabelle je nach gespeicherter Anzeige-Einstellung.
+20. **Report-Widget-Cleanup**: Gelöschte Reports werden beim Schließen des Report-Builders automatisch aus dem Dashboard entfernt.
+21. **Report-Builder im Edit-Mode**: Der Report-Builder-Button ist nur im Edit-Mode des Dashboards sichtbar.
 
 ## 10. Offene Fragen
 

@@ -17,15 +17,20 @@ import {
   faRotateLeft,
   faCheck,
   faTable,
+  faCubes,
   faTimes,
   faTrophy,
 } from '@fortawesome/free-solid-svg-icons';
 import { forkJoin } from 'rxjs';
 import { AuswertungService } from '../../../core/services/auswertung.service';
 import { DashboardConfigService } from '../../../core/services/dashboard-config.service';
+import { SavedReportService } from '../../../core/services/saved-report.service';
 import { PhaseAggregate, PipelineKpis, TopFirma } from '../../../core/models/auswertung.model';
+import { SavedReport } from '../../../core/models/report.model';
 import { ChancePhase } from '../../../core/models/chance.model';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
+import { ReportBuilderComponent } from '../report-builder/report-builder.component';
+import { ReportWidgetComponent } from '../report-widget/report-widget.component';
 
 Chart.register(...registerables);
 
@@ -56,28 +61,34 @@ const PHASE_CONFIG: { phase: ChancePhase; label: string; color: string }[] = [
 
 @Component({
   selector: 'app-pipeline-dashboard',
-  imports: [CurrencyPipe, DecimalPipe, BaseChartDirective, FaIconComponent, LoadingSpinnerComponent, CdkDrag, CdkDropList],
+  imports: [CurrencyPipe, DecimalPipe, BaseChartDirective, FaIconComponent, LoadingSpinnerComponent, CdkDrag, CdkDropList, ReportBuilderComponent, ReportWidgetComponent],
   templateUrl: './pipeline-dashboard.component.html',
   styleUrl: './pipeline-dashboard.component.scss',
 })
 export class PipelineDashboardComponent implements OnInit {
   private auswertungService = inject(AuswertungService);
   private dashboardConfigService = inject(DashboardConfigService);
+  private savedReportService = inject(SavedReportService);
 
   loading = true;
   editMode = false;
   kpis: PipelineKpis | null = null;
   phaseAggregates: PhaseAggregate[] = [];
   topFirmen: TopFirma[] = [];
+  savedReports: SavedReport[] = [];
 
   // Widget state
   visibleWidgets: string[] = [...DEFAULT_WIDGET_ORDER];
+
+  // Report Builder slide-over
+  reportBuilderOpen = false;
 
   // Icons
   faEuroSign = faEuroSign;
   faHandshake = faHandshake;
   faTrophy = faTrophy;
   faChartBar = faChartBar;
+  faCubes = faCubes;
   faGripVertical = faGripVertical;
   faPen = faPen;
   faPlus = faPlus;
@@ -105,16 +116,18 @@ export class PipelineDashboardComponent implements OnInit {
       phases: this.auswertungService.getPhaseAggregates(),
       firmen: this.auswertungService.getTopFirmen(10),
       config: this.dashboardConfigService.getConfig(),
+      savedReports: this.savedReportService.getAll(),
     }).subscribe({
-      next: ({ kpis, phases, firmen, config }) => {
+      next: ({ kpis, phases, firmen, config, savedReports }) => {
         this.kpis = kpis;
         this.phaseAggregates = this.sortByPhaseOrder(phases);
         this.topFirmen = firmen;
+        this.savedReports = savedReports;
 
         if (config?.visibleWidgets?.length) {
-          // Filter out any invalid widget IDs
+          // Filter out any invalid widget IDs (static or report-based)
           this.visibleWidgets = config.visibleWidgets.filter(
-            (id) => WIDGET_REGISTRY.some((w) => w.id === id)
+            (id) => this.isValidWidgetId(id)
           );
         }
 
@@ -136,11 +149,30 @@ export class PipelineDashboardComponent implements OnInit {
   }
 
   getWidgetTitle(id: string): string {
+    if (id.startsWith('report-')) {
+      const reportId = parseInt(id.replace('report-', ''), 10);
+      return this.savedReports.find(r => r.id === reportId)?.name ?? 'Unbekannter Report';
+    }
     return WIDGET_REGISTRY.find((w) => w.id === id)?.title ?? id;
   }
 
   get removedWidgets(): WidgetDefinition[] {
     return WIDGET_REGISTRY.filter((w) => !this.visibleWidgets.includes(w.id));
+  }
+
+  get removedReportWidgets(): SavedReport[] {
+    return this.savedReports.filter(
+      (r) => !this.visibleWidgets.includes(`report-${r.id}`)
+    );
+  }
+
+  private isValidWidgetId(id: string): boolean {
+    if (WIDGET_REGISTRY.some((w) => w.id === id)) return true;
+    if (id.startsWith('report-')) {
+      const reportId = parseInt(id.replace('report-', ''), 10);
+      return this.savedReports.some((r) => r.id === reportId);
+    }
+    return false;
   }
 
   toggleEditMode(): void {
@@ -174,6 +206,23 @@ export class PipelineDashboardComponent implements OnInit {
 
   private saveConfig(): void {
     this.dashboardConfigService.saveConfig({ visibleWidgets: this.visibleWidgets }).subscribe();
+  }
+
+  // Report Builder
+  openReportBuilder(): void {
+    this.reportBuilderOpen = true;
+  }
+
+  closeReportBuilder(): void {
+    this.reportBuilderOpen = false;
+    // Reload saved reports to pick up any changes made in the builder
+    this.savedReportService.getAll().subscribe({
+      next: (reports) => {
+        this.savedReports = reports;
+        // Re-validate visible widgets (remove deleted report widgets)
+        this.visibleWidgets = this.visibleWidgets.filter((id) => this.isValidWidgetId(id));
+      },
+    });
   }
 
   // Phase helpers

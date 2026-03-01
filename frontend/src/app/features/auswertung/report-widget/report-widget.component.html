@@ -1,0 +1,81 @@
+@if (loading) {
+  <div class="report-widget-loading">
+    <div class="spinner-border spinner-border-sm text-primary" role="status">
+      <span class="visually-hidden">Laden...</span>
+    </div>
+  </div>
+} @else if (error) {
+  <div class="report-widget-error text-muted text-center py-4">
+    <p class="mb-0">{{ error }}</p>
+  </div>
+} @else if (result) {
+  <div class="row mb-3">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          @if (chartConfig) {
+            <div class="chart-container">
+              <canvas baseChart
+                [type]="chartConfig.type"
+                [data]="chartConfig.data"
+                [options]="chartConfig.options">
+              </canvas>
+            </div>
+          } @else {
+            <!-- Compact table view -->
+            <div class="table-responsive">
+              <table class="table table-striped table-hover table-sm mb-0">
+                <thead>
+                  <tr>
+                    <th>{{ getMetrikLabel(result.dimension) || result.dimension }}</th>
+                    @for (metrik of metriken; track metrik) {
+                      <th class="text-end">{{ getMetrikLabel(metrik) }}</th>
+                    }
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (zeile of result.zeilen; track zeile.label) {
+                    <tr>
+                      <td>{{ zeile.label }}</td>
+                      @for (metrik of metriken; track metrik) {
+                        <td class="text-end">
+                          @if (zeile.werte[metrik] == null) {
+                            --
+                          } @else if (isCurrencyMetrik(metrik)) {
+                            {{ zeile.werte[metrik] | currency:'EUR':'symbol':'1.2-2':'de' }}
+                          } @else if (isRateMetrik(metrik)) {
+                            {{ zeile.werte[metrik] | number:'1.1-1':'de' }} %
+                          } @else {
+                            {{ zeile.werte[metrik] | number:'1.0-2':'de' }}
+                          }
+                        </td>
+                      }
+                    </tr>
+                  }
+                </tbody>
+                <tfoot>
+                  <tr class="fw-bold">
+                    <td>Gesamt</td>
+                    @for (metrik of metriken; track metrik) {
+                      <td class="text-end">
+                        @if (getTotal(metrik) == null) {
+                          --
+                        } @else if (isCurrencyMetrik(metrik)) {
+                          {{ getTotal(metrik) | currency:'EUR':'symbol':'1.2-2':'de' }}
+                        } @else if (isRateMetrik(metrik)) {
+                          {{ getTotal(metrik) | number:'1.1-1':'de' }} %
+                        } @else {
+                          {{ getTotal(metrik) | number:'1.0-2':'de' }}
+                        }
+                      </td>
+                    }
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}
