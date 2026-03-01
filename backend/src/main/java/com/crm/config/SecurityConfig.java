@@ -21,6 +21,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.crm.security.BenutzerDetailsService;
 import com.crm.security.JwtAuthenticationFilter;
+import com.crm.security.RateLimitingFilter;
 
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -31,14 +32,20 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final BenutzerDetailsService benutzerDetailsService;
+    private final RateLimitingFilter rateLimitingFilter;
 
     @org.springframework.beans.factory.annotation.Value("${spring.h2.console.enabled:false}")
     private boolean h2ConsoleEnabled;
 
+    @org.springframework.beans.factory.annotation.Value("${app.cors.allowed-origins:http://localhost:4200}")
+    private String allowedOrigins;
+
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
-                          BenutzerDetailsService benutzerDetailsService) {
+                          BenutzerDetailsService benutzerDetailsService,
+                          RateLimitingFilter rateLimitingFilter) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.benutzerDetailsService = benutzerDetailsService;
+        this.rateLimitingFilter = rateLimitingFilter;
     }
 
     @Bean
@@ -50,7 +57,13 @@ public class SecurityConfig {
                 .headers(headers -> {
                     if (h2ConsoleEnabled) {
                         headers.frameOptions(frame -> frame.disable());
+                    } else {
+                        headers.frameOptions(frame -> frame.deny());
                     }
+                    headers.contentTypeOptions(cto -> {});
+                    headers.httpStrictTransportSecurity(hsts -> hsts
+                            .includeSubDomains(true)
+                            .maxAgeInSeconds(31536000));
                 })
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint((request, response, authException) -> {
@@ -68,6 +81,7 @@ public class SecurityConfig {
                     auth.anyRequest().permitAll();
                 })
                 .authenticationProvider(authenticationProvider())
+                .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
@@ -93,7 +107,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:4200"));
+        config.setAllowedOrigins(List.of(allowedOrigins.split(",")));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);

@@ -65,12 +65,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponse> handleDataIntegrity(DataIntegrityViolationException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(new ErrorResponse(409, "Datenintegritaetsverletzung: " + ex.getMostSpecificCause().getMessage()));
+                .body(new ErrorResponse(409, "Der Vorgang konnte nicht ausgefuehrt werden, da ein Datenkonflikt besteht."));
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneral(Exception ex) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse(500, "Interner Serverfehler: " + ex.getMessage()));
+                .body(new ErrorResponse(500, "Ein unerwarteter Fehler ist aufgetreten."));
     }
 }
