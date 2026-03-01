@@ -274,7 +274,7 @@ public class DataSeeder implements CommandLineRunner {
                 case VERLOREN -> 0;
             };
             c.setWahrscheinlichkeit(wk);
-            c.setErwartetesDatum(today.plusDays(random.nextInt(365)));
+            c.setErwartetesDatum(today.minusDays(random.nextInt(365)).plusDays(random.nextInt(365)));
             c.setFirma(firma);
             if (random.nextBoolean()) {
                 c.setKontaktPerson(personen.get(random.nextInt(personen.size())));
