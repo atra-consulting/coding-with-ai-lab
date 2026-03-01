@@ -58,6 +58,11 @@ export const routes: Routes = [
         loadChildren: () => import('./features/chance/chance.routes').then((m) => m.CHANCE_ROUTES),
       },
       {
+        path: 'auswertungen',
+        loadChildren: () =>
+          import('./features/auswertung/auswertung.routes').then((m) => m.AUSWERTUNG_ROUTES),
+      },
+      {
         path: 'benutzer',
         canActivate: [permissionGuard('BENUTZERVERWALTUNG')],
         loadChildren: () =>
