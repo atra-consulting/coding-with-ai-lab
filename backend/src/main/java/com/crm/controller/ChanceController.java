@@ -30,7 +30,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/chancen")
-@PreAuthorize("hasAnyRole('ADMIN', 'VERTRIEB')")
+@PreAuthorize("hasAuthority('CHANCEN')")
 public class ChanceController {
 
     private final ChanceService chanceService;

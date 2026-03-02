@@ -25,7 +25,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/gehaelter")
-@PreAuthorize("hasAnyRole('ADMIN', 'PERSONAL')")
+@PreAuthorize("hasAuthority('GEHAELTER')")
 public class GehaltController {
 
     private final GehaltService gehaltService;

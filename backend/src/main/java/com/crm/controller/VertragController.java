@@ -25,7 +25,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/vertraege")
-@PreAuthorize("hasAnyRole('ADMIN', 'VERTRIEB')")
+@PreAuthorize("hasAuthority('VERTRAEGE')")
 public class VertragController {
 
     private final VertragService vertragService;
