@@ -9,8 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.crm.dto.DashboardConfigDTO;
-import com.crm.entity.Benutzer;
-import com.crm.security.BenutzerDetails;
+import com.crm.security.JwtPrincipal;
 import com.crm.service.DashboardConfigService;
 
 @RestController
@@ -25,15 +24,15 @@ public class DashboardConfigController {
 
     @GetMapping
     public ResponseEntity<DashboardConfigDTO> getConfig(Authentication authentication) {
-        Benutzer benutzer = ((BenutzerDetails) authentication.getPrincipal()).getBenutzer();
-        return dashboardConfigService.getConfig(benutzer.getId())
+        Long benutzerId = ((JwtPrincipal) authentication.getPrincipal()).benutzerId();
+        return dashboardConfigService.getConfig(benutzerId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.noContent().build());
     }
 
     @PutMapping
     public DashboardConfigDTO saveConfig(Authentication authentication, @RequestBody DashboardConfigDTO dto) {
-        Benutzer benutzer = ((BenutzerDetails) authentication.getPrincipal()).getBenutzer();
-        return dashboardConfigService.saveConfig(benutzer, dto);
+        Long benutzerId = ((JwtPrincipal) authentication.getPrincipal()).benutzerId();
+        return dashboardConfigService.saveConfig(benutzerId, dto);
     }
 }

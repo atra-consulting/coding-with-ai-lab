@@ -5,6 +5,11 @@ backend/data/
 *.jar
 *.log
 
+# CIAM
+ciam/target/
+ciam/data/
+ciam/keys/
+
 # Frontend
 frontend/node_modules/
 frontend/dist/

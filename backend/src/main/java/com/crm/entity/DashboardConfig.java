@@ -5,8 +5,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -17,17 +15,16 @@ public class DashboardConfig {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
-    @JoinColumn(name = "benutzer_id", nullable = false, unique = true)
-    private Benutzer benutzer;
+    @Column(name = "benutzer_id", nullable = false, unique = true)
+    private Long benutzerId;
 
     @Column(length = 1024)
     private String config;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-    public Benutzer getBenutzer() { return benutzer; }
-    public void setBenutzer(Benutzer benutzer) { this.benutzer = benutzer; }
+    public Long getBenutzerId() { return benutzerId; }
+    public void setBenutzerId(Long benutzerId) { this.benutzerId = benutzerId; }
     public String getConfig() { return config; }
     public void setConfig(String config) { this.config = config; }
 }

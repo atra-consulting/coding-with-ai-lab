@@ -7,7 +7,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.crm.dto.SavedReportCreateDTO;
 import com.crm.dto.SavedReportDTO;
-import com.crm.entity.Benutzer;
 import com.crm.entity.SavedReport;
 import com.crm.exception.ResourceNotFoundException;
 import com.crm.repository.SavedReportRepository;
@@ -29,9 +28,9 @@ public class SavedReportService {
     }
 
     @Transactional
-    public SavedReportDTO create(Benutzer benutzer, SavedReportCreateDTO dto) {
+    public SavedReportDTO create(Long benutzerId, SavedReportCreateDTO dto) {
         SavedReport report = new SavedReport();
-        report.setBenutzer(benutzer);
+        report.setBenutzerId(benutzerId);
         report.setName(dto.name());
         report.setConfig(dto.config());
         return toDTO(savedReportRepository.save(report));
@@ -42,7 +41,7 @@ public class SavedReportService {
         SavedReport report = savedReportRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("SavedReport", id));
 
-        if (!report.getBenutzer().getId().equals(benutzerId)) {
+        if (!report.getBenutzerId().equals(benutzerId)) {
             throw new ResourceNotFoundException("SavedReport", id);
         }
 
@@ -56,7 +55,7 @@ public class SavedReportService {
         SavedReport report = savedReportRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("SavedReport", id));
 
-        if (!report.getBenutzer().getId().equals(benutzerId)) {
+        if (!report.getBenutzerId().equals(benutzerId)) {
             throw new ResourceNotFoundException("SavedReport", id);
         }
 

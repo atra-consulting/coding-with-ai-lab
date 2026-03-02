@@ -16,8 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.crm.dto.SavedReportCreateDTO;
 import com.crm.dto.SavedReportDTO;
-import com.crm.entity.Benutzer;
-import com.crm.security.BenutzerDetails;
+import com.crm.security.JwtPrincipal;
 import com.crm.service.SavedReportService;
 
 @RestController
@@ -32,28 +31,28 @@ public class SavedReportController {
 
     @GetMapping
     public List<SavedReportDTO> getAll(Authentication authentication) {
-        Benutzer benutzer = ((BenutzerDetails) authentication.getPrincipal()).getBenutzer();
-        return savedReportService.getByBenutzer(benutzer.getId());
+        Long benutzerId = ((JwtPrincipal) authentication.getPrincipal()).benutzerId();
+        return savedReportService.getByBenutzer(benutzerId);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public SavedReportDTO create(Authentication authentication, @RequestBody SavedReportCreateDTO dto) {
-        Benutzer benutzer = ((BenutzerDetails) authentication.getPrincipal()).getBenutzer();
-        return savedReportService.create(benutzer, dto);
+        Long benutzerId = ((JwtPrincipal) authentication.getPrincipal()).benutzerId();
+        return savedReportService.create(benutzerId, dto);
     }
 
     @PutMapping("/{id}")
     public SavedReportDTO update(Authentication authentication, @PathVariable Long id,
             @RequestBody SavedReportCreateDTO dto) {
-        Benutzer benutzer = ((BenutzerDetails) authentication.getPrincipal()).getBenutzer();
-        return savedReportService.update(id, benutzer.getId(), dto);
+        Long benutzerId = ((JwtPrincipal) authentication.getPrincipal()).benutzerId();
+        return savedReportService.update(id, benutzerId, dto);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(Authentication authentication, @PathVariable Long id) {
-        Benutzer benutzer = ((BenutzerDetails) authentication.getPrincipal()).getBenutzer();
-        savedReportService.delete(id, benutzer.getId());
+        Long benutzerId = ((JwtPrincipal) authentication.getPrincipal()).benutzerId();
+        savedReportService.delete(id, benutzerId);
     }
 }

@@ -4,7 +4,9 @@ set -euo pipefail
 echo "=== CRM Application Starter ==="
 
 ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
-DB_DIR="${ROOT_DIR}/backend/data"
+CRM_DB_DIR="${ROOT_DIR}/backend/data"
+CIAM_DB_DIR="${ROOT_DIR}/ciam/data"
+CIAM_KEYS_DIR="${ROOT_DIR}/ciam/keys"
 
 # Parse arguments
 RESET_DB=false
@@ -15,22 +17,22 @@ for arg in "$@"; do
     --no-demo) DEMO_MODE=false ;;
     *)
       echo "Usage: $0 [--reset-db] [--no-demo]"
-      echo "  --reset-db  Delete local H2 database (will be recreated with seed data)"
+      echo "  --reset-db  Delete local H2 databases (will be recreated with seed data)"
       echo "  --no-demo   Disable demo mode (hides demo login button)"
       exit 1
       ;;
   esac
 done
 
-# Optionally reset database
+# Optionally reset databases
 if [ "$RESET_DB" = true ]; then
-  if [ -d "$DB_DIR" ]; then
-    echo "Deleting database at ${DB_DIR}..."
-    rm -rf "$DB_DIR"
-    echo "Database deleted. Will be recreated on startup."
-  else
-    echo "No database found at ${DB_DIR}, nothing to delete."
-  fi
+  for DB_DIR in "$CRM_DB_DIR" "$CIAM_DB_DIR"; do
+    if [ -d "$DB_DIR" ]; then
+      echo "Deleting database at ${DB_DIR}..."
+      rm -rf "$DB_DIR"
+    fi
+  done
+  echo "Databases deleted. Will be recreated on startup."
 fi
 
 # Check prerequisites
@@ -58,36 +60,62 @@ elif [ -d "$(brew --prefix openjdk@21 2>/dev/null)/libexec/openjdk.jdk/Contents/
   echo "Using Java 21 (Homebrew): $JAVA_HOME"
 fi
 
+CIAM_PID=""
 BACKEND_PID=""
 FRONTEND_PID=""
 
 cleanup() {
   echo ""
   echo "Shutting down..."
+  if [ -n "${FRONTEND_PID}" ]; then
+    kill "${FRONTEND_PID}" 2>/dev/null || true
+    echo "Frontend stopped"
+  fi
   if [ -n "${BACKEND_PID}" ]; then
     kill "${BACKEND_PID}" 2>/dev/null || true
     echo "Backend stopped"
   fi
-  if [ -n "${FRONTEND_PID}" ]; then
-    kill "${FRONTEND_PID}" 2>/dev/null || true
-    echo "Frontend stopped"
+  if [ -n "${CIAM_PID}" ]; then
+    kill "${CIAM_PID}" 2>/dev/null || true
+    echo "CIAM stopped"
   fi
   exit 0
 }
 
 trap cleanup SIGINT SIGTERM
 
-# Start backend
+# Start CIAM service first (generates RSA keys)
+echo "Starting CIAM service..."
+cd "${ROOT_DIR}/ciam"
+mvn spring-boot:run -Dspring-boot.run.arguments="--app.demo-mode=${DEMO_MODE}" -q &
+CIAM_PID=$!
+cd "${ROOT_DIR}"
+
+# Wait for CIAM to be ready
+echo "Waiting for CIAM service to start..."
+for i in $(seq 1 60); do
+  if curl -s "http://localhost:8081/.well-known/jwks.json" > /dev/null 2>&1; then
+    echo "CIAM service is ready!"
+    break
+  fi
+  if [ "${i}" -eq 60 ]; then
+    echo "ERROR: CIAM service failed to start within 60 seconds"
+    cleanup
+  fi
+  sleep 2
+done
+
+# Start backend (needs CIAM's public key)
 echo "Starting backend..."
 cd "${ROOT_DIR}/backend"
-mvn spring-boot:run -Dspring-boot.run.arguments="--app.demo-mode=${DEMO_MODE}" -Dspring-boot.run.profiles=dev &
+mvn spring-boot:run -Dspring-boot.run.arguments="--app.demo-mode=${DEMO_MODE}" -Dspring-boot.run.profiles=dev -q &
 BACKEND_PID=$!
 cd "${ROOT_DIR}"
 
 # Wait for backend to be ready
 echo "Waiting for backend to start..."
 for i in $(seq 1 60); do
-  if curl -s "http://localhost:8080/api/firmen" > /dev/null 2>&1; then
+  if curl -s "http://localhost:8080/api/firmen" -o /dev/null -w '%{http_code}' 2>/dev/null | grep -q '401\|200'; then
     echo "Backend is ready!"
     break
   fi
@@ -121,11 +149,11 @@ cd "${ROOT_DIR}"
 
 echo ""
 echo "=== CRM Application Started ==="
-echo "Backend:   http://localhost:8080"
+echo "CIAM:      http://localhost:8081 (Identity & Access Management)"
+echo "Backend:   http://localhost:8080 (CRM Resource Server)"
 echo "Frontend:  http://localhost:4200"
-echo "H2 Console: http://localhost:8080/h2-console"
 echo ""
-echo "Press Ctrl+C to stop both servers"
+echo "Press Ctrl+C to stop all servers"
 
 # Wait for background processes
 wait

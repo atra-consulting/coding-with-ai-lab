@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.crm.dto.DashboardConfigDTO;
-import com.crm.entity.Benutzer;
 import com.crm.entity.DashboardConfig;
 import com.crm.repository.DashboardConfigRepository;
 
@@ -32,11 +31,11 @@ public class DashboardConfigService {
                 });
     }
 
-    public DashboardConfigDTO saveConfig(Benutzer benutzer, DashboardConfigDTO dto) {
-        DashboardConfig config = repository.findByBenutzerId(benutzer.getId())
+    public DashboardConfigDTO saveConfig(Long benutzerId, DashboardConfigDTO dto) {
+        DashboardConfig config = repository.findByBenutzerId(benutzerId)
                 .orElseGet(() -> {
                     DashboardConfig dc = new DashboardConfig();
-                    dc.setBenutzer(benutzer);
+                    dc.setBenutzerId(benutzerId);
                     return dc;
                 });
         config.setConfig(toJson(dto));

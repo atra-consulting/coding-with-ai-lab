@@ -4,12 +4,9 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -22,9 +19,8 @@ public class SavedReport {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "benutzer_id", nullable = false)
-    private Benutzer benutzer;
+    @Column(name = "benutzer_id", nullable = false)
+    private Long benutzerId;
 
     @Column(nullable = false, length = 255)
     private String name;
@@ -51,8 +47,8 @@ public class SavedReport {
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-    public Benutzer getBenutzer() { return benutzer; }
-    public void setBenutzer(Benutzer benutzer) { this.benutzer = benutzer; }
+    public Long getBenutzerId() { return benutzerId; }
+    public void setBenutzerId(Long benutzerId) { this.benutzerId = benutzerId; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
     public String getConfig() { return config; }

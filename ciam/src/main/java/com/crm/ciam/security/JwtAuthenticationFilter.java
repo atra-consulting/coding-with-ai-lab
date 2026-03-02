@@ -1,18 +1,13 @@
-package com.crm.security;
+package com.crm.ciam.security;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-
-import io.jsonwebtoken.Claims;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -23,9 +18,11 @@ import jakarta.servlet.http.HttpServletResponse;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    private final BenutzerDetailsService benutzerDetailsService;
 
-    public JwtAuthenticationFilter(JwtService jwtService) {
+    public JwtAuthenticationFilter(JwtService jwtService, BenutzerDetailsService benutzerDetailsService) {
         this.jwtService = jwtService;
+        this.benutzerDetailsService = benutzerDetailsService;
     }
 
     @Override
@@ -41,28 +38,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = authHeader.substring(7);
 
         if (jwtService.validateToken(token)) {
-            Claims claims = jwtService.extractAllClaims(token);
+            String username = jwtService.extractUsername(token);
 
             if (SecurityContextHolder.getContext().getAuthentication() == null) {
-                String username = claims.getSubject();
-                Long benutzerId = claims.get("benutzerId", Long.class);
-                String vorname = claims.get("vorname", String.class);
-                String nachname = claims.get("nachname", String.class);
-
-                JwtPrincipal principal = new JwtPrincipal(benutzerId, username, vorname, nachname);
-
-                @SuppressWarnings("unchecked")
-                List<String> rollen = claims.get("rollen", List.class);
-
-                List<GrantedAuthority> authorities = new ArrayList<>();
-                if (rollen != null) {
-                    for (String rolle : rollen) {
-                        authorities.add(new SimpleGrantedAuthority("ROLE_" + rolle));
-                    }
-                }
+                UserDetails userDetails = benutzerDetailsService.loadUserByUsername(username);
 
                 UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(principal, null, authorities);
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
