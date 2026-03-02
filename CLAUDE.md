@@ -35,7 +35,11 @@ The CRM backend at `/backend` (Port 8080) is a pure resource server.
 - **No Auth Endpoints**: All `/api/auth/**` and `/api/benutzer` requests go to CIAM via frontend proxy.
 - **JWT Validation Only**: Reads RSA public key from `../ciam/keys/public.pem` (configurable via `jwt.public-key-path`).
 - **JwtPrincipal**: Record `(benutzerId, benutzername, vorname, nachname)` replaces `BenutzerDetails` as auth principal.
-- **Claims-based Auth**: Roles/permissions read from JWT claims, no DB lookup. `@PreAuthorize("hasRole('ADMIN')")` works via `ROLE_` authorities from claims.
+- **Claims-based Auth**: Roles and permissions are read from JWT claims at request time, no DB lookup needed. The `JwtAuthenticationFilter` maps `rollen` to `ROLE_*` authorities and `permissions` to plain authorities.
+- **Authorization pattern**: Every controller MUST have `@PreAuthorize`. Two variants:
+  - **Permission-based** (preferred): `@PreAuthorize("hasAuthority('CHANCEN')")` — used for feature-specific endpoints. Permission names match the `Permission` enum in CIAM (`DASHBOARD`, `FIRMEN`, `PERSONEN`, `ABTEILUNGEN`, `ADRESSEN`, `AKTIVITAETEN`, `GEHAELTER`, `VERTRAEGE`, `CHANCEN`, `AUSWERTUNGEN`, `BENUTZERVERWALTUNG`).
+  - **Role-based**: `@PreAuthorize("hasAnyRole('ADMIN', 'VERTRIEB', 'PERSONAL')")` — used for shared endpoints (e.g. Firma, Person, Abteilung).
+- **Adding a new permission**: Add to `Permission.kt` enum → assign to roles in `RolePermissionMapping.kt` (ADMIN gets all via `allOf` automatically) → use `hasAuthority('NAME')` on controller → add `permissionGuard('NAME')` on frontend route + `permission: 'NAME'` on sidebar item.
 - **User-scoped Entities**: `DashboardConfig` and `SavedReport` use `Long benutzerId` (no JPA FK to Benutzer).
 
 ## Backend Patterns
@@ -66,9 +70,9 @@ Each entity follows: Entity → `*DTO` + `*CreateDTO` (Java records) → `*Mappe
 
 ## Adding a New Entity
 
-Backend (7 files): Entity → DTO + CreateDTO → Mapper → Repository → Service → Controller at `/api/<plural>`.
+Backend (7 files): Entity → DTO + CreateDTO → Mapper → Repository → Service → Controller at `/api/<plural>`. **Controller must have `@PreAuthorize`** — either `hasAuthority('PERMISSION')` (add permission to CIAM `Permission.kt` + `RolePermissionMapping.kt`) or `hasAnyRole(...)`.
 
-Frontend (8+ files): Model interface → Service → Route file → List/Detail/Form components → register in `app.routes.ts`.
+Frontend (8+ files): Model interface → Service → Route file → List/Detail/Form components → register in `app.routes.ts` **with `canActivate: [permissionGuard('PERMISSION')]`** + add `permission: 'PERMISSION'` to sidebar item.
 
 ## Commits & PRDs
 
@@ -81,6 +85,8 @@ Frontend (8+ files): Model interface → Service → Route file → List/Detail/
 - `ciam/src/main/resources/application.properties` — CIAM config, Port 8081, RSA key paths
 - `ciam/src/main/kotlin/com/crm/ciam/config/KeyPairConfig.kt` — RSA key pair generation/loading
 - `ciam/src/main/kotlin/com/crm/ciam/security/JwtService.kt` — RS256 JWT signing + validation
+- `ciam/src/main/kotlin/com/crm/ciam/security/Permission.kt` — all permission enum values
+- `ciam/src/main/kotlin/com/crm/ciam/security/RolePermissionMapping.kt` — which role gets which permissions
 - `ciam/src/main/kotlin/com/crm/ciam/seed/UserSeeder.kt` — seeds 5 users on first start
 - `backend/src/main/resources/application.properties` — DB config, `open-in-view=false`, `jwt.public-key-path`
 - `backend/src/main/java/com/crm/security/JwtService.java` — RSA public key JWT validation only
