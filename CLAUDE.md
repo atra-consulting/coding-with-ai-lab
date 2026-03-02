@@ -2,7 +2,7 @@
 
 ## Project
 
-Full-stack CRM application with separate CIAM microservice. Spring Boot 3.5.3 (Java 21) backend + CIAM service, Angular 20 frontend. German domain model: Firma, Person, Abteilung, Adresse, Gehalt, Aktivitaet, Vertrag, Chance. H2 file-based databases (separate DBs for CRM and CIAM).
+Full-stack CRM application with separate CIAM microservice. Spring Boot 3.5.3 (Java 21) backend, CIAM service in Kotlin (Spring Boot 3.5.3), Angular 20 frontend. German domain model: Firma, Person, Abteilung, Adresse, Gehalt, Aktivitaet, Vertrag, Chance. H2 file-based databases (separate DBs for CRM and CIAM).
 
 ## Build & Run
 
@@ -79,9 +79,9 @@ Frontend (8+ files): Model interface → Service → Route file → List/Detail/
 ## Key Files
 
 - `ciam/src/main/resources/application.properties` — CIAM config, Port 8081, RSA key paths
-- `ciam/src/main/java/com/crm/ciam/config/KeyPairConfig.java` — RSA key pair generation/loading
-- `ciam/src/main/java/com/crm/ciam/security/JwtService.java` — RS256 JWT signing + validation
-- `ciam/src/main/java/com/crm/ciam/seed/UserSeeder.java` — seeds 5 users on first start
+- `ciam/src/main/kotlin/com/crm/ciam/config/KeyPairConfig.kt` — RSA key pair generation/loading
+- `ciam/src/main/kotlin/com/crm/ciam/security/JwtService.kt` — RS256 JWT signing + validation
+- `ciam/src/main/kotlin/com/crm/ciam/seed/UserSeeder.kt` — seeds 5 users on first start
 - `backend/src/main/resources/application.properties` — DB config, `open-in-view=false`, `jwt.public-key-path`
 - `backend/src/main/java/com/crm/security/JwtService.java` — RSA public key JWT validation only
 - `backend/src/main/java/com/crm/security/JwtAuthenticationFilter.java` — claims-based auth filter

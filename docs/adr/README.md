@@ -6,6 +6,8 @@
 |-----|--------------------------------------------------------------|-------------|-----------|--------------------------------------------------------------------------------|
 | 001 | Architekturentscheidungen Authentifizierung & Benutzerverwaltung | Entschieden | [PRD-002](../prds/002-authentication-user-management.md) | [001-authentication-architecture.md](001-authentication-architecture.md) |
 | 002 | Speicherort der Dashboard-Konfiguration                      | Entschieden | [PRD-004](../prds/004-auswertungen-konfigurierbar.md)    | [002-dashboard-konfiguration-speicherort.md](002-dashboard-konfiguration-speicherort.md) |
+| 003 | CIAM-Microservice-Architektur                                | Entschieden | [PRD-009](../prds/009-ciam-microservice.md)              | [003-ciam-microservice.md](003-ciam-microservice.md) |
+| 004 | Technologiewahl fuer den CIAM-Microservice                   | Implementiert | [ADR-003](003-ciam-microservice.md)                      | [004-ciam-technologie-portierung.md](004-ciam-technologie-portierung.md) |
 
 ## Konventionen
 

@@ -34,7 +34,7 @@ graph TB
     end
 
     subgraph "Microservices"
-        CIAM["CIAM Service<br/><i>Spring Boot</i><br/>:8081"]
+        CIAM["CIAM Service<br/><i>Spring Boot (Kotlin)</i><br/>:8081"]
         CRM["CRM Backend<br/><i>Spring Boot</i><br/>:8080"]
     end
 
