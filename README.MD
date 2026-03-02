@@ -7,7 +7,7 @@
 
 | Schicht  | Technologie |
 |----------|-------------|
-| CIAM Service | Spring Boot 3.5.3 · Java 21 · RS256 JWT |
+| CIAM Service | Spring Boot 3.5.3 · Kotlin · RS256 JWT |
 | CRM Backend | Spring Boot 3.5.3 · Java 21 · Resource Server |
 | Frontend | Angular 20 · Bootstrap 5 · SCSS |
 | Datenbanken | H2 (file-based, je eine pro Service) |
@@ -21,7 +21,7 @@ graph TB
     end
 
     subgraph "Microservices"
-        CIAM["CIAM Service<br/><i>Spring Boot</i><br/>:8081"]
+        CIAM["CIAM Service<br/><i>Spring Boot (Kotlin)</i><br/>:8081"]
         CRM["CRM Backend<br/><i>Spring Boot</i><br/>:8080"]
     end
 
