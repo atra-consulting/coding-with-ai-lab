@@ -125,3 +125,36 @@ Fuer die aktuelle Single-Machine-Entwicklung ist File-Sharing am einfachsten. De
 | Key-Verteilung | File-basiert (Dev), JWKS-Endpoint (Prod-ready) |
 
 **Leitprinzip:** Der CIAM ist die einzige Stelle, die Benutzer und Credentials verwaltet und Tokens signiert. Resource Server validieren Tokens stateless mit dem Public Key und lesen Berechtigungen aus den Claims — ohne eigene Auth-Logik oder DB-Zugriff.
+
+## Architektur-Diagramm
+
+```mermaid
+graph TB
+    subgraph "CIAM Service :8081"
+        AUTH["AuthController<br/>Login, Refresh, Logout"]
+        BEN["BenutzerController<br/>CRUD (ADMIN)"]
+        JWKS["JwksController<br/>/.well-known/jwks.json"]
+        CJWT["JwtService<br/>RS256 Signing"]
+        KP["KeyPairConfig<br/>RSA-2048"]
+    end
+
+    subgraph "CRM Backend :8080"
+        FILTER["JwtAuthenticationFilter<br/>Claims → Authorities"]
+        RJWT["JwtService<br/>RS256 Validation"]
+        CTRL["Controllers<br/>@PreAuthorize(hasAuthority)"]
+    end
+
+    subgraph "Keys"
+        PRIV["private.pem"]
+        PUB["public.pem"]
+    end
+
+    KP --> PRIV & PUB
+    PRIV --> CJWT
+    PUB --> RJWT
+    PUB --> JWKS
+    CJWT -- "signierter JWT" --> FILTER
+    FILTER -- "Rollen + Permissions" --> CTRL
+```
+
+Detaillierte Diagramme (JWT-Flow, Permission-Modell, Startup-Reihenfolge): [docs/architecture.md](../architecture.md)

@@ -27,26 +27,45 @@ Die Authentifizierungs- und Autorisierungslogik wird aus dem CRM-Backend in eine
 
 ## 5. Architektur
 
-```
-┌──────────────┐     /api/auth, /api/benutzer     ┌──────────────┐
-│              │ ──────────────────────────────────►│              │
-│   Frontend   │                                    │  CIAM :8081  │
-│   :4200      │     /api/* (rest)                  │  (H2 DB)     │
-│              │ ──────────────┐                    └──────────────┘
-└──────────────┘               │                           │
-                               ▼                    RSA Public Key
-                        ┌──────────────┐                   │
-                        │  CRM :8080   │◄──────────────────┘
-                        │  (H2 DB)     │   validates JWT
-                        └──────────────┘
+```mermaid
+graph TB
+    subgraph Browser
+        FE["Frontend<br/><i>Angular 20</i><br/>:4200"]
+    end
+
+    subgraph "Microservices"
+        CIAM["CIAM Service<br/><i>Spring Boot</i><br/>:8081"]
+        CRM["CRM Backend<br/><i>Spring Boot</i><br/>:8080"]
+    end
+
+    subgraph "Datenbanken"
+        CIAMDB[("CIAM DB<br/><i>H2</i>")]
+        CRMDB[("CRM DB<br/><i>H2</i>")]
+    end
+
+    FE -- "/api/auth, /api/benutzer" --> CIAM
+    FE -- "/api/* (Rest)" --> CRM
+    CIAM --> CIAMDB
+    CRM --> CRMDB
+    CIAM -. "RSA Public Key" .-> CRM
 ```
 
 ### JWT-Flow
 
-1. Frontend sendet Login-Request an CIAM (`POST /api/auth/login`).
-2. CIAM authentifiziert, signiert JWT mit RSA Private Key (Claims: `sub`, `benutzerId`, `rollen`, `permissions`).
-3. Frontend sendet API-Requests an CRM mit `Authorization: Bearer <JWT>`.
-4. CRM validiert JWT mit RSA Public Key, liest Rollen/Permissions aus Claims.
+```mermaid
+sequenceDiagram
+    participant B as Browser
+    participant C as CIAM :8081
+    participant R as CRM :8080
+
+    B->>C: POST /api/auth/login {benutzername, passwort}
+    C->>C: Credentials pruefen, JWT mit RS256 signieren
+    C-->>B: {accessToken} + Set-Cookie: refreshToken
+
+    B->>R: GET /api/firmen (Authorization: Bearer JWT)
+    R->>R: JWT mit Public Key validieren, Permissions aus Claims
+    R-->>B: 200 [Firmen-Daten]
+```
 
 ## 6. Anforderungen
 
