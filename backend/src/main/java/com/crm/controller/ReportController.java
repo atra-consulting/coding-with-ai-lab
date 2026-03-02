@@ -1,5 +1,6 @@
 package com.crm.controller;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,6 +12,7 @@ import com.crm.service.ReportService;
 
 @RestController
 @RequestMapping("/api/auswertungen")
+@PreAuthorize("hasAuthority('AUSWERTUNGEN')")
 public class ReportController {
 
     private final ReportService reportService;

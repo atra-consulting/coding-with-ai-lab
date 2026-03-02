@@ -10,5 +10,6 @@ enum class Permission {
     GEHAELTER,
     VERTRAEGE,
     CHANCEN,
+    AUSWERTUNGEN,
     BENUTZERVERWALTUNG
 }

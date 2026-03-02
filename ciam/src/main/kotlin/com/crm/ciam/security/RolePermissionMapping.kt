@@ -17,7 +17,8 @@ object RolePermissionMapping {
             Permission.ADRESSEN,
             Permission.AKTIVITAETEN,
             Permission.VERTRAEGE,
-            Permission.CHANCEN
+            Permission.CHANCEN,
+            Permission.AUSWERTUNGEN
         ))
 
         put(BenutzerRolle.PERSONAL, EnumSet.of(
@@ -27,7 +28,8 @@ object RolePermissionMapping {
             Permission.ABTEILUNGEN,
             Permission.ADRESSEN,
             Permission.AKTIVITAETEN,
-            Permission.GEHAELTER
+            Permission.GEHAELTER,
+            Permission.AUSWERTUNGEN
         ))
     }
 

@@ -64,7 +64,7 @@ export class SidebarComponent {
     {
       title: 'Auswertungen',
       items: [
-        { label: 'Pipeline', route: '/auswertungen/pipeline', icon: faChartPie },
+        { label: 'Pipeline', route: '/auswertungen/pipeline', icon: faChartPie, permission: 'AUSWERTUNGEN' },
       ],
     },
     {

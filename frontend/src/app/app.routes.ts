@@ -59,6 +59,7 @@ export const routes: Routes = [
       },
       {
         path: 'auswertungen',
+        canActivate: [permissionGuard('AUSWERTUNGEN')],
         loadChildren: () =>
           import('./features/auswertung/auswertung.routes').then((m) => m.AUSWERTUNG_ROUTES),
       },

@@ -53,7 +53,8 @@ export class LoginComponent implements OnInit {
     this.authService.login(this.form.value).subscribe({
       next: () => {
         const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
-        this.router.navigateByUrl(returnUrl);
+        const safeUrl = returnUrl.startsWith('/') && !returnUrl.startsWith('//') ? returnUrl : '/dashboard';
+        this.router.navigateByUrl(safeUrl);
       },
       error: (err) => {
         this.loading = false;
