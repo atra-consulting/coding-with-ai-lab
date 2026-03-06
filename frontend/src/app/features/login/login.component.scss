@@ -51,16 +51,14 @@ $accent: #dc421e;
   }
 }
 
-.login-icon {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.15);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.login-logo {
   margin: 0 auto 1rem;
-  font-size: 1.5rem;
+  text-align: center;
+
+  img {
+    height: 48px;
+    width: auto;
+  }
 }
 
 .login-body {
