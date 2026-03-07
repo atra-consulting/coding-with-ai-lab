@@ -80,6 +80,30 @@ Frontend (8+ files): Model interface → Service → Route file → List/Detail/
 - **PRD → Commits**: Jede PRD enthält eine `## Implementierung`-Section mit Links zu den zugehörigen Commits und PRs.
 - Beim Committen immer prüfen: Gibt es eine PRD unter `docs/prds/`, die zu dieser Änderung gehört? Falls ja, beides verknüpfen.
 
+## Agents
+
+| Agent | Purpose | Type |
+|-------|---------|------|
+| admin | Local dev environment, H2 databases, process management | ops |
+| ba-reviewer | Review PRDs, specs, plans for gaps and issues | review |
+| ba-writer | Create business specs, requirements, plans | writing |
+| be-coder | Spring Boot / Java backend code (+ CIAM Kotlin) | coding |
+| be-reviewer | Review backend code, security, patterns | review |
+| db-coder | JPA queries, entity schemas, data access | coding |
+| db-reviewer | Review queries, JPA mappings, performance | review |
+| fe-coder | Angular 20 frontend code, components, services | coding |
+| fe-reviewer | Review frontend code, patterns, accessibility | review |
+| md-reader | Read, search, summarize Markdown documentation | utility |
+| ui-designer | UI/UX design, layout, styling, accessibility | coding |
+| ui-reviewer | Critical UI evaluation, usability, WCAG audit | review |
+| tester | Web app testing, bug finding, edge cases | testing |
+
+Agent files: `.claude/agents/`
+
+## Specifications
+
+Full system specs: [`docs/specs/SPECS.md`](docs/specs/SPECS.md) — root document linking to per-area specs (CIAM, backend, frontend, infrastructure).
+
 ## Key Files
 
 - `ciam/src/main/resources/application.properties` — CIAM config, Port 8081, RSA key paths
