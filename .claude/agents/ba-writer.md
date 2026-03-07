@@ -1,6 +1,7 @@
 ---
 name: ba-writer
 description: "Create business specifications, requirements documents, or plans that bridge business and technical teams. Write user stories, acceptance criteria, process flows, feature specifications."
+tools: Read, Write, Edit, Glob, Grep
 model: sonnet
 ---
 

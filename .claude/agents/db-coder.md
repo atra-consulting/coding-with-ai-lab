@@ -1,6 +1,7 @@
 ---
 name: db-coder
 description: Write, optimize, or troubleshoot database queries, create or modify JPA repositories, design entity schemas, and implement data access patterns with Spring Data JPA and H2.
+tools: Read, Write, Edit, Bash, Glob, Grep
 model: sonnet
 ---
 
