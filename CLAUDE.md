@@ -100,6 +100,10 @@ Frontend (8+ files): Model interface → Service → Route file → List/Detail/
 
 Agent files: `.claude/agents/`
 
+## Specifications
+
+Full system specs: [`docs/specs/SPECS.md`](docs/specs/SPECS.md) — root document linking to per-area specs (CIAM, backend, frontend, infrastructure).
+
 ## Key Files
 
 - `ciam/src/main/resources/application.properties` — CIAM config, Port 8081, RSA key paths
