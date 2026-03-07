@@ -1,18 +1,18 @@
 # Checkpoint: SPRING-BOOT-4-MIGRATION
 
 ## Status
-- Current Step: 1.6.3
+- Current Step: 2.4
 - Status: IN_PROGRESS
 - Started: 2026-03-07T00:00:00Z
 
 ## Completed Checkpoints
-(none yet)
+- Step 1 complete - branch created (spring-boot-4-migration)
 
 ## Variables
 - task_key: SPRING-BOOT-4-MIGRATION
 - input_mode: freeform
-- branch_name: (pending)
+- branch_name: spring-boot-4-migration
 - docs_folder: docs
-- prd_skipped: (pending)
-- prd_file: (pending)
+- prd_skipped: false
+- prd_file: docs/prds/PRD-SPRING-BOOT-4-MIGRATION.md
 - plan_file: (pending)
