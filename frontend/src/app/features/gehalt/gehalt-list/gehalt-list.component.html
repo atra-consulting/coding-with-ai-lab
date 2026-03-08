@@ -7,7 +7,7 @@
   <app-loading-spinner />
 } @else {
   <ag-grid-angular
-    style="width: 100%; height: 600px"
+    style="width: 100%; height: calc(100vh - 180px)"
     [theme]="theme"
     [rowData]="rowData"
     [columnDefs]="columnDefs"
@@ -15,7 +15,5 @@
     [autoSizeStrategy]="autoSizeStrategy"
     (rowClicked)="onRowClicked($event)"
     [rowSelection]="rowSelection"
-    [paginationAutoPageSize]="true"
-    [pagination]="true"
   />
 }

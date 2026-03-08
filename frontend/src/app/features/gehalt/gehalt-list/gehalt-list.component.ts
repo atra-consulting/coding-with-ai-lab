@@ -49,7 +49,6 @@ export class GehaltListComponent implements OnInit {
     filter: true,
     sortable: true,
     resizable: true,
-    floatingFilter: true,
   };
 
   autoSizeStrategy: SizeColumnsToFitGridStrategy = { type: 'fitGridWidth' };
