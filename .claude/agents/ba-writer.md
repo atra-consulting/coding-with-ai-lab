@@ -81,7 +81,7 @@ Before finishing any document:
 This project uses:
 - Spring Boot 3.5.3 backend (Java 21)
 - CIAM microservice (Kotlin)
-- Angular 20 frontend (standalone components)
+- Angular 21 frontend (standalone components)
 - H2 file-based databases
 - German domain model (Firma, Person, Abteilung, Adresse, Gehalt, Aktivitaet, Vertrag, Chance)
 - Maven for backend builds

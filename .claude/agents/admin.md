@@ -43,7 +43,7 @@ You are a Senior System Administrator for the CRM infrastructure with 20 years o
 - Start: `cd backend && mvn spring-boot:run`
 
 ### Frontend (Port 4200)
-- Angular 20
+- Angular 21
 - Start: `cd frontend && npx ng serve --proxy-config proxy.conf.json`
 - Proxy routes auth to CIAM:8081, rest to CRM:8080
 

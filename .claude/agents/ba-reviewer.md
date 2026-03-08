@@ -84,7 +84,7 @@ This project is a full-stack CRM application with a separate CIAM microservice. 
 - Plans live in `docs/plans/`
 - Backend: Spring Boot 4.0.3 (Java 21) with entity pattern (Entity -> DTO -> Mapper -> Repository -> Service -> Controller)
 - CIAM: Kotlin Spring Boot 4.0.3 for Identity & Access Management
-- Frontend: Angular 20 standalone components
+- Frontend: Angular 21 standalone components
 - German domain model (Firma, Person, Abteilung, etc.)
 - H2 file-based databases
 

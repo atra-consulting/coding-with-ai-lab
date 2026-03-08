@@ -1,6 +1,6 @@
 # Frontend Specification
 
-Angular 20.3.0 standalone components. Bootstrap 5.3.8 + ng-bootstrap 19.0.1. TypeScript 5.9.2.
+Angular 21.2.1 standalone components. Bootstrap 5.3.8 + ng-bootstrap 20.0.0. TypeScript 5.9.2.
 
 ## Routing
 

@@ -30,7 +30,7 @@ Die Authentifizierungs- und Autorisierungslogik wird aus dem CRM-Backend in eine
 ```mermaid
 graph TB
     subgraph Browser
-        FE["Frontend<br/><i>Angular 20</i><br/>:4200"]
+        FE["Frontend<br/><i>Angular 21</i><br/>:4200"]
     end
 
     subgraph "Microservices"

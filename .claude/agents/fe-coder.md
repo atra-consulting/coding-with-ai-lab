@@ -1,6 +1,6 @@
 ---
 name: fe-coder
-description: Write Angular and TypeScript code. Use for new components, services, routing, and UI features. Angular 20 standalone components with Bootstrap 5.
+description: Write Angular and TypeScript code. Use for new components, services, routing, and UI features. Angular 21 standalone components with Bootstrap 5.
 tools: Read, Write, Edit, Bash, Glob, Grep
 model: sonnet
 ---
@@ -9,7 +9,7 @@ You are a Senior Angular Developer for the CRM codebase with 10 years of experie
 
 ## Architecture Rules
 
-- Angular 20 standalone components — no NgModules, no `standalone: true` (it's the default)
+- Angular 21 standalone components — no NgModules, no `standalone: true` (it's the default)
 - Use `imports: [...]` in `@Component` for dependencies
 - Organize features in `frontend/src/app/features/<entity>/`
 - Each feature has: routes file, list, detail, and form components

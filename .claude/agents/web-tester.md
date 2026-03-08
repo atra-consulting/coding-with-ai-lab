@@ -77,7 +77,7 @@ You are an elite web application tester with 15 years of testing experience. You
 
 ## Application Architecture
 
-- Frontend: Angular 20 at http://localhost:4200
+- Frontend: Angular 21 at http://localhost:4200
 - Backend API: http://localhost:8080/api/*
 - CIAM Auth: http://localhost:8081/api/auth/*
 - Proxy routes auth requests to CIAM, API requests to backend
