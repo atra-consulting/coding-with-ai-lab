@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AgGridAngular } from 'ag-grid-angular';
-import { ColDef, GridReadyEvent, RowClickedEvent, themeQuartz } from 'ag-grid-community';
+import { ColDef, RowClickedEvent, RowSelectionOptions, SizeColumnsToFitGridStrategy, themeQuartz } from 'ag-grid-community';
 import { Chance } from '../../../core/models/chance.model';
 import { ChanceService } from '../../../core/services/chance.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
@@ -28,10 +28,7 @@ export class ChanceListComponent implements OnInit {
     {
       field: 'phase',
       headerName: 'Phase',
-      filter: 'agSetColumnFilter',
-      filterParams: {
-        values: ['NEU', 'QUALIFIZIERT', 'ANGEBOT', 'VERHANDLUNG', 'GEWONNEN', 'VERLOREN'],
-      },
+      filter: 'agTextColumnFilter',
     },
     {
       field: 'wert',
@@ -63,6 +60,9 @@ export class ChanceListComponent implements OnInit {
     floatingFilter: true,
   };
 
+  autoSizeStrategy: SizeColumnsToFitGridStrategy = { type: 'fitGridWidth' };
+  rowSelection: RowSelectionOptions = { mode: 'singleRow', enableClickSelection: true };
+
   ngOnInit(): void {
     this.chanceService.listAll().subscribe({
       next: (data) => {
@@ -73,10 +73,6 @@ export class ChanceListComponent implements OnInit {
         this.loading = false;
       },
     });
-  }
-
-  onGridReady(event: GridReadyEvent): void {
-    event.api.sizeColumnsToFit();
   }
 
   onRowClicked(event: RowClickedEvent<Chance>): void {

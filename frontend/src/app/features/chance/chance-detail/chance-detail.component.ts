@@ -61,6 +61,7 @@ export class ChanceDetailComponent implements OnInit {
             this.notification.success('Chance erfolgreich gelöscht');
             this.router.navigate(['/chancen']);
           },
+          error: () => {},
         });
       },
       () => {},

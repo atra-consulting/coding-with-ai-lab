@@ -82,6 +82,7 @@ export class FirmaDetailComponent implements OnInit {
             this.notification.success('Firma erfolgreich gelöscht');
             this.router.navigate(['/firmen']);
           },
+          error: () => {},
         });
       },
       () => {},

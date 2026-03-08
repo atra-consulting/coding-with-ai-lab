@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AgGridAngular } from 'ag-grid-angular';
-import { ColDef, GridReadyEvent, RowClickedEvent, themeQuartz } from 'ag-grid-community';
+import { ColDef, RowClickedEvent, RowSelectionOptions, SizeColumnsToFitGridStrategy, themeQuartz } from 'ag-grid-community';
 import { Gehalt } from '../../../core/models/gehalt.model';
 import { GehaltService } from '../../../core/services/gehalt.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
@@ -26,10 +26,7 @@ export class GehaltListComponent implements OnInit {
     {
       field: 'typ',
       headerName: 'Typ',
-      filter: 'agSetColumnFilter',
-      filterParams: {
-        values: ['GRUNDGEHALT', 'BONUS', 'PROVISION', 'SONDERZAHLUNG'],
-      },
+      filter: 'agTextColumnFilter',
     },
     {
       field: 'amount',
@@ -55,6 +52,9 @@ export class GehaltListComponent implements OnInit {
     floatingFilter: true,
   };
 
+  autoSizeStrategy: SizeColumnsToFitGridStrategy = { type: 'fitGridWidth' };
+  rowSelection: RowSelectionOptions = { mode: 'singleRow', enableClickSelection: true };
+
   ngOnInit(): void {
     this.gehaltService.listAll().subscribe({
       next: (data) => {
@@ -65,10 +65,6 @@ export class GehaltListComponent implements OnInit {
         this.loading = false;
       },
     });
-  }
-
-  onGridReady(event: GridReadyEvent): void {
-    event.api.sizeColumnsToFit();
   }
 
   onRowClicked(event: RowClickedEvent<Gehalt>): void {

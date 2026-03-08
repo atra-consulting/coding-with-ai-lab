@@ -47,6 +47,7 @@ export class AbteilungDetailComponent implements OnInit {
             this.notification.success('Abteilung erfolgreich gelöscht');
             this.router.navigate(['/abteilungen']);
           },
+          error: () => {},
         });
       },
       () => {},

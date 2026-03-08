@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AgGridAngular } from 'ag-grid-angular';
-import { ColDef, GridReadyEvent, RowClickedEvent, themeQuartz } from 'ag-grid-community';
+import { ColDef, RowClickedEvent, RowSelectionOptions, SizeColumnsToFitGridStrategy, themeQuartz } from 'ag-grid-community';
 import { Person } from '../../../core/models/person.model';
 import { PersonService } from '../../../core/services/person.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
@@ -36,6 +36,9 @@ export class PersonListComponent implements OnInit {
     floatingFilter: true,
   };
 
+  autoSizeStrategy: SizeColumnsToFitGridStrategy = { type: 'fitGridWidth' };
+  rowSelection: RowSelectionOptions = { mode: 'singleRow', enableClickSelection: true };
+
   ngOnInit(): void {
     this.personService.listAll().subscribe({
       next: (data) => {
@@ -46,10 +49,6 @@ export class PersonListComponent implements OnInit {
         this.loading = false;
       },
     });
-  }
-
-  onGridReady(event: GridReadyEvent): void {
-    event.api.sizeColumnsToFit();
   }
 
   onRowClicked(event: RowClickedEvent<Person>): void {

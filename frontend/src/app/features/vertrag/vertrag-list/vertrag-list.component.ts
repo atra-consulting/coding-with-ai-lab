@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AgGridAngular } from 'ag-grid-angular';
-import { ColDef, GridReadyEvent, RowClickedEvent, themeQuartz } from 'ag-grid-community';
+import { ColDef, RowClickedEvent, RowSelectionOptions, SizeColumnsToFitGridStrategy, themeQuartz } from 'ag-grid-community';
 import { Vertrag } from '../../../core/models/vertrag.model';
 import { VertragService } from '../../../core/services/vertrag.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
@@ -27,10 +27,7 @@ export class VertragListComponent implements OnInit {
     {
       field: 'status',
       headerName: 'Status',
-      filter: 'agSetColumnFilter',
-      filterParams: {
-        values: ['ENTWURF', 'AKTIV', 'ABGELAUFEN', 'GEKUENDIGT'],
-      },
+      filter: 'agTextColumnFilter',
     },
     {
       field: 'wert',
@@ -65,6 +62,9 @@ export class VertragListComponent implements OnInit {
     floatingFilter: true,
   };
 
+  autoSizeStrategy: SizeColumnsToFitGridStrategy = { type: 'fitGridWidth' };
+  rowSelection: RowSelectionOptions = { mode: 'singleRow', enableClickSelection: true };
+
   ngOnInit(): void {
     this.vertragService.listAll().subscribe({
       next: (data) => {
@@ -75,10 +75,6 @@ export class VertragListComponent implements OnInit {
         this.loading = false;
       },
     });
-  }
-
-  onGridReady(event: GridReadyEvent): void {
-    event.api.sizeColumnsToFit();
   }
 
   onRowClicked(event: RowClickedEvent<Vertrag>): void {

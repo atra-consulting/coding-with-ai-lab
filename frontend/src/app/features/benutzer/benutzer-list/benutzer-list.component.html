@@ -12,9 +12,9 @@
     [rowData]="rowData"
     [columnDefs]="columnDefs"
     [defaultColDef]="defaultColDef"
-    (gridReady)="onGridReady($event)"
+    [autoSizeStrategy]="autoSizeStrategy"
     (rowClicked)="onRowClicked($event)"
-    [rowSelection]="{ mode: 'singleRow', enableClickSelection: true }"
+    [rowSelection]="rowSelection"
     [paginationAutoPageSize]="true"
     [pagination]="true"
   />

@@ -48,6 +48,7 @@ export class PersonDetailComponent implements OnInit {
             this.notification.success('Person erfolgreich gelöscht');
             this.router.navigate(['/personen']);
           },
+          error: () => {},
         });
       },
       () => {},

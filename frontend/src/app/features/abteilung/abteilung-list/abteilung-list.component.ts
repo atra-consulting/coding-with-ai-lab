@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AgGridAngular } from 'ag-grid-angular';
-import { ColDef, GridReadyEvent, RowClickedEvent, themeQuartz } from 'ag-grid-community';
+import { ColDef, RowClickedEvent, RowSelectionOptions, SizeColumnsToFitGridStrategy, themeQuartz } from 'ag-grid-community';
 import { Abteilung } from '../../../core/models/abteilung.model';
 import { AbteilungService } from '../../../core/services/abteilung.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
@@ -33,6 +33,9 @@ export class AbteilungListComponent implements OnInit {
     floatingFilter: true,
   };
 
+  autoSizeStrategy: SizeColumnsToFitGridStrategy = { type: 'fitGridWidth' };
+  rowSelection: RowSelectionOptions = { mode: 'singleRow', enableClickSelection: true };
+
   ngOnInit(): void {
     this.abteilungService.listAll().subscribe({
       next: (data) => {
@@ -43,10 +46,6 @@ export class AbteilungListComponent implements OnInit {
         this.loading = false;
       },
     });
-  }
-
-  onGridReady(event: GridReadyEvent): void {
-    event.api.sizeColumnsToFit();
   }
 
   onRowClicked(event: RowClickedEvent<Abteilung>): void {

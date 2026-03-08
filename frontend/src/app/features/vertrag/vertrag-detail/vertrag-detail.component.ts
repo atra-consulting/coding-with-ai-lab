@@ -64,6 +64,7 @@ export class VertragDetailComponent implements OnInit {
             this.notification.success('Vertrag erfolgreich gelöscht');
             this.router.navigate(['/vertraege']);
           },
+          error: () => {},
         });
       },
       () => {},

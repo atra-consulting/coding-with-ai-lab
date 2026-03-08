@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AgGridAngular } from 'ag-grid-angular';
-import { ColDef, GridReadyEvent, RowClickedEvent, themeQuartz } from 'ag-grid-community';
+import { ColDef, RowClickedEvent, RowSelectionOptions, SizeColumnsToFitGridStrategy, themeQuartz } from 'ag-grid-community';
 import { Aktivitaet } from '../../../core/models/aktivitaet.model';
 import { AktivitaetService } from '../../../core/services/aktivitaet.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
@@ -24,10 +24,7 @@ export class AktivitaetListComponent implements OnInit {
     {
       field: 'typ',
       headerName: 'Typ',
-      filter: 'agSetColumnFilter',
-      filterParams: {
-        values: ['ANRUF', 'EMAIL', 'MEETING', 'NOTIZ', 'AUFGABE'],
-      },
+      filter: 'agTextColumnFilter',
     },
     {
       field: 'datum',
@@ -55,6 +52,9 @@ export class AktivitaetListComponent implements OnInit {
     floatingFilter: true,
   };
 
+  autoSizeStrategy: SizeColumnsToFitGridStrategy = { type: 'fitGridWidth' };
+  rowSelection: RowSelectionOptions = { mode: 'singleRow', enableClickSelection: true };
+
   ngOnInit(): void {
     this.aktivitaetService.listAll().subscribe({
       next: (data) => {
@@ -65,10 +65,6 @@ export class AktivitaetListComponent implements OnInit {
         this.loading = false;
       },
     });
-  }
-
-  onGridReady(event: GridReadyEvent): void {
-    event.api.sizeColumnsToFit();
   }
 
   onRowClicked(event: RowClickedEvent<Aktivitaet>): void {
