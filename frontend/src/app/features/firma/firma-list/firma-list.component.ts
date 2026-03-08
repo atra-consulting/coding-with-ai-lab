@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AgGridAngular } from 'ag-grid-angular';
-import { ColDef, RowClickedEvent, RowSelectionOptions, SizeColumnsToContentStrategy, themeQuartz } from 'ag-grid-community';
+import { ColDef, RowClickedEvent, SizeColumnsToContentStrategy, themeQuartz } from 'ag-grid-community';
 import { Firma } from '../../../core/models/firma.model';
 import { FirmaService } from '../../../core/services/firma.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
@@ -34,7 +34,6 @@ export class FirmaListComponent implements OnInit {
   };
 
   autoSizeStrategy: SizeColumnsToContentStrategy = { type: 'fitCellContents' };
-  rowSelection: RowSelectionOptions = { mode: 'singleRow', enableClickSelection: true };
 
   ngOnInit(): void {
     this.firmaService.listAll().subscribe({

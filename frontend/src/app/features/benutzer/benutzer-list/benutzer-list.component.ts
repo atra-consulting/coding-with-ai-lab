@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AgGridAngular } from 'ag-grid-angular';
-import { ColDef, RowClickedEvent, RowSelectionOptions, SizeColumnsToContentStrategy, themeQuartz } from 'ag-grid-community';
+import { ColDef, RowClickedEvent, SizeColumnsToContentStrategy, themeQuartz } from 'ag-grid-community';
 import { Benutzer } from '../../../core/models/benutzer.model';
 import { BenutzerService } from '../../../core/services/benutzer.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
@@ -46,7 +46,6 @@ export class BenutzerListComponent implements OnInit {
   };
 
   autoSizeStrategy: SizeColumnsToContentStrategy = { type: 'fitCellContents' };
-  rowSelection: RowSelectionOptions = { mode: 'singleRow', enableClickSelection: true };
 
   ngOnInit(): void {
     this.benutzerService.listAll().subscribe({

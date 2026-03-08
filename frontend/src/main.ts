@@ -9,7 +9,6 @@ import {
   NumberFilterModule,
   DateFilterModule,
   ColumnAutoSizeModule,
-  RowSelectionModule,
   TextEditorModule,
   ValidationModule,
 } from 'ag-grid-community';
@@ -22,7 +21,6 @@ ModuleRegistry.registerModules([
   NumberFilterModule,
   DateFilterModule,
   ColumnAutoSizeModule,
-  RowSelectionModule,
   TextEditorModule,
   ValidationModule,
 ]);

@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AgGridAngular } from 'ag-grid-angular';
-import { ColDef, RowClickedEvent, RowSelectionOptions, SizeColumnsToContentStrategy, themeQuartz } from 'ag-grid-community';
+import { ColDef, RowClickedEvent, SizeColumnsToContentStrategy, themeQuartz } from 'ag-grid-community';
 import { Gehalt } from '../../../core/models/gehalt.model';
 import { GehaltService } from '../../../core/services/gehalt.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
@@ -52,7 +52,6 @@ export class GehaltListComponent implements OnInit {
   };
 
   autoSizeStrategy: SizeColumnsToContentStrategy = { type: 'fitCellContents' };
-  rowSelection: RowSelectionOptions = { mode: 'singleRow', enableClickSelection: true };
 
   ngOnInit(): void {
     this.gehaltService.listAll().subscribe({
