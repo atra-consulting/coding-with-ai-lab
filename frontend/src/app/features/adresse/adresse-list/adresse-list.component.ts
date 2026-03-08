@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AgGridAngular } from 'ag-grid-angular';
-import { ColDef, RowClickedEvent, RowSelectionOptions, SizeColumnsToFitGridStrategy, themeQuartz } from 'ag-grid-community';
+import { ColDef, RowClickedEvent, RowSelectionOptions, SizeColumnsToContentStrategy, themeQuartz } from 'ag-grid-community';
 import { Adresse } from '../../../core/models/adresse.model';
 import { AdresseService } from '../../../core/services/adresse.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
@@ -17,7 +17,7 @@ export class AdresseListComponent implements OnInit {
 
   rowData: Adresse[] = [];
   loading = true;
-  theme = themeQuartz;
+  theme = themeQuartz.withParams({ oddRowBackgroundColor: '#f0f0f0' });
 
   columnDefs: ColDef<Adresse>[] = [
     {
@@ -47,7 +47,7 @@ export class AdresseListComponent implements OnInit {
     resizable: true,
   };
 
-  autoSizeStrategy: SizeColumnsToFitGridStrategy = { type: 'fitGridWidth' };
+  autoSizeStrategy: SizeColumnsToContentStrategy = { type: 'fitCellContents' };
   rowSelection: RowSelectionOptions = { mode: 'singleRow', enableClickSelection: true };
 
   ngOnInit(): void {
