@@ -25,7 +25,7 @@ public class FirmaService {
     }
 
     @Transactional(readOnly = true)
-    public List<FirmaDTO> findAll() {
+    public List<FirmaDTO> listAll() {
         return firmaRepository.findAll().stream().map(FirmaMapper::toDTO).toList();
     }
 

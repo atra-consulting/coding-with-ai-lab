@@ -33,7 +33,7 @@ public class PersonService {
     }
 
     @Transactional(readOnly = true)
-    public List<PersonDTO> findAll() {
+    public List<PersonDTO> listAll() {
         return personRepository.findAll().stream().map(PersonMapper::toDTO).toList();
     }
 

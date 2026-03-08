@@ -46,7 +46,7 @@ public class FirmaController {
 
     @GetMapping("/all")
     public List<FirmaDTO> listAll() {
-        return firmaService.findAll();
+        return firmaService.listAll();
     }
 
     @GetMapping

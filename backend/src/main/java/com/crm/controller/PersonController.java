@@ -38,7 +38,7 @@ public class PersonController {
 
     @GetMapping("/all")
     public List<PersonDTO> listAll() {
-        return personService.findAll();
+        return personService.listAll();
     }
 
     @GetMapping

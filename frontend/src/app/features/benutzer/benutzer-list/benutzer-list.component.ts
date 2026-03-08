@@ -35,7 +35,7 @@ export class BenutzerListComponent implements OnInit {
       field: 'aktiv',
       headerName: 'Status',
       valueFormatter: (params) => params.value ? 'Aktiv' : 'Inaktiv',
-      filter: 'agTextColumnFilter',
+      filter: false,
     },
   ];
 
