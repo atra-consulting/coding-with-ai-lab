@@ -45,7 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (SecurityContextHolder.getContext().getAuthentication() == null) {
                 String username = claims.getSubject();
-                Long benutzerId = claims.get("benutzerId", Long.class);
+                Long benutzerId = ((Number) claims.get("benutzerId")).longValue();
                 String vorname = claims.get("vorname", String.class);
                 String nachname = claims.get("nachname", String.class);
 

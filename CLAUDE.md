@@ -2,7 +2,7 @@
 
 ## Project
 
-Full-stack CRM application with separate CIAM microservice. Spring Boot 3.5.3 (Java 21) backend, CIAM service in Kotlin (Spring Boot 3.5.3), Angular 20 frontend. German domain model: Firma, Person, Abteilung, Adresse, Gehalt, Aktivitaet, Vertrag, Chance. H2 file-based databases (separate DBs for CRM and CIAM).
+Full-stack CRM application with separate CIAM microservice. Spring Boot 4.0.3 (Java 21) backend, CIAM service in Kotlin (Spring Boot 4.0.3), Angular 20 frontend. German domain model: Firma, Person, Abteilung, Adresse, Gehalt, Aktivitaet, Vertrag, Chance. H2 file-based databases (separate DBs for CRM and CIAM).
 
 ## Build & Run
 
