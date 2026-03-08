@@ -29,6 +29,11 @@ public class AbteilungService {
     }
 
     @Transactional(readOnly = true)
+    public List<AbteilungDTO> listAll() {
+        return abteilungRepository.findAll().stream().map(AbteilungMapper::toDTO).toList();
+    }
+
+    @Transactional(readOnly = true)
     public Page<AbteilungDTO> findAll(Pageable pageable) {
         return abteilungRepository.findAll(pageable).map(AbteilungMapper::toDTO);
     }

@@ -1,5 +1,7 @@
 package com.crm.service;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,11 @@ public class GehaltService {
     public GehaltService(GehaltRepository gehaltRepository, PersonRepository personRepository) {
         this.gehaltRepository = gehaltRepository;
         this.personRepository = personRepository;
+    }
+
+    @Transactional(readOnly = true)
+    public List<GehaltDTO> listAll() {
+        return gehaltRepository.findAll().stream().map(GehaltMapper::toDTO).toList();
     }
 
     @Transactional(readOnly = true)

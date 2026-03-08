@@ -3,69 +3,16 @@
   <a routerLink="neu" class="btn btn-primary">Neues Gehalt</a>
 </div>
 
-<div class="table-container">
-  @if (loading) {
-    <app-loading-spinner />
-  } @else if (page && page.content.length > 0) {
-    <table class="table table-hover">
-      <thead>
-        <tr>
-          <th>Person</th>
-          <th>Typ</th>
-          <th>Betrag</th>
-          <th>Datum</th>
-          <th>Aktionen</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (gehalt of page.content; track gehalt.id) {
-          <tr>
-            <td>{{ gehalt.personName }}</td>
-            <td>
-              @switch (gehalt.typ) {
-                @case ('GRUNDGEHALT') {
-                  <span class="badge bg-primary">Grundgehalt</span>
-                }
-                @case ('BONUS') {
-                  <span class="badge bg-success">Bonus</span>
-                }
-                @case ('PROVISION') {
-                  <span class="badge bg-info text-dark">Provision</span>
-                }
-                @case ('SONDERZAHLUNG') {
-                  <span class="badge bg-warning text-dark">Sonderzahlung</span>
-                }
-              }
-            </td>
-            <td>{{ gehalt.amount | eurCurrency: gehalt.currency }}</td>
-            <td>{{ gehalt.effectiveDate }}</td>
-            <td class="action-buttons" (click)="$event.stopPropagation()">
-              <a [routerLink]="[gehalt.id, 'bearbeiten']" class="btn btn-sm btn-outline-primary"
-                >Bearbeiten</a
-              >
-              <button class="btn btn-sm btn-outline-danger" (click)="confirmDelete(gehalt)">
-                Löschen
-              </button>
-            </td>
-          </tr>
-        }
-      </tbody>
-    </table>
-
-    @if (page.totalPages > 1) {
-      <div class="d-flex justify-content-center">
-        <ngb-pagination
-          [collectionSize]="page.totalElements"
-          [(page)]="currentPage"
-          [pageSize]="pageSize"
-          (pageChange)="onPageChange($event)"
-          [maxSize]="5"
-          [boundaryLinks]="true"
-        >
-        </ngb-pagination>
-      </div>
-    }
-  } @else {
-    <p class="text-muted">Keine Gehälter gefunden.</p>
-  }
-</div>
+@if (loading) {
+  <app-loading-spinner />
+} @else {
+  <ag-grid-angular
+    style="width: 100%; height: calc(100vh - 180px)"
+    [theme]="theme"
+    [rowData]="rowData"
+    [columnDefs]="columnDefs"
+    [defaultColDef]="defaultColDef"
+    [autoSizeStrategy]="autoSizeStrategy"
+    (rowClicked)="onRowClicked($event)"
+  />
+}

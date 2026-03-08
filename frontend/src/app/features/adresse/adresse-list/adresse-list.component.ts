@@ -1,38 +1,58 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { NgbModal, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
+import { Router, RouterLink } from '@angular/router';
+import { AgGridAngular } from 'ag-grid-angular';
+import { ColDef, RowClickedEvent, SizeColumnsToContentStrategy, themeQuartz } from 'ag-grid-community';
 import { Adresse } from '../../../core/models/adresse.model';
-import { Page } from '../../../core/models/page.model';
 import { AdresseService } from '../../../core/services/adresse.service';
-import { NotificationService } from '../../../core/services/notification.service';
-import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-adresse-list',
-  imports: [RouterLink, NgbPagination, LoadingSpinnerComponent],
+  imports: [RouterLink, AgGridAngular, LoadingSpinnerComponent],
   templateUrl: './adresse-list.component.html',
-  styleUrl: './adresse-list.component.scss',
 })
 export class AdresseListComponent implements OnInit {
   private adresseService = inject(AdresseService);
-  private modalService = inject(NgbModal);
-  private notification = inject(NotificationService);
+  private router = inject(Router);
 
-  page: Page<Adresse> | null = null;
-  currentPage = 1;
-  pageSize = 10;
+  rowData: Adresse[] = [];
   loading = true;
+  theme = themeQuartz.withParams({ oddRowBackgroundColor: '#f0f0f0' });
+
+  columnDefs: ColDef<Adresse>[] = [
+    {
+      headerName: 'Adresse',
+      valueGetter: (params) =>
+        `${params.data?.street ?? ''} ${params.data?.houseNumber ?? ''}`.trim(),
+    },
+    {
+      headerName: 'PLZ / Ort',
+      valueGetter: (params) =>
+        `${params.data?.postalCode ?? ''} ${params.data?.city ?? ''}`.trim(),
+    },
+    { field: 'country', headerName: 'Land' },
+    {
+      headerName: 'Zugehörigkeit',
+      valueGetter: (params) => {
+        if (params.data?.firmaName) return `Firma: ${params.data.firmaName}`;
+        if (params.data?.personName) return `Person: ${params.data.personName}`;
+        return '-';
+      },
+    },
+  ];
+
+  defaultColDef: ColDef = {
+    filter: true,
+    sortable: true,
+    resizable: true,
+  };
+
+  autoSizeStrategy: SizeColumnsToContentStrategy = { type: 'fitCellContents' };
 
   ngOnInit(): void {
-    this.loadData();
-  }
-
-  loadData(): void {
-    this.loading = true;
-    this.adresseService.getAll(this.currentPage - 1, this.pageSize).subscribe({
+    this.adresseService.listAll().subscribe({
       next: (data) => {
-        this.page = data;
+        this.rowData = data;
         this.loading = false;
       },
       error: () => {
@@ -41,26 +61,9 @@ export class AdresseListComponent implements OnInit {
     });
   }
 
-  onPageChange(p: number): void {
-    this.currentPage = p;
-    this.loadData();
-  }
-
-  confirmDelete(adresse: Adresse): void {
-    const modalRef = this.modalService.open(ConfirmDialogComponent);
-    modalRef.componentInstance.title = 'Adresse löschen';
-    modalRef.componentInstance.message = `Möchten Sie die Adresse "${adresse.street} ${adresse.houseNumber}, ${adresse.postalCode} ${adresse.city}" wirklich löschen?`;
-    modalRef.result.then(
-      () => {
-        this.adresseService.delete(adresse.id).subscribe({
-          next: () => {
-            this.notification.success('Adresse erfolgreich gelöscht');
-            this.loadData();
-          },
-          error: () => {},
-        });
-      },
-      () => {},
-    );
+  onRowClicked(event: RowClickedEvent<Adresse>): void {
+    if (event.data) {
+      this.router.navigate(['/adressen', event.data.id, 'bearbeiten']);
+    }
   }
 }

@@ -35,6 +35,8 @@
     "@fortawesome/free-solid-svg-icons": "^7.2.0",
     "@ng-bootstrap/ng-bootstrap": "^20.0.0",
     "@popperjs/core": "^2.11.8",
+    "ag-grid-angular": "^35.1.0",
+    "ag-grid-community": "^35.1.0",
     "bootstrap": "^5.3.8",
     "chart.js": "^4.5.1",
     "ng2-charts": "^10.0.0",

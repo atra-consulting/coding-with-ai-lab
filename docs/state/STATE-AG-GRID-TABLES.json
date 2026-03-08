@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "task_key": "AG-GRID-TABLES",
+  "status": "completed",
+  "current_step": "13",
+  "started": "2026-03-08T15:10:00Z",
+  "updated": "2026-03-08T16:00:00Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Switch tables to ag-grid, load all data (no paging), per-column filtering, remove search bar and Aktionen column, move Bearbeiten/Löschen to detail pages, custom enum filters",
+    "special_instructions": null,
+    "branch_name": "ag-grid-tables",
+    "original_branch": "main",
+    "docs_folder": "docs",
+    "stay_on_main": false
+  },
+  "discovery": {
+    "agents_available": true,
+    "coding_agents": ["be-coder", "fe-coder", "db-coder", "ui-designer"],
+    "review_agents": ["be-reviewer", "fe-reviewer", "db-reviewer", "ba-reviewer", "ui-reviewer"],
+    "test_command": "cd frontend && npx ng build"
+  },
+  "artifacts": {
+    "prd_skipped": false,
+    "prd_file": "docs/prds/PRD-AG-GRID-TABLES.md",
+    "plan_file": "docs/plans/PLAN-AG-GRID-TABLES.md"
+  },
+  "completed_steps": ["3.3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13"]
+}

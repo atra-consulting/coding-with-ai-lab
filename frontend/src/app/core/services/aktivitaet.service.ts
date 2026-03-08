@@ -14,6 +14,10 @@ export class AktivitaetService {
     return this.http.get<Page<Aktivitaet>>(this.baseUrl, { params });
   }
 
+  listAll(): Observable<Aktivitaet[]> {
+    return this.http.get<Aktivitaet[]>(`${this.baseUrl}/all`);
+  }
+
   getById(id: number): Observable<Aktivitaet> {
     return this.http.get<Aktivitaet>(`${this.baseUrl}/${id}`);
   }
