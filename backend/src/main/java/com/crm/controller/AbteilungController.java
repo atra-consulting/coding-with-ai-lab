@@ -36,6 +36,11 @@ public class AbteilungController {
         this.abteilungService = abteilungService;
     }
 
+    @GetMapping("/all")
+    public List<AbteilungDTO> listAll() {
+        return abteilungService.listAll();
+    }
+
     @GetMapping
     public Page<AbteilungDTO> getAll(
             @RequestParam(defaultValue = "0") int page,

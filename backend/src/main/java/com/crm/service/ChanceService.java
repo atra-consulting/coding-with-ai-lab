@@ -38,6 +38,11 @@ public class ChanceService {
     }
 
     @Transactional(readOnly = true)
+    public List<ChanceDTO> listAll() {
+        return chanceRepository.findAll().stream().map(ChanceMapper::toDTO).toList();
+    }
+
+    @Transactional(readOnly = true)
     public Page<ChanceDTO> findAll(Pageable pageable) {
         return chanceRepository.findAll(pageable).map(ChanceMapper::toDTO);
     }

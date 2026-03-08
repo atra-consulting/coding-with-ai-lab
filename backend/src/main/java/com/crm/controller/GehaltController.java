@@ -1,5 +1,7 @@
 package com.crm.controller;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -32,6 +34,11 @@ public class GehaltController {
 
     public GehaltController(GehaltService gehaltService) {
         this.gehaltService = gehaltService;
+    }
+
+    @GetMapping("/all")
+    public List<GehaltDTO> listAll() {
+        return gehaltService.listAll();
     }
 
     @GetMapping

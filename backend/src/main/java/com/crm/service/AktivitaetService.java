@@ -1,5 +1,7 @@
 package com.crm.service;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -30,6 +32,11 @@ public class AktivitaetService {
         this.aktivitaetRepository = aktivitaetRepository;
         this.firmaRepository = firmaRepository;
         this.personRepository = personRepository;
+    }
+
+    @Transactional(readOnly = true)
+    public List<AktivitaetDTO> listAll() {
+        return aktivitaetRepository.findAll().stream().map(AktivitaetMapper::toDTO).toList();
     }
 
     @Transactional(readOnly = true)
