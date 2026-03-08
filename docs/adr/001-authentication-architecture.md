@@ -11,7 +11,7 @@ Das CRM-System soll um Authentifizierung und ein Benutzerkonzept erweitert werde
 **Rahmenbedingungen des Projekts:**
 
 - Spring Boot 3.5.3 mit Java 21
-- Angular 20 Frontend
+- Angular 21 Frontend
 - H2 file-basierte Datenbank
 - Single-Instance-Deployment (kein Cluster)
 - Entwicklungs-/Kleinteam-Kontext, kein High-Scale-Szenario

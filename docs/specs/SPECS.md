@@ -6,7 +6,7 @@ Full-stack CRM application with separate CIAM microservice for Identity & Access
 
 ```
 ┌─────────────┐     ┌─────────────────┐     ┌──────────────┐
-│  Angular 20  │────▶│  Spring Boot    │     │  CIAM        │
+│  Angular 21  │────▶│  Spring Boot    │     │  CIAM        │
 │  Frontend    │     │  Backend (CRM)  │     │  (Kotlin)    │
 │  Port 4200   │────▶│  Port 8080      │     │  Port 8081   │
 └─────────────┘     └─────────────────┘     └──────────────┘

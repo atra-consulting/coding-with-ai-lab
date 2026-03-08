@@ -2,7 +2,7 @@
 
 ## Project
 
-Full-stack CRM application with separate CIAM microservice. Spring Boot 4.0.3 (Java 21) backend, CIAM service in Kotlin (Spring Boot 4.0.3), Angular 20 frontend. German domain model: Firma, Person, Abteilung, Adresse, Gehalt, Aktivitaet, Vertrag, Chance. H2 file-based databases (separate DBs for CRM and CIAM).
+Full-stack CRM application with separate CIAM microservice. Spring Boot 4.0.3 (Java 21) backend, CIAM service in Kotlin (Spring Boot 4.0.3), Angular 21 frontend. German domain model: Firma, Person, Abteilung, Adresse, Gehalt, Aktivitaet, Vertrag, Chance. H2 file-based databases (separate DBs for CRM and CIAM).
 
 ## Build & Run
 
@@ -54,7 +54,7 @@ Each entity follows: Entity → `*DTO` + `*CreateDTO` (Java records) → `*Mappe
 
 ## Frontend Patterns
 
-- **Angular 20 standalone components** — no NgModules, no `standalone: true` (it's the default). Use `imports: [...]` in `@Component`.
+- **Angular 21 standalone components** — no NgModules, no `standalone: true` (it's the default). Use `imports: [...]` in `@Component`.
 - **DI**: `private service = inject(Service)`, not constructor injection.
 - **Control flow**: `@if`/`@for`/`@switch` blocks only, never `*ngIf`/`*ngFor`. `@for` requires `track`.
 - **Forms**: `ReactiveFormsModule` with `FormBuilder`. Edit mode via route param `id`, populate with `patchValue()`.
@@ -91,7 +91,7 @@ Frontend (8+ files): Model interface → Service → Route file → List/Detail/
 | be-reviewer | Review backend code, security, patterns | review |
 | db-coder | JPA queries, entity schemas, data access | coding |
 | db-reviewer | Review queries, JPA mappings, performance | review |
-| fe-coder | Angular 20 frontend code, components, services | coding |
+| fe-coder | Angular 21 frontend code, components, services | coding |
 | fe-reviewer | Review frontend code, patterns, accessibility | review |
 | md-reader | Read, search, summarize Markdown documentation | utility |
 | ui-designer | UI/UX design, layout, styling, accessibility | coding |

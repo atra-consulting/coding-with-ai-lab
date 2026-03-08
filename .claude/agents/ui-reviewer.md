@@ -56,7 +56,7 @@ Severity levels:
 
 ## Project Context
 
-This is an Angular 20 CRM application with Bootstrap 5. Key areas:
+This is an Angular 21 CRM application with Bootstrap 5. Key areas:
 - Entity list views with pagination (NgbPagination)
 - Detail views and edit forms
 - Kanban board for Chancen (drag & drop pipeline)

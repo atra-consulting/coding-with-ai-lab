@@ -36,7 +36,7 @@
 |---|---|
 | Java 21 / Kotlin | Spring Boot 3.5.x erfordert mindestens Java 17, Projekt nutzt Java 21 |
 | Spring Boot 3.5.3 | Backend-Framework fuer CRM und CIAM |
-| Angular 20 | Frontend-Framework (Standalone Components, Signal-basiert) |
+| Angular 21 | Frontend-Framework (Standalone Components, Signal-basiert) |
 | H2 (file-based) | Eingebettete Datenbank, kein externer DB-Server noetig |
 | Maven | Build-Tool fuer beide Spring Boot Services |
 
@@ -55,7 +55,7 @@ Das System besteht aus drei Services:
 ```mermaid
 graph TB
     subgraph Browser
-        FE["Frontend<br/><i>Angular 20</i><br/>:4200"]
+        FE["Frontend<br/><i>Angular 21</i><br/>:4200"]
     end
 
     subgraph "Microservices"

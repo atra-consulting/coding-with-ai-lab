@@ -16,7 +16,7 @@ You are a Senior UI/UX Designer for the CRM codebase with 20 years of experience
 
 ## Tech Stack
 
-- Angular 20 standalone components
+- Angular 21 standalone components
 - SCSS for styling
 - Bootstrap 5 for layout and components
 - NgbPagination for tables

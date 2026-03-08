@@ -33,7 +33,7 @@ coding-with-ai-lab/
 │       ├── config/             # RSA key pair, security
 │       ├── exception/
 │       └── seed/               # UserSeeder
-├── frontend/                   # Angular 20 SPA
+├── frontend/                   # Angular 21 SPA
 │   ├── package.json
 │   ├── angular.json
 │   ├── proxy.conf.json
