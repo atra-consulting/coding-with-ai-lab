@@ -106,7 +106,7 @@
                         <plugin>jpa</plugin>
                     </compilerPlugins>
                     <args>
-                        <arg>-Xjsr305=strict</arg>
+                        <arg>-Xannotation-default-target=param-property</arg>
                     </args>
                     <jvmTarget>21</jvmTarget>
                 </configuration>
