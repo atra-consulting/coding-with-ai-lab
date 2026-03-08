@@ -7,10 +7,10 @@ Full-stack CRM application with separate CIAM microservice. Spring Boot 4.0.3 (J
 ## Build & Run
 
 ```bash
-./start.sh                                        # Full stack (CIAM:8081 + backend:8080 + frontend:4200)
+./start.sh                                        # Full stack (CIAM:8081 + backend:7070 + frontend:7200)
 cd ciam && mvn spring-boot:run                     # CIAM only (must start first, generates RSA keys)
 cd backend && mvn spring-boot:run                  # Backend only (needs CIAM's public key)
-cd frontend && npx ng serve --proxy-config proxy.conf.json  # Frontend only
+cd frontend && npx ng serve --port 7200 --proxy-config proxy.conf.json  # Frontend only
 cd ciam && mvn clean compile                       # CIAM compile check
 cd backend && mvn clean compile                    # Backend compile check
 cd frontend && npx ng build                        # Frontend build check
@@ -30,7 +30,7 @@ Separate microservice under `/ciam` for Identity & Access Management (Port 8081)
 
 ## CRM Backend (Resource Server)
 
-The CRM backend at `/backend` (Port 8080) is a pure resource server.
+The CRM backend at `/backend` (Port 7070) is a pure resource server.
 
 - **No Auth Endpoints**: All `/api/auth/**` and `/api/benutzer` requests go to CIAM via frontend proxy.
 - **JWT Validation Only**: Reads RSA public key from `../ciam/keys/public.pem` (configurable via `jwt.public-key-path`).
@@ -121,5 +121,5 @@ Full system specs: [`docs/specs/SPECS.md`](docs/specs/SPECS.md) — root documen
 - `frontend/src/main.ts` — `@angular/localize/init` import
 - `frontend/src/app/app.routes.ts` — all feature routes (lazy-loaded)
 - `frontend/src/app/app.config.ts` — providers including HTTP interceptor
-- `frontend/proxy.conf.json` — routes auth to CIAM:8081, rest to CRM:8080
+- `frontend/proxy.conf.json` — routes auth to CIAM:8081, rest to CRM:7070
 - `frontend/src/app/features/chance/chance-board/` — Kanban board component (drag & drop pipeline)
