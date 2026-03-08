@@ -1,9 +1,9 @@
 ---
-name: "local:review"
-description: Local code review - analyzes changes on feature branch vs main
+name: "project:review"
+description: "Local code review with multi-round review & fix cycle. Use for reviewing code, checking changes, getting feedback on a branch, or before creating a PR."
 argument-hint: (optional special instructions)
-version: 1.1.0
-last-modified: 2026-02-22
+version: 1.2.0
+last-modified: 2026-03-08
 allowed-tools:
   - Read
   - Edit
@@ -18,54 +18,32 @@ allowed-tools:
 
 You are executing the **review** skill, which provides local code review with a multi-round review & fix cycle on a feature branch vs main.
 
-## CRITICAL WRITING STYLE REQUIREMENTS
+## Writing Style
 
-**Apply these rules to ALL text output:**
-- Short sentences only
-- Simple words preferred
-- Active voice exclusively
-- Sentence fragments acceptable and encouraged
-- NO complex sentence structures
-- NO passive voice
-- Keep explanations brief and direct
+Short and brief. Short sentences. Simple words non-native speakers understand. No passive voice. Use sentence fragments.
+
+## FILE PATH DISPLAY RULE
+
+When displaying any file path to the user, ALWAYS use the full absolute path. Get the project root with `pwd` and prepend it to relative paths. Example: `/Users/dev/project/docs/reviews/REVIEW-add-feature.md` instead of `docs/reviews/REVIEW-add-feature.md`. This lets users Command-click paths in the terminal to open them.
 
 ## CRITICAL: HOW TO ASK THE USER FOR DECISIONS
 
 Do NOT use AskUserQuestion. It has a known bug that auto-resolves with empty data in long skills.
 
 **Pattern for Numbered Choices:**
-
-Output:
 ```
 Type a number to choose:
   1 - [option]
   2 - [option]
-  3 - [option]
 ```
-
-STOP. Wait for user to type a number.
-
-After receiving the user's response:
-- "1" or "[keyword]" → [action]
-- "2" or "[keyword]" → [action]
-- "3" or "[keyword]" → [action]
-- Anything else → Output the same options again and STOP
+STOP. Wait for user to type a number. If invalid input → show options again and STOP.
 
 **Pattern for Freeform Input:**
+Output question. STOP. Wait for user response.
 
-Output: "[Your question here]"
+## User Autonomy
 
-STOP. Wait for user response.
-
-## CRITICAL USER AUTONOMY REQUIREMENT
-
-**NEVER prompt user mid-execution unless absolutely required for proceeding.**
-- Complete all review work autonomously
-- DO NOT ask: "I found some issues. Do you want me to continue?"
-- DO NOT ask: "Should I review the next file?"
-- DO NOT interrupt work with status check questions
-- ONLY prompt if decision is truly needed to proceed
-- Run the complete review process without interruption
+Complete all review work autonomously without mid-execution prompts. Interrupting to ask "Should I continue?" or "Should I review the next file?" breaks flow and wastes time. Only prompt when a genuine decision is needed to proceed — not for status checks or confirmations.
 
 ## ARGUMENTS HANDLING
 
@@ -76,9 +54,14 @@ Parse arguments to determine mode:
 - **"help"** -> Help mode (show usage and exit)
 - **"doctor"** -> Doctor mode (run health checks and exit)
 - **"dryrun" or "dry-run" or "dry_run"** -> Dry-run mode
+- **"embedded"** -> Embedded mode (called from plan-and-do, skip header/plan-check/confirmation)
 - **Other text** -> Treat as special instructions for the review
 
-## PHASE 0: PLAN MODE CHECK
+## PHASE 0: PLAN MODE CHECK & HEADER
+
+**If embedded mode:** Skip plan mode check, header, and task understanding confirmation. Jump directly to PHASE 1.5: TOOL VALIDATION.
+
+**If NOT embedded mode:**
 
 Check if Claude Code is in plan mode.
 
@@ -91,12 +74,10 @@ Exit plan mode first, then run:
 ```
 Then STOP immediately.
 
-## SKILL HEADER
-
-**If NOT in plan mode, display the following header immediately:**
+If NOT in plan mode, display header:
 
 ```
-Code Review (v1.1.0, 2026-02-22)
+Code Review (v1.2.0, 2026-03-07)
 ****************************************
 
 Local code review - multi-round review & fix cycle
@@ -212,6 +193,12 @@ Continue to PHASE 2: VALIDATION & SETUP.
 
 ---
 
+## Context Recovery
+
+If you lose track of variables (e.g., after context compression), re-read the state file at `[docs_folder]/state/STATE-REVIEW-<branch>.json`. It contains all runtime configuration, discovered agents, and progress. Trust the file over conversation memory.
+
+---
+
 ## PHASE 2: VALIDATION & SETUP
 
 ### Step 2.1: Validate Git Repository
@@ -303,7 +290,12 @@ Include uncommitted changes:
 git diff --name-only HEAD
 ```
 
-Combine both lists, deduplicate.
+Include staged-but-uncommitted changes:
+```bash
+git diff --name-only --cached
+```
+
+Combine all three lists, deduplicate.
 
 If no changes found, output:
 ```
@@ -318,100 +310,65 @@ Then STOP.
 
 Store changed files list.
 
+### Step 3.4: Persist State
+
+Detect docs folder:
+```bash
+test -d doc && echo "doc" || (test -d docs && echo "docs" || echo "none")
+```
+
+Create state directory:
+```bash
+mkdir -p [docs_folder]/state
+```
+
+Write state file to `[docs_folder]/state/STATE-REVIEW-<current_branch>.json` using the Write tool:
+
+```json
+{
+  "version": 1,
+  "branch": "<current_branch>",
+  "main_branch": "<main_branch>",
+  "docs_folder": "<docs_folder>",
+  "special_instructions": "<special_instructions or null>",
+  "review_agents_available": <true/false>,
+  "fix_agents_available": <true/false>,
+  "all_reviewers": [<list>],
+  "all_coders": [<list>],
+  "all_designers": [<list>],
+  "changed_files": [<list>],
+  "dry_run_mode": <true/false>,
+  "started": "<ISO timestamp>"
+}
+```
+
+This file is not committed — it exists only for context recovery if conversation context compresses mid-review.
+
 ---
 
 ## PHASE 4: PROJECT CONTEXT ANALYSIS
 
 Analyze project documentation to understand goals, requirements, and conventions.
 
-### Step 4.1: Check for PRD files
+### Step 4.1: Read PRD (if exists)
 
-Look for PRD files in project:
-```bash
-find . -maxdepth 3 -name "PRD*.md" -o -name "prd*.md" | head -5
-```
+Search for PRD files: `find . -maxdepth 3 -name "PRD*.md" -o -name "prd*.md" | head -5`
 
-If found, note locations.
+If found: Read with Read tool (use offset/limit for files >220KB). Extract purpose, goals, requirements, success criteria.
 
-### Step 4.2: Read PRD (if found)
+If not found: Infer project context from repository name and structure.
 
-If PRD file exists:
+### Step 4.2: Read CLAUDE.md (if exists)
 
-Check file size:
-```bash
-stat -f%z [prd_file]
-```
+Search: `find . -maxdepth 2 -name "CLAUDE.md" -o -name "claude.md"`
 
-If > 220KB (225280 bytes):
-- Read in chunks using Read tool with offset/limit
-- Focus on sections: Purpose, Goals, Requirements
-- Combine insights from chunks
+If found: Read with Read tool (use offset/limit for files >220KB). Extract required/prohibited practices, code conventions, technology stack, testing requirements.
 
-If <= 220KB:
-- Read entire file with Read tool
+If not found: Infer conventions from existing code files.
 
-**Extract from PRD:**
+### Step 4.3: Combine Context
 
-Parse and extract:
-- **Purpose**: What project does
-- **Goals**: Primary and secondary goals
-- **Requirements**: Functional and non-functional
-- **Success Criteria**: How success measured
-
-**If PRD not found:**
-- Log: `No PRD found - inferring project context`
-- Infer purpose from repository name and structure
-- Continue to Step 4.3
-
-### Step 4.3: Check for CLAUDE.md
-
-Look for CLAUDE.md in project root:
-```bash
-find . -maxdepth 2 -name "CLAUDE.md" -o -name "claude.md"
-```
-
-If found, note location.
-
-### Step 4.4: Read CLAUDE.md
-
-If CLAUDE.md exists:
-
-Check file size:
-```bash
-stat -f%z CLAUDE.md
-```
-
-If > 220KB (225280 bytes):
-- Read in chunks using Read tool with offset/limit
-- Focus on sections: Conventions, Patterns, Prohibited Practices
-- Combine insights from chunks
-
-If <= 220KB:
-- Read entire file with Read tool
-
-**Extract from CLAUDE.md:**
-
-Parse and extract:
-- **Required Practices**: Must follow
-- **Prohibited Practices**: Must avoid
-- **Code Conventions**: Style, naming, structure
-- **Technology Stack**: Languages, frameworks, tools
-- **Testing Requirements**: Coverage, patterns
-
-**If CLAUDE.md not found:**
-- Log: `CLAUDE.md not found - inferring conventions`
-- Infer conventions from examining existing code files
-- Continue to Step 4.5
-
-### Step 4.5: Combine Context
-
-Create context summary combining:
-- Project purpose and goals (from PRD)
-- Requirements and success criteria (from PRD)
-- Code conventions and patterns (from CLAUDE.md)
-- Prohibited practices (from CLAUDE.md)
-
-Store context for use in REVIEW & FIX CYCLE phase.
+Create context summary from PRD (purpose, goals, requirements) and CLAUDE.md (conventions, prohibited practices). Store for review phase.
 
 ---
 
@@ -421,9 +378,7 @@ Three review rounds. Each round: reviewers find issues, fixers plan fixes, revie
 
 Rounds 2 and 3 finding zero issues is normal and expected.
 
-**IMPORTANT**: Complete all three rounds autonomously. Do NOT prompt user mid-review.
-
-**CRITICAL**: NEVER post comments that only praise code. ONLY identify actual issues. NO suggested fixes in review comments.
+Complete all rounds autonomously without prompting the user mid-review.
 
 ### Step 5.0: Initialize Round Tracking
 
@@ -431,23 +386,21 @@ Create tracking structure:
 - `all_round_results = []` (per-round: issues found, fixes planned, fixes applied)
 - `current_round = 1`
 - `max_rounds = 3`
+- If `fix_agents_available = false`: set `max_rounds = 1`. The review loop only helps when fixes happen between rounds. Without fixers, subsequent rounds find the same unfixed issues.
 
 ### Step 5.1: REVIEW PHASE
 
-Display: `--- Review Round <current_round>/3 ---`
+Display: `--- Review Round <current_round>/<max_rounds> ---`
 
 #### Step 5.1.1: Agent-Powered Review
 
 **If review_agents_available = true:**
 
-1. Determine `applicable_reviewers` by matching changed file extensions to reviewer agents:
-   - Match file extensions to agent responsibilities as defined in CLAUDE.md agent tables
-   - Example mappings (project-dependent):
-     - `*.java`, `*.kt` files -> backend reviewer agent
-     - `*.ts`, `*.js`, `*.html`, `*.css` files -> frontend reviewer agent
-     - `*.dart` files -> appropriate reviewer agent
-     - `*.sql`, `*Repository.*`, `*Entity.*` files -> database reviewer agent
-     - `*.astro`, `*.tsx` files -> frontend reviewer agent
+1. Determine `applicable_reviewers` by matching changed files to reviewer agents:
+   - Read the agent table from CLAUDE.md
+   - For each agent row, extract the "File Types" or "Scope" column
+   - Match each changed file's extension against these patterns
+   - If a file matches multiple agents, prefer the most specific match (e.g., `*Repository.java` beats `*.java`)
 
 2. If `applicable_reviewers` is non-empty:
    - Launch each applicable reviewer agent via Task tool (in parallel - multiple Task calls in one message)
@@ -503,6 +456,8 @@ Check each item:
 
 **Apply Security Review Checklist:**
 
+Apply only items relevant to the file type and project stack. Skip checks that don't apply (e.g., CORS for backend-only code, container security when no Dockerfiles changed).
+
 Check security items relevant to file type and project stack:
 
 - Input validation implements allowlist patterns for all user input, validating both syntax (format, length, type) and semantics (business logic correctness)
@@ -521,20 +476,11 @@ Check security items relevant to file type and project stack:
 - Container images (if applicable) run as non-root users with minimal privileges
 - Service-to-service authentication uses proper token exchange, not passing external tokens directly
 
+Skip items that don't apply to the file under review. A Python utility script doesn't need CORS checks. A frontend component doesn't need container security review.
+
 #### Step 5.1.3: Record Round Findings
 
-**CRITICAL RULE: NO ENCOURAGING COMMENTS, NO SUGGESTED FIXES IN REVIEW**
-
-**NEVER record comments that only praise or acknowledge good code.**
-
-Examples of FORBIDDEN comments:
-- "Well done!"
-- "Good defensive null-safety"
-- "Nice implementation"
-- "This looks good"
-- Any comment suggesting how to fix the issue
-
-**ONLY record comments that identify actual issues requiring investigation or changes.**
+Only record comments that identify actual issues. Encouraging comments ("Nice implementation!") dilute the review. Reviewers identify problems, fixers propose solutions — keeping these roles separate produces sharper reviews and better fixes.
 
 For each issue found, determine severity (internal tracking only):
 - **CRITICAL**: Security vulnerability, data loss risk, breaks core functionality
@@ -565,14 +511,10 @@ Display: `--- Fix Planning (Round <current_round>) ---`
 **If fix_agents_available = true:**
 
 1. Determine applicable fixer agents:
-   - Match changed file extensions to `*-coder` agent responsibilities
-   - Include `ui-designer` agents for UI-related files (templates, styles, components)
-   - Example mappings (project-dependent):
-     - `*.java`, `*.kt` files -> backend coder agent
-     - `*.ts`, `*.js`, `*.html`, `*.css` files -> frontend coder agent
-     - `*.dart` files -> appropriate coder agent
-     - `*.astro`, `*.tsx`, `*.css` UI files -> ui-designer agent
-     - `*.sql`, `*Repository.*`, `*Entity.*` files -> database coder agent
+   - Read the agent table from CLAUDE.md
+   - For each `*-coder` or `*-designer` agent row, extract the "File Types" or "Scope" column
+   - Match each changed file's extension against these patterns
+   - If a file matches multiple agents, prefer the most specific match
 
 2. Launch applicable fixer agents via Task tool (in parallel - multiple Task calls in one message)
 
@@ -594,8 +536,7 @@ Display: `Fix plans created: <count> fixes proposed`
 **If fix_agents_available = false:**
 - List issues found as actionable items in review output
 - Skip Steps 5.3 and 5.4
-- If `current_round < max_rounds`: increment `current_round`, go back to Step 5.1
-- If `current_round = max_rounds`: proceed to Step 5.5
+- Proceed to Step 5.5 (single round only when no fixers available)
 
 ### Step 5.3: PLAN REVIEW PHASE
 
@@ -654,35 +595,15 @@ Store for use in output phases.
 
 ### Step 6.1: Determine Output Path
 
-Detect docs folder:
-```bash
-test -d doc && echo "doc" || (test -d docs && echo "docs" || echo "none")
-```
+Detect docs folder: check `doc` then `docs`, create `docs` if neither exists.
 
-- If "doc" exists: `docs_folder` = "doc"
-- If "docs" exists: `docs_folder` = "docs"
-- If neither exists: Create `docs` folder and use `docs_folder` = "docs"
-
-Create reviews subdirectory:
 ```bash
 mkdir -p [docs_folder]/reviews
 ```
 
-Set filename based on branch name:
-- Primary: `REVIEW-<BRANCH-NAME>.md` (e.g., `REVIEW-add-redis-caching.md`)
-- Fallback (if branch name too long): `REVIEW-YYYY-MM-DD-hh-mm.md`
+Filename: `REVIEW-<BRANCH-NAME>.md` (fallback: `REVIEW-YYYY-MM-DD-hh-mm.md` if branch name too long).
 
-Generate timestamp in format: `YYYY-MM-DD-hh-mm` using:
-```bash
-date +"%Y-%m-%d-%H-%M"
-```
-
-Get full path for output (clickable in terminal):
-```bash
-pwd
-```
-
-Store full path: `<PWD>/[docs_folder]/reviews/<FILENAME>`
+Get full path (`pwd` + relative) for clickable terminal output.
 
 ### Step 6.2: Generate Review Content
 
@@ -736,7 +657,7 @@ Format review as markdown:
 - Create PR when ready
 
 ---
-Generated with Claude Code - review v1.1.0
+Generated with Claude Code - review v1.2.0
 ```
 
 ### Step 6.3: Write Review File
@@ -780,7 +701,7 @@ Next steps:
 4. Create PR when ready
 ```
 
-**IMPORTANT**: Use full path (e.g., `/Users/dev/project/docs/reviews/REVIEW-add-feature.md`) so users can click it in terminal.
+Use full path (e.g., `/Users/dev/project/docs/reviews/REVIEW-add-feature.md`) so users can click it in terminal.
 
 STOP - Local review complete.
 
@@ -788,218 +709,6 @@ STOP - Local review complete.
 
 ## SPECIAL MODES
 
-### HELP MODE
-
-Execute when `$ARGUMENTS` = "help".
-
-Output:
-```
-Review Skill - Help
-
-Purpose: Local code review with multi-round review & fix cycle
-
-Usage:
-  /review                          # Review local changes
-  /review "special instructions"   # Review with extra instructions
-  /review help                     # This help
-  /review doctor                   # Health checks
-  /review dryrun                   # Simulate review
-
-Examples:
-  # Review local changes
-  /review
-
-  # Review with focus on security
-  /review "Focus on authentication changes"
-
-  # Simulate review (dry-run)
-  /review dryrun
-
-Prerequisites:
-  - git (required)
-  - Working in a git repository (required)
-  - On a feature branch (not main/master)
-
-Features:
-  - Automatic detection of changed files vs main branch
-  - Project context validation (PRD.md, CLAUDE.md)
-  - Security-focused review checklist
-  - Language-agnostic code quality checks
-  - Three-round review & fix cycle
-  - Reviewer agents find issues, coder/designer agents plan and apply fixes
-  - Reviewers approve fix plans before execution
-  - Agent discovery (reviewers, coders, designers from CLAUDE.md)
-  - Writes review to docs/reviews/ folder
-  - Doctor mode for health checks
-  - Dry-run mode for simulation
-
-Output:
-  Review file at [docs]/reviews/REVIEW-<BRANCH-NAME>.md
-  or REVIEW-YYYY-MM-DD-hh-mm.md
-
-Agent Support:
-  If the project CLAUDE.md defines an ## Agents section:
-  - Reviewer agents (*-reviewer) analyze code and approve fix plans
-  - Coder agents (*-coder) and designer agents (ui-designer) plan and apply fixes
-  - Three review rounds with automated fix cycles
-  - Agents matched to changed file types and launched in parallel
-  If no agents defined: uses built-in review checklist (single round, no fix cycle)
-
-Integrations:
-  - git (required): Diff analysis
-  - Task tool (optional): Agent delegation
-
-Version: 1.1.0
-```
-
-Then STOP.
+If help, doctor, or dryrun mode detected: Read `review-modes.md` (in this skill's directory) and execute the matching section. Then STOP.
 
 ---
-
-### DOCTOR MODE
-
-Execute when `$ARGUMENTS` = "doctor".
-
-Run health checks and report status.
-
-#### Doctor.1: Git Checks
-
-**Git Installation**:
-```bash
-git --version
-```
-- If succeeds: Show version
-- If fails: "git not installed - brew install git (CRITICAL)"
-
-**Git Repository**:
-```bash
-git rev-parse --git-dir
-```
-- If succeeds: Show repository root
-- If fails: "Not in git repository (CRITICAL)"
-
-**Current Branch**:
-```bash
-git branch --show-current
-```
-- If not main/master: "On feature branch: <branch>"
-- If main/master: "On main/master (local review needs feature branch)"
-
-**Main Branch Exists**:
-```bash
-git rev-parse --verify main || git rev-parse --verify master
-```
-- If exists: "Main branch: <name>"
-- If fails: "No main/master branch found (CRITICAL)"
-
-**Changed Files**:
-```bash
-git diff --name-only main...HEAD 2>/dev/null | wc -l
-```
-- If > 0: "<count> files changed vs main"
-- If 0: "No changes detected vs main"
-
-#### Doctor.2: Project Checks
-
-**CLAUDE.md**:
-```bash
-test -f CLAUDE.md && echo "found" || echo "not found"
-```
-- If found: "CLAUDE.md found"
-- If not found: "CLAUDE.md not found (optional)"
-
-**Agent Discovery**:
-- Read CLAUDE.md for ## Agents section
-  - If found: List discovered reviewer agents and coder/designer agents
-  - If not found: "No agents in project CLAUDE.md (uses built-in checklist, single round)"
-
-**Docs Folder**:
-```bash
-test -d doc && echo "doc" || (test -d docs && echo "docs" || echo "none")
-```
-- If found: "Docs folder: <name>"
-- If not found: "No docs folder (will create 'docs' on first review)"
-
-**Review File Permissions**:
-```bash
-touch .test-write && rm .test-write
-```
-- If succeeds: "Can write review files"
-- If fails: "Cannot write files in current directory (CRITICAL)"
-
-#### Doctor.3: Overall Status
-
-Determine overall health:
-
-**SUCCESS**: All critical checks pass
-- Git installed
-- In git repository
-- On feature branch
-- Main branch exists
-- Can write files
-
-**PARTIAL**: Some optional checks note issues
-- No CLAUDE.md
-- No agents
-- On main/master branch
-
-**FAILED**: Critical checks fail
-- Git not installed
-- Not in git repository
-- No main branch
-- Cannot write files
-
-Output final status:
-```
-Review Skill - Health Check
-
-Git Checks:
-  <status for each check>
-
-Project Checks:
-  <status for each check>
-
-Overall Status: <SUCCESS/PARTIAL/FAILED>
-
-<Remediation steps if any failures>
-```
-
-Then STOP.
-
----
-
-### DRY-RUN MODE
-
-Execute when `$ARGUMENTS` contains "dryrun" or "dry-run" or "dry_run" (case-insensitive).
-
-Enable dry-run mode for the review workflow:
-- Display: "DRY-RUN MODE ENABLED - No changes will be made"
-- Set internal flag: `dry_run_mode = true`
-- Execute full review workflow logic (all three rounds)
-- Simulate all write operations with format: `[DRY-RUN] Would {action}: {details}`
-
-**Dry-run behavior:**
-
-- Read changed files (actual)
-- Analyze code and generate review content (actual)
-- Plan fixes (actual) but simulate applying them
-- Display review content that would be written
-- Simulate file creation: `[DRY-RUN] Would write review to: <filename>`
-- Skip actual file writes and fix applications
-
-**Summary output:**
-```
-DRY-RUN Summary:
-- Review rounds: 3
-- Total issues found: <count across all rounds>
-- Total fixes simulated: <count>
-- Operations executed: 0
-```
-
-Then continue to normal workflow with dry-run flag enabled.
-
----
-
-## END OF SKILL
-
-This skill provides local code review with a multi-round review & fix cycle. Reviewer agents find issues, coder and designer agents plan fixes, reviewers approve plans, and fixes are applied automatically. Three review rounds ensure thorough coverage.
