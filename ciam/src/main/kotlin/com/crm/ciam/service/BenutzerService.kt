@@ -31,6 +31,10 @@ class BenutzerService(
     }
 
     @Transactional(readOnly = true)
+    fun listAll(): List<BenutzerDTO> =
+        benutzerRepository.findAll().map(BenutzerMapper::toDTO)
+
+    @Transactional(readOnly = true)
     fun findById(id: Long): BenutzerDTO =
         BenutzerMapper.toDTO(
             benutzerRepository.findById(id)

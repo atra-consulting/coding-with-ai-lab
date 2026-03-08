@@ -19,6 +19,10 @@ class BenutzerController(
     private val benutzerService: BenutzerService
 ) {
 
+    @GetMapping("/all")
+    fun listAll(): List<BenutzerDTO> =
+        benutzerService.listAll()
+
     @GetMapping
     fun findAll(
         @RequestParam(defaultValue = "") search: String,
