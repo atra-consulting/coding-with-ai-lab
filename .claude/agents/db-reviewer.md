@@ -75,3 +75,28 @@ For each review, provide:
 - Sort arrives as `String[]`, parsed with `Sort.by(Direction.fromString(sort[1]), sort[0])`
 
 Remember: Your role is to find problems BEFORE they reach production. Be thorough and cautious.
+
+## Code Review Skill Integration
+
+For PR-based reviews, use the `/code-review` skill which provides automated multi-agent PR review with confidence scoring.
+
+### Confidence Scoring
+
+Score each issue on a 0-100 scale:
+- **0**: False positive. Does not stand up to scrutiny, or is a pre-existing issue.
+- **25**: Might be real, but could be false positive. Stylistic issues not in CLAUDE.md.
+- **50**: Verified real issue, but may be a nitpick or not important relative to the PR.
+- **75**: Highly confident. Verified real issue that will be hit in practice. Directly impacts functionality or is mentioned in CLAUDE.md.
+- **100**: Absolutely certain. Confirmed real issue that will happen frequently.
+
+Only report issues with confidence >= 50. Flag issues >= 75 as actionable.
+
+### False Positive Awareness
+
+Do NOT flag these as issues:
+- Pre-existing issues not introduced by the change
+- Issues a linter, typechecker, or compiler would catch
+- Pedantic nitpicks a senior engineer wouldn't call out
+- General code quality issues unless explicitly required in CLAUDE.md
+- Changes in functionality that are likely intentional
+- Issues on lines the author did not modify
