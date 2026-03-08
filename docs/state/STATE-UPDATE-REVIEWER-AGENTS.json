@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "task_key": "UPDATE-REVIEWER-AGENTS",
+  "status": "in_progress",
+  "current_step": "3.3",
+  "started": "2026-03-08T00:00:00Z",
+  "updated": "2026-03-08T00:00:00Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Update all *-reviewer agents to use the code-review skill",
+    "special_instructions": null,
+    "branch_name": null,
+    "original_branch": null,
+    "docs_folder": "docs",
+    "stay_on_main": false
+  },
+  "discovery": {
+    "agents_available": true,
+    "coding_agents": ["be-coder", "db-coder", "fe-coder", "ui-designer"],
+    "review_agents": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer"],
+    "test_command": null
+  },
+  "artifacts": {
+    "prd_skipped": null,
+    "prd_file": null,
+    "plan_file": null
+  },
+  "completed_steps": []
+}
