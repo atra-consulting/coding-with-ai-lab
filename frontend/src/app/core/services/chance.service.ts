@@ -14,6 +14,10 @@ export class ChanceService {
     return this.http.get<Page<Chance>>(this.baseUrl, { params });
   }
 
+  listAll(): Observable<Chance[]> {
+    return this.http.get<Chance[]>(`${this.baseUrl}/all`);
+  }
+
   getById(id: number): Observable<Chance> {
     return this.http.get<Chance>(`${this.baseUrl}/${id}`);
   }

@@ -14,6 +14,10 @@ export class VertragService {
     return this.http.get<Page<Vertrag>>(this.baseUrl, { params });
   }
 
+  listAll(): Observable<Vertrag[]> {
+    return this.http.get<Vertrag[]>(`${this.baseUrl}/all`);
+  }
+
   getById(id: number): Observable<Vertrag> {
     return this.http.get<Vertrag>(`${this.baseUrl}/${id}`);
   }

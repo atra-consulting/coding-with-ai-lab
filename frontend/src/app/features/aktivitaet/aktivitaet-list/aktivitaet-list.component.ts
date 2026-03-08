@@ -1,38 +1,64 @@
-import { DatePipe } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { NgbModal, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
-import { Aktivitaet, AktivitaetTyp } from '../../../core/models/aktivitaet.model';
-import { Page } from '../../../core/models/page.model';
+import { Router, RouterLink } from '@angular/router';
+import { AgGridAngular } from 'ag-grid-angular';
+import { ColDef, GridReadyEvent, RowClickedEvent, themeQuartz } from 'ag-grid-community';
+import { Aktivitaet } from '../../../core/models/aktivitaet.model';
 import { AktivitaetService } from '../../../core/services/aktivitaet.service';
-import { NotificationService } from '../../../core/services/notification.service';
-import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-aktivitaet-list',
-  imports: [RouterLink, NgbPagination, LoadingSpinnerComponent, DatePipe],
+  imports: [RouterLink, AgGridAngular, LoadingSpinnerComponent],
   templateUrl: './aktivitaet-list.component.html',
 })
 export class AktivitaetListComponent implements OnInit {
   private aktivitaetService = inject(AktivitaetService);
-  private modalService = inject(NgbModal);
-  private notification = inject(NotificationService);
+  private router = inject(Router);
 
-  page: Page<Aktivitaet> | null = null;
-  currentPage = 1;
-  pageSize = 10;
+  rowData: Aktivitaet[] = [];
   loading = true;
+  theme = themeQuartz;
+
+  columnDefs: ColDef<Aktivitaet>[] = [
+    { field: 'subject', headerName: 'Betreff' },
+    {
+      field: 'typ',
+      headerName: 'Typ',
+      filter: 'agSetColumnFilter',
+      filterParams: {
+        values: ['ANRUF', 'EMAIL', 'MEETING', 'NOTIZ', 'AUFGABE'],
+      },
+    },
+    {
+      field: 'datum',
+      headerName: 'Datum',
+      filter: 'agDateColumnFilter',
+      valueFormatter: (params) => {
+        if (!params.value) return '-';
+        return new Date(params.value).toLocaleDateString('de-DE', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+      },
+    },
+    { field: 'firmaName', headerName: 'Firma', valueFormatter: (p) => p.value || '-' },
+    { field: 'personName', headerName: 'Person', valueFormatter: (p) => p.value || '-' },
+  ];
+
+  defaultColDef: ColDef = {
+    filter: true,
+    sortable: true,
+    resizable: true,
+    floatingFilter: true,
+  };
 
   ngOnInit(): void {
-    this.loadData();
-  }
-
-  loadData(): void {
-    this.loading = true;
-    this.aktivitaetService.getAll(this.currentPage - 1, this.pageSize).subscribe({
+    this.aktivitaetService.listAll().subscribe({
       next: (data) => {
-        this.page = data;
+        this.rowData = data;
         this.loading = false;
       },
       error: () => {
@@ -41,43 +67,13 @@ export class AktivitaetListComponent implements OnInit {
     });
   }
 
-  onPageChange(p: number): void {
-    this.currentPage = p;
-    this.loadData();
+  onGridReady(event: GridReadyEvent): void {
+    event.api.sizeColumnsToFit();
   }
 
-  confirmDelete(aktivitaet: Aktivitaet): void {
-    const modalRef = this.modalService.open(ConfirmDialogComponent);
-    modalRef.componentInstance.title = 'Aktivität löschen';
-    modalRef.componentInstance.message = `Möchten Sie die Aktivität "${aktivitaet.subject}" wirklich löschen?`;
-    modalRef.result.then(
-      () => {
-        this.aktivitaetService.delete(aktivitaet.id).subscribe({
-          next: () => {
-            this.notification.success('Aktivität erfolgreich gelöscht');
-            this.loadData();
-          },
-          error: () => {},
-        });
-      },
-      () => {},
-    );
-  }
-
-  getTypBadgeClass(typ: AktivitaetTyp): string {
-    switch (typ) {
-      case 'ANRUF':
-        return 'bg-primary';
-      case 'EMAIL':
-        return 'bg-info';
-      case 'MEETING':
-        return 'bg-success';
-      case 'NOTIZ':
-        return 'bg-secondary';
-      case 'AUFGABE':
-        return 'bg-warning';
-      default:
-        return 'bg-secondary';
+  onRowClicked(event: RowClickedEvent<Aktivitaet>): void {
+    if (event.data) {
+      this.router.navigate(['/aktivitaeten', event.data.id, 'bearbeiten']);
     }
   }
 }

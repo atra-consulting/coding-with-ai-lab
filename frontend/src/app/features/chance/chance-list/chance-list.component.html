@@ -9,76 +9,19 @@
   </div>
 </div>
 
-<div class="table-container">
-  @if (loading) {
-    <app-loading-spinner />
-  } @else if (page && page.content.length > 0) {
-    <table class="table table-hover">
-      <thead>
-        <tr>
-          <th>Titel</th>
-          <th>Firma</th>
-          <th>Phase</th>
-          <th>Wert</th>
-          <th>Wahrscheinlichkeit</th>
-          <th>Erwartetes Datum</th>
-          <th>Aktionen</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (chance of page.content; track chance.id) {
-          <tr class="cursor-pointer" [routerLink]="[chance.id]">
-            <td>{{ chance.titel }}</td>
-            <td>{{ chance.firmaName }}</td>
-            <td>
-              <span class="badge" [class]="getPhaseBadgeClass(chance.phase)">{{
-                chance.phase
-              }}</span>
-            </td>
-            <td>{{ chance.wert | eurCurrency: chance.currency }}</td>
-            <td>
-              <div class="d-flex align-items-center gap-2">
-                <div class="progress flex-grow-1" style="height: 8px">
-                  <div
-                    class="progress-bar"
-                    role="progressbar"
-                    [style.width.%]="chance.wahrscheinlichkeit"
-                    [attr.aria-valuenow]="chance.wahrscheinlichkeit"
-                    aria-valuemin="0"
-                    aria-valuemax="100"
-                  ></div>
-                </div>
-                <small class="text-muted">{{ chance.wahrscheinlichkeit }}%</small>
-              </div>
-            </td>
-            <td>{{ chance.erwartetesDatum || '-' }}</td>
-            <td class="action-buttons" (click)="$event.stopPropagation()">
-              <a [routerLink]="[chance.id, 'bearbeiten']" class="btn btn-sm btn-outline-primary"
-                >Bearbeiten</a
-              >
-              <button class="btn btn-sm btn-outline-danger" (click)="confirmDelete(chance)">
-                Löschen
-              </button>
-            </td>
-          </tr>
-        }
-      </tbody>
-    </table>
-
-    @if (page.totalPages > 1) {
-      <div class="d-flex justify-content-center">
-        <ngb-pagination
-          [collectionSize]="page.totalElements"
-          [(page)]="currentPage"
-          [pageSize]="pageSize"
-          (pageChange)="onPageChange($event)"
-          [maxSize]="5"
-          [boundaryLinks]="true"
-        >
-        </ngb-pagination>
-      </div>
-    }
-  } @else {
-    <p class="text-muted">Keine Chancen gefunden.</p>
-  }
-</div>
+@if (loading) {
+  <app-loading-spinner />
+} @else {
+  <ag-grid-angular
+    style="width: 100%; height: 600px"
+    [theme]="theme"
+    [rowData]="rowData"
+    [columnDefs]="columnDefs"
+    [defaultColDef]="defaultColDef"
+    (gridReady)="onGridReady($event)"
+    (rowClicked)="onRowClicked($event)"
+    [rowSelection]="{ mode: 'singleRow', enableClickSelection: true }"
+    [paginationAutoPageSize]="true"
+    [pagination]="true"
+  />
+}

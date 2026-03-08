@@ -3,62 +3,19 @@
   <a routerLink="neu" class="btn btn-primary">Neuer Vertrag</a>
 </div>
 
-<div class="table-container">
-  @if (loading) {
-    <app-loading-spinner />
-  } @else if (page && page.content.length > 0) {
-    <table class="table table-hover">
-      <thead>
-        <tr>
-          <th>Titel</th>
-          <th>Firma</th>
-          <th>Status</th>
-          <th>Wert</th>
-          <th>Startdatum</th>
-          <th>Enddatum</th>
-          <th>Aktionen</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (vertrag of page.content; track vertrag.id) {
-          <tr class="cursor-pointer" [routerLink]="[vertrag.id]">
-            <td>{{ vertrag.titel }}</td>
-            <td>{{ vertrag.firmaName }}</td>
-            <td>
-              <span class="badge" [class]="getStatusBadgeClass(vertrag.status)">{{
-                vertrag.status
-              }}</span>
-            </td>
-            <td>{{ vertrag.wert | eurCurrency: vertrag.currency }}</td>
-            <td>{{ vertrag.startDate | date: 'dd.MM.yyyy' }}</td>
-            <td>{{ vertrag.endDate | date: 'dd.MM.yyyy' }}</td>
-            <td class="action-buttons" (click)="$event.stopPropagation()">
-              <a [routerLink]="[vertrag.id, 'bearbeiten']" class="btn btn-sm btn-outline-primary"
-                >Bearbeiten</a
-              >
-              <button class="btn btn-sm btn-outline-danger" (click)="confirmDelete(vertrag)">
-                Löschen
-              </button>
-            </td>
-          </tr>
-        }
-      </tbody>
-    </table>
-
-    @if (page.totalPages > 1) {
-      <div class="d-flex justify-content-center">
-        <ngb-pagination
-          [collectionSize]="page.totalElements"
-          [(page)]="currentPage"
-          [pageSize]="pageSize"
-          (pageChange)="onPageChange($event)"
-          [maxSize]="5"
-          [boundaryLinks]="true"
-        >
-        </ngb-pagination>
-      </div>
-    }
-  } @else {
-    <p class="text-muted">Keine Verträge gefunden.</p>
-  }
-</div>
+@if (loading) {
+  <app-loading-spinner />
+} @else {
+  <ag-grid-angular
+    style="width: 100%; height: 600px"
+    [theme]="theme"
+    [rowData]="rowData"
+    [columnDefs]="columnDefs"
+    [defaultColDef]="defaultColDef"
+    (gridReady)="onGridReady($event)"
+    (rowClicked)="onRowClicked($event)"
+    [rowSelection]="{ mode: 'singleRow', enableClickSelection: true }"
+    [paginationAutoPageSize]="true"
+    [pagination]="true"
+  />
+}

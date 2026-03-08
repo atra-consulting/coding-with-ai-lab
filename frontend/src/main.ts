@@ -2,9 +2,11 @@ import '@angular/localize/init';
 import { registerLocaleData } from '@angular/common';
 import localeDe from '@angular/common/locales/de';
 import { bootstrapApplication } from '@angular/platform-browser';
+import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community';
 import { App } from './app/app';
 import { appConfig } from './app/app.config';
 
+ModuleRegistry.registerModules([AllCommunityModule]);
 registerLocaleData(localeDe);
 
 bootstrapApplication(App, appConfig)
