@@ -1,16 +1,16 @@
 {
   "version": 1,
   "task_key": "UPGRADE-ANGULAR-21",
-  "status": "in_progress",
-  "current_step": "3.3",
+  "status": "completed",
+  "current_step": "13",
   "started": "2026-03-08T10:00:00Z",
-  "updated": "2026-03-08T10:00:00Z",
+  "updated": "2026-03-08T10:30:00Z",
   "config": {
     "input_mode": "freeform",
     "user_description": "Upgrade Angular from v20 to v21",
     "special_instructions": null,
-    "branch_name": null,
-    "original_branch": null,
+    "branch_name": "upgrade-angular-21",
+    "original_branch": "main",
     "docs_folder": "docs",
     "stay_on_main": false
   },
@@ -18,12 +18,12 @@
     "agents_available": true,
     "coding_agents": ["be-coder", "fe-coder", "db-coder", "ui-designer"],
     "review_agents": ["be-reviewer", "fe-reviewer", "db-reviewer", "ba-reviewer", "ui-reviewer"],
-    "test_command": null
+    "test_command": "cd frontend && npx ng build"
   },
   "artifacts": {
-    "prd_skipped": null,
+    "prd_skipped": true,
     "prd_file": null,
-    "plan_file": null
+    "plan_file": "docs/plans/PLAN-UPGRADE-ANGULAR-21.md"
   },
-  "completed_steps": []
+  "completed_steps": ["3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13"]
 }
