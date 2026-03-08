@@ -115,7 +115,7 @@ cd "${ROOT_DIR}"
 # Wait for backend to be ready
 echo "Waiting for backend to start..."
 for i in $(seq 1 60); do
-  if curl -s "http://localhost:8080/api/firmen" -o /dev/null -w '%{http_code}' 2>/dev/null | grep -q '401\|200'; then
+  if curl -s "http://localhost:7070/api/firmen" -o /dev/null -w '%{http_code}' 2>/dev/null | grep -q '401\|200'; then
     echo "Backend is ready!"
     break
   fi
@@ -143,15 +143,15 @@ if ! npx ng version > /dev/null 2>&1; then
   npm install
 fi
 
-npx ng serve --proxy-config proxy.conf.json &
+npx ng serve --port 7200 --proxy-config proxy.conf.json &
 FRONTEND_PID=$!
 cd "${ROOT_DIR}"
 
 echo ""
 echo "=== CRM Application Started ==="
 echo "CIAM:      http://localhost:8081 (Identity & Access Management)"
-echo "Backend:   http://localhost:8080 (CRM Resource Server)"
-echo "Frontend:  http://localhost:4200"
+echo "Backend:   http://localhost:7070 (CRM Resource Server)"
+echo "Frontend:  http://localhost:7200"
 echo ""
 echo "Press Ctrl+C to stop all servers"
 
