@@ -1,3 +1,5 @@
+@use "sass:color";
+
 $primary: #264892;
 $accent: #dc421e;
 
@@ -32,7 +34,7 @@ $accent: #dc421e;
 }
 
 .login-header {
-  background: linear-gradient(135deg, $primary 0%, darken($primary, 8%) 100%);
+  background: linear-gradient(135deg, $primary 0%, color.adjust($primary, $lightness: -8%) 100%);
   padding: 2.5rem 2rem 2rem;
   text-align: center;
   color: #fff;
@@ -107,7 +109,7 @@ $accent: #dc421e;
 }
 
 .btn-login {
-  background: linear-gradient(135deg, $primary 0%, darken($primary, 6%) 100%);
+  background: linear-gradient(135deg, $primary 0%, color.adjust($primary, $lightness: -6%) 100%);
   color: #fff;
   border: none;
   border-radius: 8px;
