@@ -11,18 +11,26 @@ CIAM_KEYS_DIR="${ROOT_DIR}/ciam/keys"
 # Parse arguments
 RESET_DB=false
 DEMO_MODE=true
+RESTART_CIAM=false
 for arg in "$@"; do
   case "$arg" in
     --reset-db) RESET_DB=true ;;
     --no-demo) DEMO_MODE=false ;;
+    --restart-ciam) RESTART_CIAM=true ;;
     *)
-      echo "Usage: $0 [--reset-db] [--no-demo]"
-      echo "  --reset-db  Delete local H2 databases (will be recreated with seed data)"
-      echo "  --no-demo   Disable demo mode (hides demo login button)"
+      echo "Usage: $0 [--reset-db] [--no-demo] [--restart-ciam]"
+      echo "  --reset-db      Delete local H2 databases (will be recreated with seed data)"
+      echo "  --no-demo       Disable demo mode (hides demo login button)"
+      echo "  --restart-ciam  Force restart CIAM service (normally left running)"
       exit 1
       ;;
   esac
 done
+
+# --reset-db implies --restart-ciam (CIAM DB gets deleted, must restart)
+if [ "$RESET_DB" = true ]; then
+  RESTART_CIAM=true
+fi
 
 # Optionally reset databases
 if [ "$RESET_DB" = true ]; then
@@ -60,7 +68,7 @@ elif [ -d "$(brew --prefix openjdk@21 2>/dev/null)/libexec/openjdk.jdk/Contents/
   echo "Using Java 21 (Homebrew): $JAVA_HOME"
 fi
 
-CIAM_PID=""
+CIAM_STARTED_BY_US=false
 BACKEND_PID=""
 FRONTEND_PID=""
 
@@ -75,37 +83,68 @@ cleanup() {
     kill "${BACKEND_PID}" 2>/dev/null || true
     echo "Backend stopped"
   fi
-  if [ -n "${CIAM_PID}" ]; then
-    kill "${CIAM_PID}" 2>/dev/null || true
-    echo "CIAM stopped"
+  if [ "${CIAM_STARTED_BY_US}" = true ]; then
+    echo "CIAM left running for next start."
+    echo "  Hint: use --restart-ciam to force restart CIAM"
   fi
   exit 0
 }
 
 trap cleanup SIGINT SIGTERM
 
-# Start CIAM service first (generates RSA keys)
-echo "Starting CIAM service..."
-cd "${ROOT_DIR}/ciam"
-mvn spring-boot:run -Dspring-boot.run.arguments="--app.demo-mode=${DEMO_MODE}" -q &
-CIAM_PID=$!
-cd "${ROOT_DIR}"
+# --- CIAM: persistent service ---
 
-# Wait for CIAM to be ready
-echo "Waiting for CIAM service to start..."
-for i in $(seq 1 60); do
-  if curl -s "http://localhost:8081/.well-known/jwks.json" > /dev/null 2>&1; then
-    echo "CIAM service is ready!"
-    break
+# Kill existing CIAM if restart requested
+if [ "$RESTART_CIAM" = true ]; then
+  EXISTING_CIAM_PID=$(lsof -ti:8081 2>/dev/null || true)
+  if [ -n "$EXISTING_CIAM_PID" ]; then
+    echo "Stopping existing CIAM (PID ${EXISTING_CIAM_PID})..."
+    kill "$EXISTING_CIAM_PID" 2>/dev/null || true
+    sleep 2
   fi
-  if [ "${i}" -eq 60 ]; then
-    echo "ERROR: CIAM service failed to start within 60 seconds"
-    cleanup
-  fi
-  sleep 2
-done
+fi
 
-# Start backend (needs CIAM's public key)
+# Check if CIAM is already running
+if curl -s "http://localhost:8081/.well-known/jwks.json" > /dev/null 2>&1; then
+  echo "CIAM already running — reusing."
+else
+  # Start CIAM service (generates RSA keys on first run)
+  echo "Starting CIAM service..."
+  cd "${ROOT_DIR}/ciam"
+  mvn spring-boot:run -Dspring-boot.run.arguments="--app.demo-mode=${DEMO_MODE}" -q &
+  CIAM_STARTED_BY_US=true
+  cd "${ROOT_DIR}"
+
+  # Start frontend npm install in parallel while waiting for CIAM
+  (
+    cd "${ROOT_DIR}/frontend"
+    if [ ! -d "node_modules" ]; then
+      echo "Installing frontend dependencies (parallel)..."
+      npm install
+    fi
+  ) &
+  NPM_CHECK_PID=$!
+
+  # Wait for CIAM to be ready
+  echo "Waiting for CIAM service to start..."
+  for i in $(seq 1 60); do
+    if curl -s "http://localhost:8081/.well-known/jwks.json" > /dev/null 2>&1; then
+      echo "CIAM service is ready!"
+      break
+    fi
+    if [ "${i}" -eq 60 ]; then
+      echo "ERROR: CIAM service failed to start within 60 seconds"
+      cleanup
+    fi
+    sleep 1
+  done
+
+  # Wait for npm install to finish (if it was running)
+  wait "${NPM_CHECK_PID}" 2>/dev/null || true
+fi
+
+# --- Backend ---
+
 echo "Starting backend..."
 cd "${ROOT_DIR}/backend"
 mvn spring-boot:run -Dspring-boot.run.arguments="--app.demo-mode=${DEMO_MODE}" -Dspring-boot.run.profiles=dev -q &
@@ -123,14 +162,15 @@ for i in $(seq 1 60); do
     echo "ERROR: Backend failed to start within 60 seconds"
     cleanup
   fi
-  sleep 2
+  sleep 1
 done
 
-# Start frontend
+# --- Frontend ---
+
 echo "Starting frontend..."
 cd "${ROOT_DIR}/frontend"
 
-# Install node modules if not present
+# Install node modules if not present (may already be done in parallel above)
 if [ ! -d "node_modules" ]; then
   echo "Node modules not found. Running npm install..."
   npm install
@@ -149,11 +189,11 @@ cd "${ROOT_DIR}"
 
 echo ""
 echo "=== CRM Application Started ==="
-echo "CIAM:      http://localhost:8081 (Identity & Access Management)"
+echo "CIAM:      http://localhost:8081 (persistent — survives Ctrl+C)"
 echo "Backend:   http://localhost:7070 (CRM Resource Server)"
-echo "Frontend:  http://localhost:7200"
+echo "Frontend:  http://localhost:7200 (live reload enabled)"
 echo ""
-echo "Press Ctrl+C to stop all servers"
+echo "Press Ctrl+C to stop backend + frontend (CIAM stays running)"
 
 # Wait for background processes
 wait
