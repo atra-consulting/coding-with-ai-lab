@@ -1,15 +1,15 @@
 {
   "version": 1,
   "task_key": "SIDEBAR-COLLAPSIBLE",
-  "status": "in_progress",
-  "current_step": "3.3",
+  "status": "completed",
+  "current_step": "13.2",
   "started": "2026-03-09T10:00:00Z",
-  "updated": "2026-03-09T10:00:00Z",
+  "updated": "2026-03-09T10:35:00Z",
   "config": {
     "input_mode": "freeform",
     "user_description": "make the left sidebar collapsible",
     "special_instructions": null,
-    "branch_name": null,
+    "branch_name": "sidebar-collapsible",
     "original_branch": "main",
     "docs_folder": "docs",
     "stay_on_main": false
@@ -18,12 +18,12 @@
     "agents_available": true,
     "coding_agents": ["be-coder", "fe-coder", "db-coder", "ui-designer"],
     "review_agents": ["be-reviewer", "fe-reviewer", "db-reviewer", "ui-reviewer"],
-    "test_command": null
+    "test_command": "npm test --prefix frontend -- --watch=false --browsers=ChromeHeadless"
   },
   "artifacts": {
-    "prd_skipped": null,
-    "prd_file": null,
-    "plan_file": null
+    "prd_skipped": false,
+    "prd_file": "docs/prds/PRD-SIDEBAR-COLLAPSIBLE.md",
+    "plan_file": "docs/plans/PLAN-SIDEBAR-COLLAPSIBLE.md"
   },
   "completed_steps": []
 }
