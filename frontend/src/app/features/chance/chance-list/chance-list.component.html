@@ -1,6 +1,6 @@
 <div class="page-header">
   <h2>
-    Chancen@if (totalRows > 0) {: {{ displayedRows === totalRows ? totalRows : displayedRows + '/' + totalRows }}}
+    Chancen@if (totalRows > 0) {: {{ isFilterActive ? displayedRows + '/' + totalRows : totalRows }}}
   </h2>
   <div class="d-flex gap-3 align-items-center">
     <div class="btn-group">

@@ -29,6 +29,7 @@ export class AdresseListComponent implements OnInit {
   theme = themeQuartz.withParams({ oddRowBackgroundColor: '#f0f0f0' });
   totalRows = 0;
   displayedRows = 0;
+  isFilterActive = false;
 
   columnDefs: ColDef<Adresse>[] = [
     {
@@ -88,6 +89,8 @@ export class AdresseListComponent implements OnInit {
 
   private updateCounts(): void {
     if (this.gridApi) {
+      this.isFilterActive = this.gridApi.isAnyFilterPresent();
+
       let filteredCount = 0;
       this.gridApi.forEachNodeAfterFilter(() => filteredCount++);
       this.displayedRows = filteredCount;
@@ -98,6 +101,7 @@ export class AdresseListComponent implements OnInit {
     } else {
       this.totalRows = this.rowData?.length ?? 0;
       this.displayedRows = this.totalRows;
+      this.isFilterActive = false;
     }
     this.cdr.markForCheck();
   }

@@ -29,6 +29,7 @@ export class FirmaListComponent implements OnInit {
   theme = themeQuartz.withParams({ oddRowBackgroundColor: '#f0f0f0' });
   totalRows = 0;
   displayedRows = 0;
+  isFilterActive = false;
 
   columnDefs: ColDef<Firma>[] = [
     { field: 'name', headerName: 'Name' },
@@ -74,16 +75,19 @@ export class FirmaListComponent implements OnInit {
 
   private updateCounts(): void {
     if (this.gridApi) {
+      this.isFilterActive = this.gridApi.isAnyFilterPresent();
+
       let filteredCount = 0;
       this.gridApi.forEachNodeAfterFilter(() => filteredCount++);
       this.displayedRows = filteredCount;
-      
+
       let totalCount = 0;
       this.gridApi.forEachNode(() => totalCount++);
       this.totalRows = totalCount > 0 ? totalCount : this.rowData.length;
     } else {
       this.totalRows = this.rowData?.length ?? 0;
       this.displayedRows = this.totalRows;
+      this.isFilterActive = false;
     }
     this.cdr.markForCheck();
   }
