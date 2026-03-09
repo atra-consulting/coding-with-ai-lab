@@ -122,7 +122,10 @@ body {
   margin-bottom: 1.5rem;
 
   h2 {
-    color: $primary;
+    color: #264892 !important; /* Force primary blue */
+    border-bottom: 3px solid #264892;
+    padding-bottom: 0.25rem;
+    font-weight: 700;
     margin-bottom: 0;
   }
 }
