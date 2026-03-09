@@ -91,9 +91,18 @@ export class GehaltListComponent implements OnInit {
   }
 
   private updateCounts(): void {
-    this.totalRows = this.rowData?.length ?? 0;
-    const count = this.gridApi ? this.gridApi.getDisplayedRowCount() : this.totalRows;
-    this.displayedRows = typeof count === 'number' ? count : this.totalRows;
+    if (this.gridApi) {
+      let filteredCount = 0;
+      this.gridApi.forEachNodeAfterFilter(() => filteredCount++);
+      this.displayedRows = filteredCount;
+      
+      let totalCount = 0;
+      this.gridApi.forEachNode(() => totalCount++);
+      this.totalRows = totalCount > 0 ? totalCount : this.rowData.length;
+    } else {
+      this.totalRows = this.rowData?.length ?? 0;
+      this.displayedRows = this.totalRows;
+    }
     this.cdr.markForCheck();
   }
 
