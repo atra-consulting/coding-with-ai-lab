@@ -1,7 +1,14 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AgGridAngular } from 'ag-grid-angular';
-import { ColDef, RowClickedEvent, SizeColumnsToContentStrategy, themeQuartz } from 'ag-grid-community';
+import {
+  ColDef,
+  GridApi,
+  GridReadyEvent,
+  RowClickedEvent,
+  SizeColumnsToContentStrategy,
+  themeQuartz,
+} from 'ag-grid-community';
 import { Benutzer } from '../../../core/models/benutzer.model';
 import { BenutzerService } from '../../../core/services/benutzer.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
@@ -12,12 +19,15 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
   templateUrl: './benutzer-list.component.html',
 })
 export class BenutzerListComponent implements OnInit {
+  private gridApi?: GridApi;
   private benutzerService = inject(BenutzerService);
   private router = inject(Router);
 
   rowData: Benutzer[] = [];
   loading = true;
   theme = themeQuartz.withParams({ oddRowBackgroundColor: '#f0f0f0' });
+  totalRows = 0;
+  displayedRows = 0;
 
   columnDefs: ColDef<Benutzer>[] = [
     { field: 'benutzername', headerName: 'Benutzername' },
@@ -29,12 +39,12 @@ export class BenutzerListComponent implements OnInit {
     {
       field: 'rollen',
       headerName: 'Rollen',
-      valueFormatter: (params) => params.value ? params.value.join(', ') : '-',
+      valueFormatter: (params) => (params.value ? params.value.join(', ') : '-'),
     },
     {
       field: 'aktiv',
       headerName: 'Status',
-      valueFormatter: (params) => params.value ? 'Aktiv' : 'Inaktiv',
+      valueFormatter: (params) => (params.value ? 'Aktiv' : 'Inaktiv'),
       filter: false,
     },
   ];
@@ -57,6 +67,17 @@ export class BenutzerListComponent implements OnInit {
         this.loading = false;
       },
     });
+  }
+
+  onGridReady(params: GridReadyEvent): void {
+    this.gridApi = params.api;
+  }
+
+  onModelUpdated(): void {
+    if (this.gridApi) {
+      this.totalRows = this.rowData.length;
+      this.displayedRows = this.gridApi.getDisplayedRowCount();
+    }
   }
 
   onRowClicked(event: RowClickedEvent<Benutzer>): void {
