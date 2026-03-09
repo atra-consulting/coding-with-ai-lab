@@ -120,6 +120,32 @@ body {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1.5rem;
+
+  h2 {
+    color: #264892 !important; /* Force primary blue */
+    border-bottom: 3px solid #264892;
+    padding-bottom: 0.25rem;
+    font-weight: 700;
+    margin-bottom: 0;
+  }
+}
+
+// ag-Grid header styling
+.ag-header {
+  background-color: #f0f4ff !important;
+  border-bottom: 3px solid #0044cc !important;
+}
+
+.ag-header-cell-label {
+  color: #0044cc !important;
+  font-weight: 800 !important;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+}
+
+.ag-header-icon {
+  color: #0044cc !important;
 }
 
 .table-container {
