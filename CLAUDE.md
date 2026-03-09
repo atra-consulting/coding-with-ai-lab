@@ -10,6 +10,7 @@ Full-stack CRM application with separate CIAM microservice. Spring Boot 4.0.3 (J
 ./start.sh                                        # Full stack (CIAM:8081 + backend:7070 + frontend:7200)
 ./start.sh --restart-ciam                         # Force restart CIAM (normally stays running)
 ./start.sh --reset-db                             # Delete DBs + restart CIAM (recreated on startup)
+./stop.sh                                         # Stop persistent CIAM service
 cd ciam && mvn spring-boot:run                     # CIAM only (must start first, generates RSA keys)
 cd backend && mvn spring-boot:run                  # Backend only (needs CIAM's public key)
 cd frontend && npx ng serve --port 7200 --proxy-config proxy.conf.json  # Frontend only
