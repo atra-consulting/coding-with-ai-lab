@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AgGridAngular } from 'ag-grid-angular';
 import {
@@ -22,6 +22,7 @@ export class PersonListComponent implements OnInit {
   private gridApi?: GridApi;
   private personService = inject(PersonService);
   private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
 
   rowData: Person[] = [];
   loading = true;
@@ -72,6 +73,7 @@ export class PersonListComponent implements OnInit {
   private updateCounts(): void {
     this.totalRows = this.rowData.length;
     this.displayedRows = this.gridApi ? this.gridApi.getDisplayedRowCount() : this.totalRows;
+    this.cdr.markForCheck();
   }
 
   onRowClicked(event: RowClickedEvent<Person>): void {
