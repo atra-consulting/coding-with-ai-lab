@@ -144,26 +144,143 @@ public class DataSeeder implements CommandLineRunner {
         personen = personRepository.saveAll(personen);
         personRepository.flush();
 
-        // 4. Create 500 Adressen (200 Firma + 300 Person)
+        // 4. Create Adressen — every Firma gets 1 real address, plus 300 Person-Adressen
+        // Real German addresses (street + houseNumber + postalCode + city) that geocode correctly
+        String[][] realAddresses = {
+            {"Friedrichstrasse", "43", "10117", "Berlin"},
+            {"Unter den Linden", "77", "10117", "Berlin"},
+            {"Alexanderplatz", "1", "10178", "Berlin"},
+            {"Kurfuerstendamm", "21", "10719", "Berlin"},
+            {"Potsdamer Platz", "1", "10785", "Berlin"},
+            {"Torstrasse", "1", "10119", "Berlin"},
+            {"Karl-Marx-Allee", "90", "10243", "Berlin"},
+            {"Schoenhauser Allee", "36", "10435", "Berlin"},
+            {"Marienstrasse", "26", "10117", "Berlin"},
+            {"Oranienburger Strasse", "32", "10117", "Berlin"},
+            {"Leopoldstrasse", "1", "80802", "Muenchen"},
+            {"Maximilianstrasse", "35", "80539", "Muenchen"},
+            {"Kaufingerstrasse", "12", "80331", "Muenchen"},
+            {"Sendlinger Strasse", "1", "80331", "Muenchen"},
+            {"Neuhauser Strasse", "2", "80331", "Muenchen"},
+            {"Sonnenstrasse", "20", "80331", "Muenchen"},
+            {"Theresienstrasse", "46", "80333", "Muenchen"},
+            {"Ludwigstrasse", "16", "80539", "Muenchen"},
+            {"Brienner Strasse", "7", "80333", "Muenchen"},
+            {"Residenzstrasse", "1", "80333", "Muenchen"},
+            {"Jungfernstieg", "1", "20354", "Hamburg"},
+            {"Moenckebergstrasse", "7", "20095", "Hamburg"},
+            {"Speersort", "1", "20095", "Hamburg"},
+            {"Rathausmarkt", "1", "20095", "Hamburg"},
+            {"Gaensemarkt", "33", "20354", "Hamburg"},
+            {"Ballindamm", "40", "20095", "Hamburg"},
+            {"Neuer Wall", "80", "20354", "Hamburg"},
+            {"Grosse Bleichen", "21", "20354", "Hamburg"},
+            {"Colonnaden", "5", "20354", "Hamburg"},
+            {"ABC-Strasse", "19", "20354", "Hamburg"},
+            {"Schildergasse", "65", "50667", "Koeln"},
+            {"Hohe Strasse", "52", "50667", "Koeln"},
+            {"Breite Strasse", "80", "50667", "Koeln"},
+            {"Heumarkt", "12", "50667", "Koeln"},
+            {"Domkloster", "3", "50667", "Koeln"},
+            {"Zeil", "106", "60313", "Frankfurt am Main"},
+            {"Kaiserstrasse", "1", "60311", "Frankfurt am Main"},
+            {"Neue Mainzer Strasse", "52", "60311", "Frankfurt am Main"},
+            {"Taunusanlage", "12", "60325", "Frankfurt am Main"},
+            {"Grosse Bockenheimer Strasse", "2", "60313", "Frankfurt am Main"},
+            {"Koenigstrasse", "26", "70173", "Stuttgart"},
+            {"Calwer Strasse", "11", "70173", "Stuttgart"},
+            {"Schulstrasse", "5", "70173", "Stuttgart"},
+            {"Kronenstrasse", "1", "70173", "Stuttgart"},
+            {"Marktstrasse", "4", "70173", "Stuttgart"},
+            {"Koenigsallee", "30", "40212", "Duesseldorf"},
+            {"Schadowstrasse", "11", "40212", "Duesseldorf"},
+            {"Bolkerstrasse", "53", "40213", "Duesseldorf"},
+            {"Heinrich-Heine-Allee", "1", "40213", "Duesseldorf"},
+            {"Flinger Strasse", "11", "40213", "Duesseldorf"},
+            {"Grimmaische Strasse", "2", "04109", "Leipzig"},
+            {"Petersstrasse", "36", "04109", "Leipzig"},
+            {"Nikolaistrasse", "14", "04109", "Leipzig"},
+            {"Hainstrasse", "12", "04109", "Leipzig"},
+            {"Augustusplatz", "9", "04109", "Leipzig"},
+            {"Kampstrasse", "45", "44137", "Dortmund"},
+            {"Westenhellweg", "102", "44137", "Dortmund"},
+            {"Ostenhellweg", "1", "44135", "Dortmund"},
+            {"Hansastrasse", "61", "44137", "Dortmund"},
+            {"Rheinoldstrasse", "4", "44135", "Dortmund"},
+            {"Kettwiger Strasse", "36", "45127", "Essen"},
+            {"Limbecker Strasse", "1", "45127", "Essen"},
+            {"Huyssenallee", "53", "45128", "Essen"},
+            {"Rueettenscheider Strasse", "1", "45130", "Essen"},
+            {"Alfredstrasse", "81", "45130", "Essen"},
+            {"Obernstrasse", "2", "28195", "Bremen"},
+            {"Sogestrasse", "18", "28195", "Bremen"},
+            {"Am Wall", "102", "28195", "Bremen"},
+            {"Langenstrasse", "10", "28195", "Bremen"},
+            {"Hutfilterstrasse", "16", "28195", "Bremen"},
+            {"Prager Strasse", "2", "01069", "Dresden"},
+            {"Wilsdruffer Strasse", "2", "01067", "Dresden"},
+            {"Altmarkt", "4", "01067", "Dresden"},
+            {"Neumarkt", "2", "01067", "Dresden"},
+            {"An der Kreuzkirche", "6", "01067", "Dresden"},
+            {"Georgstrasse", "36", "30159", "Hannover"},
+            {"Bahnhofstrasse", "5", "30159", "Hannover"},
+            {"Karmarschstrasse", "30", "30159", "Hannover"},
+            {"Luisenstrasse", "5", "30159", "Hannover"},
+            {"Schmiedestrasse", "1", "30159", "Hannover"},
+            {"Koenigstrasse", "23", "90402", "Nuernberg"},
+            {"Breite Gasse", "25", "90402", "Nuernberg"},
+            {"Karolinenstrasse", "12", "90402", "Nuernberg"},
+            {"Pfannenschmiedsgasse", "6", "90402", "Nuernberg"},
+            {"Lorenzer Strasse", "32", "90402", "Nuernberg"},
+            {"Sonnenwall", "14", "47051", "Duisburg"},
+            {"Koenigstrasse", "48", "47051", "Duisburg"},
+            {"Muenzer Strasse", "9", "47051", "Duisburg"},
+            {"Kuhstrasse", "4", "47051", "Duisburg"},
+            {"Duesseldorfer Strasse", "34", "47051", "Duisburg"},
+            {"Marktplatz", "1", "76131", "Karlsruhe"},
+            {"Kaiserstrasse", "72", "76133", "Karlsruhe"},
+            {"Waldstrasse", "24", "76133", "Karlsruhe"},
+            {"Karl-Friedrich-Strasse", "14", "76133", "Karlsruhe"},
+            {"Amalienstrasse", "3", "76133", "Karlsruhe"},
+            {"Hauptstrasse", "120", "69117", "Heidelberg"},
+            {"Sofienstrasse", "12", "69115", "Heidelberg"},
+            {"Bergheimer Strasse", "1", "69115", "Heidelberg"},
+            {"Bismarckplatz", "1", "69115", "Heidelberg"},
+            {"Marstallstrasse", "6", "69117", "Heidelberg"},
+        };
+
         List<Adresse> adressen = new ArrayList<>();
-        for (int i = 0; i < 200; i++) {
+        // Every Firma gets exactly 1 real address
+        for (int i = 0; i < firmen.size(); i++) {
             Adresse a = new Adresse();
-            int ci = random.nextInt(cities.length);
-            a.setStreet(streets[random.nextInt(streets.length)]);
-            a.setHouseNumber(String.valueOf(random.nextInt(120) + 1));
-            a.setPostalCode(postalCodes[ci]);
-            a.setCity(cities[ci]);
+            String[] addr = realAddresses[i % realAddresses.length];
+            a.setStreet(addr[0]);
+            a.setHouseNumber(addr[1]);
+            a.setPostalCode(addr[2]);
+            a.setCity(addr[3]);
+            a.setCountry("Deutschland");
+            a.setFirma(firmen.get(i));
+            adressen.add(a);
+        }
+        // Additional random Firma addresses (100 more, distributed randomly)
+        for (int i = 0; i < 100; i++) {
+            Adresse a = new Adresse();
+            String[] addr = realAddresses[random.nextInt(realAddresses.length)];
+            a.setStreet(addr[0]);
+            a.setHouseNumber(addr[1]);
+            a.setPostalCode(addr[2]);
+            a.setCity(addr[3]);
             a.setCountry("Deutschland");
             a.setFirma(firmen.get(random.nextInt(firmen.size())));
             adressen.add(a);
         }
         for (int i = 0; i < 300; i++) {
             Adresse a = new Adresse();
-            int ci = random.nextInt(cities.length);
-            a.setStreet(streets[random.nextInt(streets.length)]);
-            a.setHouseNumber(String.valueOf(random.nextInt(120) + 1));
-            a.setPostalCode(postalCodes[ci]);
-            a.setCity(cities[ci]);
+            String[] addr = realAddresses[random.nextInt(realAddresses.length)];
+            a.setStreet(addr[0]);
+            a.setHouseNumber(addr[1]);
+            a.setPostalCode(addr[2]);
+            a.setCity(addr[3]);
             a.setCountry("Deutschland");
             a.setPerson(personen.get(random.nextInt(personen.size())));
             adressen.add(a);

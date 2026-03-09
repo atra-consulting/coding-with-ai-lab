@@ -31,6 +31,40 @@
     </div>
   </div>
 
+  <!-- Map Section -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="mb-0">Standorte</h5>
+    </div>
+    <div class="card-body p-0">
+      @if (mapLoading) {
+        <div class="d-flex justify-content-center align-items-center" style="height: 350px">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Karte wird geladen...</span>
+          </div>
+        </div>
+      }
+      @if (adressen.length === 0 && !mapLoading) {
+        <p class="text-muted p-3 mb-0">Keine Adressen vorhanden.</p>
+      }
+      <div
+        #mapContainer
+        [style.height.px]="350"
+        [style.display]="adressen.length > 0 ? 'block' : 'none'"
+      ></div>
+    </div>
+    @if (adressen.length > 0) {
+      <ul class="list-group list-group-flush">
+        @for (adresse of adressen; track adresse.id) {
+          <li class="list-group-item">
+            {{ adresse.street }} {{ adresse.houseNumber }}, {{ adresse.postalCode }}
+            {{ adresse.city }}
+          </li>
+        }
+      </ul>
+    }
+  </div>
+
   <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs">
     <li [ngbNavItem]="1">
       <button ngbNavLink>Personen ({{ firma.personenCount }})</button>

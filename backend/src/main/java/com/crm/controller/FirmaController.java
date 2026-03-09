@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,16 +17,16 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.crm.dto.AbteilungDTO;
+import com.crm.dto.AdresseDTO;
 import com.crm.dto.FirmaCreateDTO;
 import com.crm.dto.FirmaDTO;
 import com.crm.dto.PersonDTO;
 import com.crm.service.AbteilungService;
+import com.crm.service.AdresseService;
 import com.crm.service.FirmaService;
 import com.crm.service.PersonService;
 
 import jakarta.validation.Valid;
-
-import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/firmen")
@@ -35,11 +36,13 @@ public class FirmaController {
     private final FirmaService firmaService;
     private final PersonService personService;
     private final AbteilungService abteilungService;
+    private final AdresseService adresseService;
 
-    public FirmaController(FirmaService firmaService, PersonService personService, AbteilungService abteilungService) {
+    public FirmaController(FirmaService firmaService, PersonService personService, AbteilungService abteilungService, AdresseService adresseService) {
         this.firmaService = firmaService;
         this.personService = personService;
         this.abteilungService = abteilungService;
+        this.adresseService = adresseService;
     }
 
     @GetMapping
@@ -85,6 +88,13 @@ public class FirmaController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         return abteilungService.findByFirmaId(id, PageRequest.of(page, size));
+    }
+
+    @GetMapping("/{id}/adressen")
+    public Page<AdresseDTO> getAdressen(@PathVariable Long id,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int size) {
+        return adresseService.findByFirmaId(id, PageRequest.of(page, size));
     }
 
     private Sort parseSort(String[] sort) {

@@ -49,7 +49,12 @@
                 "input": "public"
               }
             ],
-            "styles": ["src/_variables.scss", "node_modules/bootstrap/scss/bootstrap.scss", "src/styles.scss"]
+            "styles": [
+              "src/_variables.scss",
+              "node_modules/bootstrap/scss/bootstrap.scss",
+              "node_modules/leaflet/dist/leaflet.css",
+              "src/styles.scss"
+            ]
           },
           "configurations": {
             "production": {

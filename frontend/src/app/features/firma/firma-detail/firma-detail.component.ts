@@ -1,8 +1,18 @@
 import { DatePipe } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  inject,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { NgbNavModule, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
+import * as L from 'leaflet';
 import { Abteilung } from '../../../core/models/abteilung.model';
+import { Adresse } from '../../../core/models/adresse.model';
 import { Firma } from '../../../core/models/firma.model';
 import { Page } from '../../../core/models/page.model';
 import { Person } from '../../../core/models/person.model';
@@ -14,17 +24,25 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
   imports: [RouterLink, NgbNavModule, NgbPagination, LoadingSpinnerComponent, DatePipe],
   templateUrl: './firma-detail.component.html',
 })
-export class FirmaDetailComponent implements OnInit {
+export class FirmaDetailComponent implements OnInit, AfterViewInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private firmaService = inject(FirmaService);
+
+  @ViewChild('mapContainer') mapContainer!: ElementRef;
 
   firma: Firma | null = null;
   personenPage: Page<Person> | null = null;
   abteilungenPage: Page<Abteilung> | null = null;
+  adressen: Adresse[] = [];
   activeTab = 1;
   personenCurrentPage = 1;
   abteilungenCurrentPage = 1;
   loading = true;
+  mapLoading = true;
+
+  private map: L.Map | null = null;
+  private mapReady = false;
+  private pendingAdressen: Adresse[] | null = null;
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
@@ -34,11 +52,27 @@ export class FirmaDetailComponent implements OnInit {
         this.loading = false;
         this.loadPersonen();
         this.loadAbteilungen();
+        this.loadAdressen();
       },
       error: () => {
         this.loading = false;
       },
     });
+  }
+
+  ngAfterViewInit(): void {
+    this.mapReady = true;
+    if (this.pendingAdressen) {
+      this.initMap(this.pendingAdressen);
+      this.pendingAdressen = null;
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.map) {
+      this.map.remove();
+      this.map = null;
+    }
   }
 
   loadPersonen(): void {
@@ -53,6 +87,87 @@ export class FirmaDetailComponent implements OnInit {
     this.firmaService
       .getAbteilungen(this.firma.id, this.abteilungenCurrentPage - 1)
       .subscribe((data) => (this.abteilungenPage = data));
+  }
+
+  loadAdressen(): void {
+    if (!this.firma) return;
+    this.firmaService.getAdressen(this.firma.id).subscribe((data) => {
+      this.adressen = data.content;
+      if (this.mapReady) {
+        this.initMap(this.adressen);
+      } else {
+        this.pendingAdressen = this.adressen;
+      }
+    });
+  }
+
+  private async initMap(adressen: Adresse[]): Promise<void> {
+    if (!this.mapContainer || adressen.length === 0) {
+      this.mapLoading = false;
+      return;
+    }
+
+    // Fix default marker icon paths (Leaflet + bundler issue)
+    const iconDefault = L.icon({
+      iconRetinaUrl: 'assets/marker-icon-2x.png',
+      iconUrl: 'assets/marker-icon.png',
+      shadowUrl: 'assets/marker-shadow.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41],
+    });
+    L.Marker.prototype.options.icon = iconDefault;
+
+    this.map = L.map(this.mapContainer.nativeElement);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      maxZoom: 19,
+    }).addTo(this.map);
+
+    const markers: L.Marker[] = [];
+
+    for (const adresse of adressen) {
+      const query = `${adresse.street} ${adresse.houseNumber}, ${adresse.postalCode} ${adresse.city}, ${adresse.country}`;
+      try {
+        const coords = await this.geocode(query);
+        if (coords) {
+          const marker = L.marker([coords.lat, coords.lon])
+            .addTo(this.map!)
+            .bindPopup(
+              `<strong>${adresse.street} ${adresse.houseNumber}</strong><br>${adresse.postalCode} ${adresse.city}`,
+            );
+          markers.push(marker);
+        }
+      } catch {
+        // Skip addresses that can't be geocoded
+      }
+    }
+
+    if (markers.length > 0) {
+      const group = L.featureGroup(markers);
+      this.map.fitBounds(group.getBounds().pad(0.2));
+    } else {
+      // Default to center of Germany
+      this.map.setView([51.1657, 10.4515], 6);
+    }
+
+    this.mapLoading = false;
+  }
+
+  private geocode(query: string): Promise<{ lat: number; lon: number } | null> {
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`;
+    return fetch(url, {
+      headers: { 'User-Agent': 'CRM-App/1.0' },
+    })
+      .then((res) => res.json())
+      .then((data: { lat: string; lon: string }[]) => {
+        if (data && data.length > 0) {
+          return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+        }
+        return null;
+      });
   }
 
   onPersonenPageChange(p: number): void {
