@@ -1,5 +1,10 @@
 <div class="page-header">
-  <h2>Chancen</h2>
+  <h2>
+    Chancen
+    @if (totalRows > 0) {
+      ({{ displayedRows < totalRows ? displayedRows + '/' + totalRows : totalRows }})
+    }
+  </h2>
   <div class="d-flex gap-3 align-items-center">
     <div class="btn-group">
       <a routerLink="/chancen" class="btn btn-outline-secondary active">Liste</a>
@@ -19,6 +24,8 @@
     [columnDefs]="columnDefs"
     [defaultColDef]="defaultColDef"
     [autoSizeStrategy]="autoSizeStrategy"
+    (gridReady)="onGridReady($event)"
+    (modelUpdated)="onModelUpdated()"
     (rowClicked)="onRowClicked($event)"
   />
 }

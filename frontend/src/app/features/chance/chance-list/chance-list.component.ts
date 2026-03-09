@@ -1,7 +1,14 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AgGridAngular } from 'ag-grid-angular';
-import { ColDef, RowClickedEvent, SizeColumnsToContentStrategy, themeQuartz } from 'ag-grid-community';
+import {
+  ColDef,
+  GridApi,
+  GridReadyEvent,
+  RowClickedEvent,
+  SizeColumnsToContentStrategy,
+  themeQuartz,
+} from 'ag-grid-community';
 import { Chance } from '../../../core/models/chance.model';
 import { ChanceService } from '../../../core/services/chance.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
@@ -14,12 +21,15 @@ const currencyFormatter = new Intl.NumberFormat('de-DE', { style: 'currency', cu
   templateUrl: './chance-list.component.html',
 })
 export class ChanceListComponent implements OnInit {
+  private gridApi?: GridApi;
   private chanceService = inject(ChanceService);
   private router = inject(Router);
 
   rowData: Chance[] = [];
   loading = true;
   theme = themeQuartz.withParams({ oddRowBackgroundColor: '#f0f0f0' });
+  totalRows = 0;
+  displayedRows = 0;
 
   columnDefs: ColDef<Chance>[] = [
     { field: 'titel', headerName: 'Titel' },
@@ -71,6 +81,17 @@ export class ChanceListComponent implements OnInit {
         this.loading = false;
       },
     });
+  }
+
+  onGridReady(params: GridReadyEvent): void {
+    this.gridApi = params.api;
+  }
+
+  onModelUpdated(): void {
+    if (this.gridApi) {
+      this.totalRows = this.rowData.length;
+      this.displayedRows = this.gridApi.getDisplayedRowCount();
+    }
   }
 
   onRowClicked(event: RowClickedEvent<Chance>): void {
