@@ -94,6 +94,7 @@ Additional methods:
 | SavedReportService | `getAll()`, `create(dto)`, `update(id, dto)`, `delete(id)` |
 | DashboardConfigService | `getConfig()`, `saveConfig(config)` |
 | NotificationService | `success(msg)`, `error(msg)`, `info(msg)`, `warning(msg)` |
+| LayoutService | `collapsed` (signal), `toggleSidebar()` |
 
 ## Feature Components
 
@@ -151,6 +152,8 @@ Sections with permission-filtered items:
 | Administration | Benutzer (BENUTZERVERWALTUNG) |
 
 Empty sections are hidden. Uses FontAwesome icons and RouterLinkActive.
+
+**Collapsible State**: The sidebar can be collapsed to a mini-view (60px) showing only icons. State is managed by `LayoutService` and persisted in `localStorage` (`sidebar_collapsed`).
 
 ### Navbar
 
