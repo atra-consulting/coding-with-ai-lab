@@ -31,6 +31,7 @@ export class ChanceListComponent implements OnInit {
   theme = themeQuartz.withParams({ oddRowBackgroundColor: '#f0f0f0' });
   totalRows = 0;
   displayedRows = 0;
+  isFilterActive = false;
 
   columnDefs: ColDef<Chance>[] = [
     { field: 'titel', headerName: 'Titel' },
@@ -76,8 +77,8 @@ export class ChanceListComponent implements OnInit {
     this.chanceService.listAll().subscribe({
       next: (data) => {
         this.rowData = data;
+        this.totalRows = data.length;
         this.loading = false;
-        this.updateCounts();
       },
       error: () => {
         this.loading = false;
@@ -87,29 +88,16 @@ export class ChanceListComponent implements OnInit {
 
   onGridReady(params: GridReadyEvent): void {
     this.gridApi = params.api;
-    this.updateCounts();
   }
 
   onModelUpdated(): void {
     this.updateCounts();
   }
 
-  onFilterChanged(): void {
-    this.updateCounts();
-  }
-
   private updateCounts(): void {
     if (this.gridApi) {
-      let filteredCount = 0;
-      this.gridApi.forEachNodeAfterFilter(() => filteredCount++);
-      this.displayedRows = filteredCount;
-      
-      let totalCount = 0;
-      this.gridApi.forEachNode(() => totalCount++);
-      this.totalRows = totalCount > 0 ? totalCount : this.rowData.length;
-    } else {
-      this.totalRows = this.rowData?.length ?? 0;
-      this.displayedRows = this.totalRows;
+      this.displayedRows = this.gridApi.getDisplayedRowCount();
+      this.isFilterActive = this.gridApi.isAnyFilterPresent();
     }
     this.cdr.markForCheck();
   }
