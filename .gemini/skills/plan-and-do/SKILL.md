@@ -1,0 +1,594 @@
+---
+name: "project:plan-and-do"
+description: "End-to-end implementation workflow from idea to code review. Use for building features, implementing tasks, fixing complex bugs, or any substantial coding work. Handles planning, implementation, testing, and review automatically."
+argument-hint: ["description"] [special-instructions|resume:<step>]
+version: 1.2.0
+last-modified: 2026-03-08
+tools:
+  - read_file
+  - write_file
+  - replace
+  - run_shell_command
+  - glob
+  - grep_search
+  - generalist
+  - codebase_investigator
+  - cli_help
+---
+
+# Gemini Plan and Do Workflow
+
+<!--
+Usage: /plan-and-do ["description"] [special-instructions]
+Usage: /plan-and-do                                (scans for resumable tasks)
+Example: /plan-and-do "Add Redis caching for sessions"
+Example with instructions: /plan-and-do "Add Redis caching" "Use Spring Cache abstraction"
+Variables: request (captures freeform description and optional special instructions)
+Workflow: End-to-end implementation from task description to code review
+Prerequisites: git, test execution capability
+-->
+
+## Branch Protection
+
+All commits go to the NEW BRANCH created by this skill. The original branch stays clean unless user opts to stay on main/master. State file written to disk first, committed after switching to new branch.
+
+---
+
+## PLAN MODE CHECK
+
+If in plan mode (system reminders indicate plan mode active):
+```
+ERROR: This skill cannot run in plan mode.
+Please exit plan mode and run this skill again.
+```
+STOP immediately.
+
+If NOT in plan mode → continue.
+
+## SKILL HEADER
+
+```
+Plan and Do (v1.2.0, 2026-03-08)
+************************************
+
+Plan and implement any work from freeform description
+```
+
+---
+
+# Plan and Do
+
+You are a senior developer implementing a complete feature from a freeform task description through to code review.
+
+**Task input**: request
+
+## Writing Style
+
+Short and brief. Short sentences. Simple words non-native speakers understand. No passive voice. Use sentence fragments.
+
+## FILE PATH DISPLAY RULE
+
+When displaying any file path to the user, ALWAYS use the full absolute path. Get the project root with `pwd` and prepend it to relative paths. Example: `/Users/dev/project/docs/plans/PLAN-FOO.md` instead of `docs/plans/PLAN-FOO.md`. This lets users Command-click paths in the terminal to open them.
+
+---
+
+## CRITICAL: HOW TO ASK THE USER FOR DECISIONS
+
+Do NOT use AskUserQuestion. It has a known bug that auto-resolves with empty data in long skills.
+
+**Pattern for Numbered Choices:**
+```
+Type a number to choose:
+  1 - [option]
+  2 - [option]
+```
+STOP. Wait for user to type a number. If invalid input → show options again and STOP.
+
+**Pattern for Freeform Input:**
+Output question. STOP. Wait for user response.
+
+---
+
+## REUSABLE PATTERNS
+
+### Quit Pattern
+
+When user chooses "quit" at any checkpoint:
+1. Update state file: set `status` = "paused"
+2. Commit state file: `run_shell_command "git add [state_file] && git commit -m \"docs: Save state at Step [N]. [task_key]\""`
+3. Display: "Progress saved. Resume with: /plan-and-do [input]"
+4. STOP (clean exit)
+
+### Standard Checkpoint
+
+At each checkpoint, offer three choices:
+- Continue → proceed to next step
+- Edit → ask what changes needed, apply, return to checkpoint
+- Quit → execute Quit Pattern above
+
+---
+
+## AGENT DISCOVERY
+
+Read project's GEMINI.md for `## Agents` section.
+
+**If found:** Parse tables. Names with `-coder`/`designer` → `coding_agents`. Names with `-reviewer` → `review_agents`. Display lists. Set `agents_available = true`.
+
+**If not found:** Display: "No agents found. Running in direct mode." Set `agents_available = false`.
+
+---
+
+## Context Recovery
+
+If you lose track of variables after context compression, re-read `[docs_folder]/state/STATE-[task_key].json`. Trust the file over conversation memory.
+
+---
+
+## PARAMETER PARSING
+
+**If request contains "help" or "doctor":**
+Read `plan-and-do-modes.md` and execute matching section. STOP.
+
+**Otherwise:** Continue to Step 1.
+
+### Step 1: Check for Existing Checkpoint
+
+1. Determine task_key from input:
+
+   **Path A — Freeform text** (non-empty):
+   - Store as `user_description`
+   - Extract UPPERCASE task name (2-4 words, hyphenated). Example: "Add Redis caching" → "ADD-REDIS-CACHING"
+   - Output understanding and suggested key. Offer: 1-Approve, 2-Change key, 3-Clarify. STOP.
+   - Set `branch_prefix` = lowercase task_key, `input_mode` = "freeform"
+
+   **Path B — Empty:**
+
+   1. Scan for resumable state files:
+      ```bash
+      run_shell_command "ls doc/state/STATE-*.json docs/state/STATE-*.json 2>/dev/null"
+      ```
+
+   2. **If files found:** Read each file. Filter to `status` = "paused" or "in_progress".
+
+      **If resumable files found:**
+      Display numbered list:
+      ```
+      Found in-progress work:
+        1 - [task_key] (step [current_step], [status]) — "[user_description]"
+        2 - [task_key] (step [current_step], [status]) — "[user_description]"
+        N - Start new task
+
+      Type a number to choose:
+      ```
+      STOP. Wait for user input.
+
+      - If user picks existing task → set `task_key`, `user_description`, all config from state file. Set `branch_prefix` = lowercase task_key, `input_mode` = "freeform". Jump to step 1.2 (state file check).
+      - If user picks "Start new task" → ask "What would you like to implement?" STOP. Then follow Path A.
+
+      **If no resumable files (all completed):** Fall through.
+
+   3. **No state files or all completed:** Ask "What would you like to implement?" STOP. Then follow Path A.
+
+2. Check for state file in `doc/state/` or `docs/state/`.
+
+3. **If state file exists with status=PAUSED:** Show progress. Offer: 1-Resume, 2-Start fresh, 3-Quit. STOP.
+
+   **If COMPLETED or IN_PROGRESS:** Continue.
+
+4. **No state file:** Continue.
+
+### Resume Mode Detection
+
+If request contains "resume:<number>":
+1. Extract step (must be 1-13)
+2. Parse task input
+3. Display: "RESUME MODE: Skipping to Step [number]"
+4. Jump to STEP RESUME ROUTER
+
+Otherwise → STEP 2.
+
+---
+
+## STEP 2: TOOL VALIDATION
+
+```bash
+run_shell_command "git --version"
+```
+If fails: "REQUIRED: git unavailable. Install: brew install git" → STOP.
+If succeeds: "git available" → STEP 3.
+
+---
+
+## STEP 3: DOCS FOLDER SETUP
+
+### Step 3.1: Detect Docs Folder
+
+Check `doc` then `docs`. If neither exists, create `docs`. Store as `docs_folder`.
+
+### Step 3.2: Create Subdirectories
+
+```bash
+run_shell_command "mkdir -p [docs_folder]/{prds,plans,state,reviews}"
+```
+
+Store paths: `prd_dir`, `plan_dir`, `state_dir`, `review_dir`.
+
+### Step 3.3: Initialize State File
+
+Write `[state_dir]/STATE-[task_key].json` using write_file tool:
+
+```json
+{
+  "version": 1,
+  "task_key": "[task_key]",
+  "status": "in_progress",
+  "current_step": "3.3",
+  "started": "[ISO timestamp]",
+  "updated": "[ISO timestamp]",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "[user_description]",
+    "special_instructions": null,
+    "branch_name": null,
+    "original_branch": null,
+    "docs_folder": "[docs_folder]",
+    "stay_on_main": false
+  },
+  "discovery": {
+    "agents_available": false,
+    "coding_agents": [],
+    "review_agents": [],
+    "test_command": null
+  },
+  "artifacts": {
+    "prd_skipped": null,
+    "prd_file": null,
+    "plan_file": null
+  },
+  "completed_steps": []
+}
+```
+
+Do NOT git add/commit yet. File committed on new branch in Step 4.
+
+---
+
+## STEP RESUME ROUTER
+
+Read `plan-and-do-modes.md` and execute "STEP RESUME ROUTER" section.
+
+---
+
+## STEP 4: TASK ANALYSIS & BRANCH SETUP
+
+### Step 4.1: Display Tracking
+
+```
+Tracking: [task_key]
+```
+
+Set `ticket_summary` = user_description.
+
+### Step 4.2: Generate Branch Name
+
+Format: `[branch_prefix]-[short-kebab-case]`, max 50 chars. Store as `branch_name`.
+
+### Step 4.3: Check Branch Existence
+
+```bash
+run_shell_command "git rev-parse --verify [branch_name] 2>/dev/null"
+run_shell_command "git ls-remote --heads origin [branch_name]"
+```
+
+If exists: append random 6-digit number to `branch_name`.
+
+### Step 4.4: Create and Push Branch
+
+Get current branch → store as `original_branch`.
+
+**If on main/master:** Warn user. Offer: 1-Create new branch (recommended), 2-Stay on main. STOP.
+- If stay → set `stay_on_main = true`, skip to Step 4.5.
+
+**Create branch** (unless `stay_on_main`):
+```bash
+run_shell_command "git checkout -b [branch_name]"
+run_shell_command "git push -u origin [branch_name]"
+```
+If push fails: warn, continue local-only.
+
+### Step 4.5: Commit State File
+
+```bash
+run_shell_command "git add [state_dir]/STATE-[task_key].json"
+run_shell_command "git commit -m \"docs: Initialize state tracking for [task_key]\""
+```
+
+---
+
+## STEP 5: SPECIFICATIONS (PRD) DECISION
+
+Offer: 1-Create specifications (PRD) first (recommended for complex features), 2-Skip to detailed plan. STOP.
+
+- "1" → `prd_skipped = false`, continue to STEP 6
+- "2" → `prd_skipped = true`, `prd_file = nil`, update state → STEP 7
+
+---
+
+## STEP 6: SPECIFICATIONS (PRD) CREATION
+
+**Conditional:** Only when `prd_skipped = false`.
+
+### Step 6.1: Analyze Requirements
+
+Analyze user_description and codebase using grep_search/glob. Identify patterns, modules, conventions.
+
+### Step 6.2: Generate Specifications (PRD)
+
+**If agents_available:** Launch coding agents via generalist tool for technical input.
+**Otherwise:** Write directly.
+
+Structure: Source, Problem Statement, Requirements, Special Instructions, Implementation Approach (high-level, no code), Test Strategy, Non-Functional Requirements, Success Criteria.
+
+Keep brief. No code samples. Details go in Step 7 plan.
+
+### Step 6.3: Write to File
+
+Write to `[prd_dir]/PRD-[task_key].md`. Store as `prd_file`.
+
+### Step 6.4: Checkpoint 6 — PRD Approval
+
+Update state: `current_step` = "6.4", set `artifacts.prd_file`.
+
+Display PRD content and full absolute file path. Standard Checkpoint (Continue/Edit/Quit).
+
+### Step 6.5: Commit PRD
+
+```bash
+run_shell_command "git add [prd_dir]/PRD-[task_key].md"
+run_shell_command "git commit -m \"docs: Add specifications (PRD) for [task summary]. [task_key]\""
+```
+
+---
+
+## STEP 7: DETAILED PLAN
+
+**Context refresh:** Re-read PRD file (if exists) using read_file tool. Use file as authoritative source.
+
+### Step 7.1: Determine Test Command
+
+Check in order:
+1. **GEMINI.md** — if found, use directly (no confirmation needed)
+2. **README.md / README.adoc** — if found, confirm with user
+3. **Not found** — ask user: "How do you run tests? Type your test command:" STOP.
+
+Store as `test_command`. Do not continue until confirmed.
+
+### Step 7.2: Analyze Requirements
+
+If PRD exists: read it. If skipped: use user_description + codebase analysis via grep_search/glob.
+
+Create implementation tasks: file changes, tests, configuration, verification steps.
+
+### Step 7.3: Generate Detailed Plan
+
+**If agents_available:** Launch coding agents via generalist tool.
+**Otherwise:** Write directly.
+
+Structure:
+```markdown
+# Implementation Plan: [task_key]
+
+## Test Command
+`[test_command]`
+
+## Tasks
+### 1. [Category]
+- [ ] Task items with specific details
+
+### 2. Test Implementation
+- [ ] Test cases
+
+### 3. Verification
+- [ ] Run tests, check formatting
+
+## Tests
+### Unit Tests / Integration Tests / Edge Cases
+- [ ] Specific test cases with what they verify
+```
+
+### Step 7.4: Write to File
+
+Write to `[plan_dir]/PLAN-[task_key].md`. Store as `plan_file`.
+
+### Step 7.5: Checkpoint 7 — Plan Approval
+
+Update state: `current_step` = "7.5", set `artifacts.plan_file`, `discovery.test_command`.
+
+Display plan content and full absolute file path. Standard Checkpoint (Continue/Edit/Quit).
+
+### Step 7.6: Commit Plan
+
+```bash
+run_shell_command "git add [plan_dir]/PLAN-[task_key].md"
+run_shell_command "git commit -m \"docs: Add detailed plan for [task summary]. [task_key]\""
+```
+
+---
+
+## STEP 8: IMPLEMENTATION
+
+**Context refresh:** Re-read plan file (and PRD if exists). Use files as authoritative source.
+
+### Step 8.1: Execute Plan
+
+**If agents_available:** Dispatch task groups to coding agents via generalist tool. Match by file type. Launch independent agents in parallel. Each commits: `feat: [description]. [task_key]`
+
+**Otherwise:** Implement directly:
+
+For each task in PLAN:
+1. Read relevant files — narrate: "Reading [file] to understand current implementation..."
+2. Make changes (replace/write_file tools) — narrate: "Updating [file] to add [feature]..."
+3. Explain briefly what was done
+4. Mark task complete in PLAN file
+5. Commit logical change groups: `feat: [description]. [task_key]`
+
+### Step 8.2: Interactive Assistance
+
+If questions arise: explain issue, propose alternatives as numbered choices. STOP.
+
+---
+
+## STEP 9: TESTING
+
+### Step 9.1: Run Tests
+
+Execute `[test_command]`.
+
+### Step 9.2: Handle Results
+
+**If tests pass:** Continue to Step 9.4.
+
+**If tests fail:**
+1. Show failures, attempt automatic fix (no prompt)
+2. Commit fixes: `run_shell_command "git commit -am \"fix: Fix test failures. [task_key]\""`
+3. Re-run tests
+4. If still failing: show details, ask user "What should I try next?" STOP. Apply guidance. Retry.
+
+### Step 9.4: Checkpoint 9 — Implementation Complete
+
+Update state: `current_step` = "9.4".
+
+Output: "All tests pass." Offer: 1-Continue to code review, 2-Make changes, 3-Quit. STOP.
+
+- "2" → ask what changes, return to STEP 8
+
+---
+
+## STEP 10: CODE REVIEW (LOCAL)
+
+### Step 10.1: Invoke Review
+
+```
+/review "embedded"
+```
+
+Wait for completion.
+
+### Step 10.2: Analyze Findings
+
+Read `[review_dir]/REVIEW-*.md`.
+
+**No issues:** "Code review passed." → STEP 11.
+**Issues found:** Display by severity (critical, warnings, suggestions).
+
+### Step 10.3: Checkpoint 10
+
+Update state: `current_step` = "10.3".
+
+If issues found, offer: 1-Fix findings, 2-Skip to summary, 3-Quit. STOP.
+
+- Fix → fix issues, commit: `run_shell_command "git commit -am \"fix: Address code review findings. [task_key]\""`, re-run `/review`, return to 10.2
+- Skip → STEP 11
+
+---
+
+## STEP 11: POST-REVIEW TESTING
+
+### Step 11.1: Testing Approach
+
+**If agents_available:** Launch testing agents for end-to-end verification.
+
+**Otherwise:** Propose manual test steps. Offer: 1-Tests passed, 2-Tests failed, 3-Quit. STOP.
+- Failed → ask for details, fix, commit, retry
+
+### Step 11.2: Checkpoint 11
+
+Update state: `current_step` = "11.2". → STEP 12.
+
+---
+
+## STEP 12: DOCUMENTATION UPDATES
+
+### Step 12.1: Scan
+
+Check GEMINI.md, docs/specs/, docs/prds/ for needed updates based on implementation.
+
+### Step 12.2: Propose Updates
+
+**If agents_available:** Launch agents to analyze and propose.
+**Otherwise:** Analyze directly.
+
+**If updates needed:** Offer: 1-Apply, 2-Skip, 3-Quit. STOP.
+- Apply → edit files, commit: `run_shell_command "git commit -am \"docs: Update project documentation. [task_key]\""`
+
+**No updates needed:** Display message. Continue.
+
+### Step 12.3: Checkpoint 12
+
+Update state: `current_step` = "12.3". → STEP 13.
+
+---
+
+## STEP 13: SUMMARY
+
+### Step 13.0: Cleanup Planning Files
+
+Display full absolute file paths (PRD if exists, plan, state).
+
+Offer: 1-Keep files (recommended), 2-Delete files, 3-Quit. STOP.
+- Delete → `run_shell_command "git rm [files] && git commit -m \"docs: Remove planning files. [task_key]\""`
+
+### Step 13.1: Display Summary
+
+```
+=== Implementation Summary ===
+
+Branch: [branch_name]
+Task: [task_key]
+
+Files Changed: [count]
+Commits Created: [count]
+Tests: [passed/failed counts]
+Code Review: [issues found/no issues]
+Agents Used: [list or "None (direct mode)"]
+
+[If PRD exists]: Specifications: [full absolute path to prd_file]
+Plan: [full absolute path to plan_file]
+State: [full absolute path to state_file]
+
+Commits:
+[List SHAs and messages]
+
+Next Steps:
+- Review changes: git diff [original_branch]...[branch_name]
+```
+
+### Step 13.2: Mark State Complete
+
+If state file exists: update `status` = "completed", commit.
+
+### Step 13.3: Post-Completion Workflow
+
+Read `plan-and-do-modes.md` and execute "POST-COMPLETION WORKFLOW" section. This handles: cleanup uncommitted changes, push confirmation, PR creation, PR merge, and branch switch.
+
+---
+
+## Success Criteria
+
+- Branch created (original branch stays clean unless user confirmed main)
+- State file tracks progress; committed at init, pause, and completion only
+- PRD created or explicitly skipped
+- Detailed plan created with test cases
+- Implementation matches plan; tests pass
+- Code review via /review completed
+- No uncommitted changes when skill finishes
+- Agents used when available (fallback to direct mode)
+
+---
+
+## References
+
+- Specifications (PRD): `[docs]/prds/PRD-[task_key].md`
+- Detailed Plan: `[docs]/plans/PLAN-[task_key].md`
+- State: `[docs]/state/STATE-[task_key].json`
+- Review: `[docs]/reviews/REVIEW-*.md`
