@@ -4,6 +4,7 @@ import { NavbarComponent } from './layout/navbar/navbar.component';
 import { SidebarComponent } from './layout/sidebar/sidebar.component';
 import { NotificationComponent } from './shared/components/notification/notification.component';
 import { AuthService } from './core/services/auth.service';
+import { LayoutService } from './core/services/layout.service';
 
 @Component({
   selector: 'app-root',
@@ -13,5 +14,6 @@ import { AuthService } from './core/services/auth.service';
 })
 export class App {
   private authService = inject(AuthService);
+  layoutService = inject(LayoutService);
   isAuthenticated = this.authService.isAuthenticated;
 }

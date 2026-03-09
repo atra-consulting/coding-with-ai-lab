@@ -1,24 +1,51 @@
+@import 'variables';
+
 // Global styles
 body {
   min-height: 100vh;
+  --sidebar-width: 250px;
+  --sidebar-transition: 0.3s ease;
+}
+
+.sidebar-collapsed {
+  --sidebar-width: 60px;
 }
 
 .sidebar {
   min-height: calc(100vh - 56px);
-  background-color: #264892;
-  width: 250px;
+  background-color: $primary;
+  width: var(--sidebar-width);
   position: fixed;
   top: 56px;
   left: 0;
   z-index: 100;
-  padding-top: 1rem;
+  padding-top: 0.5rem;
   overflow-y: auto;
+  overflow-x: hidden;
+  transition: width var(--sidebar-transition);
+
+  .sidebar-toggle-container {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+    .toggle-btn {
+      color: #a7c6eb;
+      padding: 0.5rem;
+      text-decoration: none;
+      width: 100%;
+      text-align: center;
+
+      &:hover {
+        color: #fff;
+      }
+    }
+  }
 
   .sidebar-footer {
     padding: 1rem;
     color: rgba(255, 255, 255, 0.25);
     font-size: 0.7rem;
     text-align: center;
+    white-space: nowrap;
 
     .footer-link {
       color: inherit;
@@ -30,13 +57,19 @@ body {
         text-decoration: none;
       }
     }
+
+    .footer-mini {
+      font-weight: bold;
+      letter-spacing: 0.05em;
+    }
   }
 }
 
 .main-content {
-  margin-left: 250px;
+  margin-left: var(--sidebar-width);
   padding: 1.5rem;
   margin-top: 56px;
+  transition: margin-left var(--sidebar-transition);
 }
 
 .nav-section-header {
@@ -46,6 +79,7 @@ body {
   letter-spacing: 0.05em;
   padding: 0.75rem 1rem 0.25rem;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .sidebar .nav-link {
@@ -53,6 +87,9 @@ body {
   padding: 0.5rem 1rem;
   font-size: 0.9rem;
   border-radius: 0;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
 
   &:hover {
     color: #fff;
@@ -62,7 +99,7 @@ body {
   &.active {
     color: #fff;
     background-color: rgba(220, 66, 30, 0.15);
-    border-left: 3px solid #dc421e;
+    border-left: 3px solid $danger;
   }
 
   fa-icon {
@@ -70,7 +107,12 @@ body {
     margin-right: 0.5rem;
     display: inline-block;
     text-align: center;
+    flex-shrink: 0;
   }
+}
+
+.sidebar-collapsed .sidebar .nav-link fa-icon {
+  margin-right: 0;
 }
 
 .page-header {
