@@ -132,17 +132,20 @@ body {
 
 // ag-Grid header styling
 .ag-header {
-  background-color: rgba(38, 72, 146, 0.05) !important;
-  border-bottom: 2px solid #264892 !important;
+  background-color: #f0f4ff !important;
+  border-bottom: 3px solid #0044cc !important;
 }
 
 .ag-header-cell-label {
-  color: #264892 !important;
-  font-weight: bold !important;
+  color: #0044cc !important;
+  font-weight: 800 !important;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
 }
 
 .ag-header-icon {
-  color: #264892 !important;
+  color: #0044cc !important;
 }
 
 .table-container {
