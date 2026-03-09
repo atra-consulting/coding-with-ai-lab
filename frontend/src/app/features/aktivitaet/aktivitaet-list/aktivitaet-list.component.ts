@@ -86,6 +86,10 @@ export class AktivitaetListComponent implements OnInit {
     this.updateCounts();
   }
 
+  onFilterChanged(): void {
+    this.updateCounts();
+  }
+
   private updateCounts(): void {
     this.totalRows = this.rowData?.length ?? 0;
     const count = this.gridApi ? this.gridApi.getDisplayedRowCount() : this.totalRows;
