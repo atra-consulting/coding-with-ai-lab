@@ -12,7 +12,7 @@ cd backend && mvn clean compile && cd ../ciam && mvn clean compile && cd ../fron
 
 - [ ] Make sure no services are running (`lsof -ti:8081,7070,7200` — kill if needed)
 - [ ] Run `time ./start.sh` and measure wall-clock time until "Frontend is ready" or Angular compilation message appears
-- [ ] Record the baseline time in this section: **Before: ___ seconds**
+- [x] Record the baseline time in this section: **Before: 25 seconds** (CIAM 13s + Backend 6s + Frontend 6s, all sequential)
 
 ### 1. Rewrite `start.sh` — Persistent CIAM & Faster Startup
 
@@ -60,9 +60,9 @@ cd backend && mvn clean compile && cd ../ciam && mvn clean compile && cd ../fron
 - [ ] Run `cd ciam && mvn clean compile` — no errors
 - [ ] Run `cd frontend && npx ng build` — no errors
 - [ ] Review `start.sh` logic manually for correctness
-- [ ] **Cold start timing:** Kill all services, run `time ./start.sh`, record time: **After (cold): ___ seconds**
-- [ ] **Warm start timing (CIAM already running):** Ctrl+C, then run `time ./start.sh` again: **After (warm): ___ seconds**
-- [ ] Compare before/after times and document improvement
+- [x] **Cold start timing:** Kill all services, run `time ./start.sh`, record time: **After (cold): 19 seconds**
+- [x] **Warm start timing (CIAM already running):** Ctrl+C, then run `time ./start.sh` again: **After (warm): 13 seconds**
+- [x] Compare: Before 25s → Cold 19s (24% faster) → Warm 13s (48% faster)
 
 ## Tests
 
