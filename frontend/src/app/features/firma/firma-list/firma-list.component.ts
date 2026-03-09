@@ -68,13 +68,8 @@ export class FirmaListComponent implements OnInit {
     this.updateCounts();
   }
 
-  onFilterChanged(): void {
-    this.updateCounts();
-  }
-
   private updateCounts(): void {
     if (this.gridApi) {
-      this.totalRows = this.rowData.length;
       this.displayedRows = this.gridApi.getDisplayedRowCount();
       this.isFilterActive = this.gridApi.isAnyFilterPresent();
     }
