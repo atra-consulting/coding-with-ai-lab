@@ -95,8 +95,9 @@ export class ChanceListComponent implements OnInit {
   }
 
   private updateCounts(): void {
-    this.totalRows = this.rowData.length;
-    this.displayedRows = this.gridApi ? this.gridApi.getDisplayedRowCount() : this.totalRows;
+    this.totalRows = this.rowData?.length ?? 0;
+    const count = this.gridApi ? this.gridApi.getDisplayedRowCount() : this.totalRows;
+    this.displayedRows = typeof count === 'number' ? count : this.totalRows;
     this.cdr.markForCheck();
   }
 
