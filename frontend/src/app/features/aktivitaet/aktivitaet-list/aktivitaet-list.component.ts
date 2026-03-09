@@ -2,13 +2,14 @@ import { Component, inject, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AgGridAngular } from 'ag-grid-angular';
 import { ColDef, RowClickedEvent, SizeColumnsToContentStrategy, themeQuartz } from 'ag-grid-community';
+import { TranslateModule } from '@ngx-translate/core';
 import { Aktivitaet } from '../../../core/models/aktivitaet.model';
 import { AktivitaetService } from '../../../core/services/aktivitaet.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-aktivitaet-list',
-  imports: [RouterLink, AgGridAngular, LoadingSpinnerComponent],
+  imports: [RouterLink, AgGridAngular, LoadingSpinnerComponent, TranslateModule],
   templateUrl: './aktivitaet-list.component.html',
 })
 export class AktivitaetListComponent implements OnInit {

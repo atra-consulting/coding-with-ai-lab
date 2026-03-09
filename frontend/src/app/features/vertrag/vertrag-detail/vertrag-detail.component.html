@@ -5,10 +5,10 @@
     <h2>{{ vertrag.titel }}</h2>
     <div>
       <a [routerLink]="['/', 'vertraege', vertrag.id, 'bearbeiten']" class="btn btn-primary me-2"
-        >Bearbeiten</a
+        >{{ 'COMMON.EDIT' | translate }}</a
       >
-      <button class="btn btn-outline-danger me-2" (click)="onDelete()">Löschen</button>
-      <a routerLink="/vertraege" class="btn btn-outline-secondary">Zurück</a>
+      <button class="btn btn-outline-danger me-2" (click)="onDelete()">{{ 'COMMON.DELETE' | translate }}</button>
+      <a routerLink="/vertraege" class="btn btn-outline-secondary">{{ 'COMMON.BACK' | translate }}</a>
     </div>
   </div>
 
@@ -17,27 +17,27 @@
       <div class="row">
         <div class="col-md-6">
           <p>
-            <strong>Firma:</strong>
+            <strong>{{ 'PERSON.COMPANY' | translate }}:</strong>
             <a [routerLink]="['/firmen', vertrag.firmaId]">{{ vertrag.firmaName }}</a>
           </p>
-          <p><strong>Kontaktperson:</strong> {{ vertrag.kontaktPersonName || '-' }}</p>
+          <p><strong>{{ 'VERTRAG.CONTACT_PERSON' | translate }}:</strong> {{ vertrag.kontaktPersonName || '-' }}</p>
           <p>
-            <strong>Status:</strong>
+            <strong>{{ 'COMMON.STATUS' | translate }}:</strong>
             <span class="badge" [class]="getStatusBadgeClass(vertrag.status)">{{
               vertrag.status
             }}</span>
           </p>
-          <p><strong>Wert:</strong> {{ vertrag.wert | eurCurrency: vertrag.currency }}</p>
+          <p><strong>{{ 'COMMON.VALUE' | translate }}:</strong> {{ vertrag.wert | eurCurrency: vertrag.currency }}</p>
         </div>
         <div class="col-md-6">
-          <p><strong>Startdatum:</strong> {{ vertrag.startDate | date: 'dd.MM.yyyy' }}</p>
-          <p><strong>Enddatum:</strong> {{ vertrag.endDate | date: 'dd.MM.yyyy' }}</p>
-          <p><strong>Erstellt:</strong> {{ vertrag.createdAt | date: 'dd.MM.yyyy' }}</p>
-          <p><strong>Aktualisiert:</strong> {{ vertrag.updatedAt | date: 'dd.MM.yyyy' }}</p>
+          <p><strong>{{ 'VERTRAG.START_DATE' | translate }}:</strong> {{ vertrag.startDate | date: langService.getDateFormat() }}</p>
+          <p><strong>{{ 'VERTRAG.END_DATE' | translate }}:</strong> {{ vertrag.endDate | date: langService.getDateFormat() }}</p>
+          <p><strong>{{ 'COMMON.CREATED_AT' | translate }}:</strong> {{ vertrag.createdAt | date: langService.getDateFormat() }}</p>
+          <p><strong>{{ 'COMMON.UPDATED_AT' | translate }}:</strong> {{ vertrag.updatedAt | date: langService.getDateFormat() }}</p>
         </div>
       </div>
       @if (vertrag.notes) {
-        <p><strong>Notizen:</strong> {{ vertrag.notes }}</p>
+        <p><strong>{{ 'COMMON.NOTES' | translate }}:</strong> {{ vertrag.notes }}</p>
       }
     </div>
   </div>

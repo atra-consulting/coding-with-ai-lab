@@ -5,10 +5,10 @@
     <h2>{{ firma.name }}</h2>
     <div>
       <a [routerLink]="['/', 'firmen', firma.id, 'bearbeiten']" class="btn btn-primary me-2"
-        >Bearbeiten</a
+        >{{ 'COMMON.EDIT' | translate }}</a
       >
-      <button class="btn btn-outline-danger me-2" (click)="onDelete()">Löschen</button>
-      <a routerLink="/firmen" class="btn btn-outline-secondary">Zurück</a>
+      <button class="btn btn-outline-danger me-2" (click)="onDelete()">{{ 'COMMON.DELETE' | translate }}</button>
+      <a routerLink="/firmen" class="btn btn-outline-secondary">{{ 'COMMON.BACK' | translate }}</a>
     </div>
   </div>
 
@@ -16,18 +16,18 @@
     <div class="card-body">
       <div class="row">
         <div class="col-md-6">
-          <p><strong>Branche:</strong> {{ firma.industry || '-' }}</p>
-          <p><strong>Webseite:</strong> {{ firma.website || '-' }}</p>
-          <p><strong>E-Mail:</strong> {{ firma.email || '-' }}</p>
+          <p><strong>{{ 'FIRMA.INDUSTRY' | translate }}:</strong> {{ firma.industry || '-' }}</p>
+          <p><strong>{{ 'FIRMA.WEBSITE' | translate }}:</strong> {{ firma.website || '-' }}</p>
+          <p><strong>{{ 'COMMON.EMAIL' | translate }}:</strong> {{ firma.email || '-' }}</p>
         </div>
         <div class="col-md-6">
-          <p><strong>Telefon:</strong> {{ firma.phone || '-' }}</p>
-          <p><strong>Erstellt:</strong> {{ firma.createdAt | date: 'dd.MM.yyyy' }}</p>
-          <p><strong>Aktualisiert:</strong> {{ firma.updatedAt | date: 'dd.MM.yyyy' }}</p>
+          <p><strong>{{ 'COMMON.PHONE' | translate }}:</strong> {{ firma.phone || '-' }}</p>
+          <p><strong>{{ 'COMMON.CREATED_AT' | translate }}:</strong> {{ firma.createdAt | date: langService.getDateFormat() }}</p>
+          <p><strong>{{ 'COMMON.UPDATED_AT' | translate }}:</strong> {{ firma.updatedAt | date: langService.getDateFormat() }}</p>
         </div>
       </div>
       @if (firma.notes) {
-        <p><strong>Notizen:</strong> {{ firma.notes }}</p>
+        <p><strong>{{ 'COMMON.NOTES' | translate }}:</strong> {{ firma.notes }}</p>
       }
     </div>
   </div>
@@ -35,18 +35,18 @@
   <!-- Map Section -->
   <div class="card mb-4">
     <div class="card-header">
-      <h5 class="mb-0">Standorte</h5>
+      <h5 class="mb-0">{{ 'FIRMA.LOCATIONS' | translate }}</h5>
     </div>
     <div class="card-body p-0">
       @if (mapLoading) {
         <div class="d-flex justify-content-center align-items-center" style="height: 350px">
           <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Karte wird geladen...</span>
+            <span class="visually-hidden">{{ 'FIRMA.MAP_LOADING' | translate }}</span>
           </div>
         </div>
       }
       @if (adressen.length === 0 && !mapLoading) {
-        <p class="text-muted p-3 mb-0">Keine Adressen vorhanden.</p>
+        <p class="text-muted p-3 mb-0">{{ 'FIRMA.NO_ADDRESSES' | translate }}</p>
       }
       <div
         #mapContainer
@@ -57,7 +57,10 @@
     @if (adressen.length > 0) {
       <ul class="list-group list-group-flush">
         @for (adresse of adressen; track adresse.id) {
-          <li class="list-group-item">
+          <li class="list-group-item"
+              style="cursor: pointer;"
+              (mouseenter)="highlightMarker(adresse.id)"
+              (mouseleave)="resetMarker(adresse.id)">
             {{ adresse.street }} {{ adresse.houseNumber }}, {{ adresse.postalCode }}
             {{ adresse.city }}
           </li>
@@ -68,16 +71,16 @@
 
   <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs">
     <li [ngbNavItem]="1">
-      <button ngbNavLink>Personen ({{ firma.personenCount }})</button>
+      <button ngbNavLink>{{ 'FIRMA.PERSONS_COUNT' | translate }} ({{ firma.personenCount }})</button>
       <ng-template ngbNavContent>
         @if (personenPage && personenPage.content.length > 0) {
           <table class="table table-hover mt-3">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>E-Mail</th>
-                <th>Position</th>
-                <th>Abteilung</th>
+                <th>{{ 'COMMON.NAME' | translate }}</th>
+                <th>{{ 'COMMON.EMAIL' | translate }}</th>
+                <th>{{ 'PERSON.POSITION' | translate }}</th>
+                <th>{{ 'PERSON.DEPARTMENT' | translate }}</th>
               </tr>
             </thead>
             <tbody>
@@ -101,20 +104,20 @@
             ></ngb-pagination>
           }
         } @else {
-          <p class="text-muted mt-3">Keine Personen vorhanden.</p>
+          <p class="text-muted mt-3">{{ 'FIRMA.NO_PERSONS' | translate }}</p>
         }
       </ng-template>
     </li>
     <li [ngbNavItem]="2">
-      <button ngbNavLink>Abteilungen ({{ firma.abteilungenCount }})</button>
+      <button ngbNavLink>{{ 'ABTEILUNG.LIST_TITLE' | translate }} ({{ firma.abteilungenCount }})</button>
       <ng-template ngbNavContent>
         @if (abteilungenPage && abteilungenPage.content.length > 0) {
           <table class="table table-hover mt-3">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Beschreibung</th>
-                <th>Personen</th>
+                <th>{{ 'COMMON.NAME' | translate }}</th>
+                <th>{{ 'COMMON.DESCRIPTION' | translate }}</th>
+                <th>{{ 'FIRMA.PERSONS_COUNT' | translate }}</th>
               </tr>
             </thead>
             <tbody>
@@ -137,7 +140,7 @@
             ></ngb-pagination>
           }
         } @else {
-          <p class="text-muted mt-3">Keine Abteilungen vorhanden.</p>
+          <p class="text-muted mt-3">{{ 'FIRMA.NO_DEPARTMENTS' | translate }}</p>
         }
       </ng-template>
     </li>

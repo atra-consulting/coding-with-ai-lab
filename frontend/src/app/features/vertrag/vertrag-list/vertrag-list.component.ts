@@ -1,5 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { AgGridAngular } from 'ag-grid-angular';
 import { ColDef, RowClickedEvent, SizeColumnsToContentStrategy, themeQuartz } from 'ag-grid-community';
 import { Vertrag } from '../../../core/models/vertrag.model';
@@ -10,7 +11,7 @@ const currencyFormatter = new Intl.NumberFormat('de-DE', { style: 'currency', cu
 
 @Component({
   selector: 'app-vertrag-list',
-  imports: [RouterLink, AgGridAngular, LoadingSpinnerComponent],
+  imports: [RouterLink, AgGridAngular, LoadingSpinnerComponent, TranslateModule],
   templateUrl: './vertrag-list.component.html',
 })
 export class VertragListComponent implements OnInit {

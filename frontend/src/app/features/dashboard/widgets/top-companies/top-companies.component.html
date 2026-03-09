@@ -1,15 +1,15 @@
 <div class="card">
   <div class="card-header">
-    <h5 class="card-title mb-0">Top Firmen</h5>
+    <h5 class="card-title mb-0">{{ 'DASHBOARD.TOP_COMPANIES' | translate }}</h5>
   </div>
   <div class="table-responsive">
     <table class="table table-hover mb-0">
       <thead>
         <tr>
           <th>#</th>
-          <th>Firma</th>
-          <th>Personen</th>
-          <th>Vertragswert</th>
+          <th>{{ 'DASHBOARD.COMPANY' | translate }}</th>
+          <th>{{ 'DASHBOARD.PERSONS_COUNT' | translate }}</th>
+          <th>{{ 'DASHBOARD.CONTRACT_VALUE' | translate }}</th>
         </tr>
       </thead>
       <tbody>
@@ -24,7 +24,7 @@
           </tr>
         } @empty {
           <tr>
-            <td colspan="4" class="text-muted text-center">Keine Daten vorhanden</td>
+            <td colspan="4" class="text-muted text-center">{{ 'COMMON.NO_DATA' | translate }}</td>
           </tr>
         }
       </tbody>

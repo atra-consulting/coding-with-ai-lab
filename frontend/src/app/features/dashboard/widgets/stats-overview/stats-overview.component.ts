@@ -6,11 +6,12 @@ import {
   faChartLine,
   faUsers,
 } from '@fortawesome/free-solid-svg-icons';
+import { TranslateModule } from '@ngx-translate/core';
 import { DashboardStats } from '../../../../core/models/dashboard.model';
 
 @Component({
   selector: 'app-stats-overview',
-  imports: [FaIconComponent],
+  imports: [FaIconComponent, TranslateModule],
   templateUrl: './stats-overview.component.html',
 })
 export class StatsOverviewComponent {

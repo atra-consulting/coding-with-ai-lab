@@ -1,6 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { GehaltTyp } from '../../../core/models/gehalt.model';
 import { Person } from '../../../core/models/person.model';
 import { GehaltService } from '../../../core/services/gehalt.service';
@@ -10,7 +11,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
 
 @Component({
   selector: 'app-gehalt-form',
-  imports: [ReactiveFormsModule, RouterLink, LoadingSpinnerComponent],
+  imports: [ReactiveFormsModule, RouterLink, LoadingSpinnerComponent, TranslateModule],
   templateUrl: './gehalt-form.component.html',
   styleUrl: './gehalt-form.component.scss',
 })
@@ -21,6 +22,7 @@ export class GehaltFormComponent implements OnInit {
   private gehaltService = inject(GehaltService);
   private personService = inject(PersonService);
   private notification = inject(NotificationService);
+  private translate = inject(TranslateService);
 
   form!: FormGroup;
   isEdit = false;
@@ -28,14 +30,16 @@ export class GehaltFormComponent implements OnInit {
   loading = false;
   personen: Person[] = [];
 
-  gehaltTypen: { value: GehaltTyp; label: string }[] = [
-    { value: 'GRUNDGEHALT', label: 'Grundgehalt' },
-    { value: 'BONUS', label: 'Bonus' },
-    { value: 'PROVISION', label: 'Provision' },
-    { value: 'SONDERZAHLUNG', label: 'Sonderzahlung' },
-  ];
+  gehaltTypen: { value: GehaltTyp; label: string }[] = [];
 
   ngOnInit(): void {
+    this.gehaltTypen = [
+      { value: 'GRUNDGEHALT', label: this.translate.instant('GEHALT_TYP.GRUNDGEHALT') },
+      { value: 'BONUS', label: this.translate.instant('GEHALT_TYP.BONUS') },
+      { value: 'PROVISION', label: this.translate.instant('GEHALT_TYP.PROVISION') },
+      { value: 'SONDERZAHLUNG', label: this.translate.instant('GEHALT_TYP.SONDERZAHLUNG') },
+    ];
+
     this.form = this.fb.group({
       amount: [null, [Validators.required, Validators.min(0)]],
       currency: ['EUR'],
@@ -79,7 +83,7 @@ export class GehaltFormComponent implements OnInit {
     if (this.isEdit && this.gehaltId) {
       this.gehaltService.update(this.gehaltId, data).subscribe({
         next: () => {
-          this.notification.success('Gehalt erfolgreich aktualisiert');
+          this.notification.success(this.translate.instant('GEHALT.UPDATED'));
           this.router.navigate(['/gehaelter']);
         },
         error: () => {},
@@ -87,7 +91,7 @@ export class GehaltFormComponent implements OnInit {
     } else {
       this.gehaltService.create(data).subscribe({
         next: () => {
-          this.notification.success('Gehalt erfolgreich erstellt');
+          this.notification.success(this.translate.instant('GEHALT.CREATED'));
           this.router.navigate(['/gehaelter']);
         },
         error: () => {},

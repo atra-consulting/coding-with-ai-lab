@@ -1,6 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Abteilung } from '../../../core/models/abteilung.model';
 import { Firma } from '../../../core/models/firma.model';
 import { AbteilungService } from '../../../core/services/abteilung.service';
@@ -11,7 +12,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
 
 @Component({
   selector: 'app-person-form',
-  imports: [ReactiveFormsModule, RouterLink, LoadingSpinnerComponent],
+  imports: [ReactiveFormsModule, RouterLink, LoadingSpinnerComponent, TranslateModule],
   templateUrl: './person-form.component.html',
 })
 export class PersonFormComponent implements OnInit {
@@ -22,6 +23,7 @@ export class PersonFormComponent implements OnInit {
   private firmaService = inject(FirmaService);
   private abteilungService = inject(AbteilungService);
   private notification = inject(NotificationService);
+  private translate = inject(TranslateService);
 
   form!: FormGroup;
   isEdit = false;
@@ -85,7 +87,7 @@ export class PersonFormComponent implements OnInit {
     if (this.isEdit && this.personId) {
       this.personService.update(this.personId, data).subscribe({
         next: () => {
-          this.notification.success('Person erfolgreich aktualisiert');
+          this.notification.success(this.translate.instant('PERSON.UPDATED'));
           this.router.navigate(['/personen', this.personId]);
         },
         error: () => {},
@@ -93,7 +95,7 @@ export class PersonFormComponent implements OnInit {
     } else {
       this.personService.create(data).subscribe({
         next: (created) => {
-          this.notification.success('Person erfolgreich erstellt');
+          this.notification.success(this.translate.instant('PERSON.CREATED'));
           this.router.navigate(['/personen', created.id]);
         },
         error: () => {},

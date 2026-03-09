@@ -1,11 +1,16 @@
 <div class="login-page">
   <div class="login-card">
+    <div class="text-end p-2">
+      <button class="btn btn-link btn-sm text-muted" (click)="switchLanguage('de')" [class.fw-bold]="langService.currentLang() === 'de'">DE</button>
+      <span class="text-muted">|</span>
+      <button class="btn btn-link btn-sm text-muted" (click)="switchLanguage('en')" [class.fw-bold]="langService.currentLang() === 'en'">EN</button>
+    </div>
     <div class="login-header">
       <div class="login-logo">
         <img src="assets/images/atra_logo.svg" alt="atra.consulting Logo" />
       </div>
       <h2>CRM System</h2>
-      <p>Melden Sie sich an, um fortzufahren</p>
+      <p>{{ 'AUTH.LOGIN_SUBTITLE' | translate }}</p>
     </div>
 
     <div class="login-body">
@@ -22,10 +27,10 @@
             class="form-control"
             id="benutzername"
             formControlName="benutzername"
-            placeholder="Benutzername"
+            [placeholder]="'AUTH.USERNAME' | translate"
             autocomplete="username"
           />
-          <label for="benutzername">Benutzername</label>
+          <label for="benutzername">{{ 'AUTH.USERNAME' | translate }}</label>
         </div>
 
         <div class="form-floating mb-4">
@@ -34,10 +39,10 @@
             class="form-control"
             id="passwort"
             formControlName="passwort"
-            placeholder="Passwort"
+            [placeholder]="'AUTH.PASSWORD' | translate"
             autocomplete="current-password"
           />
-          <label for="passwort">Passwort</label>
+          <label for="passwort">{{ 'AUTH.PASSWORD' | translate }}</label>
           <button
             class="password-toggle"
             type="button"
@@ -56,7 +61,7 @@
           @if (loading) {
             <span class="spinner-border spinner-border-sm me-2"></span>
           }
-          Anmelden
+          {{ 'AUTH.LOGIN' | translate }}
         </button>
       </form>
 
@@ -67,7 +72,7 @@
             class="btn btn-outline-secondary btn-sm"
             (click)="fillDemo()"
           >
-            Demodaten ausfüllen
+            {{ 'AUTH.FILL_DEMO' | translate }}
           </button>
         </div>
       }

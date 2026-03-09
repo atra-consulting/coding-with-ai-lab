@@ -3,12 +3,14 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
-import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import { faDatabase, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
+import { LanguageService } from '../../core/services/language.service';
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule, FaIconComponent],
+  imports: [ReactiveFormsModule, FaIconComponent, TranslateModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
 })
@@ -18,6 +20,8 @@ export class LoginComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private http = inject(HttpClient);
+  private translate = inject(TranslateService);
+  public langService = inject(LanguageService);
 
   faEye = faEye;
   faEyeSlash = faEyeSlash;
@@ -57,12 +61,16 @@ export class LoginComponent implements OnInit {
       },
       error: (err) => {
         this.loading = false;
-        this.errorMessage = err.error?.message || 'Anmeldung fehlgeschlagen';
+        this.errorMessage = err.error?.message || this.translate.instant('AUTH.LOGIN_FAILED');
       },
     });
   }
 
   togglePassword(): void {
     this.showPassword = !this.showPassword;
+  }
+
+  switchLanguage(lang: string): void {
+    this.langService.setLanguage(lang);
   }
 }

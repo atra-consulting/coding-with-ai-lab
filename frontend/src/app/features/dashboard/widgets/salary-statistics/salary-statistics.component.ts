@@ -1,10 +1,11 @@
 import { Component, Input, OnChanges } from '@angular/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { DepartmentSalary } from '../../../../core/models/dashboard.model';
 import { EurCurrencyPipe } from '../../../../shared/pipes/currency.pipe';
 
 @Component({
   selector: 'app-salary-statistics',
-  imports: [EurCurrencyPipe],
+  imports: [EurCurrencyPipe, TranslateModule],
   templateUrl: './salary-statistics.component.html',
 })
 export class SalaryStatisticsComponent implements OnChanges {

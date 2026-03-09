@@ -28,6 +28,7 @@ import { SavedReportService } from '../../../core/services/saved-report.service'
 import { PhaseAggregate, PipelineKpis, TopFirma } from '../../../core/models/auswertung.model';
 import { SavedReport } from '../../../core/models/report.model';
 import { ChancePhase } from '../../../core/models/chance.model';
+import { TranslateModule } from '@ngx-translate/core';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { ReportBuilderComponent } from '../report-builder/report-builder.component';
 import { ReportWidgetComponent } from '../report-widget/report-widget.component';
@@ -61,7 +62,7 @@ const PHASE_CONFIG: { phase: ChancePhase; label: string; color: string }[] = [
 
 @Component({
   selector: 'app-pipeline-dashboard',
-  imports: [CurrencyPipe, DecimalPipe, BaseChartDirective, FaIconComponent, LoadingSpinnerComponent, CdkDrag, CdkDropList, ReportBuilderComponent, ReportWidgetComponent],
+  imports: [CurrencyPipe, DecimalPipe, BaseChartDirective, FaIconComponent, LoadingSpinnerComponent, CdkDrag, CdkDropList, ReportBuilderComponent, ReportWidgetComponent, TranslateModule],
   templateUrl: './pipeline-dashboard.component.html',
   styleUrl: './pipeline-dashboard.component.scss',
 })

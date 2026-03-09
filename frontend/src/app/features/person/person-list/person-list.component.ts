@@ -2,13 +2,14 @@ import { Component, inject, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AgGridAngular } from 'ag-grid-angular';
 import { ColDef, RowClickedEvent, SizeColumnsToContentStrategy, themeQuartz } from 'ag-grid-community';
+import { TranslateModule } from '@ngx-translate/core';
 import { Person } from '../../../core/models/person.model';
 import { PersonService } from '../../../core/services/person.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-person-list',
-  imports: [RouterLink, AgGridAngular, LoadingSpinnerComponent],
+  imports: [RouterLink, AgGridAngular, LoadingSpinnerComponent, TranslateModule],
   templateUrl: './person-list.component.html',
 })
 export class PersonListComponent implements OnInit {

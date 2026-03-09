@@ -13,10 +13,10 @@
           </button>
           <div ngbDropdownMenu>
             <button ngbDropdownItem (click)="switchLanguage('de')" [class.active]="langService.currentLang() === 'de'">
-              Deutsch
+              {{ 'LANGUAGE.DE' | translate }}
             </button>
             <button ngbDropdownItem (click)="switchLanguage('en')" [class.active]="langService.currentLang() === 'en'">
-              English
+              {{ 'LANGUAGE.EN' | translate }}
             </button>
           </div>
         </div>

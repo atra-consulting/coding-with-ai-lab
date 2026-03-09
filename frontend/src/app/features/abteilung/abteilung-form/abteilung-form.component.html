@@ -1,5 +1,5 @@
 <div class="page-header">
-  <h2>{{ isEdit ? 'Abteilung bearbeiten' : 'Neue Abteilung' }}</h2>
+  <h2>{{ (isEdit ? 'ABTEILUNG.EDIT_TITLE' : 'ABTEILUNG.NEW') | translate }}</h2>
 </div>
 
 @if (loading) {
@@ -10,7 +10,7 @@
       <form [formGroup]="form" (ngSubmit)="onSubmit()">
         <div class="row">
           <div class="col-md-6 mb-3">
-            <label for="name" class="form-label">Name *</label>
+            <label for="name" class="form-label">{{ 'COMMON.NAME' | translate }} *</label>
             <input
               type="text"
               class="form-control"
@@ -19,13 +19,13 @@
               [class.is-invalid]="form.get('name')?.invalid && form.get('name')?.touched"
             />
             @if (form.get('name')?.invalid && form.get('name')?.touched) {
-              <div class="invalid-feedback">Name ist erforderlich</div>
+              <div class="invalid-feedback">{{ 'VALIDATION.NAME_REQUIRED' | translate }}</div>
             }
           </div>
           <div class="col-md-6 mb-3">
-            <label for="firmaId" class="form-label">Firma *</label>
+            <label for="firmaId" class="form-label">{{ 'PERSON.COMPANY' | translate }} *</label>
             <select class="form-select" id="firmaId" formControlName="firmaId">
-              <option [ngValue]="null" disabled>Firma auswählen...</option>
+              <option [ngValue]="null" disabled>{{ 'FIRMA.SELECT' | translate }}</option>
               @for (firma of firmen; track firma.id) {
                 <option [ngValue]="firma.id">{{ firma.name }}</option>
               }
@@ -33,7 +33,7 @@
           </div>
         </div>
         <div class="mb-3">
-          <label for="description" class="form-label">Beschreibung</label>
+          <label for="description" class="form-label">{{ 'COMMON.DESCRIPTION' | translate }}</label>
           <textarea
             class="form-control"
             id="description"
@@ -42,8 +42,8 @@
           ></textarea>
         </div>
         <div class="d-flex gap-2">
-          <button type="submit" class="btn btn-primary" [disabled]="form.invalid">Speichern</button>
-          <a routerLink="/abteilungen" class="btn btn-outline-secondary">Abbrechen</a>
+          <button type="submit" class="btn btn-primary" [disabled]="form.invalid">{{ 'COMMON.SAVE' | translate }}</button>
+          <a routerLink="/abteilungen" class="btn btn-outline-secondary">{{ 'COMMON.CANCEL' | translate }}</a>
         </div>
       </form>
     </div>

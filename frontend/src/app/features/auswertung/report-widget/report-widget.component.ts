@@ -10,6 +10,8 @@ import {
   SavedReport,
 } from '../../../core/models/report.model';
 
+import { TranslateModule } from '@ngx-translate/core';
+
 Chart.register(...registerables);
 
 const PHASE_COLORS: Record<string, string> = {
@@ -37,7 +39,7 @@ const METRIK_LABELS: Record<string, string> = {
 
 @Component({
   selector: 'app-report-widget',
-  imports: [CurrencyPipe, DecimalPipe, BaseChartDirective],
+  imports: [CurrencyPipe, DecimalPipe, BaseChartDirective, TranslateModule],
   templateUrl: './report-widget.component.html',
   styleUrl: './report-widget.component.scss',
 })

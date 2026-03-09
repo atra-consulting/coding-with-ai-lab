@@ -1,5 +1,5 @@
 <div class="page-header">
-  <h2>{{ isEdit ? 'Adresse bearbeiten' : 'Neue Adresse' }}</h2>
+  <h2>{{ (isEdit ? 'ADRESSE.EDIT_TITLE' : 'ADRESSE.NEW') | translate }}</h2>
 </div>
 
 @if (loading) {
@@ -10,7 +10,7 @@
       <form [formGroup]="form" (ngSubmit)="onSubmit()">
         <div class="row">
           <div class="col-md-8 mb-3">
-            <label for="street" class="form-label">Straße *</label>
+            <label for="street" class="form-label">{{ 'ADRESSE.STREET' | translate }} *</label>
             <input
               type="text"
               class="form-control"
@@ -19,11 +19,11 @@
               [class.is-invalid]="form.get('street')?.invalid && form.get('street')?.touched"
             />
             @if (form.get('street')?.invalid && form.get('street')?.touched) {
-              <div class="invalid-feedback">Straße ist erforderlich</div>
+              <div class="invalid-feedback">{{ 'VALIDATION.STREET_REQUIRED' | translate }}</div>
             }
           </div>
           <div class="col-md-4 mb-3">
-            <label for="houseNumber" class="form-label">Hausnummer</label>
+            <label for="houseNumber" class="form-label">{{ 'ADRESSE.HOUSE_NUMBER' | translate }}</label>
             <input
               type="text"
               class="form-control"
@@ -34,7 +34,7 @@
         </div>
         <div class="row">
           <div class="col-md-4 mb-3">
-            <label for="postalCode" class="form-label">PLZ *</label>
+            <label for="postalCode" class="form-label">{{ 'ADRESSE.POSTAL_CODE' | translate }} *</label>
             <input
               type="text"
               class="form-control"
@@ -45,11 +45,11 @@
               "
             />
             @if (form.get('postalCode')?.invalid && form.get('postalCode')?.touched) {
-              <div class="invalid-feedback">PLZ ist erforderlich</div>
+              <div class="invalid-feedback">{{ 'VALIDATION.POSTAL_CODE_REQUIRED' | translate }}</div>
             }
           </div>
           <div class="col-md-4 mb-3">
-            <label for="city" class="form-label">Stadt *</label>
+            <label for="city" class="form-label">{{ 'ADRESSE.CITY' | translate }} *</label>
             <input
               type="text"
               class="form-control"
@@ -58,17 +58,17 @@
               [class.is-invalid]="form.get('city')?.invalid && form.get('city')?.touched"
             />
             @if (form.get('city')?.invalid && form.get('city')?.touched) {
-              <div class="invalid-feedback">Stadt ist erforderlich</div>
+              <div class="invalid-feedback">{{ 'VALIDATION.CITY_REQUIRED' | translate }}</div>
             }
           </div>
           <div class="col-md-4 mb-3">
-            <label for="country" class="form-label">Land</label>
+            <label for="country" class="form-label">{{ 'ADRESSE.COUNTRY' | translate }}</label>
             <input type="text" class="form-control" id="country" formControlName="country" />
           </div>
         </div>
 
         <hr />
-        <h5>Zugehörigkeit</h5>
+        <h5>{{ 'ADRESSE.ASSOCIATION' | translate }}</h5>
 
         <div class="mb-3">
           <div class="form-check form-check-inline">
@@ -80,7 +80,7 @@
               [checked]="assignmentType === 'firma'"
               (change)="onAssignmentChange('firma')"
             />
-            <label class="form-check-label" for="typeFirma">Firma</label>
+            <label class="form-check-label" for="typeFirma">{{ 'PERSON.COMPANY' | translate }}</label>
           </div>
           <div class="form-check form-check-inline">
             <input
@@ -91,15 +91,15 @@
               [checked]="assignmentType === 'person'"
               (change)="onAssignmentChange('person')"
             />
-            <label class="form-check-label" for="typePerson">Person</label>
+            <label class="form-check-label" for="typePerson">{{ 'GEHALT.PERSON' | translate }}</label>
           </div>
         </div>
 
         @if (assignmentType === 'firma') {
           <div class="mb-3">
-            <label for="firmaId" class="form-label">Firma</label>
+            <label for="firmaId" class="form-label">{{ 'PERSON.COMPANY' | translate }}</label>
             <select class="form-select" id="firmaId" formControlName="firmaId">
-              <option [ngValue]="null">-- Keine Firma --</option>
+              <option [ngValue]="null">{{ 'ADRESSE.NO_COMPANY' | translate }}</option>
               @for (firma of firmen; track firma.id) {
                 <option [ngValue]="firma.id">{{ firma.name }}</option>
               }
@@ -107,9 +107,9 @@
           </div>
         } @else {
           <div class="mb-3">
-            <label for="personId" class="form-label">Person</label>
+            <label for="personId" class="form-label">{{ 'GEHALT.PERSON' | translate }}</label>
             <select class="form-select" id="personId" formControlName="personId">
-              <option [ngValue]="null">-- Keine Person --</option>
+              <option [ngValue]="null">{{ 'ADRESSE.NO_PERSON' | translate }}</option>
               @for (person of personen; track person.id) {
                 <option [ngValue]="person.id">{{ person.lastName }}, {{ person.firstName }}</option>
               }
@@ -118,8 +118,8 @@
         }
 
         <div class="d-flex gap-2">
-          <button type="submit" class="btn btn-primary" [disabled]="form.invalid">Speichern</button>
-          <a routerLink="/adressen" class="btn btn-outline-secondary">Abbrechen</a>
+          <button type="submit" class="btn btn-primary" [disabled]="form.invalid">{{ 'COMMON.SAVE' | translate }}</button>
+          <a routerLink="/adressen" class="btn btn-outline-secondary">{{ 'COMMON.CANCEL' | translate }}</a>
         </div>
       </form>
     </div>

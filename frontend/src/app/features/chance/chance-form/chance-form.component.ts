@@ -1,6 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ChancePhase } from '../../../core/models/chance.model';
 import { Firma } from '../../../core/models/firma.model';
 import { Person } from '../../../core/models/person.model';
@@ -12,7 +13,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
 
 @Component({
   selector: 'app-chance-form',
-  imports: [ReactiveFormsModule, RouterLink, LoadingSpinnerComponent],
+  imports: [ReactiveFormsModule, RouterLink, LoadingSpinnerComponent, TranslateModule],
   templateUrl: './chance-form.component.html',
 })
 export class ChanceFormComponent implements OnInit {
@@ -23,6 +24,7 @@ export class ChanceFormComponent implements OnInit {
   private firmaService = inject(FirmaService);
   private personService = inject(PersonService);
   private notification = inject(NotificationService);
+  private translate = inject(TranslateService);
 
   form!: FormGroup;
   isEdit = false;
@@ -79,7 +81,7 @@ export class ChanceFormComponent implements OnInit {
     if (this.isEdit && this.chanceId) {
       this.chanceService.update(this.chanceId, data).subscribe({
         next: () => {
-          this.notification.success('Chance erfolgreich aktualisiert');
+          this.notification.success(this.translate.instant('CHANCE.UPDATED'));
           this.router.navigate(['/chancen', this.chanceId]);
         },
         error: () => {},
@@ -87,7 +89,7 @@ export class ChanceFormComponent implements OnInit {
     } else {
       this.chanceService.create(data).subscribe({
         next: (created) => {
-          this.notification.success('Chance erfolgreich erstellt');
+          this.notification.success(this.translate.instant('CHANCE.CREATED'));
           this.router.navigate(['/chancen', created.id]);
         },
         error: () => {},

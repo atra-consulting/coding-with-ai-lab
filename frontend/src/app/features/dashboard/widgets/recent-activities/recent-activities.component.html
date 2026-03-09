@@ -1,6 +1,6 @@
 <div class="card">
   <div class="card-header">
-    <h5 class="card-title mb-0">Letzte Aktivitäten</h5>
+    <h5 class="card-title mb-0">{{ 'DASHBOARD.RECENT_ACTIVITIES' | translate }}</h5>
   </div>
   <div class="list-group list-group-flush">
     @for (activity of activities; track activity.id) {
@@ -9,12 +9,12 @@
         <div class="flex-grow-1">
           <div class="fw-semibold">{{ activity.subject }}</div>
           <small class="text-muted"
-            >{{ activity.typ }} &middot; {{ activity.datum | date: 'dd.MM.yyyy HH:mm' }}</small
+            >{{ activity.typ }} &middot; {{ activity.datum | date: langService.getDateTimeFormat() }}</small
           >
         </div>
       </div>
     } @empty {
-      <div class="list-group-item text-muted">Keine Aktivitäten vorhanden</div>
+      <div class="list-group-item text-muted">{{ 'DASHBOARD.NO_ACTIVITIES' | translate }}</div>
     }
   </div>
 </div>

@@ -7,6 +7,7 @@ import {
 } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
 import { BehaviorSubject, Observable, catchError, filter, switchMap, take, throwError } from 'rxjs';
 import { NotificationService } from '../services/notification.service';
 import { AuthService } from '../services/auth.service';
@@ -18,6 +19,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const notification = inject(NotificationService);
   const router = inject(Router);
+  const translate = inject(TranslateService);
 
   // Don't add auth header to auth endpoints (except /me)
   if (req.url.includes('/api/auth/') && !req.url.includes('/api/auth/me')) {
@@ -38,7 +40,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         return handle401Error(authReq, next, authService, router);
       }
       if (error.status === 403) {
-        notification.error('Zugriff verweigert');
+        notification.error(translate.instant('AUTH.ACCESS_DENIED'));
         return throwError(() => error);
       }
       return throwError(() => error);

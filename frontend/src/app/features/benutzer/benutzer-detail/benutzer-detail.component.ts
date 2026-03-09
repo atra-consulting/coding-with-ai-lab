@@ -3,11 +3,12 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { BenutzerService } from '../../../core/services/benutzer.service';
 import { Benutzer } from '../../../core/models/benutzer.model';
+import { TranslateModule } from '@ngx-translate/core';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-benutzer-detail',
-  imports: [RouterLink, DatePipe, LoadingSpinnerComponent],
+  imports: [RouterLink, DatePipe, LoadingSpinnerComponent, TranslateModule],
   templateUrl: './benutzer-detail.component.html',
 })
 export class BenutzerDetailComponent implements OnInit {

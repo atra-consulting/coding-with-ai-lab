@@ -1,11 +1,11 @@
 <div class="page-header">
-  <h2>Chancen</h2>
+  <h2>{{ 'CHANCE.LIST_TITLE' | translate }}</h2>
   <div class="d-flex gap-3 align-items-center">
     <div class="btn-group">
-      <a routerLink="/chancen" class="btn btn-outline-secondary">Liste</a>
-      <a routerLink="/chancen/board" class="btn btn-outline-secondary active">Board</a>
+      <a routerLink="/chancen" class="btn btn-outline-secondary">{{ 'CHANCE.LIST_VIEW' | translate }}</a>
+      <a routerLink="/chancen/board" class="btn btn-outline-secondary active">{{ 'CHANCE.BOARD_VIEW' | translate }}</a>
     </div>
-    <a routerLink="/chancen/neu" class="btn btn-primary">Neue Chance</a>
+    <a routerLink="/chancen/neu" class="btn btn-primary">{{ 'CHANCE.NEW' | translate }}</a>
   </div>
 </div>
 
@@ -18,7 +18,7 @@
         <div class="column-header border-{{ phaseConfig.colorClass }}">
           <div class="d-flex justify-content-between align-items-center">
             <span class="badge bg-{{ phaseConfig.colorClass }}" [class.text-dark]="phaseConfig.colorClass === 'warning'">
-              {{ phaseConfig.label }}
+              {{ phaseConfig.labelKey | translate }}
             </span>
             <span class="text-muted small">{{ getSummary(phaseConfig.phase)?.count || 0 }}</span>
           </div>
@@ -63,9 +63,9 @@
 
         @if (hasMore(phaseConfig.phase)) {
           <div class="load-more-footer">
-            <span class="text-muted small">{{ getColumnItems(phaseConfig.phase).length }} von {{ getSummary(phaseConfig.phase)?.count || columnPages.get(phaseConfig.phase)?.totalElements || 0 }}</span>
+            <span class="text-muted small">{{ 'CHANCE.OF_TOTAL' | translate: { loaded: getColumnItems(phaseConfig.phase).length, total: getSummary(phaseConfig.phase)?.count || columnPages.get(phaseConfig.phase)?.totalElements || 0 } }}</span>
             <button class="btn btn-sm btn-outline-secondary w-100 mt-1" (click)="loadMore(phaseConfig.phase)">
-              {{ getRemaining(phaseConfig.phase) }} weitere laden
+              {{ 'CHANCE.LOAD_MORE' | translate: { count: getRemaining(phaseConfig.phase) } }}
             </button>
           </div>
         }

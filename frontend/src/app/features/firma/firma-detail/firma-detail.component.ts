@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { NgbModal, NgbNavModule, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
+import { TranslateModule } from '@ngx-translate/core';
 import * as L from 'leaflet';
 import { Abteilung } from '../../../core/models/abteilung.model';
 import { Adresse } from '../../../core/models/adresse.model';
@@ -17,13 +18,14 @@ import { Firma } from '../../../core/models/firma.model';
 import { Page } from '../../../core/models/page.model';
 import { Person } from '../../../core/models/person.model';
 import { FirmaService } from '../../../core/services/firma.service';
+import { LanguageService } from '../../../core/services/language.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-firma-detail',
-  imports: [RouterLink, NgbNavModule, NgbPagination, LoadingSpinnerComponent, DatePipe],
+  imports: [RouterLink, NgbNavModule, NgbPagination, LoadingSpinnerComponent, DatePipe, TranslateModule],
   templateUrl: './firma-detail.component.html',
 })
 export class FirmaDetailComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -32,6 +34,7 @@ export class FirmaDetailComponent implements OnInit, AfterViewInit, OnDestroy {
   private firmaService = inject(FirmaService);
   private modalService = inject(NgbModal);
   private notification = inject(NotificationService);
+  public langService = inject(LanguageService);
 
   @ViewChild('mapContainer') mapContainer!: ElementRef;
 
@@ -48,6 +51,7 @@ export class FirmaDetailComponent implements OnInit, AfterViewInit, OnDestroy {
   private map: L.Map | null = null;
   private mapReady = false;
   private pendingAdressen: Adresse[] | null = null;
+  private markerMap = new Map<number, L.Marker>();
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
@@ -114,9 +118,9 @@ export class FirmaDetailComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Fix default marker icon paths (Leaflet + bundler issue)
     const iconDefault = L.icon({
-      iconRetinaUrl: 'assets/marker-icon-2x.png',
-      iconUrl: 'assets/marker-icon.png',
-      shadowUrl: 'assets/marker-shadow.png',
+      iconRetinaUrl: '/assets/marker-icon-2x.png',
+      iconUrl: '/assets/marker-icon.png',
+      shadowUrl: '/assets/marker-shadow.png',
       iconSize: [25, 41],
       iconAnchor: [12, 41],
       popupAnchor: [1, -34],
@@ -134,9 +138,8 @@ export class FirmaDetailComponent implements OnInit, AfterViewInit, OnDestroy {
     const markers: L.Marker[] = [];
 
     for (const adresse of adressen) {
-      const query = `${adresse.street} ${adresse.houseNumber}, ${adresse.postalCode} ${adresse.city}, ${adresse.country}`;
       try {
-        const coords = await this.geocode(query);
+        const coords = await this.geocode(adresse);
         if (coords) {
           const marker = L.marker([coords.lat, coords.lon])
             .addTo(this.map!)
@@ -144,6 +147,7 @@ export class FirmaDetailComponent implements OnInit, AfterViewInit, OnDestroy {
               `<strong>${adresse.street} ${adresse.houseNumber}</strong><br>${adresse.postalCode} ${adresse.city}`,
             );
           markers.push(marker);
+          this.markerMap.set(adresse.id, marker);
         }
       } catch {
         // Skip addresses that can't be geocoded
@@ -161,8 +165,16 @@ export class FirmaDetailComponent implements OnInit, AfterViewInit, OnDestroy {
     this.mapLoading = false;
   }
 
-  private geocode(query: string): Promise<{ lat: number; lon: number } | null> {
-    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`;
+  private geocode(adresse: Adresse): Promise<{ lat: number; lon: number } | null> {
+    const params = new URLSearchParams({
+      format: 'json',
+      street: `${adresse.houseNumber} ${adresse.street}`,
+      city: adresse.city,
+      postalcode: adresse.postalCode,
+      country: 'DE',
+      limit: '1',
+    });
+    const url = `https://nominatim.openstreetmap.org/search?${params}`;
     return fetch(url, {
       headers: { 'User-Agent': 'CRM-App/1.0' },
     })
@@ -183,6 +195,30 @@ export class FirmaDetailComponent implements OnInit, AfterViewInit, OnDestroy {
   onAbteilungenPageChange(p: number): void {
     this.abteilungenCurrentPage = p;
     this.loadAbteilungen();
+  }
+
+  highlightMarker(adresseId: number): void {
+    const marker = this.markerMap.get(adresseId);
+    if (marker) {
+      marker.openPopup();
+      const el = marker.getElement();
+      if (el) {
+        el.style.filter = 'hue-rotate(120deg) drop-shadow(0 0 6px #0d6efd)';
+        el.style.transform = el.style.transform.replace(/scale\([^)]*\)/, '') + ' scale(1.3)';
+      }
+    }
+  }
+
+  resetMarker(adresseId: number): void {
+    const marker = this.markerMap.get(adresseId);
+    if (marker) {
+      marker.closePopup();
+      const el = marker.getElement();
+      if (el) {
+        el.style.filter = '';
+        el.style.transform = el.style.transform.replace(/scale\([^)]*\)/, '');
+      }
+    }
   }
 
   onDelete(): void {

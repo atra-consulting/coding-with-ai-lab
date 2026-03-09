@@ -1,13 +1,14 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { FirmaService } from '../../../core/services/firma.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-firma-form',
-  imports: [ReactiveFormsModule, RouterLink, LoadingSpinnerComponent],
+  imports: [ReactiveFormsModule, RouterLink, LoadingSpinnerComponent, TranslateModule],
   templateUrl: './firma-form.component.html',
 })
 export class FirmaFormComponent implements OnInit {
@@ -16,6 +17,7 @@ export class FirmaFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private firmaService = inject(FirmaService);
   private notification = inject(NotificationService);
+  private translate = inject(TranslateService);
 
   form!: FormGroup;
   isEdit = false;
@@ -56,7 +58,7 @@ export class FirmaFormComponent implements OnInit {
     if (this.isEdit && this.firmaId) {
       this.firmaService.update(this.firmaId, data).subscribe({
         next: () => {
-          this.notification.success('Firma erfolgreich aktualisiert');
+          this.notification.success(this.translate.instant('FIRMA.UPDATED'));
           this.router.navigate(['/firmen', this.firmaId]);
         },
         error: () => {},
@@ -64,7 +66,7 @@ export class FirmaFormComponent implements OnInit {
     } else {
       this.firmaService.create(data).subscribe({
         next: (created) => {
-          this.notification.success('Firma erfolgreich erstellt');
+          this.notification.success(this.translate.instant('FIRMA.CREATED'));
           this.router.navigate(['/firmen', created.id]);
         },
         error: () => {},

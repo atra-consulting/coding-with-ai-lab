@@ -17,24 +17,25 @@ import {
   faAngleDoubleLeft,
   faAngleDoubleRight,
 } from '@fortawesome/free-solid-svg-icons';
+import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
 import { LayoutService } from '../../core/services/layout.service';
 
 interface NavItem {
-  label: string;
+  labelKey: string;
   route: string;
   icon: IconDefinition;
   permission?: string;
 }
 
 interface NavSection {
-  title: string;
+  titleKey: string;
   items: NavItem[];
 }
 
 @Component({
   selector: 'app-sidebar',
-  imports: [RouterLink, RouterLinkActive, FaIconComponent],
+  imports: [RouterLink, RouterLinkActive, FaIconComponent, TranslateModule],
   templateUrl: './sidebar.component.html',
 })
 export class SidebarComponent {
@@ -46,44 +47,44 @@ export class SidebarComponent {
 
   sections: NavSection[] = [
     {
-      title: 'Übersicht',
+      titleKey: 'NAV.OVERVIEW',
       items: [
-        { label: 'Dashboard', route: '/dashboard', icon: faTachometerAlt, permission: 'DASHBOARD' },
+        { labelKey: 'SIDEBAR.DASHBOARD', route: '/dashboard', icon: faTachometerAlt, permission: 'DASHBOARD' },
       ],
     },
     {
-      title: 'Kunden & Kontakte',
+      titleKey: 'NAV.CUSTOMERS_CONTACTS',
       items: [
-        { label: 'Firmen', route: '/firmen', icon: faBuilding, permission: 'FIRMEN' },
-        { label: 'Personen', route: '/personen', icon: faUsers, permission: 'PERSONEN' },
-        { label: 'Abteilungen', route: '/abteilungen', icon: faSitemap, permission: 'ABTEILUNGEN' },
-        { label: 'Adressen', route: '/adressen', icon: faMapMarkerAlt, permission: 'ADRESSEN' },
+        { labelKey: 'SIDEBAR.COMPANIES', route: '/firmen', icon: faBuilding, permission: 'FIRMEN' },
+        { labelKey: 'SIDEBAR.PERSONS', route: '/personen', icon: faUsers, permission: 'PERSONEN' },
+        { labelKey: 'SIDEBAR.DEPARTMENTS', route: '/abteilungen', icon: faSitemap, permission: 'ABTEILUNGEN' },
+        { labelKey: 'SIDEBAR.ADDRESSES', route: '/adressen', icon: faMapMarkerAlt, permission: 'ADRESSEN' },
       ],
     },
     {
-      title: 'Vertrieb',
+      titleKey: 'NAV.SALES',
       items: [
-        { label: 'Chancen', route: '/chancen', icon: faChartLine, permission: 'CHANCEN' },
-        { label: 'Aktivitäten', route: '/aktivitaeten', icon: faCalendarCheck, permission: 'AKTIVITAETEN' },
-        { label: 'Verträge', route: '/vertraege', icon: faFileContract, permission: 'VERTRAEGE' },
+        { labelKey: 'SIDEBAR.OPPORTUNITIES', route: '/chancen', icon: faChartLine, permission: 'CHANCEN' },
+        { labelKey: 'SIDEBAR.ACTIVITIES', route: '/aktivitaeten', icon: faCalendarCheck, permission: 'AKTIVITAETEN' },
+        { labelKey: 'SIDEBAR.CONTRACTS', route: '/vertraege', icon: faFileContract, permission: 'VERTRAEGE' },
       ],
     },
     {
-      title: 'Auswertungen',
+      titleKey: 'NAV.REPORTS',
       items: [
-        { label: 'Pipeline', route: '/auswertungen/pipeline', icon: faChartPie, permission: 'AUSWERTUNGEN' },
+        { labelKey: 'SIDEBAR.PIPELINE', route: '/auswertungen/pipeline', icon: faChartPie, permission: 'AUSWERTUNGEN' },
       ],
     },
     {
-      title: 'Personal',
+      titleKey: 'NAV.HR',
       items: [
-        { label: 'Gehälter', route: '/gehaelter', icon: faMoneyBillWave, permission: 'GEHAELTER' },
+        { labelKey: 'SIDEBAR.SALARIES', route: '/gehaelter', icon: faMoneyBillWave, permission: 'GEHAELTER' },
       ],
     },
     {
-      title: 'Administration',
+      titleKey: 'NAV.ADMIN',
       items: [
-        { label: 'Benutzer', route: '/benutzer', icon: faUsersCog, permission: 'BENUTZERVERWALTUNG' },
+        { labelKey: 'SIDEBAR.USERS', route: '/benutzer', icon: faUsersCog, permission: 'BENUTZERVERWALTUNG' },
       ],
     },
   ];

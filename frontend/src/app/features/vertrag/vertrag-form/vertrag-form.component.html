@@ -1,5 +1,5 @@
 <div class="page-header">
-  <h2>{{ isEdit ? 'Vertrag bearbeiten' : 'Neuer Vertrag' }}</h2>
+  <h2>{{ (isEdit ? 'VERTRAG.EDIT_TITLE' : 'VERTRAG.NEW') | translate }}</h2>
 </div>
 
 @if (loading) {
@@ -10,7 +10,7 @@
       <form [formGroup]="form" (ngSubmit)="onSubmit()">
         <div class="row">
           <div class="col-md-6 mb-3">
-            <label for="titel" class="form-label">Titel *</label>
+            <label for="titel" class="form-label">{{ 'COMMON.TITLE' | translate }} *</label>
             <input
               type="text"
               class="form-control"
@@ -19,30 +19,30 @@
               [class.is-invalid]="form.get('titel')?.invalid && form.get('titel')?.touched"
             />
             @if (form.get('titel')?.invalid && form.get('titel')?.touched) {
-              <div class="invalid-feedback">Titel ist erforderlich</div>
+              <div class="invalid-feedback">{{ 'VALIDATION.TITLE_REQUIRED' | translate }}</div>
             }
           </div>
           <div class="col-md-6 mb-3">
-            <label for="status" class="form-label">Status *</label>
+            <label for="status" class="form-label">{{ 'COMMON.STATUS' | translate }} *</label>
             <select
               class="form-select"
               id="status"
               formControlName="status"
               [class.is-invalid]="form.get('status')?.invalid && form.get('status')?.touched"
             >
-              <option value="" disabled>Status auswählen...</option>
+              <option value="" disabled>{{ 'VERTRAG.SELECT_STATUS' | translate }}</option>
               @for (s of statusOptions; track s) {
                 <option [value]="s">{{ s }}</option>
               }
             </select>
             @if (form.get('status')?.invalid && form.get('status')?.touched) {
-              <div class="invalid-feedback">Status ist erforderlich</div>
+              <div class="invalid-feedback">{{ 'VALIDATION.STATUS_REQUIRED' | translate }}</div>
             }
           </div>
         </div>
         <div class="row">
           <div class="col-md-6 mb-3">
-            <label for="wert" class="form-label">Wert</label>
+            <label for="wert" class="form-label">{{ 'COMMON.VALUE' | translate }}</label>
             <input
               type="number"
               class="form-control"
@@ -52,42 +52,42 @@
             />
           </div>
           <div class="col-md-6 mb-3">
-            <label for="currency" class="form-label">Währung</label>
+            <label for="currency" class="form-label">{{ 'COMMON.CURRENCY' | translate }}</label>
             <input type="text" class="form-control" id="currency" formControlName="currency" />
           </div>
         </div>
         <div class="row">
           <div class="col-md-6 mb-3">
-            <label for="startDate" class="form-label">Startdatum</label>
+            <label for="startDate" class="form-label">{{ 'VERTRAG.START_DATE' | translate }}</label>
             <input type="date" class="form-control" id="startDate" formControlName="startDate" />
           </div>
           <div class="col-md-6 mb-3">
-            <label for="endDate" class="form-label">Enddatum</label>
+            <label for="endDate" class="form-label">{{ 'VERTRAG.END_DATE' | translate }}</label>
             <input type="date" class="form-control" id="endDate" formControlName="endDate" />
           </div>
         </div>
         <div class="row">
           <div class="col-md-6 mb-3">
-            <label for="firmaId" class="form-label">Firma *</label>
+            <label for="firmaId" class="form-label">{{ 'PERSON.COMPANY' | translate }} *</label>
             <select
               class="form-select"
               id="firmaId"
               formControlName="firmaId"
               [class.is-invalid]="form.get('firmaId')?.invalid && form.get('firmaId')?.touched"
             >
-              <option [ngValue]="null" disabled>Firma auswählen...</option>
+              <option [ngValue]="null" disabled>{{ 'FIRMA.SELECT' | translate }}</option>
               @for (firma of firmen; track firma.id) {
                 <option [ngValue]="firma.id">{{ firma.name }}</option>
               }
             </select>
             @if (form.get('firmaId')?.invalid && form.get('firmaId')?.touched) {
-              <div class="invalid-feedback">Firma ist erforderlich</div>
+              <div class="invalid-feedback">{{ 'VALIDATION.FIRMA_REQUIRED' | translate }}</div>
             }
           </div>
           <div class="col-md-6 mb-3">
-            <label for="kontaktPersonId" class="form-label">Kontaktperson</label>
+            <label for="kontaktPersonId" class="form-label">{{ 'VERTRAG.CONTACT_PERSON' | translate }}</label>
             <select class="form-select" id="kontaktPersonId" formControlName="kontaktPersonId">
-              <option [ngValue]="null">Keine Kontaktperson</option>
+              <option [ngValue]="null">{{ 'VERTRAG.NO_CONTACT' | translate }}</option>
               @for (person of personen; track person.id) {
                 <option [ngValue]="person.id">{{ person.firstName }} {{ person.lastName }}</option>
               }
@@ -95,12 +95,12 @@
           </div>
         </div>
         <div class="mb-3">
-          <label for="notes" class="form-label">Notizen</label>
+          <label for="notes" class="form-label">{{ 'COMMON.NOTES' | translate }}</label>
           <textarea class="form-control" id="notes" formControlName="notes" rows="3"></textarea>
         </div>
         <div class="d-flex gap-2">
-          <button type="submit" class="btn btn-primary" [disabled]="form.invalid">Speichern</button>
-          <a routerLink="/vertraege" class="btn btn-outline-secondary">Abbrechen</a>
+          <button type="submit" class="btn btn-primary" [disabled]="form.invalid">{{ 'COMMON.SAVE' | translate }}</button>
+          <a routerLink="/vertraege" class="btn btn-outline-secondary">{{ 'COMMON.CANCEL' | translate }}</a>
         </div>
       </form>
     </div>

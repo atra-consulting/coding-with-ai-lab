@@ -5,10 +5,10 @@
     <h2>{{ chance.titel }}</h2>
     <div>
       <a [routerLink]="['/', 'chancen', chance.id, 'bearbeiten']" class="btn btn-primary me-2"
-        >Bearbeiten</a
+        >{{ 'COMMON.EDIT' | translate }}</a
       >
-      <button class="btn btn-outline-danger me-2" (click)="onDelete()">Löschen</button>
-      <a routerLink="/chancen" class="btn btn-outline-secondary">Zurück</a>
+      <button class="btn btn-outline-danger me-2" (click)="onDelete()">{{ 'COMMON.DELETE' | translate }}</button>
+      <a routerLink="/chancen" class="btn btn-outline-secondary">{{ 'COMMON.BACK' | translate }}</a>
     </div>
   </div>
 
@@ -17,28 +17,28 @@
       <div class="row">
         <div class="col-md-6">
           <p>
-            <strong>Firma:</strong>
+            <strong>{{ 'PERSON.COMPANY' | translate }}:</strong>
             <a [routerLink]="['/firmen', chance.firmaId]">{{ chance.firmaName }}</a>
           </p>
-          <p><strong>Kontaktperson:</strong> {{ chance.kontaktPersonName || '-' }}</p>
+          <p><strong>{{ 'CHANCE.CONTACT_PERSON' | translate }}:</strong> {{ chance.kontaktPersonName || '-' }}</p>
           <p>
-            <strong>Phase:</strong>
-            <span class="badge" [class]="getPhaseBadgeClass(chance.phase)">{{ chance.phase }}</span>
+            <strong>{{ 'CHANCE.PHASE' | translate }}:</strong>
+            <span class="badge" [class]="getPhaseBadgeClass(chance.phase)">{{ 'PHASE.' + chance.phase | translate }}</span>
           </p>
-          <p><strong>Wert:</strong> {{ chance.wert | eurCurrency: chance.currency }}</p>
+          <p><strong>{{ 'COMMON.VALUE' | translate }}:</strong> {{ chance.wert | eurCurrency: chance.currency }}</p>
         </div>
         <div class="col-md-6">
-          <p><strong>Wahrscheinlichkeit:</strong> {{ chance.wahrscheinlichkeit }}%</p>
+          <p><strong>{{ 'CHANCE.PROBABILITY' | translate }}:</strong> {{ chance.wahrscheinlichkeit }}%</p>
           <p>
-            <strong>Erwartetes Datum:</strong>
-            {{ chance.erwartetesDatum ? (chance.erwartetesDatum | date: 'dd.MM.yyyy') : '-' }}
+            <strong>{{ 'CHANCE.EXPECTED_DATE' | translate }}:</strong>
+            {{ chance.erwartetesDatum ? (chance.erwartetesDatum | date: langService.getDateFormat()) : '-' }}
           </p>
-          <p><strong>Erstellt:</strong> {{ chance.createdAt | date: 'dd.MM.yyyy' }}</p>
-          <p><strong>Aktualisiert:</strong> {{ chance.updatedAt | date: 'dd.MM.yyyy' }}</p>
+          <p><strong>{{ 'COMMON.CREATED_AT' | translate }}:</strong> {{ chance.createdAt | date: langService.getDateFormat() }}</p>
+          <p><strong>{{ 'COMMON.UPDATED_AT' | translate }}:</strong> {{ chance.updatedAt | date: langService.getDateFormat() }}</p>
         </div>
       </div>
       @if (chance.beschreibung) {
-        <p><strong>Beschreibung:</strong> {{ chance.beschreibung }}</p>
+        <p><strong>{{ 'COMMON.DESCRIPTION' | translate }}:</strong> {{ chance.beschreibung }}</p>
       }
     </div>
   </div>

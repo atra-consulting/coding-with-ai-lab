@@ -2,7 +2,9 @@ import { DatePipe } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { TranslateModule } from '@ngx-translate/core';
 import { Person } from '../../../core/models/person.model';
+import { LanguageService } from '../../../core/services/language.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { PersonService } from '../../../core/services/person.service';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
@@ -10,7 +12,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
 
 @Component({
   selector: 'app-person-detail',
-  imports: [RouterLink, LoadingSpinnerComponent, DatePipe],
+  imports: [RouterLink, LoadingSpinnerComponent, DatePipe, TranslateModule],
   templateUrl: './person-detail.component.html',
 })
 export class PersonDetailComponent implements OnInit {
@@ -19,6 +21,7 @@ export class PersonDetailComponent implements OnInit {
   private personService = inject(PersonService);
   private modalService = inject(NgbModal);
   private notification = inject(NotificationService);
+  public langService = inject(LanguageService);
 
   person: Person | null = null;
   loading = true;

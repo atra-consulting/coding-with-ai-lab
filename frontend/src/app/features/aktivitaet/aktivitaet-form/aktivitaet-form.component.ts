@@ -1,6 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AktivitaetTyp } from '../../../core/models/aktivitaet.model';
 import { Firma } from '../../../core/models/firma.model';
 import { Person } from '../../../core/models/person.model';
@@ -12,7 +13,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
 
 @Component({
   selector: 'app-aktivitaet-form',
-  imports: [ReactiveFormsModule, RouterLink, LoadingSpinnerComponent],
+  imports: [ReactiveFormsModule, RouterLink, LoadingSpinnerComponent, TranslateModule],
   templateUrl: './aktivitaet-form.component.html',
 })
 export class AktivitaetFormComponent implements OnInit {
@@ -23,6 +24,7 @@ export class AktivitaetFormComponent implements OnInit {
   private firmaService = inject(FirmaService);
   private personService = inject(PersonService);
   private notification = inject(NotificationService);
+  private translate = inject(TranslateService);
 
   form!: FormGroup;
   isEdit = false;
@@ -74,7 +76,7 @@ export class AktivitaetFormComponent implements OnInit {
     if (this.isEdit && this.aktivitaetId) {
       this.aktivitaetService.update(this.aktivitaetId, data).subscribe({
         next: () => {
-          this.notification.success('Aktivität erfolgreich aktualisiert');
+          this.notification.success(this.translate.instant('AKTIVITAET.UPDATED'));
           this.router.navigate(['/aktivitaeten']);
         },
         error: () => {},
@@ -82,7 +84,7 @@ export class AktivitaetFormComponent implements OnInit {
     } else {
       this.aktivitaetService.create(data).subscribe({
         next: () => {
-          this.notification.success('Aktivität erfolgreich erstellt');
+          this.notification.success(this.translate.instant('AKTIVITAET.CREATED'));
           this.router.navigate(['/aktivitaeten']);
         },
         error: () => {},

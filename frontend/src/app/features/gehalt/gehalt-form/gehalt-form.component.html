@@ -1,5 +1,5 @@
 <div class="page-header">
-  <h2>{{ isEdit ? 'Gehalt bearbeiten' : 'Neues Gehalt' }}</h2>
+  <h2>{{ (isEdit ? 'GEHALT.EDIT_TITLE' : 'GEHALT.NEW') | translate }}</h2>
 </div>
 
 @if (loading) {
@@ -10,43 +10,43 @@
       <form [formGroup]="form" (ngSubmit)="onSubmit()">
         <div class="row">
           <div class="col-md-6 mb-3">
-            <label for="personId" class="form-label">Person *</label>
+            <label for="personId" class="form-label">{{ 'GEHALT.PERSON' | translate }} *</label>
             <select
               class="form-select"
               id="personId"
               formControlName="personId"
               [class.is-invalid]="form.get('personId')?.invalid && form.get('personId')?.touched"
             >
-              <option [ngValue]="null" disabled>-- Person auswählen --</option>
+              <option [ngValue]="null" disabled>{{ 'GEHALT.SELECT_PERSON' | translate }}</option>
               @for (person of personen; track person.id) {
                 <option [ngValue]="person.id">{{ person.lastName }}, {{ person.firstName }}</option>
               }
             </select>
             @if (form.get('personId')?.invalid && form.get('personId')?.touched) {
-              <div class="invalid-feedback">Person ist erforderlich</div>
+              <div class="invalid-feedback">{{ 'VALIDATION.PERSON_REQUIRED' | translate }}</div>
             }
           </div>
           <div class="col-md-6 mb-3">
-            <label for="typ" class="form-label">Typ *</label>
+            <label for="typ" class="form-label">{{ 'GEHALT.TYPE' | translate }} *</label>
             <select
               class="form-select"
               id="typ"
               formControlName="typ"
               [class.is-invalid]="form.get('typ')?.invalid && form.get('typ')?.touched"
             >
-              <option value="" disabled>-- Typ auswählen --</option>
+              <option value="" disabled>{{ 'GEHALT.SELECT_TYPE' | translate }}</option>
               @for (t of gehaltTypen; track t.value) {
                 <option [value]="t.value">{{ t.label }}</option>
               }
             </select>
             @if (form.get('typ')?.invalid && form.get('typ')?.touched) {
-              <div class="invalid-feedback">Typ ist erforderlich</div>
+              <div class="invalid-feedback">{{ 'VALIDATION.TYPE_REQUIRED' | translate }}</div>
             }
           </div>
         </div>
         <div class="row">
           <div class="col-md-4 mb-3">
-            <label for="amount" class="form-label">Betrag *</label>
+            <label for="amount" class="form-label">{{ 'GEHALT.AMOUNT' | translate }} *</label>
             <input
               type="number"
               class="form-control"
@@ -56,15 +56,15 @@
               [class.is-invalid]="form.get('amount')?.invalid && form.get('amount')?.touched"
             />
             @if (form.get('amount')?.invalid && form.get('amount')?.touched) {
-              <div class="invalid-feedback">Betrag ist erforderlich und muss positiv sein</div>
+              <div class="invalid-feedback">{{ 'VALIDATION.AMOUNT_REQUIRED' | translate }}</div>
             }
           </div>
           <div class="col-md-4 mb-3">
-            <label for="currency" class="form-label">Währung</label>
+            <label for="currency" class="form-label">{{ 'COMMON.CURRENCY' | translate }}</label>
             <input type="text" class="form-control" id="currency" formControlName="currency" />
           </div>
           <div class="col-md-4 mb-3">
-            <label for="effectiveDate" class="form-label">Datum *</label>
+            <label for="effectiveDate" class="form-label">{{ 'COMMON.DATE' | translate }} *</label>
             <input
               type="date"
               class="form-control"
@@ -75,13 +75,13 @@
               "
             />
             @if (form.get('effectiveDate')?.invalid && form.get('effectiveDate')?.touched) {
-              <div class="invalid-feedback">Datum ist erforderlich</div>
+              <div class="invalid-feedback">{{ 'VALIDATION.DATE_REQUIRED' | translate }}</div>
             }
           </div>
         </div>
         <div class="d-flex gap-2">
-          <button type="submit" class="btn btn-primary" [disabled]="form.invalid">Speichern</button>
-          <a routerLink="/gehaelter" class="btn btn-outline-secondary">Abbrechen</a>
+          <button type="submit" class="btn btn-primary" [disabled]="form.invalid">{{ 'COMMON.SAVE' | translate }}</button>
+          <a routerLink="/gehaelter" class="btn btn-outline-secondary">{{ 'COMMON.CANCEL' | translate }}</a>
         </div>
       </form>
     </div>

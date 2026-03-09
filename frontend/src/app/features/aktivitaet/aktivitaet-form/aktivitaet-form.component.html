@@ -1,5 +1,5 @@
 <div class="page-header">
-  <h2>{{ isEdit ? 'Aktivität bearbeiten' : 'Neue Aktivität' }}</h2>
+  <h2>{{ (isEdit ? 'AKTIVITAET.EDIT_TITLE' : 'AKTIVITAET.NEW') | translate }}</h2>
 </div>
 
 @if (loading) {
@@ -10,24 +10,24 @@
       <form [formGroup]="form" (ngSubmit)="onSubmit()">
         <div class="row">
           <div class="col-md-6 mb-3">
-            <label for="typ" class="form-label">Typ *</label>
+            <label for="typ" class="form-label">{{ 'AKTIVITAET.TYPE' | translate }} *</label>
             <select
               class="form-select"
               id="typ"
               formControlName="typ"
               [class.is-invalid]="form.get('typ')?.invalid && form.get('typ')?.touched"
             >
-              <option value="" disabled>Typ auswählen...</option>
+              <option value="" disabled>{{ 'AKTIVITAET.SELECT_TYPE' | translate }}</option>
               @for (t of typOptions; track t) {
                 <option [value]="t">{{ t }}</option>
               }
             </select>
             @if (form.get('typ')?.invalid && form.get('typ')?.touched) {
-              <div class="invalid-feedback">Typ ist erforderlich</div>
+              <div class="invalid-feedback">{{ 'VALIDATION.TYPE_REQUIRED' | translate }}</div>
             }
           </div>
           <div class="col-md-6 mb-3">
-            <label for="datum" class="form-label">Datum *</label>
+            <label for="datum" class="form-label">{{ 'COMMON.DATE' | translate }} *</label>
             <input
               type="datetime-local"
               class="form-control"
@@ -36,12 +36,12 @@
               [class.is-invalid]="form.get('datum')?.invalid && form.get('datum')?.touched"
             />
             @if (form.get('datum')?.invalid && form.get('datum')?.touched) {
-              <div class="invalid-feedback">Datum ist erforderlich</div>
+              <div class="invalid-feedback">{{ 'VALIDATION.DATE_REQUIRED' | translate }}</div>
             }
           </div>
         </div>
         <div class="mb-3">
-          <label for="subject" class="form-label">Betreff *</label>
+          <label for="subject" class="form-label">{{ 'AKTIVITAET.SUBJECT' | translate }} *</label>
           <input
             type="text"
             class="form-control"
@@ -50,11 +50,11 @@
             [class.is-invalid]="form.get('subject')?.invalid && form.get('subject')?.touched"
           />
           @if (form.get('subject')?.invalid && form.get('subject')?.touched) {
-            <div class="invalid-feedback">Betreff ist erforderlich</div>
+            <div class="invalid-feedback">{{ 'VALIDATION.SUBJECT_REQUIRED' | translate }}</div>
           }
         </div>
         <div class="mb-3">
-          <label for="description" class="form-label">Beschreibung</label>
+          <label for="description" class="form-label">{{ 'COMMON.DESCRIPTION' | translate }}</label>
           <textarea
             class="form-control"
             id="description"
@@ -64,18 +64,18 @@
         </div>
         <div class="row">
           <div class="col-md-6 mb-3">
-            <label for="firmaId" class="form-label">Firma</label>
+            <label for="firmaId" class="form-label">{{ 'PERSON.COMPANY' | translate }}</label>
             <select class="form-select" id="firmaId" formControlName="firmaId">
-              <option [ngValue]="null">Keine Firma</option>
+              <option [ngValue]="null">{{ 'AKTIVITAET.NO_COMPANY' | translate }}</option>
               @for (firma of firmen; track firma.id) {
                 <option [ngValue]="firma.id">{{ firma.name }}</option>
               }
             </select>
           </div>
           <div class="col-md-6 mb-3">
-            <label for="personId" class="form-label">Person</label>
+            <label for="personId" class="form-label">{{ 'GEHALT.PERSON' | translate }}</label>
             <select class="form-select" id="personId" formControlName="personId">
-              <option [ngValue]="null">Keine Person</option>
+              <option [ngValue]="null">{{ 'AKTIVITAET.NO_PERSON' | translate }}</option>
               @for (person of personen; track person.id) {
                 <option [ngValue]="person.id">{{ person.firstName }} {{ person.lastName }}</option>
               }
@@ -83,8 +83,8 @@
           </div>
         </div>
         <div class="d-flex gap-2">
-          <button type="submit" class="btn btn-primary" [disabled]="form.invalid">Speichern</button>
-          <a routerLink="/aktivitaeten" class="btn btn-outline-secondary">Abbrechen</a>
+          <button type="submit" class="btn btn-primary" [disabled]="form.invalid">{{ 'COMMON.SAVE' | translate }}</button>
+          <a routerLink="/aktivitaeten" class="btn btn-outline-secondary">{{ 'COMMON.CANCEL' | translate }}</a>
         </div>
       </form>
     </div>

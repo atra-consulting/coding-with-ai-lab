@@ -1,5 +1,5 @@
 <div class="page-header">
-  <h2>{{ isEdit ? 'Person bearbeiten' : 'Neue Person' }}</h2>
+  <h2>{{ (isEdit ? 'PERSON.EDIT_TITLE' : 'PERSON.NEW') | translate }}</h2>
 </div>
 
 @if (loading) {
@@ -10,7 +10,7 @@
       <form [formGroup]="form" (ngSubmit)="onSubmit()">
         <div class="row">
           <div class="col-md-6 mb-3">
-            <label for="firstName" class="form-label">Vorname *</label>
+            <label for="firstName" class="form-label">{{ 'PERSON.FIRST_NAME' | translate }} *</label>
             <input
               type="text"
               class="form-control"
@@ -19,11 +19,11 @@
               [class.is-invalid]="form.get('firstName')?.invalid && form.get('firstName')?.touched"
             />
             @if (form.get('firstName')?.invalid && form.get('firstName')?.touched) {
-              <div class="invalid-feedback">Vorname ist erforderlich</div>
+              <div class="invalid-feedback">{{ 'VALIDATION.FIRST_NAME_REQUIRED' | translate }}</div>
             }
           </div>
           <div class="col-md-6 mb-3">
-            <label for="lastName" class="form-label">Nachname *</label>
+            <label for="lastName" class="form-label">{{ 'PERSON.LAST_NAME' | translate }} *</label>
             <input
               type="text"
               class="form-control"
@@ -32,34 +32,34 @@
               [class.is-invalid]="form.get('lastName')?.invalid && form.get('lastName')?.touched"
             />
             @if (form.get('lastName')?.invalid && form.get('lastName')?.touched) {
-              <div class="invalid-feedback">Nachname ist erforderlich</div>
+              <div class="invalid-feedback">{{ 'VALIDATION.LAST_NAME_REQUIRED' | translate }}</div>
             }
           </div>
         </div>
         <div class="row">
           <div class="col-md-6 mb-3">
-            <label for="email" class="form-label">E-Mail</label>
+            <label for="email" class="form-label">{{ 'COMMON.EMAIL' | translate }}</label>
             <input type="email" class="form-control" id="email" formControlName="email" />
           </div>
           <div class="col-md-6 mb-3">
-            <label for="phone" class="form-label">Telefon</label>
+            <label for="phone" class="form-label">{{ 'COMMON.PHONE' | translate }}</label>
             <input type="text" class="form-control" id="phone" formControlName="phone" />
           </div>
         </div>
         <div class="row">
           <div class="col-md-6 mb-3">
-            <label for="firmaId" class="form-label">Firma *</label>
+            <label for="firmaId" class="form-label">{{ 'PERSON.COMPANY' | translate }} *</label>
             <select class="form-select" id="firmaId" formControlName="firmaId">
-              <option [ngValue]="null" disabled>Firma auswählen...</option>
+              <option [ngValue]="null" disabled>{{ 'FIRMA.SELECT' | translate }}</option>
               @for (firma of firmen; track firma.id) {
                 <option [ngValue]="firma.id">{{ firma.name }}</option>
               }
             </select>
           </div>
           <div class="col-md-6 mb-3">
-            <label for="abteilungId" class="form-label">Abteilung</label>
+            <label for="abteilungId" class="form-label">{{ 'PERSON.DEPARTMENT' | translate }}</label>
             <select class="form-select" id="abteilungId" formControlName="abteilungId">
-              <option [ngValue]="null">Keine Abteilung</option>
+              <option [ngValue]="null">{{ 'PERSON.NO_DEPARTMENT' | translate }}</option>
               @for (abt of abteilungen; track abt.id) {
                 <option [ngValue]="abt.id">{{ abt.name }}</option>
               }
@@ -67,16 +67,16 @@
           </div>
         </div>
         <div class="mb-3">
-          <label for="position" class="form-label">Position</label>
+          <label for="position" class="form-label">{{ 'PERSON.POSITION' | translate }}</label>
           <input type="text" class="form-control" id="position" formControlName="position" />
         </div>
         <div class="mb-3">
-          <label for="notes" class="form-label">Notizen</label>
+          <label for="notes" class="form-label">{{ 'COMMON.NOTES' | translate }}</label>
           <textarea class="form-control" id="notes" formControlName="notes" rows="3"></textarea>
         </div>
         <div class="d-flex gap-2">
-          <button type="submit" class="btn btn-primary" [disabled]="form.invalid">Speichern</button>
-          <a routerLink="/personen" class="btn btn-outline-secondary">Abbrechen</a>
+          <button type="submit" class="btn btn-primary" [disabled]="form.invalid">{{ 'COMMON.SAVE' | translate }}</button>
+          <a routerLink="/personen" class="btn btn-outline-secondary">{{ 'COMMON.CANCEL' | translate }}</a>
         </div>
       </form>
     </div>

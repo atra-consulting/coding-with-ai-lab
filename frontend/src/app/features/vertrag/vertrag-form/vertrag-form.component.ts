@@ -1,6 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Firma } from '../../../core/models/firma.model';
 import { Person } from '../../../core/models/person.model';
 import { VertragStatus } from '../../../core/models/vertrag.model';
@@ -12,7 +13,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
 
 @Component({
   selector: 'app-vertrag-form',
-  imports: [ReactiveFormsModule, RouterLink, LoadingSpinnerComponent],
+  imports: [ReactiveFormsModule, RouterLink, LoadingSpinnerComponent, TranslateModule],
   templateUrl: './vertrag-form.component.html',
 })
 export class VertragFormComponent implements OnInit {
@@ -23,6 +24,7 @@ export class VertragFormComponent implements OnInit {
   private firmaService = inject(FirmaService);
   private personService = inject(PersonService);
   private notification = inject(NotificationService);
+  private translate = inject(TranslateService);
 
   form!: FormGroup;
   isEdit = false;
@@ -74,7 +76,7 @@ export class VertragFormComponent implements OnInit {
     if (this.isEdit && this.vertragId) {
       this.vertragService.update(this.vertragId, data).subscribe({
         next: () => {
-          this.notification.success('Vertrag erfolgreich aktualisiert');
+          this.notification.success(this.translate.instant('VERTRAG.UPDATED'));
           this.router.navigate(['/vertraege', this.vertragId]);
         },
         error: () => {},
@@ -82,7 +84,7 @@ export class VertragFormComponent implements OnInit {
     } else {
       this.vertragService.create(data).subscribe({
         next: (created) => {
-          this.notification.success('Vertrag erfolgreich erstellt');
+          this.notification.success(this.translate.instant('VERTRAG.CREATED'));
           this.router.navigate(['/vertraege', created.id]);
         },
         error: () => {},

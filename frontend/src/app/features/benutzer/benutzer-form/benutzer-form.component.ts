@@ -3,11 +3,12 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { BenutzerService } from '../../../core/services/benutzer.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-benutzer-form',
-  imports: [ReactiveFormsModule, RouterLink, LoadingSpinnerComponent],
+  imports: [ReactiveFormsModule, RouterLink, LoadingSpinnerComponent, TranslateModule],
   templateUrl: './benutzer-form.component.html',
 })
 export class BenutzerFormComponent implements OnInit {
@@ -16,6 +17,7 @@ export class BenutzerFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private benutzerService = inject(BenutzerService);
   private notification = inject(NotificationService);
+  private translate = inject(TranslateService);
 
   form!: FormGroup;
   isEdit = false;
@@ -85,7 +87,7 @@ export class BenutzerFormComponent implements OnInit {
 
     const rollen: string[] = this.form.get('rollen')?.value || [];
     if (rollen.length === 0) {
-      this.notification.error('Mindestens eine Rolle muss ausgewählt werden');
+      this.notification.error(this.translate.instant('VALIDATION.MIN_ONE_ROLE'));
       return;
     }
 
@@ -99,7 +101,7 @@ export class BenutzerFormComponent implements OnInit {
     if (this.isEdit && this.benutzerId) {
       this.benutzerService.update(this.benutzerId, data).subscribe({
         next: () => {
-          this.notification.success('Benutzer erfolgreich aktualisiert');
+          this.notification.success(this.translate.instant('BENUTZER.UPDATED'));
           this.router.navigate(['/benutzer', this.benutzerId]);
         },
         error: () => {},
@@ -107,7 +109,7 @@ export class BenutzerFormComponent implements OnInit {
     } else {
       this.benutzerService.create(data).subscribe({
         next: (created) => {
-          this.notification.success('Benutzer erfolgreich erstellt');
+          this.notification.success(this.translate.instant('BENUTZER.CREATED'));
           this.router.navigate(['/benutzer', created.id]);
         },
         error: () => {},

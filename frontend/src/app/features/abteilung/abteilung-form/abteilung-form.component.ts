@@ -1,6 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Firma } from '../../../core/models/firma.model';
 import { AbteilungService } from '../../../core/services/abteilung.service';
 import { FirmaService } from '../../../core/services/firma.service';
@@ -9,7 +10,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
 
 @Component({
   selector: 'app-abteilung-form',
-  imports: [ReactiveFormsModule, RouterLink, LoadingSpinnerComponent],
+  imports: [ReactiveFormsModule, RouterLink, LoadingSpinnerComponent, TranslateModule],
   templateUrl: './abteilung-form.component.html',
 })
 export class AbteilungFormComponent implements OnInit {
@@ -19,6 +20,7 @@ export class AbteilungFormComponent implements OnInit {
   private abteilungService = inject(AbteilungService);
   private firmaService = inject(FirmaService);
   private notification = inject(NotificationService);
+  private translate = inject(TranslateService);
 
   form!: FormGroup;
   isEdit = false;
@@ -58,7 +60,7 @@ export class AbteilungFormComponent implements OnInit {
     if (this.isEdit && this.abteilungId) {
       this.abteilungService.update(this.abteilungId, data).subscribe({
         next: () => {
-          this.notification.success('Abteilung erfolgreich aktualisiert');
+          this.notification.success(this.translate.instant('ABTEILUNG.UPDATED'));
           this.router.navigate(['/abteilungen', this.abteilungId]);
         },
         error: () => {},
@@ -66,7 +68,7 @@ export class AbteilungFormComponent implements OnInit {
     } else {
       this.abteilungService.create(data).subscribe({
         next: (created) => {
-          this.notification.success('Abteilung erfolgreich erstellt');
+          this.notification.success(this.translate.instant('ABTEILUNG.CREATED'));
           this.router.navigate(['/abteilungen', created.id]);
         },
         error: () => {},

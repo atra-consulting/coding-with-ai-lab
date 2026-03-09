@@ -7,21 +7,21 @@
       <a
         [routerLink]="['/', 'abteilungen', abteilung.id, 'bearbeiten']"
         class="btn btn-primary me-2"
-        >Bearbeiten</a
+        >{{ 'COMMON.EDIT' | translate }}</a
       >
-      <button class="btn btn-outline-danger me-2" (click)="onDelete()">Löschen</button>
-      <a routerLink="/abteilungen" class="btn btn-outline-secondary">Zurück</a>
+      <button class="btn btn-outline-danger me-2" (click)="onDelete()">{{ 'COMMON.DELETE' | translate }}</button>
+      <a routerLink="/abteilungen" class="btn btn-outline-secondary">{{ 'COMMON.BACK' | translate }}</a>
     </div>
   </div>
 
   <div class="card">
     <div class="card-body">
       <p>
-        <strong>Firma:</strong>
+        <strong>{{ 'PERSON.COMPANY' | translate }}:</strong>
         <a [routerLink]="['/firmen', abteilung.firmaId]">{{ abteilung.firmaName }}</a>
       </p>
-      <p><strong>Beschreibung:</strong> {{ abteilung.description || '-' }}</p>
-      <p><strong>Anzahl Personen:</strong> {{ abteilung.personenCount }}</p>
+      <p><strong>{{ 'COMMON.DESCRIPTION' | translate }}:</strong> {{ abteilung.description || '-' }}</p>
+      <p><strong>{{ 'ABTEILUNG.PERSONS_COUNT' | translate }}:</strong> {{ abteilung.personenCount }}</p>
     </div>
   </div>
 }

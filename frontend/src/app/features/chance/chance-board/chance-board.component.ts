@@ -7,6 +7,7 @@ import {
   moveItemInArray,
   transferArrayItem,
 } from '@angular/cdk/drag-drop';
+import { TranslateModule } from '@ngx-translate/core';
 import { BoardSummary, Chance, ChancePhase } from '../../../core/models/chance.model';
 import { Page } from '../../../core/models/page.model';
 import { ChanceService } from '../../../core/services/chance.service';
@@ -16,22 +17,22 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
 
 interface PhaseConfig {
   phase: ChancePhase;
-  label: string;
+  labelKey: string;
   colorClass: string;
 }
 
 const PHASES: PhaseConfig[] = [
-  { phase: 'NEU', label: 'Neu', colorClass: 'primary' },
-  { phase: 'QUALIFIZIERT', label: 'Qualifiziert', colorClass: 'info' },
-  { phase: 'ANGEBOT', label: 'Angebot', colorClass: 'warning' },
-  { phase: 'VERHANDLUNG', label: 'Verhandlung', colorClass: 'secondary' },
-  { phase: 'GEWONNEN', label: 'Gewonnen', colorClass: 'success' },
-  { phase: 'VERLOREN', label: 'Verloren', colorClass: 'danger' },
+  { phase: 'NEU', labelKey: 'PHASE.NEU', colorClass: 'primary' },
+  { phase: 'QUALIFIZIERT', labelKey: 'PHASE.QUALIFIZIERT', colorClass: 'info' },
+  { phase: 'ANGEBOT', labelKey: 'PHASE.ANGEBOT', colorClass: 'warning' },
+  { phase: 'VERHANDLUNG', labelKey: 'PHASE.VERHANDLUNG', colorClass: 'secondary' },
+  { phase: 'GEWONNEN', labelKey: 'PHASE.GEWONNEN', colorClass: 'success' },
+  { phase: 'VERLOREN', labelKey: 'PHASE.VERLOREN', colorClass: 'danger' },
 ];
 
 @Component({
   selector: 'app-chance-board',
-  imports: [RouterLink, CdkDrag, CdkDropList, EurCurrencyPipe, LoadingSpinnerComponent],
+  imports: [RouterLink, CdkDrag, CdkDropList, EurCurrencyPipe, LoadingSpinnerComponent, TranslateModule],
   templateUrl: './chance-board.component.html',
   styleUrl: './chance-board.component.scss',
 })

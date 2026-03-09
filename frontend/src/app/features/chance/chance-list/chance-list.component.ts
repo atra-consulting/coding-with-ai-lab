@@ -1,5 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { AgGridAngular } from 'ag-grid-angular';
 import { ColDef, RowClickedEvent, SizeColumnsToContentStrategy, themeQuartz } from 'ag-grid-community';
 import { Chance } from '../../../core/models/chance.model';
@@ -10,7 +11,7 @@ const currencyFormatter = new Intl.NumberFormat('de-DE', { style: 'currency', cu
 
 @Component({
   selector: 'app-chance-list',
-  imports: [RouterLink, AgGridAngular, LoadingSpinnerComponent],
+  imports: [RouterLink, AgGridAngular, LoadingSpinnerComponent, TranslateModule],
   templateUrl: './chance-list.component.html',
 })
 export class ChanceListComponent implements OnInit {

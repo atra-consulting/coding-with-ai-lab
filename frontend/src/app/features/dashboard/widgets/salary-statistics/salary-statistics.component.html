@@ -1,6 +1,6 @@
 <div class="card">
   <div class="card-header">
-    <h5 class="card-title mb-0">Durchschnittsgehalt nach Abteilung</h5>
+    <h5 class="card-title mb-0">{{ 'DASHBOARD.AVG_SALARY_BY_DEPT' | translate }}</h5>
   </div>
   <div class="card-body">
     @for (dept of departments; track dept.departmentName) {
@@ -14,7 +14,7 @@
         </div>
       </div>
     } @empty {
-      <p class="text-muted">Keine Gehaltsdaten vorhanden</p>
+      <p class="text-muted">{{ 'DASHBOARD.NO_SALARY_DATA' | translate }}</p>
     }
   </div>
 </div>

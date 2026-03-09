@@ -5,10 +5,10 @@
     <h2>{{ person.firstName }} {{ person.lastName }}</h2>
     <div>
       <a [routerLink]="['/', 'personen', person.id, 'bearbeiten']" class="btn btn-primary me-2"
-        >Bearbeiten</a
+        >{{ 'COMMON.EDIT' | translate }}</a
       >
-      <button class="btn btn-outline-danger me-2" (click)="onDelete()">Löschen</button>
-      <a routerLink="/personen" class="btn btn-outline-secondary">Zurück</a>
+      <button class="btn btn-outline-danger me-2" (click)="onDelete()">{{ 'COMMON.DELETE' | translate }}</button>
+      <a routerLink="/personen" class="btn btn-outline-secondary">{{ 'COMMON.BACK' | translate }}</a>
     </div>
   </div>
 
@@ -16,21 +16,21 @@
     <div class="card-body">
       <div class="row">
         <div class="col-md-6">
-          <p><strong>E-Mail:</strong> {{ person.email || '-' }}</p>
-          <p><strong>Telefon:</strong> {{ person.phone || '-' }}</p>
-          <p><strong>Position:</strong> {{ person.position || '-' }}</p>
+          <p><strong>{{ 'COMMON.EMAIL' | translate }}:</strong> {{ person.email || '-' }}</p>
+          <p><strong>{{ 'COMMON.PHONE' | translate }}:</strong> {{ person.phone || '-' }}</p>
+          <p><strong>{{ 'PERSON.POSITION' | translate }}:</strong> {{ person.position || '-' }}</p>
         </div>
         <div class="col-md-6">
           <p>
-            <strong>Firma:</strong>
+            <strong>{{ 'PERSON.COMPANY' | translate }}:</strong>
             <a [routerLink]="['/firmen', person.firmaId]">{{ person.firmaName }}</a>
           </p>
-          <p><strong>Abteilung:</strong> {{ person.abteilungName || '-' }}</p>
-          <p><strong>Erstellt:</strong> {{ person.createdAt | date: 'dd.MM.yyyy' }}</p>
+          <p><strong>{{ 'PERSON.DEPARTMENT' | translate }}:</strong> {{ person.abteilungName || '-' }}</p>
+          <p><strong>{{ 'COMMON.CREATED_AT' | translate }}:</strong> {{ person.createdAt | date: langService.getDateFormat() }}</p>
         </div>
       </div>
       @if (person.notes) {
-        <p><strong>Notizen:</strong> {{ person.notes }}</p>
+        <p><strong>{{ 'COMMON.NOTES' | translate }}:</strong> {{ person.notes }}</p>
       }
     </div>
   </div>

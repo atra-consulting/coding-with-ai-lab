@@ -2,6 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AgGridAngular } from 'ag-grid-angular';
 import { ColDef, RowClickedEvent, SizeColumnsToContentStrategy, themeQuartz } from 'ag-grid-community';
+import { TranslateModule } from '@ngx-translate/core';
 import { Gehalt } from '../../../core/models/gehalt.model';
 import { GehaltService } from '../../../core/services/gehalt.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
@@ -10,7 +11,7 @@ const currencyFormatter = new Intl.NumberFormat('de-DE', { style: 'currency', cu
 
 @Component({
   selector: 'app-gehalt-list',
-  imports: [RouterLink, AgGridAngular, LoadingSpinnerComponent],
+  imports: [RouterLink, AgGridAngular, LoadingSpinnerComponent, TranslateModule],
   templateUrl: './gehalt-list.component.html',
 })
 export class GehaltListComponent implements OnInit {

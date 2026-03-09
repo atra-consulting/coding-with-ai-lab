@@ -2,13 +2,14 @@ import { Component, inject, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AgGridAngular } from 'ag-grid-angular';
 import { ColDef, RowClickedEvent, SizeColumnsToContentStrategy, themeQuartz } from 'ag-grid-community';
+import { TranslateModule } from '@ngx-translate/core';
 import { Benutzer } from '../../../core/models/benutzer.model';
 import { BenutzerService } from '../../../core/services/benutzer.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-benutzer-list',
-  imports: [RouterLink, AgGridAngular, LoadingSpinnerComponent],
+  imports: [RouterLink, AgGridAngular, LoadingSpinnerComponent, TranslateModule],
   templateUrl: './benutzer-list.component.html',
 })
 export class BenutzerListComponent implements OnInit {

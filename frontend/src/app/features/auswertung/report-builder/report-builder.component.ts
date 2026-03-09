@@ -34,6 +34,7 @@ import {
   SavedReport,
 } from '../../../core/models/report.model';
 import { ChancePhase } from '../../../core/models/chance.model';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 
 Chart.register(...registerables);
@@ -125,6 +126,7 @@ const CHART_COLORS = [
     CdkDropList,
     BaseChartDirective,
     FaIconComponent,
+    TranslateModule,
   ],
   templateUrl: './report-builder.component.html',
   styleUrl: './report-builder.component.scss',
@@ -134,6 +136,7 @@ export class ReportBuilderComponent implements OnInit, OnDestroy {
   private savedReportService = inject(SavedReportService);
   private notificationService = inject(NotificationService);
   private modalService = inject(NgbModal);
+  private translateService = inject(TranslateService);
   private destroy$ = new Subject<void>();
   private queryTrigger$ = new Subject<void>();
 

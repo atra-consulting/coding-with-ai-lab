@@ -6,6 +6,7 @@ import { RecentActivitiesComponent } from './widgets/recent-activities/recent-ac
 import { SalaryStatisticsComponent } from './widgets/salary-statistics/salary-statistics.component';
 import { StatsOverviewComponent } from './widgets/stats-overview/stats-overview.component';
 import { TopCompaniesComponent } from './widgets/top-companies/top-companies.component';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-dashboard',
@@ -15,6 +16,7 @@ import { TopCompaniesComponent } from './widgets/top-companies/top-companies.com
     RecentActivitiesComponent,
     SalaryStatisticsComponent,
     TopCompaniesComponent,
+    TranslateModule,
   ],
   templateUrl: './dashboard.component.html',
 })
