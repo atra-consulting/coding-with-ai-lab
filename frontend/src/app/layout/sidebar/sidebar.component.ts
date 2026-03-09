@@ -14,8 +14,11 @@ import {
   faTachometerAlt,
   faUsers,
   faUsersCog,
+  faChevronLeft,
+  faChevronRight,
 } from '@fortawesome/free-solid-svg-icons';
 import { AuthService } from '../../core/services/auth.service';
+import { LayoutService } from '../../core/services/layout.service';
 
 interface NavItem {
   label: string;
@@ -36,6 +39,10 @@ interface NavSection {
 })
 export class SidebarComponent {
   private authService = inject(AuthService);
+  layoutService = inject(LayoutService);
+
+  faChevronLeft = faChevronLeft;
+  faChevronRight = faChevronRight;
 
   sections: NavSection[] = [
     {

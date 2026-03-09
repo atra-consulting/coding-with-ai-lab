@@ -1,12 +1,23 @@
 <nav class="sidebar d-flex flex-column">
+  <div class="sidebar-toggle-container d-flex justify-content-end p-2">
+    <button class="btn btn-link toggle-btn" (click)="layoutService.toggleSidebar()">
+      <fa-icon [icon]="layoutService.collapsed() ? faChevronRight : faChevronLeft"></fa-icon>
+    </button>
+  </div>
+
   @for (section of sections; track section.title) {
     @if (hasVisibleItems(section)) {
-      <div class="nav-section-header" [class.mt-3]="!$first">{{ section.title }}</div>
+      @if (!layoutService.collapsed()) {
+        <div class="nav-section-header" [class.mt-3]="!$first">{{ section.title }}</div>
+      }
       <ul class="nav flex-column">
         @for (item of visibleItems(section.items); track item.route) {
           <li class="nav-item">
-            <a class="nav-link" [routerLink]="item.route" routerLinkActive="active">
-              <fa-icon [icon]="item.icon"></fa-icon> {{ item.label }}
+            <a class="nav-link" [routerLink]="item.route" routerLinkActive="active" [title]="layoutService.collapsed() ? item.label : ''">
+              <fa-icon [icon]="item.icon"></fa-icon>
+              @if (!layoutService.collapsed()) {
+                {{ item.label }}
+              }
             </a>
           </li>
         }
@@ -15,6 +26,10 @@
   }
 
   <div class="mt-auto sidebar-footer">
-    Made by <a href="https://atra.consulting/" target="_blank" rel="noopener noreferrer" class="footer-link">atra.consulting</a>
+    @if (!layoutService.collapsed()) {
+      Made by <a href="https://atra.consulting/" target="_blank" rel="noopener noreferrer" class="footer-link">atra.consulting</a>
+    } @else {
+      <span class="footer-mini">atra</span>
+    }
   </div>
 </nav>
