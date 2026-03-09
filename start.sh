@@ -32,17 +32,6 @@ if [ "$RESET_DB" = true ]; then
   RESTART_CIAM=true
 fi
 
-# Optionally reset databases
-if [ "$RESET_DB" = true ]; then
-  for DB_DIR in "$CRM_DB_DIR" "$CIAM_DB_DIR"; do
-    if [ -d "$DB_DIR" ]; then
-      echo "Deleting database at ${DB_DIR}..."
-      rm -rf "$DB_DIR"
-    fi
-  done
-  echo "Databases deleted. Will be recreated on startup."
-fi
-
 # Check prerequisites
 if ! command -v mvn &> /dev/null; then
   echo "ERROR: Maven (mvn) is not installed"
@@ -68,9 +57,37 @@ elif [ -d "$(brew --prefix openjdk@21 2>/dev/null)/libexec/openjdk.jdk/Contents/
   echo "Using Java 21 (Homebrew): $JAVA_HOME"
 fi
 
+# --- CIAM: persistent service ---
+
+# Kill existing CIAM if restart requested (before DB deletion to avoid race)
+if [ "$RESTART_CIAM" = true ]; then
+  EXISTING_CIAM_PIDS=$(lsof -ti:8081 2>/dev/null) || true
+  if [ -n "$EXISTING_CIAM_PIDS" ]; then
+    echo "Stopping existing CIAM..."
+    echo "$EXISTING_CIAM_PIDS" | xargs kill 2>/dev/null || true
+    # Wait until port is free
+    for i in $(seq 1 10); do
+      lsof -ti:8081 > /dev/null 2>&1 || break
+      sleep 1
+    done
+  fi
+fi
+
+# Optionally reset databases (after CIAM is stopped)
+if [ "$RESET_DB" = true ]; then
+  for DB_DIR in "$CRM_DB_DIR" "$CIAM_DB_DIR"; do
+    if [ -d "$DB_DIR" ]; then
+      echo "Deleting database at ${DB_DIR}..."
+      rm -rf "$DB_DIR"
+    fi
+  done
+  echo "Databases deleted. Will be recreated on startup."
+fi
+
 CIAM_STARTED_BY_US=false
 BACKEND_PID=""
 FRONTEND_PID=""
+NPM_CHECK_PID=""
 
 cleanup() {
   echo ""
@@ -92,26 +109,18 @@ cleanup() {
 
 trap cleanup SIGINT SIGTERM
 
-# --- CIAM: persistent service ---
-
-# Kill existing CIAM if restart requested
-if [ "$RESTART_CIAM" = true ]; then
-  EXISTING_CIAM_PID=$(lsof -ti:8081 2>/dev/null || true)
-  if [ -n "$EXISTING_CIAM_PID" ]; then
-    echo "Stopping existing CIAM (PID ${EXISTING_CIAM_PID})..."
-    kill "$EXISTING_CIAM_PID" 2>/dev/null || true
-    sleep 2
-  fi
-fi
-
 # Check if CIAM is already running
 if curl -s "http://localhost:8081/.well-known/jwks.json" > /dev/null 2>&1; then
   echo "CIAM already running — reusing."
+  if [ "$DEMO_MODE" = false ]; then
+    echo "  Note: --no-demo not applied to already-running CIAM. Use --restart-ciam to apply."
+  fi
 else
   # Start CIAM service (generates RSA keys on first run)
   echo "Starting CIAM service..."
   cd "${ROOT_DIR}/ciam"
   mvn spring-boot:run -Dspring-boot.run.arguments="--app.demo-mode=${DEMO_MODE}" -q &
+  disown $!
   CIAM_STARTED_BY_US=true
   cd "${ROOT_DIR}"
 
@@ -140,7 +149,9 @@ else
   done
 
   # Wait for npm install to finish (if it was running)
-  wait "${NPM_CHECK_PID}" 2>/dev/null || true
+  if [ -n "${NPM_CHECK_PID}" ]; then
+    wait "${NPM_CHECK_PID}" || echo "WARNING: parallel npm install failed, will retry below"
+  fi
 fi
 
 # --- Backend ---
