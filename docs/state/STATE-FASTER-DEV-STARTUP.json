@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "task_key": "FASTER-DEV-STARTUP",
+  "status": "in_progress",
+  "current_step": "3.3",
+  "started": "2026-03-09T12:00:00Z",
+  "updated": "2026-03-09T12:00:00Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Make start.sh start faster. Configure Spring Boot DevTools and Angular live reload for automatic change reloading during development.",
+    "special_instructions": null,
+    "branch_name": null,
+    "original_branch": "main",
+    "docs_folder": "docs",
+    "stay_on_main": false
+  },
+  "discovery": {
+    "agents_available": true,
+    "coding_agents": ["be-coder", "fe-coder", "db-coder", "ui-designer", "ba-writer"],
+    "review_agents": ["be-reviewer", "fe-reviewer", "db-reviewer", "ui-reviewer", "ba-reviewer"],
+    "test_command": null
+  },
+  "artifacts": {
+    "prd_skipped": null,
+    "prd_file": null,
+    "plan_file": null
+  },
+  "completed_steps": []
+}
