@@ -2,6 +2,14 @@
 
 Angular 21.2.1 standalone components. Bootstrap 5.3.8 + ng-bootstrap 20.0.0. TypeScript 5.9.2.
 
+## Architectural Rules
+
+- **Standalone Components**: Uses Angular 21 standalone components exclusively.
+- **Dependency Injection**: Prefers `inject(Service)` over constructor injection.
+- **Control Flow**: Uses modern `@if`, `@for`, and `@switch` syntax.
+- **Forms**: Reactive forms with `FormBuilder`.
+- **Permissions**: Routes must be protected with `canActivate: [permissionGuard('PERMISSION')]`.
+
 ## Routing
 
 ```

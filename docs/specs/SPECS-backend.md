@@ -253,6 +253,12 @@ Standard CRUD (page, size; default: titel,asc).
 - **CORS**: Configurable (default `http://localhost:4200`)
 - **Session**: Stateless
 
+## Architecture & Configuration
+
+- **open-in-view=false**: Enforced in `application.properties`.
+- **Resource Server**: The CRM backend is a pure resource server. No auth endpoints; all auth is delegated to CIAM.
+- **Persistence**: All JPA collections use `FetchType.LAZY`. Lazy collections MUST be handled within `@Transactional(readOnly = true)` service methods.
+
 ## Exception Handling
 
 | Exception | HTTP Status |

@@ -1,46 +1,15 @@
 # GEMINI.md
 
-## Project Overview
+## System Overview
 Full-stack CRM application with a dedicated CIAM (Identity & Access Management) microservice. 
-- **Backend**: Spring Boot 3.5.3 (Java 21)
-- **CIAM**: Kotlin (Spring Boot 3.5.3)
-- **Frontend**: Angular 21
-- **Database**: H2 file-based (separate for CRM and CIAM)
+Detailed specifications for all layers (Backend, CIAM, Frontend, Infrastructure) are located in `docs/specs/`.
 
-## Architectural Rules
-
-### Backend (`com.crm`)
-- **Resource Server**: The CRM backend is a pure resource server. No auth endpoints; all auth is delegated to CIAM.
-- **Entity Patterns**: Every entity must follow the pattern: `Entity` → `*DTO` + `*CreateDTO` (Java records) → `*Mapper` → `*Repository` → `*Service` → `*Controller`.
-- **JWT Validation**: Uses RSA-2048 asymmetric signing. Validates tokens using the public key from CIAM.
-- **Authorization**: Every controller MUST have `@PreAuthorize` using either permission-based (`hasAuthority('PERMISSION')`) or role-based (`hasAnyRole(...)`) checks.
-- **Persistence**: `open-in-view=false`. Lazy collections must be handled within `@Transactional(readOnly = true)` service methods.
-
-### CIAM (Kotlin)
-- **Responsibilities**: Login, JWT issuance (RS256), user management, and JWKS endpoint.
-- **Security**: Signs tokens with a private RSA key. Public key is exposed via JWKS and shared via the filesystem.
-- **Domain**: Uses Kotlin for the implementation.
-
-### Frontend (Angular)
-- **Standalone Components**: Uses Angular 21 standalone components exclusively.
-- **Dependency Injection**: Prefers `inject(Service)` over constructor injection.
-- **Control Flow**: Uses modern `@if`, `@for`, and `@switch` syntax.
-- **Forms**: Reactive forms with `FormBuilder`.
-- **Permissions**: Routes must be protected with `canActivate: [permissionGuard('PERMISSION')]`.
-
-## Coding Standards
-- **Java**: Version 21.
-- **Spring Boot**: Version 3.5.3.
-- **Angular**: Version 21.
-- **Build Tools**: Maven for backend/CIAM, npm/Angular CLI for frontend.
-
-### Build & Run Commands
-- `./start.sh` - Full stack start (CIAM:8081, Backend:7070, Frontend:7200)
-- `cd ciam && mvn spring-boot:run` - Start CIAM service
-- `cd backend && mvn spring-boot:run` - Start Backend service
-- `cd frontend && npx ng serve --port 7200` - Start Frontend
-- `cd backend && mvn clean compile` - Backend compile check
-- `cd frontend && npx ng build` - Frontend build check
+## Architectural Mandates
+All development must strictly adhere to the rules defined in the specification documents:
+- **Backend Rules**: See `docs/specs/SPECS-backend.md` (Entity patterns, JWT, `@PreAuthorize`, `open-in-view=false`).
+- **CIAM Rules**: See `docs/specs/SPECS-ciam.md` (Kotlin, RS256, User management).
+- **Frontend Rules**: See `docs/specs/SPECS-frontend.md` (Standalone components, `inject()`, modern control flow, Reactive forms).
+- **Infrastructure**: See `docs/specs/SPECS-infrastructure.md` for ports, databases, and startup commands.
 
 ## Gemini-Specific Instructions
 
@@ -81,4 +50,4 @@ Ensure `settings.json` contains:
 
 ## Verification
 - Confirm `GEMINI.md` exists in the project root.
-- Ensure all architectural mandates from `CLAUDE.md` are preserved.
+- Ensure all architectural mandates from `CLAUDE.md` and the specification documents are preserved.

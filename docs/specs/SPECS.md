@@ -29,13 +29,14 @@ Full-stack CRM application with separate CIAM microservice for Identity & Access
 |-------|-----------|---------|
 | Backend | Spring Boot (Java) | 3.5.3 (Java 21) |
 | CIAM | Spring Boot (Kotlin) | 3.5.3 (Kotlin 2.1.10) |
-| Frontend | Angular | 20.3.0 |
-| UI Framework | Bootstrap + ng-bootstrap | 5.3.8 / 19.0.1 |
-| Charts | Chart.js + ng2-charts | 4.5.1 / 9.0.0 |
-| Drag & Drop | @angular/cdk | 20.2.14 |
+| Frontend | Angular | 21.2.1 |
+| UI Framework | Bootstrap + ng-bootstrap | 5.3.8 / 20.0.0 |
+| Charts | Chart.js + ng2-charts | 4.5.1 / 10.0.0 |
+| Drag & Drop | @angular/cdk | 21.2.1 |
 | JWT | JJWT | 0.12.6 |
 | Database | H2 | inherited from Spring Boot parent |
 | TypeScript | | 5.9.2 |
+| Data Table | AG Grid | 35.1.0 |
 
 ## Domain Model (German)
 

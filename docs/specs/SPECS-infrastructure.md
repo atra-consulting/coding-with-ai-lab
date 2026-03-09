@@ -92,19 +92,20 @@ Build: `kotlin-maven-plugin:2.1.10` with spring + jpa compiler plugins.
 
 | Dependency | Version |
 |-----------|---------|
-| @angular/* | ^20.3.0 |
-| @angular/cdk | ^20.2.14 |
-| @ng-bootstrap/ng-bootstrap | ^19.0.1 |
+| @angular/* | ^21.2.1 |
+| @angular/cdk | ^21.2.1 |
+| @ng-bootstrap/ng-bootstrap | ^20.0.0 |
 | bootstrap | ^5.3.8 |
-| @fortawesome/angular-fontawesome | ^3.0.0 |
+| @fortawesome/angular-fontawesome | ^4.0.0 |
 | @fortawesome/fontawesome-svg-core | ^7.2.0 |
 | @fortawesome/free-solid-svg-icons | ^7.2.0 |
+| ag-grid-angular | ^35.1.0 |
 | chart.js | ^4.5.1 |
-| ng2-charts | ^9.0.0 |
+| ng2-charts | ^10.0.0 |
 | rxjs | ~7.8.0 |
 | zone.js | ~0.15.0 |
 | typescript (dev) | ~5.9.2 |
-| @angular/cli (dev) | ^20.3.17 |
+| @angular/cli (dev) | ^21.2.1 |
 
 ## Databases
 
