@@ -14,8 +14,8 @@ import {
   faTachometerAlt,
   faUsers,
   faUsersCog,
-  faChevronLeft,
-  faChevronRight,
+  faAngleDoubleLeft,
+  faAngleDoubleRight,
 } from '@fortawesome/free-solid-svg-icons';
 import { AuthService } from '../../core/services/auth.service';
 import { LayoutService } from '../../core/services/layout.service';
@@ -41,8 +41,8 @@ export class SidebarComponent {
   private authService = inject(AuthService);
   layoutService = inject(LayoutService);
 
-  faChevronLeft = faChevronLeft;
-  faChevronRight = faChevronRight;
+  faAngleDoubleLeft = faAngleDoubleLeft;
+  faAngleDoubleRight = faAngleDoubleRight;
 
   sections: NavSection[] = [
     {

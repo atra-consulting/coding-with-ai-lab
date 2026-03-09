@@ -25,13 +25,14 @@ body {
   transition: width var(--sidebar-transition);
 
   .sidebar-toggle-container {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    margin-bottom: 0.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 
     .toggle-btn {
       color: #a7c6eb;
-      padding: 0.25rem 0.5rem;
+      padding: 0.5rem;
       text-decoration: none;
+      width: 100%;
+      text-align: center;
 
       &:hover {
         color: #fff;
