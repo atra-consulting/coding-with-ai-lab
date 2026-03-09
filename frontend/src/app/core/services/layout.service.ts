@@ -19,7 +19,12 @@ export class LayoutService {
   }
 
   private loadFromStorage(): boolean {
-    const stored = localStorage.getItem(this.STORAGE_KEY);
-    return stored ? JSON.parse(stored) : false;
+    try {
+      const stored = localStorage.getItem(this.STORAGE_KEY);
+      return stored ? JSON.parse(stored) : false;
+    } catch (e) {
+      console.error('Error loading sidebar state from localStorage', e);
+      return false;
+    }
   }
 }

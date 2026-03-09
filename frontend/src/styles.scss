@@ -1,7 +1,10 @@
+@import 'variables';
+
 // Global styles
 body {
   min-height: 100vh;
   --sidebar-width: 250px;
+  --sidebar-transition: 0.3s ease;
 }
 
 .sidebar-collapsed {
@@ -10,7 +13,7 @@ body {
 
 .sidebar {
   min-height: calc(100vh - 56px);
-  background-color: #264892;
+  background-color: $primary;
   width: var(--sidebar-width);
   position: fixed;
   top: 56px;
@@ -19,7 +22,7 @@ body {
   padding-top: 0.5rem;
   overflow-y: auto;
   overflow-x: hidden;
-  transition: width 0.3s ease;
+  transition: width var(--sidebar-transition);
 
   .sidebar-toggle-container {
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -65,7 +68,7 @@ body {
   margin-left: var(--sidebar-width);
   padding: 1.5rem;
   margin-top: 56px;
-  transition: margin-left 0.3s ease;
+  transition: margin-left var(--sidebar-transition);
 }
 
 .nav-section-header {
@@ -95,7 +98,7 @@ body {
   &.active {
     color: #fff;
     background-color: rgba(220, 66, 30, 0.15);
-    border-left: 3px solid #dc421e;
+    border-left: 3px solid $danger;
   }
 
   fa-icon {

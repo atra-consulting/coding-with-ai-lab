@@ -5,24 +5,22 @@
     </button>
   </div>
 
-  @for (section of sections; track section.title) {
-    @if (hasVisibleItems(section)) {
-      @if (!layoutService.collapsed()) {
-        <div class="nav-section-header" [class.mt-3]="!$first">{{ section.title }}</div>
-      }
-      <ul class="nav flex-column">
-        @for (item of visibleItems(section.items); track item.route) {
-          <li class="nav-item">
-            <a class="nav-link" [routerLink]="item.route" routerLinkActive="active" [title]="layoutService.collapsed() ? item.label : ''">
-              <fa-icon [icon]="item.icon"></fa-icon>
-              @if (!layoutService.collapsed()) {
-                {{ item.label }}
-              }
-            </a>
-          </li>
-        }
-      </ul>
+  @for (section of filteredSections(); track section.title) {
+    @if (!layoutService.collapsed()) {
+      <div class="nav-section-header" [class.mt-3]="!$first">{{ section.title }}</div>
     }
+    <ul class="nav flex-column">
+      @for (item of section.visibleItems; track item.route) {
+        <li class="nav-item">
+          <a class="nav-link" [routerLink]="item.route" routerLinkActive="active" [title]="layoutService.collapsed() ? item.label : ''">
+            <fa-icon [icon]="item.icon"></fa-icon>
+            @if (!layoutService.collapsed()) {
+              {{ item.label }}
+            }
+          </a>
+        </li>
+      }
+    </ul>
   }
 
   <div class="mt-auto sidebar-footer">

@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, computed } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
@@ -88,11 +88,14 @@ export class SidebarComponent {
     },
   ];
 
-  visibleItems(items: NavItem[]): NavItem[] {
-    return items.filter((item) => !item.permission || this.authService.hasPermission(item.permission));
-  }
-
-  hasVisibleItems(section: NavSection): boolean {
-    return this.visibleItems(section.items).length > 0;
-  }
+  filteredSections = computed(() =>
+    this.sections
+      .map((section) => ({
+        ...section,
+        visibleItems: section.items.filter(
+          (item) => !item.permission || this.authService.hasPermission(item.permission),
+        ),
+      }))
+      .filter((section) => section.visibleItems.length > 0),
+  );
 }

@@ -25,11 +25,18 @@ describe('LayoutService', () => {
     expect(service.collapsed()).toBeFalse();
   });
 
-  it('should load state from localStorage', () => {
+  it('should load initial state from localStorage', () => {
     localStorage.setItem('sidebar_collapsed', 'true');
-    // We need to re-inject or manually trigger load if we want to test initial load
-    // but here we can just check if effect works by toggling and checking localStorage
+    // Re-inject the service to test initial load
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({});
+    const newService = TestBed.inject(LayoutService);
+    expect(newService.collapsed()).toBeTrue();
+  });
+
+  it('should persist state to localStorage when toggled', () => {
     service.toggleSidebar();
+    TestBed.flushEffects();
     expect(localStorage.getItem('sidebar_collapsed')).toBe('true');
   });
 });
