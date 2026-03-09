@@ -1,5 +1,7 @@
 package com.crm.controller;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -32,6 +34,11 @@ public class AdresseController {
 
     public AdresseController(AdresseService adresseService) {
         this.adresseService = adresseService;
+    }
+
+    @GetMapping("/all")
+    public List<AdresseDTO> listAll() {
+        return adresseService.listAll();
     }
 
     @GetMapping

@@ -20,7 +20,7 @@ class UserSeeder(
 
         val admin = Benutzer().apply {
             benutzername = "admin"
-            passwort = passwordEncoder.encode("admin123")
+            passwort = passwordEncoder.encode("admin123")!!
             vorname = "Admin"
             nachname = "System"
             email = "admin@crm.local"
@@ -30,7 +30,7 @@ class UserSeeder(
 
         val vertrieb = Benutzer().apply {
             benutzername = "vertrieb"
-            passwort = passwordEncoder.encode("test123")
+            passwort = passwordEncoder.encode("test123")!!
             vorname = "Vera"
             nachname = "Vertrieb"
             email = "vertrieb@crm.local"
@@ -40,7 +40,7 @@ class UserSeeder(
 
         val personal = Benutzer().apply {
             benutzername = "personal"
-            passwort = passwordEncoder.encode("test123")
+            passwort = passwordEncoder.encode("test123")!!
             vorname = "Paul"
             nachname = "Personal"
             email = "personal@crm.local"
@@ -50,7 +50,7 @@ class UserSeeder(
 
         val allrounder = Benutzer().apply {
             benutzername = "allrounder"
-            passwort = passwordEncoder.encode("test123")
+            passwort = passwordEncoder.encode("test123")!!
             vorname = "Alex"
             nachname = "Allrounder"
             email = "allrounder@crm.local"
@@ -60,7 +60,7 @@ class UserSeeder(
 
         val demo = Benutzer().apply {
             benutzername = "demo"
-            passwort = passwordEncoder.encode("demo1234")
+            passwort = passwordEncoder.encode("demo1234")!!
             vorname = "David"
             nachname = "Demo"
             email = "demo@crm.local"

@@ -8,8 +8,8 @@ import {
   OnInit,
   ViewChild,
 } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
-import { NgbNavModule, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { NgbModal, NgbNavModule, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
 import * as L from 'leaflet';
 import { Abteilung } from '../../../core/models/abteilung.model';
 import { Adresse } from '../../../core/models/adresse.model';
@@ -17,6 +17,8 @@ import { Firma } from '../../../core/models/firma.model';
 import { Page } from '../../../core/models/page.model';
 import { Person } from '../../../core/models/person.model';
 import { FirmaService } from '../../../core/services/firma.service';
+import { NotificationService } from '../../../core/services/notification.service';
+import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 
 @Component({
@@ -26,7 +28,10 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
 })
 export class FirmaDetailComponent implements OnInit, AfterViewInit, OnDestroy {
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private firmaService = inject(FirmaService);
+  private modalService = inject(NgbModal);
+  private notification = inject(NotificationService);
 
   @ViewChild('mapContainer') mapContainer!: ElementRef;
 
@@ -178,5 +183,24 @@ export class FirmaDetailComponent implements OnInit, AfterViewInit, OnDestroy {
   onAbteilungenPageChange(p: number): void {
     this.abteilungenCurrentPage = p;
     this.loadAbteilungen();
+  }
+
+  onDelete(): void {
+    if (!this.firma) return;
+    const modalRef = this.modalService.open(ConfirmDialogComponent);
+    modalRef.componentInstance.title = 'Firma löschen';
+    modalRef.componentInstance.message = `Möchten Sie die Firma "${this.firma.name}" wirklich löschen?`;
+    modalRef.result.then(
+      () => {
+        this.firmaService.delete(this.firma!.id).subscribe({
+          next: () => {
+            this.notification.success('Firma erfolgreich gelöscht');
+            this.router.navigate(['/firmen']);
+          },
+          error: () => {},
+        });
+      },
+      () => {},
+    );
   }
 }

@@ -21,6 +21,10 @@ export class FirmaService {
     return this.http.get<Page<Firma>>(this.baseUrl, { params });
   }
 
+  listAll(): Observable<Firma[]> {
+    return this.http.get<Firma[]>(`${this.baseUrl}/all`);
+  }
+
   getById(id: number): Observable<Firma> {
     return this.http.get<Firma>(`${this.baseUrl}/${id}`);
   }

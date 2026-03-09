@@ -3,85 +3,16 @@
   <a routerLink="neu" class="btn btn-primary">Neuer Benutzer</a>
 </div>
 
-<div class="table-container">
-  <div class="row mb-3">
-    <div class="col-md-4">
-      <input
-        type="text"
-        class="form-control"
-        placeholder="Suchen..."
-        [(ngModel)]="search"
-        (keyup.enter)="onSearch()"
-      />
-    </div>
-    <div class="col-md-2">
-      <button class="btn btn-outline-secondary" (click)="onSearch()">Suchen</button>
-    </div>
-  </div>
-
-  @if (loading) {
-    <app-loading-spinner />
-  } @else if (page && page.content.length > 0) {
-    <table class="table table-hover">
-      <thead>
-        <tr>
-          <th>Benutzername</th>
-          <th>Name</th>
-          <th>E-Mail</th>
-          <th>Rollen</th>
-          <th>Status</th>
-          <th>Aktionen</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (benutzer of page.content; track benutzer.id) {
-          <tr class="cursor-pointer" [routerLink]="[benutzer.id]">
-            <td>{{ benutzer.benutzername }}</td>
-            <td>{{ benutzer.vorname }} {{ benutzer.nachname }}</td>
-            <td>{{ benutzer.email }}</td>
-            <td>
-              @for (rolle of benutzer.rollen; track rolle) {
-                <span class="badge bg-primary me-1">{{ rolle }}</span>
-              }
-            </td>
-            <td>
-              @if (benutzer.aktiv) {
-                <span class="badge bg-success">Aktiv</span>
-              } @else {
-                <span class="badge bg-danger">Inaktiv</span>
-              }
-            </td>
-            <td class="action-buttons" (click)="$event.stopPropagation()">
-              <a [routerLink]="[benutzer.id, 'bearbeiten']" class="btn btn-sm btn-outline-primary"
-                >Bearbeiten</a
-              >
-              <button
-                class="btn btn-sm"
-                [class]="benutzer.aktiv ? 'btn-outline-warning' : 'btn-outline-success'"
-                (click)="toggleActive(benutzer, $event)"
-              >
-                {{ benutzer.aktiv ? 'Deaktivieren' : 'Aktivieren' }}
-              </button>
-            </td>
-          </tr>
-        }
-      </tbody>
-    </table>
-
-    @if (page.totalPages > 1) {
-      <div class="d-flex justify-content-center">
-        <ngb-pagination
-          [collectionSize]="page.totalElements"
-          [(page)]="currentPage"
-          [pageSize]="pageSize"
-          (pageChange)="onPageChange($event)"
-          [maxSize]="5"
-          [boundaryLinks]="true"
-        >
-        </ngb-pagination>
-      </div>
-    }
-  } @else {
-    <p class="text-muted">Keine Benutzer gefunden.</p>
-  }
-</div>
+@if (loading) {
+  <app-loading-spinner />
+} @else {
+  <ag-grid-angular
+    style="width: 100%; height: calc(100vh - 180px)"
+    [theme]="theme"
+    [rowData]="rowData"
+    [columnDefs]="columnDefs"
+    [defaultColDef]="defaultColDef"
+    [autoSizeStrategy]="autoSizeStrategy"
+    (rowClicked)="onRowClicked($event)"
+  />
+}

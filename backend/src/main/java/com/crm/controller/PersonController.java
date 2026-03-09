@@ -1,5 +1,7 @@
 package com.crm.controller;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -32,6 +34,11 @@ public class PersonController {
 
     public PersonController(PersonService personService) {
         this.personService = personService;
+    }
+
+    @GetMapping("/all")
+    public List<PersonDTO> listAll() {
+        return personService.listAll();
     }
 
     @GetMapping

@@ -23,7 +23,7 @@ object BenutzerMapper {
     fun toEntity(dto: BenutzerCreateDTO, encoder: PasswordEncoder): Benutzer {
         val e = Benutzer()
         e.benutzername = dto.benutzername
-        e.passwort = encoder.encode(dto.passwort)
+        e.passwort = encoder.encode(dto.passwort)!!
         e.vorname = dto.vorname
         e.nachname = dto.nachname
         e.email = dto.email
@@ -39,7 +39,7 @@ object BenutzerMapper {
         e.rollen = parseRollen(dto.rollen)
         e.aktiv = dto.aktiv
         if (!dto.passwort.isNullOrBlank()) {
-            e.passwort = encoder.encode(dto.passwort)
+            e.passwort = encoder.encode(dto.passwort)!!
         }
     }
 

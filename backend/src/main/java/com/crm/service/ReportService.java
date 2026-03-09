@@ -195,8 +195,8 @@ public class ReportService {
             case PHASE -> ((ChancePhase) row[0]).name();
             case FIRMA -> (String) row[1];
             case PERSON -> row[1] + " " + row[2];
-            case MONAT -> String.format("%d-%02d", ((Number) row[0]).intValue(), ((Number) row[1]).intValue());
-            case QUARTAL -> String.format("Q%d %d", ((Number) row[1]).intValue(), ((Number) row[0]).intValue());
+            case MONAT -> "%d-%02d".formatted(((Number) row[0]).intValue(), ((Number) row[1]).intValue());
+            case QUARTAL -> "Q%d %d".formatted(((Number) row[1]).intValue(), ((Number) row[0]).intValue());
             case JAHR -> String.valueOf(((Number) row[0]).intValue());
         };
     }

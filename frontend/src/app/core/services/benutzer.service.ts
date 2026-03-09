@@ -18,6 +18,10 @@ export class BenutzerService {
     return this.http.get<Page<Benutzer>>(this.baseUrl, { params });
   }
 
+  listAll(): Observable<Benutzer[]> {
+    return this.http.get<Benutzer[]>(`${this.baseUrl}/all`);
+  }
+
   getById(id: number): Observable<Benutzer> {
     return this.http.get<Benutzer>(`${this.baseUrl}/${id}`);
   }

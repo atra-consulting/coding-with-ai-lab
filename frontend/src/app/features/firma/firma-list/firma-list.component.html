@@ -3,71 +3,16 @@
   <a routerLink="neu" class="btn btn-primary">Neue Firma</a>
 </div>
 
-<div class="table-container">
-  <div class="row mb-3">
-    <div class="col-md-4">
-      <input
-        type="text"
-        class="form-control"
-        placeholder="Suchen..."
-        [(ngModel)]="search"
-        (keyup.enter)="onSearch()"
-      />
-    </div>
-    <div class="col-md-2">
-      <button class="btn btn-outline-secondary" (click)="onSearch()">Suchen</button>
-    </div>
-  </div>
-
-  @if (loading) {
-    <app-loading-spinner />
-  } @else if (page && page.content.length > 0) {
-    <table class="table table-hover">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Branche</th>
-          <th>E-Mail</th>
-          <th>Telefon</th>
-          <th>Personen</th>
-          <th>Aktionen</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (firma of page.content; track firma.id) {
-          <tr class="cursor-pointer" [routerLink]="[firma.id]">
-            <td>{{ firma.name }}</td>
-            <td>{{ firma.industry }}</td>
-            <td>{{ firma.email }}</td>
-            <td>{{ firma.phone }}</td>
-            <td>{{ firma.personenCount }}</td>
-            <td class="action-buttons" (click)="$event.stopPropagation()">
-              <a [routerLink]="[firma.id, 'bearbeiten']" class="btn btn-sm btn-outline-primary"
-                >Bearbeiten</a
-              >
-              <button class="btn btn-sm btn-outline-danger" (click)="confirmDelete(firma)">
-                Löschen
-              </button>
-            </td>
-          </tr>
-        }
-      </tbody>
-    </table>
-
-    @if (page.totalPages > 1) {
-      <div class="d-flex justify-content-center">
-        <ngb-pagination
-          [collectionSize]="page.totalElements"
-          [(page)]="currentPage"
-          [pageSize]="pageSize"
-          (pageChange)="onPageChange($event)"
-          [maxSize]="5"
-          [boundaryLinks]="true"
-        >
-        </ngb-pagination>
-      </div>
-    }
-  } @else {
-    <p class="text-muted">Keine Firmen gefunden.</p>
-  }
-</div>
+@if (loading) {
+  <app-loading-spinner />
+} @else {
+  <ag-grid-angular
+    style="width: 100%; height: calc(100vh - 180px)"
+    [theme]="theme"
+    [rowData]="rowData"
+    [columnDefs]="columnDefs"
+    [defaultColDef]="defaultColDef"
+    [autoSizeStrategy]="autoSizeStrategy"
+    (rowClicked)="onRowClicked($event)"
+  />
+}

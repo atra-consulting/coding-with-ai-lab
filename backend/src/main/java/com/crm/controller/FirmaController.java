@@ -1,5 +1,7 @@
 package com.crm.controller;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -43,6 +45,11 @@ public class FirmaController {
         this.personService = personService;
         this.abteilungService = abteilungService;
         this.adresseService = adresseService;
+    }
+
+    @GetMapping("/all")
+    public List<FirmaDTO> listAll() {
+        return firmaService.listAll();
     }
 
     @GetMapping

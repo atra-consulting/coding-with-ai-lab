@@ -18,6 +18,10 @@ export class PersonService {
     return this.http.get<Page<Person>>(this.baseUrl, { params });
   }
 
+  listAll(): Observable<Person[]> {
+    return this.http.get<Person[]>(`${this.baseUrl}/all`);
+  }
+
   getById(id: number): Observable<Person> {
     return this.http.get<Person>(`${this.baseUrl}/${id}`);
   }

@@ -14,6 +14,10 @@ export class AdresseService {
     return this.http.get<Page<Adresse>>(this.baseUrl, { params });
   }
 
+  listAll(): Observable<Adresse[]> {
+    return this.http.get<Adresse[]>(`${this.baseUrl}/all`);
+  }
+
   getById(id: number): Observable<Adresse> {
     return this.http.get<Adresse>(`${this.baseUrl}/${id}`);
   }

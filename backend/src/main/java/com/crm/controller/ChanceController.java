@@ -39,6 +39,11 @@ public class ChanceController {
         this.chanceService = chanceService;
     }
 
+    @GetMapping("/all")
+    public List<ChanceDTO> listAll() {
+        return chanceService.listAll();
+    }
+
     @GetMapping
     public Page<ChanceDTO> findAll(
             @RequestParam(defaultValue = "0") int page,

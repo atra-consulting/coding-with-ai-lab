@@ -14,6 +14,10 @@ export class GehaltService {
     return this.http.get<Page<Gehalt>>(this.baseUrl, { params });
   }
 
+  listAll(): Observable<Gehalt[]> {
+    return this.http.get<Gehalt[]>(`${this.baseUrl}/all`);
+  }
+
   getById(id: number): Observable<Gehalt> {
     return this.http.get<Gehalt>(`${this.baseUrl}/${id}`);
   }

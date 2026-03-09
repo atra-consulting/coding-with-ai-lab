@@ -1,5 +1,7 @@
 package com.crm.service;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,11 @@ public class FirmaService {
 
     public FirmaService(FirmaRepository firmaRepository) {
         this.firmaRepository = firmaRepository;
+    }
+
+    @Transactional(readOnly = true)
+    public List<FirmaDTO> listAll() {
+        return firmaRepository.findAll().stream().map(FirmaMapper::toDTO).toList();
     }
 
     @Transactional(readOnly = true)

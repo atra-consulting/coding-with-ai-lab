@@ -14,6 +14,10 @@ export class AbteilungService {
     return this.http.get<Page<Abteilung>>(this.baseUrl, { params });
   }
 
+  listAll(): Observable<Abteilung[]> {
+    return this.http.get<Abteilung[]>(`${this.baseUrl}/all`);
+  }
+
   getById(id: number): Observable<Abteilung> {
     return this.http.get<Abteilung>(`${this.baseUrl}/${id}`);
   }

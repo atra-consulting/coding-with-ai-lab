@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
-import { faDatabase, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
@@ -19,7 +19,6 @@ export class LoginComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private http = inject(HttpClient);
 
-  faDatabase = faDatabase;
   faEye = faEye;
   faEyeSlash = faEyeSlash;
 

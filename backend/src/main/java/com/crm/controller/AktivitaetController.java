@@ -1,5 +1,7 @@
 package com.crm.controller;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -33,6 +35,11 @@ public class AktivitaetController {
 
     public AktivitaetController(AktivitaetService aktivitaetService) {
         this.aktivitaetService = aktivitaetService;
+    }
+
+    @GetMapping("/all")
+    public List<AktivitaetDTO> listAll() {
+        return aktivitaetService.listAll();
     }
 
     @GetMapping
