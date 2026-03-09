@@ -1,5 +1,10 @@
 <div class="page-header">
-  <h2>Aktivitäten</h2>
+  <h2>
+    Aktivitäten
+    @if (totalRows > 0) {
+      ({{ displayedRows < totalRows ? displayedRows + '/' + totalRows : totalRows }})
+    }
+  </h2>
   <a routerLink="neu" class="btn btn-primary">Neue Aktivität</a>
 </div>
 
@@ -13,6 +18,8 @@
     [columnDefs]="columnDefs"
     [defaultColDef]="defaultColDef"
     [autoSizeStrategy]="autoSizeStrategy"
+    (gridReady)="onGridReady($event)"
+    (modelUpdated)="onModelUpdated()"
     (rowClicked)="onRowClicked($event)"
   />
 }

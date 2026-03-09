@@ -1,7 +1,14 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AgGridAngular } from 'ag-grid-angular';
-import { ColDef, RowClickedEvent, SizeColumnsToContentStrategy, themeQuartz } from 'ag-grid-community';
+import {
+  ColDef,
+  GridApi,
+  GridReadyEvent,
+  RowClickedEvent,
+  SizeColumnsToContentStrategy,
+  themeQuartz,
+} from 'ag-grid-community';
 import { Aktivitaet } from '../../../core/models/aktivitaet.model';
 import { AktivitaetService } from '../../../core/services/aktivitaet.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
@@ -12,12 +19,15 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
   templateUrl: './aktivitaet-list.component.html',
 })
 export class AktivitaetListComponent implements OnInit {
+  private gridApi?: GridApi;
   private aktivitaetService = inject(AktivitaetService);
   private router = inject(Router);
 
   rowData: Aktivitaet[] = [];
   loading = true;
   theme = themeQuartz.withParams({ oddRowBackgroundColor: '#f0f0f0' });
+  totalRows = 0;
+  displayedRows = 0;
 
   columnDefs: ColDef<Aktivitaet>[] = [
     { field: 'subject', headerName: 'Betreff' },
@@ -63,6 +73,17 @@ export class AktivitaetListComponent implements OnInit {
         this.loading = false;
       },
     });
+  }
+
+  onGridReady(params: GridReadyEvent): void {
+    this.gridApi = params.api;
+  }
+
+  onModelUpdated(): void {
+    if (this.gridApi) {
+      this.totalRows = this.rowData.length;
+      this.displayedRows = this.gridApi.getDisplayedRowCount();
+    }
   }
 
   onRowClicked(event: RowClickedEvent<Aktivitaet>): void {
