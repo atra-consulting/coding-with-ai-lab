@@ -1,7 +1,14 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AgGridAngular } from 'ag-grid-angular';
-import { ColDef, RowClickedEvent, SizeColumnsToContentStrategy, themeQuartz } from 'ag-grid-community';
+import {
+  ColDef,
+  GridApi,
+  GridReadyEvent,
+  RowClickedEvent,
+  SizeColumnsToContentStrategy,
+  themeQuartz,
+} from 'ag-grid-community';
 import { Adresse } from '../../../core/models/adresse.model';
 import { AdresseService } from '../../../core/services/adresse.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
@@ -12,12 +19,15 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
   templateUrl: './adresse-list.component.html',
 })
 export class AdresseListComponent implements OnInit {
+  private gridApi?: GridApi;
   private adresseService = inject(AdresseService);
   private router = inject(Router);
 
   rowData: Adresse[] = [];
   loading = true;
   theme = themeQuartz.withParams({ oddRowBackgroundColor: '#f0f0f0' });
+  totalRows = 0;
+  displayedRows = 0;
 
   columnDefs: ColDef<Adresse>[] = [
     {
@@ -59,6 +69,17 @@ export class AdresseListComponent implements OnInit {
         this.loading = false;
       },
     });
+  }
+
+  onGridReady(params: GridReadyEvent): void {
+    this.gridApi = params.api;
+  }
+
+  onModelUpdated(): void {
+    if (this.gridApi) {
+      this.totalRows = this.rowData.length;
+      this.displayedRows = this.gridApi.getDisplayedRowCount();
+    }
   }
 
   onRowClicked(event: RowClickedEvent<Adresse>): void {
