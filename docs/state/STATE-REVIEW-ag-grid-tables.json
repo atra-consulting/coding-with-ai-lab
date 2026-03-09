@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "branch": "ag-grid-tables",
+  "main_branch": "main",
+  "docs_folder": "docs",
+  "special_instructions": null,
+  "review_agents_available": true,
+  "fix_agents_available": true,
+  "all_reviewers": ["be-reviewer", "fe-reviewer", "db-reviewer", "ba-reviewer", "ui-reviewer"],
+  "all_coders": ["be-coder", "fe-coder", "db-coder", "ui-designer"],
+  "all_designers": ["ui-designer"],
+  "changed_files_count": 60,
+  "dry_run_mode": false,
+  "started": "2026-03-08T15:30:00Z"
+}
