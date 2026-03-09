@@ -68,6 +68,9 @@ if [ "$RESTART_CIAM" = true ]; then
     # Wait until port is free
     for i in $(seq 1 10); do
       lsof -ti:8081 > /dev/null 2>&1 || break
+      if [ "$i" -eq 10 ]; then
+        echo "WARNING: port 8081 still occupied after 10s; proceeding anyway"
+      fi
       sleep 1
     done
   fi
@@ -85,6 +88,7 @@ if [ "$RESET_DB" = true ]; then
 fi
 
 CIAM_STARTED_BY_US=false
+CIAM_PID=""
 BACKEND_PID=""
 FRONTEND_PID=""
 NPM_CHECK_PID=""
@@ -120,7 +124,8 @@ else
   echo "Starting CIAM service..."
   cd "${ROOT_DIR}/ciam"
   mvn spring-boot:run -Dspring-boot.run.arguments="--app.demo-mode=${DEMO_MODE}" -q &
-  disown $!
+  CIAM_PID=$!
+  disown $CIAM_PID
   CIAM_STARTED_BY_US=true
   cd "${ROOT_DIR}"
 
@@ -143,6 +148,9 @@ else
     fi
     if [ "${i}" -eq 60 ]; then
       echo "ERROR: CIAM service failed to start within 60 seconds"
+      if [ -n "${CIAM_PID}" ]; then
+        kill "${CIAM_PID}" 2>/dev/null || true
+      fi
       cleanup
     fi
     sleep 1
