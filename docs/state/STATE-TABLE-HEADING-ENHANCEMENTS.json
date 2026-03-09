@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "task_key": "TABLE-HEADING-ENHANCEMENTS",
+  "status": "in_progress",
+  "current_step": "3.3",
+  "started": "2026-03-09T12:30:00Z",
+  "updated": "2026-03-09T12:30:00Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "give all table headings some colors. And in all ag-grid tables, show the number of rows after the heading (like \"Firmen\") in the example. And show something like \"25/56\" if one or more filters are active. Propose wording.",
+    "special_instructions": null,
+    "branch_name": null,
+    "original_branch": null,
+    "docs_folder": "docs",
+    "stay_on_main": false
+  },
+  "discovery": {
+    "agents_available": true,
+    "coding_agents": ["be-coder", "fe-coder", "db-coder", "ui-designer"],
+    "review_agents": ["be-reviewer", "fe-reviewer", "ba-reviewer", "db-reviewer", "ui-reviewer"],
+    "test_command": null
+  },
+  "artifacts": {
+    "prd_skipped": null,
+    "prd_file": null,
+    "plan_file": null
+  },
+  "completed_steps": []
+}
