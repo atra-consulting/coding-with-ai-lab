@@ -120,6 +120,11 @@ body {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1.5rem;
+
+  h2 {
+    color: $primary;
+    margin-bottom: 0;
+  }
 }
 
 .table-container {
