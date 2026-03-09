@@ -50,6 +50,7 @@ export class FirmaListComponent implements OnInit {
       next: (data) => {
         this.rowData = data;
         this.loading = false;
+        this.updateCounts();
       },
       error: () => {
         this.loading = false;
@@ -59,13 +60,16 @@ export class FirmaListComponent implements OnInit {
 
   onGridReady(params: GridReadyEvent): void {
     this.gridApi = params.api;
+    this.updateCounts();
   }
 
   onModelUpdated(): void {
-    if (this.gridApi) {
-      this.totalRows = this.rowData.length;
-      this.displayedRows = this.gridApi.getDisplayedRowCount();
-    }
+    this.updateCounts();
+  }
+
+  private updateCounts(): void {
+    this.totalRows = this.rowData.length;
+    this.displayedRows = this.gridApi ? this.gridApi.getDisplayedRowCount() : this.totalRows;
   }
 
   onRowClicked(event: RowClickedEvent<Firma>): void {
