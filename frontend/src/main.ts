@@ -10,6 +10,7 @@ import {
   ColumnAutoSizeModule,
   TextEditorModule,
   ValidationModule,
+  RowApiModule,
 } from 'ag-grid-community';
 import { App } from './app/app';
 import { appConfig } from './app/app.config';
@@ -22,6 +23,7 @@ ModuleRegistry.registerModules([
   ColumnAutoSizeModule,
   TextEditorModule,
   ValidationModule,
+  RowApiModule,
 ]);
 registerLocaleData(localeDe);
 

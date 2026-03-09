@@ -51,8 +51,8 @@ export class FirmaListComponent implements OnInit {
     this.firmaService.listAll().subscribe({
       next: (data) => {
         this.rowData = data;
+        this.totalRows = data.length;
         this.loading = false;
-        this.updateCounts();
       },
       error: () => {
         this.loading = false;
@@ -62,7 +62,6 @@ export class FirmaListComponent implements OnInit {
 
   onGridReady(params: GridReadyEvent): void {
     this.gridApi = params.api;
-    this.updateCounts();
   }
 
   onModelUpdated(): void {
@@ -75,19 +74,9 @@ export class FirmaListComponent implements OnInit {
 
   private updateCounts(): void {
     if (this.gridApi) {
+      this.totalRows = this.rowData.length;
+      this.displayedRows = this.gridApi.getDisplayedRowCount();
       this.isFilterActive = this.gridApi.isAnyFilterPresent();
-
-      let filteredCount = 0;
-      this.gridApi.forEachNodeAfterFilter(() => filteredCount++);
-      this.displayedRows = filteredCount;
-
-      let totalCount = 0;
-      this.gridApi.forEachNode(() => totalCount++);
-      this.totalRows = totalCount > 0 ? totalCount : this.rowData.length;
-    } else {
-      this.totalRows = this.rowData?.length ?? 0;
-      this.displayedRows = this.totalRows;
-      this.isFilterActive = false;
     }
     this.cdr.markForCheck();
   }
