@@ -10,7 +10,7 @@ if [ -z "$CIAM_PIDS" ]; then
   exit 0
 fi
 
-echo "Stopping CIAM (PIDs: $(echo $CIAM_PIDS | tr '\n' ' '))..."
+echo "Stopping CIAM (PIDs: $(echo "$CIAM_PIDS" | tr '\n' ' '))..."
 echo "$CIAM_PIDS" | xargs kill 2>/dev/null || true
 
 # Wait until port is free
