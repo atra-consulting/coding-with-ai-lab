@@ -1,15 +1,15 @@
 {
   "version": 1,
   "task_key": "UPDATE-SKILLS",
-  "status": "in_progress",
-  "current_step": "3.3",
+  "status": "completed",
+  "current_step": "13",
   "started": "2026-03-17T10:00:00Z",
-  "updated": "2026-03-17T10:00:00Z",
+  "updated": "2026-03-17T10:15:00Z",
   "config": {
     "input_mode": "freeform",
     "user_description": "Port upstream skill changes (v1.3.0/v1.4.0) to local skills, keeping local naming conventions",
     "special_instructions": null,
-    "branch_name": null,
+    "branch_name": "update-skills",
     "original_branch": "main",
     "docs_folder": "docs",
     "stay_on_main": false
@@ -22,9 +22,9 @@
     "test_command": null
   },
   "artifacts": {
-    "prd_skipped": null,
+    "prd_skipped": true,
     "prd_file": null,
-    "plan_file": null
+    "plan_file": "docs/plans/PLAN-UPDATE-SKILLS.md"
   },
-  "completed_steps": []
+  "completed_steps": ["3.3", "4", "5", "7", "8", "13"]
 }
