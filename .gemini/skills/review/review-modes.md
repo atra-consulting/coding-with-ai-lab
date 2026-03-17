@@ -6,7 +6,7 @@ Reference file for review skill. Read and execute the matching section when help
 
 ## HELP MODE
 
-Execute when `$ARGUMENTS` = "help".
+Execute when `request` = "help".
 
 Output:
 ```
@@ -38,13 +38,13 @@ Prerequisites:
 
 Features:
   - Automatic detection of changed files vs main branch
-  - Project context validation (PRD.md, CLAUDE.md)
+  - Project context validation (PRD.md, GEMINI.md)
   - Security-focused review checklist
   - Language-agnostic code quality checks
   - Multi-round review & fix cycle (3 rounds with agents, 1 round without)
   - Reviewer agents find issues, coder/designer agents plan and apply fixes
   - Reviewers approve fix plans before execution
-  - Agent discovery (reviewers, coders, designers from CLAUDE.md)
+  - Agent discovery (reviewers, coders, designers from GEMINI.md)
   - Writes review to docs/reviews/ folder
   - Doctor mode for health checks
   - Dry-run mode for simulation
@@ -54,18 +54,18 @@ Output:
   or REVIEW-YYYY-MM-DD-hh-mm.md
 
 Agent Support:
-  If the project CLAUDE.md defines an ## Agents section:
+  If the project GEMINI.md defines an ## Agents section:
   - Reviewer agents (*-reviewer) analyze code and approve fix plans
   - Coder agents (*-coder) and designer agents (ui-designer) plan and apply fixes
   - Three review rounds with automated fix cycles
-  - Agents matched to changed file types and launched in parallel
+  - Agents matched to changed file types and launched in parallel via generalist
   If no agents defined: uses built-in review checklist (single round, no fix cycle)
 
 Integrations:
   - git (required): Diff analysis
-  - Task tool (optional): Agent delegation
+  - generalist tool (optional): Agent delegation
 
-Version: 1.2.0
+Version: 1.4.0
 ```
 
 Then STOP.
@@ -74,7 +74,7 @@ Then STOP.
 
 ## DOCTOR MODE
 
-Execute when `$ARGUMENTS` = "doctor".
+Execute when `request` = "doctor".
 
 Run health checks and report status.
 
@@ -82,63 +82,63 @@ Run health checks and report status.
 
 **Git Installation**:
 ```bash
-git --version
+run_shell_command "git --version"
 ```
 - If succeeds: Show version
 - If fails: "git not installed - brew install git (CRITICAL)"
 
 **Git Repository**:
 ```bash
-git rev-parse --git-dir
+run_shell_command "git rev-parse --git-dir"
 ```
 - If succeeds: Show repository root
 - If fails: "Not in git repository (CRITICAL)"
 
 **Current Branch**:
 ```bash
-git branch --show-current
+run_shell_command "git branch --show-current"
 ```
 - If not main/master: "On feature branch: <branch>"
 - If main/master: "On main/master (local review needs feature branch)"
 
 **Main Branch Exists**:
 ```bash
-git rev-parse --verify main || git rev-parse --verify master
+run_shell_command "git rev-parse --verify main || git rev-parse --verify master"
 ```
 - If exists: "Main branch: <name>"
 - If fails: "No main/master branch found (CRITICAL)"
 
 **Changed Files**:
 ```bash
-git diff --name-only main...HEAD 2>/dev/null | wc -l
+run_shell_command "git diff --name-only main...HEAD 2>/dev/null | wc -l"
 ```
 - If > 0: "<count> files changed vs main"
 - If 0: "No changes detected vs main"
 
 ### Doctor.2: Project Checks
 
-**CLAUDE.md**:
+**GEMINI.md**:
 ```bash
-test -f CLAUDE.md && echo "found" || echo "not found"
+run_shell_command "test -f GEMINI.md && echo \"found\" || echo \"not found\""
 ```
-- If found: "CLAUDE.md found"
-- If not found: "CLAUDE.md not found (optional)"
+- If found: "GEMINI.md found"
+- If not found: "GEMINI.md not found (optional)"
 
 **Agent Discovery**:
-- Read CLAUDE.md for ## Agents section
+- Read GEMINI.md for ## Agents section
   - If found: List discovered reviewer agents and coder/designer agents
-  - If not found: "No agents in project CLAUDE.md (uses built-in checklist, single round)"
+  - If not found: "No agents in project GEMINI.md (uses built-in checklist, single round)"
 
 **Docs Folder**:
 ```bash
-test -d doc && echo "doc" || (test -d docs && echo "docs" || echo "none")
+run_shell_command "test -d doc && echo \"doc\" || (test -d docs && echo \"docs\" || echo \"none\")"
 ```
 - If found: "Docs folder: <name>"
 - If not found: "No docs folder (will create 'docs' on first review)"
 
 **Review File Permissions**:
 ```bash
-touch .test-write && rm .test-write
+run_shell_command "touch .test-write && rm .test-write"
 ```
 - If succeeds: "Can write review files"
 - If fails: "Cannot write files in current directory (CRITICAL)"
@@ -155,7 +155,7 @@ Determine overall health:
 - Can write files
 
 **PARTIAL**: Some optional checks note issues
-- No CLAUDE.md
+- No GEMINI.md
 - No agents
 - On main/master branch
 
@@ -186,7 +186,7 @@ Then STOP.
 
 ## DRY-RUN MODE
 
-Execute when `$ARGUMENTS` contains "dryrun" or "dry-run" or "dry_run" (case-insensitive).
+Execute when `request` contains "dryrun" or "dry-run" or "dry_run" (case-insensitive).
 
 Enable dry-run mode for the review workflow:
 - Display: "DRY-RUN MODE ENABLED - No changes will be made"
