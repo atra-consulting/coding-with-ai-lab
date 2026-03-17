@@ -2,8 +2,8 @@
 name: "project:plan-and-do"
 description: "End-to-end implementation workflow from idea to code review. Use for building features, implementing tasks, fixing complex bugs, or any substantial coding work. Handles planning, implementation, testing, and review automatically."
 argument-hint: ["description"] [special-instructions|resume:<step>]
-version: 1.2.0
-last-modified: 2026-03-08
+version: 1.3.0
+last-modified: 2026-03-17
 allowed-tools:
   - Read
   - Write
@@ -17,9 +17,10 @@ allowed-tools:
   - Bash(./run-all-tests.sh:*)
   - Bash(gh:*)
   - Task
+  - AskUserQuestion
 ---
 
-# BPF Plan and Do Workflow
+# Plan and Do Workflow
 
 <!--
 Usage: /plan-and-do ["description"] [special-instructions]
@@ -51,7 +52,7 @@ If NOT in plan mode → continue.
 ## SKILL HEADER
 
 ```
-Plan and Do (v1.2.0, 2026-03-08)
+Plan and Do (v1.3.0, 2026-03-17)
 ************************************
 
 Plan and implement any work from freeform description
@@ -75,20 +76,13 @@ When displaying any file path to the user, ALWAYS use the full absolute path. Ge
 
 ---
 
-## CRITICAL: HOW TO ASK THE USER FOR DECISIONS
+## HOW TO ASK THE USER FOR DECISIONS
 
-Do NOT use AskUserQuestion. It has a known bug that auto-resolves with empty data in long skills.
+Use the AskUserQuestion tool for all user prompts.
 
-**Pattern for Numbered Choices:**
-```
-Type a number to choose:
-  1 - [option]
-  2 - [option]
-```
-STOP. Wait for user to type a number. If invalid input → show options again and STOP.
+**Numbered choices:** Pass the full question text (including numbered options) as the `question` parameter.
 
-**Pattern for Freeform Input:**
-Output question. STOP. Wait for user response.
+**Freeform input:** Pass the question as the `question` parameter.
 
 ---
 
@@ -104,9 +98,9 @@ When user chooses "quit" at any checkpoint:
 
 ### Standard Checkpoint
 
-At each checkpoint, offer three choices:
+At each checkpoint, use AskUserQuestion with three choices:
 - Continue → proceed to next step
-- Edit → ask what changes needed, apply, return to checkpoint
+- Edit → use AskUserQuestion to ask what changes needed, apply, return to checkpoint
 - Quit → execute Quit Pattern above
 
 ---
@@ -115,7 +109,12 @@ At each checkpoint, offer three choices:
 
 Read project's CLAUDE.md for `## Agents` section.
 
-**If found:** Parse tables. Names with `-coder`/`designer` → `coding_agents`. Names with `-reviewer` → `review_agents`. Display lists. Set `agents_available = true`.
+**If found:** Parse tables into three categories:
+- Names with `-writer`/`-analyst` → `writer_agents` (e.g., `ba-writer`)
+- Names with `-coder`/`-designer` → `coding_agents` (e.g., `be-coder`, `fe-coder`)
+- Names with `-reviewer` → `review_agents` (e.g., `be-reviewer`, `fe-reviewer`)
+
+Display all lists. Set `agents_available = true`.
 
 **If not found:** Display: "No agents found. Running in direct mode." Set `agents_available = false`.
 
@@ -141,7 +140,7 @@ Read `plan-and-do-modes.md` and execute matching section. STOP.
    **Path A — Freeform text** (non-empty):
    - Store as `user_description`
    - Extract UPPERCASE task name (2-4 words, hyphenated). Example: "Add Redis caching" → "ADD-REDIS-CACHING"
-   - Output understanding and suggested key. Offer: 1-Approve, 2-Change key, 3-Clarify. STOP.
+   - Output understanding and suggested key. Use AskUserQuestion: 1-Approve, 2-Change key, 3-Clarify.
    - Set `branch_prefix` = lowercase task_key, `input_mode` = "freeform"
 
    **Path B — Empty:**
@@ -161,20 +160,19 @@ Read `plan-and-do-modes.md` and execute matching section. STOP.
         2 - [task_key] (step [current_step], [status]) — "[user_description]"
         N - Start new task
 
-      Type a number to choose:
       ```
-      STOP. Wait for user input.
+      Use AskUserQuestion with this list.
 
       - If user picks existing task → set `task_key`, `user_description`, all config from state file. Set `branch_prefix` = lowercase task_key, `input_mode` = "freeform". Jump to step 1.2 (state file check).
-      - If user picks "Start new task" → ask "What would you like to implement?" STOP. Then follow Path A.
+      - If user picks "Start new task" → use AskUserQuestion: "What would you like to implement?" Then follow Path A.
 
       **If no resumable files (all completed):** Fall through.
 
-   3. **No state files or all completed:** Ask "What would you like to implement?" STOP. Then follow Path A.
+   3. **No state files or all completed:** Use AskUserQuestion: "What would you like to implement?" Then follow Path A.
 
 2. Check for state file in `doc/state/` or `docs/state/`.
 
-3. **If state file exists with status=PAUSED:** Show progress. Offer: 1-Resume, 2-Start fresh, 3-Quit. STOP.
+3. **If state file exists with status=PAUSED:** Show progress. Use AskUserQuestion: 1-Resume, 2-Start fresh, 3-Quit.
 
    **If COMPLETED or IN_PROGRESS:** Continue.
 
@@ -239,6 +237,7 @@ Write `[state_dir]/STATE-[task_key].json` using Write tool:
   },
   "discovery": {
     "agents_available": false,
+    "writer_agents": [],
     "coding_agents": [],
     "review_agents": [],
     "test_command": null
@@ -289,7 +288,7 @@ If exists: append random 6-digit number to `branch_name`.
 
 Get current branch → store as `original_branch`.
 
-**If on main/master:** Warn user. Offer: 1-Create new branch (recommended), 2-Stay on main. STOP.
+**If on main/master:** Warn user. Use AskUserQuestion: 1-Create new branch (recommended), 2-Stay on main.
 - If stay → set `stay_on_main = true`, skip to Step 4.5.
 
 **Create branch** (unless `stay_on_main`):
@@ -310,7 +309,7 @@ git commit -m "docs: Initialize state tracking for [task_key]"
 
 ## STEP 5: SPECIFICATIONS (PRD) DECISION
 
-Offer: 1-Create specifications (PRD) first (recommended for complex features), 2-Skip to detailed plan. STOP.
+Use AskUserQuestion: 1-Create specifications (PRD) first (recommended for complex features), 2-Skip to detailed plan.
 
 - "1" → `prd_skipped = false`, continue to STEP 6
 - "2" → `prd_skipped = true`, `prd_file = nil`, update state → STEP 7
@@ -327,7 +326,13 @@ Analyze user_description and codebase using Grep/Glob. Identify patterns, module
 
 ### Step 6.2: Generate Specifications (PRD)
 
-**If agents_available:** Launch coding agents via Task tool for technical input.
+**If agents_available:**
+
+1. **Draft:** Launch `ba-writer` (or first `writer_agent`) via Task tool to write the PRD. If no writer agents exist, use the first `coding_agent` instead. Provide user_description, codebase context from Step 6.1, and the structure below.
+2. **Review:** Launch ALL `review_agents` in parallel via Task tool. Each reviewer gets the draft PRD and checks for completeness, correctness, and feasibility from their domain perspective.
+3. **Fix:** Collect all reviewer findings. Fix issues automatically — no user prompt needed. If reviewers disagree, prefer the more conservative/thorough approach.
+4. **Result:** The reviewed and fixed PRD becomes the final draft for user approval.
+
 **Otherwise:** Write directly.
 
 Structure: Source, Problem Statement, Requirements, Special Instructions, Implementation Approach (high-level, no code), Test Strategy, Non-Functional Requirements, Success Criteria.
@@ -362,7 +367,7 @@ git commit -m "docs: Add specifications (PRD) for [task summary]. [task_key]"
 Check in order:
 1. **CLAUDE.md** — if found, use directly (no confirmation needed)
 2. **README.md / README.adoc** — if found, confirm with user
-3. **Not found** — ask user: "How do you run tests? Type your test command:" STOP.
+3. **Not found** — use AskUserQuestion: "How do you run tests? Type your test command:"
 
 Store as `test_command`. Do not continue until confirmed.
 
@@ -374,7 +379,14 @@ Create implementation tasks: file changes, tests, configuration, verification st
 
 ### Step 7.3: Generate Detailed Plan
 
-**If agents_available:** Launch coding agents via Task tool.
+**If agents_available:**
+
+1. **Draft:** Launch ALL `coding_agents` in parallel via Task tool. Each coder contributes plan tasks for their domain (backend, frontend, database, etc.). Provide PRD (if exists), user_description, codebase analysis, and the plan structure below.
+2. **Merge:** Combine all coder outputs into one coherent plan. Resolve overlaps and ensure consistent task ordering.
+3. **Review:** Launch ALL `review_agents` in parallel via Task tool. Each reviewer checks the merged plan for completeness, feasibility, missing edge cases, and correct task ordering from their domain perspective.
+4. **Fix:** Collect all reviewer findings. Fix issues automatically — no user prompt needed. If reviewers flag missing tasks or wrong ordering, update the plan.
+5. **Result:** The reviewed and fixed plan becomes the final draft for user approval.
+
 **Otherwise:** Write directly.
 
 Structure:
@@ -426,6 +438,14 @@ git commit -m "docs: Add detailed plan for [task summary]. [task_key]"
 
 **If agents_available:** Dispatch task groups to coding agents via Task tool. Match by file type. Launch independent agents in parallel. Each commits: `feat: [description]. [task_key]`
 
+**Phase review (agents_available only):** If the plan has multiple phases or numbered task groups, treat each group as a phase. After each phase completes:
+1. Launch ALL `review_agents` in parallel via Task tool. Each reviewer checks the phase output for correctness, consistency with the plan, and domain-specific issues.
+2. Collect all reviewer findings. Fix issues automatically — no user prompt needed.
+3. Commit fixes: `fix: Address phase [N] review findings. [task_key]`
+4. Then proceed to the next phase.
+
+This catches issues early, before they compound across phases.
+
 **Otherwise:** Implement directly:
 
 For each task in PLAN:
@@ -437,7 +457,7 @@ For each task in PLAN:
 
 ### Step 8.2: Interactive Assistance
 
-If questions arise: explain issue, propose alternatives as numbered choices. STOP.
+If questions arise: explain issue, use AskUserQuestion with numbered alternatives.
 
 ---
 
@@ -455,13 +475,13 @@ Execute `[test_command]`.
 1. Show failures, attempt automatic fix (no prompt)
 2. Commit fixes: `fix: Fix test failures. [task_key]`
 3. Re-run tests
-4. If still failing: show details, ask user "What should I try next?" STOP. Apply guidance. Retry.
+4. If still failing: show details, use AskUserQuestion: "What should I try next?" Apply guidance. Retry.
 
 ### Step 9.4: Checkpoint 9 — Implementation Complete
 
 Update state: `current_step` = "9.4".
 
-Output: "All tests pass." Offer: 1-Continue to code review, 2-Make changes, 3-Quit. STOP.
+Output: "All tests pass." Use AskUserQuestion: 1-Continue to code review, 2-Make changes, 3-Quit.
 
 - "2" → ask what changes, return to STEP 8
 
@@ -488,7 +508,7 @@ Read `[review_dir]/REVIEW-*.md`.
 
 Update state: `current_step` = "10.3".
 
-If issues found, offer: 1-Fix findings, 2-Skip to summary, 3-Quit. STOP.
+If issues found, use AskUserQuestion: 1-Fix findings, 2-Skip to summary, 3-Quit.
 
 - Fix → fix issues, commit: `fix: Address code review findings. [task_key]`, re-run `/review`, return to 10.2
 - Skip → STEP 11
@@ -501,7 +521,7 @@ If issues found, offer: 1-Fix findings, 2-Skip to summary, 3-Quit. STOP.
 
 **If agents_available:** Launch testing agents for end-to-end verification.
 
-**Otherwise:** Propose manual test steps. Offer: 1-Tests passed, 2-Tests failed, 3-Quit. STOP.
+**Otherwise:** Propose manual test steps. Use AskUserQuestion: 1-Tests passed, 2-Tests failed, 3-Quit.
 - Failed → ask for details, fix, commit, retry
 
 ### Step 11.2: Checkpoint 11
@@ -521,7 +541,7 @@ Check CLAUDE.md, docs/specs/, docs/prds/ for needed updates based on implementat
 **If agents_available:** Launch agents to analyze and propose.
 **Otherwise:** Analyze directly.
 
-**If updates needed:** Offer: 1-Apply, 2-Skip, 3-Quit. STOP.
+**If updates needed:** Use AskUserQuestion: 1-Apply, 2-Skip, 3-Quit.
 - Apply → edit files, commit: `docs: Update project documentation. [task_key]`
 
 **No updates needed:** Display message. Continue.
@@ -538,7 +558,7 @@ Update state: `current_step` = "12.3". → STEP 13.
 
 Display full absolute file paths (PRD if exists, plan, state).
 
-Offer: 1-Keep files (recommended), 2-Delete files, 3-Quit. STOP.
+Use AskUserQuestion: 1-Keep files (recommended), 2-Delete files, 3-Quit.
 - Delete → `git rm` files, commit: `docs: Remove planning files. [task_key]`
 
 ### Step 13.1: Display Summary
@@ -573,6 +593,8 @@ If state file exists: update `status` = "completed", commit.
 ### Step 13.3: Post-Completion Workflow
 
 Read `plan-and-do-modes.md` and execute "POST-COMPLETION WORKFLOW" section. This handles: cleanup uncommitted changes, push confirmation, PR creation, PR merge, and branch switch.
+
+**CRITICAL:** PRs MUST target `original_branch` (the branch active when the skill started, stored in state file `config.original_branch`). Never default to main/master.
 
 ---
 
