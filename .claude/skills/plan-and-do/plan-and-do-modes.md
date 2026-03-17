@@ -303,7 +303,7 @@ git status --porcelain
 
 ### PC.2: Push Confirmation
 
-Offer: 1-Push commits to remote, 2-Skip push (local only). STOP.
+Use AskUserQuestion: 1-Push commits to remote, 2-Skip push (local only).
 
 - Push:
   ```bash
@@ -312,14 +312,16 @@ Offer: 1-Push commits to remote, 2-Skip push (local only). STOP.
 
 ### PC.3: Create Pull Request
 
-Offer: 1-Create pull request, 2-Skip PR (done). STOP.
+Use AskUserQuestion: 1-Create pull request, 2-Skip PR (done).
 
 - Create:
   Push if not already pushed:
   ```bash
   git push -u origin [branch_name] 2>/dev/null
   ```
-  Create PR using gh CLI. Use `original_branch` as base branch. Do NOT add a test plan section — only include the summary.
+  **CRITICAL:** The PR MUST target `original_branch` — the branch that was active when the skill started (stored in state file `config.original_branch`). Never default to main/master. Re-read the state file if `original_branch` is unknown.
+
+  Create PR using gh CLI. Do NOT add a test plan section — only include the summary.
   ```bash
   gh pr create --base [original_branch] --title "[brief title from task_key]" --body "$(cat <<'EOF'
   ## Summary
@@ -335,7 +337,7 @@ Offer: 1-Create pull request, 2-Skip PR (done). STOP.
 
 ### PC.4: Merge Pull Request
 
-Offer: 1-Merge PR, 2-Skip merge (done). STOP.
+Use AskUserQuestion: 1-Merge PR, 2-Skip merge (done).
 
 - Merge:
   ```bash
