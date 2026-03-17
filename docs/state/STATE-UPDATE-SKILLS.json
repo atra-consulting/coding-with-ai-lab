@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "task_key": "UPDATE-SKILLS",
+  "status": "in_progress",
+  "current_step": "3.3",
+  "started": "2026-03-17T10:00:00Z",
+  "updated": "2026-03-17T10:00:00Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Port upstream skill changes (v1.3.0/v1.4.0) to local skills, keeping local naming conventions",
+    "special_instructions": null,
+    "branch_name": null,
+    "original_branch": "main",
+    "docs_folder": "docs",
+    "stay_on_main": false
+  },
+  "discovery": {
+    "agents_available": true,
+    "writer_agents": ["ba-writer"],
+    "coding_agents": ["be-coder", "fe-coder", "db-coder", "ui-designer"],
+    "review_agents": ["be-reviewer", "fe-reviewer", "db-reviewer", "ui-reviewer", "ba-reviewer"],
+    "test_command": null
+  },
+  "artifacts": {
+    "prd_skipped": null,
+    "prd_file": null,
+    "plan_file": null
+  },
+  "completed_steps": []
+}
