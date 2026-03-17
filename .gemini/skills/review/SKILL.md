@@ -2,8 +2,8 @@
 name: "project:review"
 description: "Local code review with multi-round review & fix cycle. Use for reviewing code, checking changes, getting feedback on a branch, or before creating a PR."
 argument-hint: (optional special instructions)
-version: 1.2.0
-last-modified: 2026-03-08
+version: 1.4.0
+last-modified: 2026-03-17
 tools:
   - read_file
   - write_file
@@ -14,6 +14,7 @@ tools:
   - generalist
   - codebase_investigator
   - cli_help
+  - ask_user
 ---
 
 # Review Skill
@@ -28,20 +29,13 @@ Short and brief. Short sentences. Simple words non-native speakers understand. N
 
 When displaying any file path to the user, ALWAYS use the full absolute path. Get the project root with `pwd` and prepend it to relative paths. Example: `/Users/dev/project/docs/reviews/REVIEW-add-feature.md` instead of `docs/reviews/REVIEW-add-feature.md`. This lets users Command-click paths in the terminal to open them.
 
-## CRITICAL: HOW TO ASK THE USER FOR DECISIONS
+## HOW TO ASK THE USER FOR DECISIONS
 
-Do NOT use AskUserQuestion. It has a known bug that auto-resolves with empty data in long skills.
+Use the ask_user tool for all user prompts.
 
-**Pattern for Numbered Choices:**
-```
-Type a number to choose:
-  1 - [option]
-  2 - [option]
-```
-STOP. Wait for user to type a number. If invalid input → show options again and STOP.
+**Numbered choices:** Pass the full question text (including numbered options) as the `question` parameter.
 
-**Pattern for Freeform Input:**
-Output question. STOP. Wait for user response.
+**Freeform input:** Pass the question as the `question` parameter.
 
 ## User Autonomy
 
@@ -79,7 +73,7 @@ Then STOP immediately.
 If NOT in plan mode, display header:
 
 ```
-Code Review (v1.2.0, 2026-03-07)
+Code Review (v1.4.0, 2026-03-17)
 ****************************************
 
 Local code review - multi-round review & fix cycle
@@ -121,21 +115,18 @@ Proceed to PHASE 1.3: TASK UNDERSTANDING CONFIRMATION.
 
 Repeat back your understanding of the review focus to the user:
 
-Output:
+Output understanding, then use ask_user:
 ```
 My understanding: Review local changes with focus on [brief summary of special_instructions].
 
-Type a number to choose:
   1 - Correct, proceed
   2 - Clarify instructions
 ```
 
-STOP. Wait for user to type a number.
-
 After receiving the user's response:
 - "1" or "ok"/"yes"/"correct" → Continue to PHASE 1.5.
-- "2" or "clarify"/"change" → Output: "What should I change?" STOP. Wait for response. Update `special_instructions`. Return to this step.
-- Anything else → Output the same options again and STOP.
+- "2" or "clarify"/"change" → Use ask_user: "What should I change?" Update `special_instructions`. Return to this step.
+- Anything else → Use ask_user again with the same options.
 
 **If no special_instructions (default review mode):**
 - Skip confirmation (nothing custom to confirm).
@@ -385,7 +376,14 @@ Complete all rounds autonomously without prompting the user mid-review.
 ### Step 5.0: Initialize Round Tracking
 
 Create tracking structure:
-- `all_round_results = []` (per-round: issues found, fixes planned, fixes applied)
+- `all_round_results = []` — each round stores a list of issues, each with:
+  - `severity` (CRITICAL / WARNING / SUGGESTION)
+  - `file` (file path)
+  - `line` (line number or null)
+  - `description` (what's wrong)
+  - `found_by` (agent name or "built-in review")
+  - `fix_description` (what changed — null until fixed)
+  - `fixed_by` (agent name or "direct fix" — null until fixed)
 - `current_round = 1`
 - `max_rounds = 3`
 - If `fix_agents_available = false`: set `max_rounds = 1`. The review loop only helps when fixes happen between rounds. Without fixers, subsequent rounds find the same unfixed issues.
@@ -408,7 +406,8 @@ Display: `--- Review Round <current_round>/<max_rounds> ---`
    - Launch each applicable reviewer agent via generalist tool (in parallel - multiple tool calls in one message)
    - Each agent reviews changed files in its domain
    - Collect findings from all agents
-   - Merge and deduplicate findings by file:line
+   - Tag each finding with `found_by` = the reviewer agent name that produced it
+   - Merge and deduplicate findings by file:line (keep the first agent's attribution)
    - Skip built-in review (Step 5.1.2)
 
 3. If `applicable_reviewers` is empty:
@@ -489,15 +488,24 @@ For each issue found, determine severity (internal tracking only):
 - **WARNING**: Poor practice, potential bug, performance issue
 - **SUGGESTION**: Style issue, minor improvement, optimization requiring investigation
 
-Record:
-- File path
-- Line number (if applicable)
-- Severity level (internal tracking only)
-- Issue description (use backticks for code identifiers)
+Record per issue:
+- `severity` (CRITICAL / WARNING / SUGGESTION)
+- `file` (file path)
+- `line` (line number or null)
+- `description` (use backticks for code identifiers)
+- `found_by` (agent name or "built-in review")
+- `fix_description` = null (populated later in Step 5.4)
+- `fixed_by` = null (populated later in Step 5.4)
 
 Store findings for current round in `all_round_results[current_round]`.
 
-Display: `Round <current_round>: <count> issues found`
+Display each issue as found:
+```
+  [CRITICAL] path/to/file.kt:28 — `getCurrentUser()` throws NoSuchElementException (found by: be-reviewer)
+  [WARNING] path/to/config.kt:15 — CORS allows wildcard origins (found by: be-reviewer)
+```
+
+Then display round summary: `Round <current_round>: <count> issues found`
 
 **If no issues found:**
 - Display: `Round <current_round>: Clean. No issues found.`
@@ -525,10 +533,10 @@ Display: `--- Fix Planning (Round <current_round>) ---`
    - The changed files in its domain
    - Project context (PRD, GEMINI.md conventions)
 
-4. Each agent produces a fix plan listing:
-   - Issue addressed (reference to review finding)
+4. Each agent produces a fix plan listing per issue:
+   - Issue # (reference to the issue index from Step 5.1.3)
    - File and line
-   - Description of proposed change
+   - `fix_description` (brief description of the proposed change)
    - Rationale
 
 5. Collect and merge all fix plans
@@ -565,18 +573,21 @@ Display: `Fix plan approved by reviewers`
 Display: `--- Applying Fixes (Round <current_round>) ---`
 
 **If dry_run_mode = true:**
-- Display each fix: `[DRY-RUN] Would fix: <file>:<line> - <brief description>`
+- Display each fix: `[DRY-RUN] Would fix: <file>:<line> — <brief description> (by: <agent-name>)`
 - Display: `[DRY-RUN] Round <current_round> fixes simulated: <count> files`
 - Skip actual file modifications
+- Still update each issue's `fix_description` and `fixed_by` in `all_round_results` for the review file
 
 **If dry_run_mode = false:**
 1. Launch coder/designer agents to implement approved fixes via generalist tool (in parallel - multiple tool calls in one message)
 2. Each agent applies fixes to files in its domain using replace/write_file tools
-3. Display each fix applied: `Fixed: <file>:<line> - <brief description>`
+3. Display each fix applied: `Fixed: <file>:<line> — <brief description> (by: <agent-name>)`
 4. Display: `Round <current_round> fixes applied: <count> files modified`
 
 **After fixes applied (or simulated):**
-- Record fixes in `all_round_results[current_round]`
+- For each fix, update the corresponding issue in `all_round_results[current_round]`:
+  - Set `fix_description` = brief description of what changed
+  - Set `fixed_by` = agent name that applied the fix (or "direct fix" if no agents)
 - Increment `current_round`
 - If `current_round <= max_rounds`: go back to Step 5.1 (next review round)
 - If `current_round > max_rounds`: proceed to Step 5.5
@@ -625,21 +636,28 @@ Format review as markdown:
 
 ## Review Rounds
 
-### Round 1
-- **Issues found**: <count>
-- **Fixes planned**: <count> (by <coder/designer agents used>)
-- **Fixes approved by**: <reviewer agents>
-- **Fixes applied**: <count>
+<For each round, use one of these two formats:>
 
-### Round 2
-- **Issues found**: <count> (0 = clean)
-- **Fixes planned**: <count if any>
-- **Fixes applied**: <count if any>
+<FORMAT A — Round with issues:>
 
-### Round 3
-- **Issues found**: <count> (0 = clean)
-- **Fixes planned**: <count if any>
-- **Fixes applied**: <count if any>
+### Round N
+
+**Issues found**: X | **Fixes applied**: Y
+
+| # | Severity | File | Issue | Found by | Fix | Fixed by |
+|---|----------|------|-------|----------|-----|----------|
+| 1 | CRITICAL | `path/to/file.kt:28` | `getCurrentUser()` throws NoSuchElementException on anonymous requests | be-reviewer | Added null-safe `findFirst().orElse(null)` with anonymous user fallback | be-coder |
+| 2 | WARNING | `path/to/config.kt:15` | CORS allows wildcard origins | be-reviewer | Restricted to explicit origin allowlist from config | be-coder |
+| 3 | SUGGESTION | `path/to/util.kt:50` | Could extract duplicated validation logic | be-reviewer | — | — |
+
+<Use "—" in Fix and Fixed by columns for unfixed issues (e.g., suggestions skipped).>
+<Use "built-in review" as Found by when no reviewer agents. Use "direct fix" as Fixed by when no coder agents.>
+
+<FORMAT B — Clean round (0 issues):>
+
+### Round N
+
+Clean pass. No issues found.
 
 ## Remaining Issues
 
@@ -659,7 +677,7 @@ Format review as markdown:
 - Create PR when ready
 
 ---
-Generated with Gemini CLI - review v1.2.0
+Generated with Gemini CLI - review v1.4.0
 ```
 
 ### Step 6.3: Write Review File
@@ -712,5 +730,3 @@ STOP - Local review complete.
 ## SPECIAL MODES
 
 If help, doctor, or dryrun mode detected: Read `review-modes.md` (in this skill's directory) and execute the matching section. Then STOP.
-
----

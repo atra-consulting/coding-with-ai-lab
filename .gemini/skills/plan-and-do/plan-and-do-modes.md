@@ -6,7 +6,7 @@ Reference file for plan-and-do skill. Read and execute the matching section when
 
 ## HELP MODE
 
-Execute when `$ARGUMENTS` contains "help". Display and STOP:
+Execute when `request` contains "help". Display and STOP:
 
 ```
 Plan and Do Skill - Help
@@ -44,7 +44,7 @@ Prerequisites:
 
 Features:
   - Freeform mode: accepts any task description
-  - Agent discovery: uses project agents if defined in CLAUDE.md
+  - Agent discovery: uses project agents if defined in GEMINI.md
   - Optionally generates specifications (PRD)
   - Creates detailed plan with test cases
   - Implements code changes with tests
@@ -54,10 +54,11 @@ Features:
   - PR creation and merge workflow
 
 Agent Support:
-  If the project CLAUDE.md defines an ## Agents section:
+  If the project GEMINI.md defines an ## Agents section:
+  - Writer agents (ba-writer, etc.) draft specifications
   - Coding agents (be-coder, fe-coder, db-coder, ui-designer) implement tasks
-  - Reviewer agents (be-reviewer, fe-reviewer, db-reviewer, ui-reviewer) review code
-  - Independent agents launch in parallel for speed
+  - Reviewer agents (be-reviewer, fe-reviewer, db-reviewer, ui-reviewer) review code and plans
+  - Independent agents launch in parallel for speed via generalist
   If no agents defined: skill does all work directly (original behavior)
 
 File Locations:
@@ -107,23 +108,23 @@ Integrations:
   - git (required): Branch management, commits
   - gh CLI (optional): PR creation and merge
   - review (required): Code review
-  - Task tool (optional): Agent delegation
+  - generalist tool (optional): Agent delegation
 ```
 
 ---
 
 ## DOCTOR MODE
 
-Execute when `$ARGUMENTS` contains "doctor". Perform health checks and STOP:
+Execute when `request` contains "doctor". Perform health checks and STOP:
 
 1. Tool Check using Bash:
    ```
    Checking required tools...
    ```
-   - Check git: `git --version`
+   - Check git: `run_shell_command "git --version"`
      - If found: Report version
      - If not found: Report "git not installed (CRITICAL)"
-   - Check gh: `gh --version`
+   - Check gh: `run_shell_command "gh --version"`
      - If found: Report version
      - If not found: Report "gh CLI not installed (optional, needed for PR creation)"
 
@@ -131,10 +132,10 @@ Execute when `$ARGUMENTS` contains "doctor". Perform health checks and STOP:
    ```
    Checking git repository...
    ```
-   - Check if in git repository: `git rev-parse --git-dir`
+   - Check if in git repository: `run_shell_command "git rev-parse --git-dir"`
      - If in repo: Report "In git repository"
      - If not in repo: Report "Not in a git repository (CRITICAL)"
-   - Check current branch: `git branch --show-current`
+   - Check current branch: `run_shell_command "git branch --show-current"`
      - If successful: Report current branch name
      - If on main/master: Report "Currently on main branch (should be on feature branch)"
      - If failed: Report "Cannot determine current branch"
@@ -143,17 +144,17 @@ Execute when `$ARGUMENTS` contains "doctor". Perform health checks and STOP:
    ```
    Checking agent availability...
    ```
-   - Read project CLAUDE.md for ## Agents section
+   - Read project GEMINI.md for ## Agents section
      - If found: List discovered agents
-     - If not found: Report "No agents in project CLAUDE.md (skill runs in direct mode)"
+     - If not found: Report "No agents in project GEMINI.md (skill runs in direct mode)"
 
 4. Test Command Check:
    ```
    Checking for test command...
    ```
-   - Read CLAUDE.md for test command
+   - Read GEMINI.md for test command
      - If found: Report test command
-     - If not found: Report "No test command found in CLAUDE.md (will ask during execution)"
+     - If not found: Report "No test command found in GEMINI.md (will ask during execution)"
 
 5. Overall Status Summary:
    ```
@@ -174,7 +175,7 @@ Automatic resume from state file is handled in Step 1 (PARAMETER PARSING).
 
 Before validating artifacts, detect docs folder:
 ```bash
-test -d doc && echo "doc" || (test -d docs && echo "docs" || echo "none")
+run_shell_command "test -d doc && echo \"doc\" || (test -d docs && echo \"docs\" || echo \"none\")"
 ```
 - If "doc" exists: `docs_folder` = "doc"
 - If "docs" exists: `docs_folder` = "docs"
@@ -212,13 +213,13 @@ Validating Step 10 prerequisites...
 Check each artifact:
 ```bash
 # Check PRD exists (optional)
-test -f [prd_dir]/PRD-[task_key].md
+run_shell_command "test -f [prd_dir]/PRD-[task_key].md"
 
 # Check PLAN exists (required)
-test -f [plan_dir]/PLAN-[task_key].md
+run_shell_command "test -f [plan_dir]/PLAN-[task_key].md"
 
 # Check commits exist
-git log --oneline --grep="[task_key]"
+run_shell_command "git log --oneline --grep=\"[task_key]\""
 ```
 
 **If PLAN or commits missing:**
@@ -290,44 +291,46 @@ Execute after Step 13.2 (Mark State Complete). Handles cleanup, push, PR, merge,
 ### PC.1: Ensure Clean Working Directory
 
 ```bash
-git status --porcelain
+run_shell_command "git status --porcelain"
 ```
 
 **If uncommitted changes exist:**
-1. Stage tracked modified files: `git add -u`
+1. Stage tracked modified files: `run_shell_command "git add -u"`
 2. Also stage any skill-created files (PRD, PLAN, STATE, REVIEW)
-3. Commit: `git commit -m "docs: Final cleanup - commit remaining changes. [task_key]"`
+3. Commit: `run_shell_command "git commit -m \"docs: Final cleanup - commit remaining changes. [task_key]\""`
 4. Display: "Committed remaining uncommitted changes."
 
 **If clean:** Display: "Working directory clean."
 
 ### PC.2: Push Confirmation
 
-Offer: 1-Push commits to remote, 2-Skip push (local only). STOP.
+Use ask_user: 1-Push commits to remote, 2-Skip push (local only).
 
 - Push:
   ```bash
-  git push 2>/dev/null || echo "No remote configured or push failed - commits are local only"
+  run_shell_command "git push 2>/dev/null || echo \"No remote configured or push failed - commits are local only\""
   ```
 
 ### PC.3: Create Pull Request
 
-Offer: 1-Create pull request, 2-Skip PR (done). STOP.
+Use ask_user: 1-Create pull request, 2-Skip PR (done).
 
 - Create:
   Push if not already pushed:
   ```bash
-  git push -u origin [branch_name] 2>/dev/null
+  run_shell_command "git push -u origin [branch_name] 2>/dev/null"
   ```
-  Create PR using gh CLI. Use `original_branch` as base branch. Do NOT add a test plan section — only include the summary.
+  **CRITICAL:** The PR MUST target `original_branch` — the branch that was active when the skill started (stored in state file `config.original_branch`). Never default to main/master. Re-read the state file if `original_branch` is unknown.
+
+  Create PR using gh CLI. Do NOT add a test plan section — only include the summary.
   ```bash
-  gh pr create --base [original_branch] --title "[brief title from task_key]" --body "$(cat <<'EOF'
+  run_shell_command "gh pr create --base [original_branch] --title \"[brief title from task_key]\" --body \"$(cat <<'EOF'
   ## Summary
   [Brief summary of changes made]
 
-  🤖 Generated with [Claude Code](https://claude.com/claude-code)
+  🤖 Generated with [Gemini CLI](https://github.com/google/gemini-cli)
   EOF
-  )"
+  )\""
   ```
   Display PR URL. Continue to PC.4.
 
@@ -335,11 +338,11 @@ Offer: 1-Create pull request, 2-Skip PR (done). STOP.
 
 ### PC.4: Merge Pull Request
 
-Offer: 1-Merge PR, 2-Skip merge (done). STOP.
+Use ask_user: 1-Merge PR, 2-Skip merge (done).
 
 - Merge:
   ```bash
-  gh pr merge --merge
+  run_shell_command "gh pr merge --merge"
   ```
   Set `pr_merged = true`. Continue to PC.5.
 
@@ -350,8 +353,8 @@ Offer: 1-Merge PR, 2-Skip merge (done). STOP.
 **Only if `pr_merged = true`.**
 
 ```bash
-git checkout [original_branch]
-git pull
+run_shell_command "git checkout [original_branch]"
+run_shell_command "git pull"
 ```
 
 Display: "Switched to `[original_branch]` and pulled latest changes."
