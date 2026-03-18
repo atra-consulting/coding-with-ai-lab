@@ -1,16 +1,11 @@
 # Welcome to Coding with AI
 
-## Purpose of This Training
-
-Get hands-on experience in coding with AI. This training teaches you to effectively use AI tools (Claude, Copilot) to implement features, fix bugs, and accelerate your development workflow in a real full-stack application.
-
-## Target Group
-
-Developers with basic AI knowledge. No prior experience with the CRM application required.
-
 ## Training Setup
 
-You'll work with a default CRM application (full-stack: Java/Spring Boot backend, Angular frontend, Kotlin CIAM service) that contains a set of pre-planned features and bugs. Throughout the training, you'll implement these features and fixes with AI assistance. We're here to guide you.
+- You'll work with a default CRM application (full-stack: Java/Spring Boot backend, Angular frontend, Kotlin CIAM service)
+- The application contains a set of pre-planned features and bugs
+- Throughout the training, you'll implement these features and fixes with AI assistance
+- We're here to guide you
 
 ## What You Need to Get Started
 
@@ -18,6 +13,7 @@ You'll work with a default CRM application (full-stack: Java/Spring Boot backend
 - **Node.js & npm**: For frontend development
 - **Java**: JDK 21+ for backend
 - **Git CLI**: For version control, branching, and creating PRs with Claude
+- **Gemini API Key**: Some tasks require a Gemini API key. When the time comes, ask us and we'll send it to you.
 
 ## How to Start the Project
 

@@ -1,16 +1,11 @@
 # Willkommen zu Coding with AI
 
-## Zweck dieses Trainings
-
-Praktische Erfahrung im Programmieren mit KI sammeln. Dieses Training lehrt dir, KI-Tools (Claude, Copilot) effektiv einzusetzen, um Features zu implementieren, Bugs zu beheben und deinen Entwicklungsworkflow in einer echten Full-Stack-Anwendung zu beschleunigen.
-
-## Zielgruppe
-
-Entwickler mit grundlegendem KI-Wissen. Keine bisherige Erfahrung mit der CRM-Anwendung erforderlich.
-
 ## Trainings-Setup
 
-Du wirst mit einer Standard-CRM-Anwendung arbeiten (Full-Stack: Java/Spring Boot Backend, Angular Frontend, Kotlin CIAM Service), die eine Reihe vordefinierter Features und Bugs enthält. Während des Trainings wirst du diese Features und Fixes mit KI-Unterstützung implementieren. Wir sind hier, um dich zu leiten.
+- Du arbeitest mit einer Standard-CRM-Anwendung (Full-Stack: Java/Spring Boot Backend, Angular Frontend, Kotlin CIAM Service)
+- Die Anwendung enthält eine Reihe vordefinierter Features und Bugs
+- Während des Trainings implementierst du diese Features und Fixes mit KI-Unterstützung
+- Wir sind hier, um dich zu leiten
 
 ## Was du zum Starten brauchst
 
@@ -18,6 +13,7 @@ Du wirst mit einer Standard-CRM-Anwendung arbeiten (Full-Stack: Java/Spring Boot
 - **Node.js & npm**: Für Frontend-Entwicklung
 - **Java**: JDK 21+ für Backend
 - **Git CLI**: Für Versionskontrolle, Branching und zum Erstellen von PRs mit Claude
+- **Gemini API Key**: Für manche Aufgaben braucht ihr einen Gemini API Key. Wenn es soweit ist, fragt uns und wir schicken euch diesen zu.
 
 ## Wie du das Projekt startest
 
@@ -47,12 +43,12 @@ Erstelle deinen eigenen Branch mit diesem Format:
 training-<MMJJ>/<vornamenachname>
 ```
 
-Beispiel: `training-0304/john-doe` (März 2024, John Doe)
+Beispiel: `training-0324/john-doe` (März 2024, John Doe)
 
 ## Wie du an Tasks arbeitest
 
 1. Finde Tasks im Ordner `/docs/tasks`
-2. Verwende den **`plan-and-do`** Skill um mit einem Task zu starten:
+2. Tipp: Verwende den **`plan-and-do`** Skill um mit einem Task zu starten:
    - Tippe `/plan-and-do` mit deiner Task-Beschreibung
    - Der Skill handhabt Planung, Implementierung, Testing und Code Review automatisch
 
@@ -67,6 +63,7 @@ Diese Befehle helfen dir, effizienter in Claude Code zu arbeiten:
 | `/simplify` | Analysiere Code auf Qualität, Wiederverwendung und Effizienz |
 | `/help` | Hilfe zu Claude Code Funktionen |
 | `/clear` | Lösche die Konversationshistorie |
+| `/compact` | Kompaktere Kontextfenster |
 
 ## Playwright-MCP: Browser-Automation
 
