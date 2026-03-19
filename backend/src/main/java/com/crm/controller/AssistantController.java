@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -50,6 +51,12 @@ public class AssistantController {
     @PreDestroy
     void shutdown() {
         executor.shutdown();
+    }
+
+    @DeleteMapping("/history")
+    public void clearHistory(Authentication authentication) {
+        JwtPrincipal principal = (JwtPrincipal) authentication.getPrincipal();
+        chatHistoryService.clearHistory(principal.benutzerId());
     }
 
     @PostMapping("/chat")
@@ -111,8 +118,7 @@ public class AssistantController {
                 log.error("Assistant chat error", e);
                 try {
                     String errorMsg = resolveErrorMessage(e);
-                    emitter.send(SseEmitter.event().data(errorMsg));
-                    emitter.send(SseEmitter.event().data("[DONE]"));
+                    emitter.send(SseEmitter.event().name("error").data(errorMsg));
                     emitter.complete();
                 } catch (IOException ex) {
                     emitter.completeWithError(ex);
@@ -125,21 +131,21 @@ public class AssistantController {
 
     private String buildSystemPrompt(String crmContext) {
         return """
-                Du bist ein CRM-Assistent. Du beantwortest Fragen ausschliesslich auf Basis der \
+                Du bist ein CRM-Assistent. Du beantwortest Fragen ausschließlich auf Basis der \
                 bereitgestellten CRM-Daten. Wenn die Daten keine Antwort hergeben, sage: \
                 "Ich habe keine relevanten CRM-Daten zu dieser Frage gefunden."
 
                 Antworte NICHT auf Fragen, die nichts mit den CRM-Daten zu tun haben. \
                 Verwende kein Allgemeinwissen. Beziehe dich nur auf die unten stehenden Daten.
 
-                Antworte auf Deutsch. Verwende einfache Textformatierung (Aufzaehlungen mit \
-                Bindestrichen, keine Markdown-Ueberschriften).
+                Antworte auf Deutsch. Verwende einfache Textformatierung (Aufzählungen mit \
+                Bindestrichen, keine Markdown-Überschriften).
 
                 === CRM-DATEN ===
                 %s
                 === ENDE CRM-DATEN ===
                 """.formatted(crmContext.isEmpty()
-                ? "Keine CRM-Daten verfuegbar."
+                ? "Keine CRM-Daten verfügbar."
                 : crmContext);
     }
 
@@ -151,6 +157,6 @@ public class AssistantController {
         if (msg != null && msg.contains("Rate limit")) {
             return "Bitte warten Sie einen Moment.";
         }
-        return "Assistent ist derzeit nicht verfuegbar.";
+        return "Assistent ist derzeit nicht verfügbar.";
     }
 }

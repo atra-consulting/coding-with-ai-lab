@@ -80,49 +80,49 @@ public class CrmContextBuilder {
         }
 
         if (permissions.contains("PERSONEN")) {
-            List<Person> personen = personRepository.findAll(page).getContent();
+            List<Person> personen = personRepository.findAllWithFirmaBy(page).getContent();
             if (!personen.isEmpty()) {
                 sections.add(formatPersonen(personen));
             }
         }
 
         if (permissions.contains("ABTEILUNGEN")) {
-            List<Abteilung> abteilungen = abteilungRepository.findAll(page).getContent();
+            List<Abteilung> abteilungen = abteilungRepository.findAllWithFirmaBy(page).getContent();
             if (!abteilungen.isEmpty()) {
                 sections.add(formatAbteilungen(abteilungen));
             }
         }
 
         if (permissions.contains("ADRESSEN")) {
-            List<Adresse> adressen = adresseRepository.findAll(page).getContent();
+            List<Adresse> adressen = adresseRepository.findAllWithRelationsBy(page).getContent();
             if (!adressen.isEmpty()) {
                 sections.add(formatAdressen(adressen));
             }
         }
 
         if (permissions.contains("AKTIVITAETEN")) {
-            List<Aktivitaet> aktivitaeten = aktivitaetRepository.findAll(page).getContent();
+            List<Aktivitaet> aktivitaeten = aktivitaetRepository.findAllWithRelationsBy(page).getContent();
             if (!aktivitaeten.isEmpty()) {
                 sections.add(formatAktivitaeten(aktivitaeten));
             }
         }
 
         if (permissions.contains("GEHAELTER")) {
-            List<Gehalt> gehaelter = gehaltRepository.findAll(page).getContent();
+            List<Gehalt> gehaelter = gehaltRepository.findAllWithPersonBy(page).getContent();
             if (!gehaelter.isEmpty()) {
                 sections.add(formatGehaelter(gehaelter));
             }
         }
 
         if (permissions.contains("VERTRAEGE")) {
-            List<Vertrag> vertraege = vertragRepository.findAll(page).getContent();
+            List<Vertrag> vertraege = vertragRepository.findAllWithFirmaBy(page).getContent();
             if (!vertraege.isEmpty()) {
                 sections.add(formatVertraege(vertraege));
             }
         }
 
         if (permissions.contains("CHANCEN")) {
-            List<Chance> chancen = chanceRepository.findAll(page).getContent();
+            List<Chance> chancen = chanceRepository.findAllWithFirmaBy(page).getContent();
             if (!chancen.isEmpty()) {
                 sections.add(formatChancen(chancen));
             }

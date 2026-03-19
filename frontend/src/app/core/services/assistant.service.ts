@@ -4,7 +4,7 @@ import { AuthService } from './auth.service';
 @Injectable({ providedIn: 'root' })
 export class AssistantService {
   private authService = inject(AuthService);
-  private readonly baseUrl = '/api/assistant/chat';
+  private readonly baseUrl = '/api/assistant';
   private abortController: AbortController | null = null;
 
   async sendMessage(
@@ -21,7 +21,7 @@ export class AssistantService {
     const token = this.authService.getAccessToken();
 
     try {
-      const response = await fetch(this.baseUrl, {
+      const response = await fetch(`${this.baseUrl}/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -36,7 +36,7 @@ export class AssistantService {
           callbacks.onError('Zugriff verweigert.');
           return;
         }
-        callbacks.onError('Assistent ist derzeit nicht verfuegbar.');
+        callbacks.onError('Assistent ist derzeit nicht verfügbar.');
         return;
       }
 
@@ -58,14 +58,45 @@ export class AssistantService {
         const lines = buffer.split('\n');
         buffer = lines.pop()!;
 
+        let currentEventType = 'message';
+        const dataLines: string[] = [];
+
         for (const line of lines) {
-          if (line.startsWith('data:')) {
-            const data = line.slice(5).trim();
-            if (data === '[DONE]') {
-              receivedDone = true;
-            } else if (data) {
-              callbacks.onToken(data);
+          if (line.startsWith('event:')) {
+            currentEventType = line.slice(6).trim();
+          } else if (line.startsWith('data:')) {
+            dataLines.push(line.slice(5).trim());
+          } else if (line === '') {
+            // Blank line = end of SSE event
+            if (dataLines.length > 0) {
+              const data = dataLines.join('\n');
+              dataLines.length = 0;
+
+              if (currentEventType === 'error') {
+                callbacks.onError(data);
+                receivedDone = true;
+              } else if (data === '[DONE]') {
+                receivedDone = true;
+              } else if (data) {
+                callbacks.onToken(data);
+              }
             }
+            currentEventType = 'message';
+          }
+        }
+
+        // Flush remaining data lines (incomplete event without trailing blank line)
+        if (dataLines.length > 0) {
+          const data = dataLines.join('\n');
+          dataLines.length = 0;
+
+          if (currentEventType === 'error') {
+            callbacks.onError(data);
+            receivedDone = true;
+          } else if (data === '[DONE]') {
+            receivedDone = true;
+          } else if (data) {
+            callbacks.onToken(data);
           }
         }
       }
@@ -82,6 +113,20 @@ export class AssistantService {
       callbacks.onError('Verbindung unterbrochen.');
     } finally {
       this.abortController = null;
+    }
+  }
+
+  async clearHistory(): Promise<void> {
+    const token = this.authService.getAccessToken();
+    try {
+      await fetch(`${this.baseUrl}/history`, {
+        method: 'DELETE',
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+    } catch {
+      // Silently ignore - clearing history is best-effort
     }
   }
 
