@@ -54,7 +54,7 @@ If NOT in plan mode → continue.
 ## SKILL HEADER
 
 ```
-Plan and Do (v1.4.0, 2026-03-19)
+Plan and Do (v1.5.0, 2026-03-19)
 ************************************
 
 Plan and implement any work from freeform description
@@ -99,15 +99,6 @@ When user chooses "quit" at any checkpoint:
 2. Commit state file: `git add [state_file] && git commit -m "docs: Save state at Step [N]. [task_key]"`
 3. Display: "Progress saved. Resume with: /plan-and-do [input]"
 4. STOP (clean exit)
-
-### Standard Checkpoint
-
-At each checkpoint, call AskUserQuestion with three numbered choices:
-- 1 Continue → proceed to next step
-- 2 Edit → use AskUserQuestion to ask what changes needed, apply, return to checkpoint
-- 3 Quit → execute Quit Pattern above
-
-**You MUST wait for the user's response.** Do not proceed, assume a default, or skip the checkpoint. Execution pauses here until the user answers.
 
 ---
 
@@ -167,7 +158,7 @@ Read `plan-and-do-modes.md` and execute matching section. STOP.
         N - Start new task
 
       ```
-      Use AskUserQuestion with this list.
+      Call AskUserQuestion with this list. Wait for response.
 
       - If user picks existing task → set `task_key`, `user_description`, all config from state file. Set `branch_prefix` = lowercase task_key, `input_mode` = "freeform". Jump to step 1.2 (state file check).
       - If user picks "Start new task" → use AskUserQuestion: "What would you like to implement?" Then follow Path A.
@@ -178,7 +169,7 @@ Read `plan-and-do-modes.md` and execute matching section. STOP.
 
 2. Check for state file in `doc/state/` or `docs/state/`.
 
-3. **If state file exists with status=PAUSED:** Show progress. Use AskUserQuestion: 1-Resume, 2-Start fresh, 3-Quit.
+3. **If state file exists with status=PAUSED:** Show progress. Call AskUserQuestion: 1-Resume, 2-Start fresh, 3-Quit. Wait for response — do not proceed until the user answers.
 
    **If COMPLETED or IN_PROGRESS:** Continue.
 
@@ -298,7 +289,7 @@ git branch --show-current
 ```
 Store result as `original_branch`. Update state file `config.original_branch`. This value determines the PR target later — it must reflect the branch the user was on when the skill started.
 
-**If on main/master:** Warn user. Use AskUserQuestion: 1-Create new branch (recommended), 2-Stay on main. Wait for response.
+**If on main/master:** Warn user. Call AskUserQuestion: 1-Create new branch (recommended), 2-Stay on main. Wait for response — do not proceed until the user answers.
 - If stay → set `stay_on_main = true`, skip to Step 4.5.
 
 **Create branch** (unless `stay_on_main`):
@@ -376,8 +367,8 @@ git commit -m "docs: Add specifications (PRD) for [task summary]. [task_key]"
 
 Check in order:
 1. **CLAUDE.md** — if found, use directly (no confirmation needed)
-2. **README.md / README.adoc** — if found, call AskUserQuestion to confirm: "Found test command `[cmd]` in README. 1-Use this, 2-Enter different command." Wait for response.
-3. **Not found** — call AskUserQuestion: "How do you run tests? Type your test command:" Wait for response.
+2. **README.md / README.adoc** — if found, call AskUserQuestion to confirm: "Found test command `[cmd]` in README. 1-Use this, 2-Enter different command." Wait for response — do not proceed until the user answers.
+3. **Not found** — call AskUserQuestion: "How do you run tests? Type your test command:" Wait for response — do not proceed until the user answers.
 
 Store as `test_command`. Do not continue until confirmed.
 
@@ -467,7 +458,7 @@ For each task in PLAN:
 
 ### Step 8.2: Interactive Assistance
 
-If questions arise: explain issue, use AskUserQuestion with numbered alternatives.
+If questions arise: explain issue, call AskUserQuestion with numbered alternatives. Wait for response before continuing.
 
 ---
 
@@ -487,11 +478,11 @@ Execute `[test_command]`.
 3. Re-run tests
 4. If still failing: show details, use AskUserQuestion: "What should I try next?" Apply guidance. Retry.
 
-### Step 9.4: Checkpoint 9 — Implementation Complete
+### Step 9.3: Checkpoint 9 — Implementation Complete
 
-Update state: `current_step` = "9.4".
+Update state: `current_step` = "9.3".
 
-Output: "All tests pass." Call AskUserQuestion: 1-Continue to code review, 2-Make changes, 3-Quit. Wait for response.
+Output: "All tests pass." Call AskUserQuestion: 1-Continue to code review, 2-Make changes, 3-Quit. Wait for response — do not proceed until the user answers.
 
 - "2" → ask what changes, return to STEP 8
 
@@ -520,10 +511,10 @@ Update state: `current_step` = "10.3".
 
 Always call AskUserQuestion here — regardless of whether issues were found:
 
-**If issues found:** Call AskUserQuestion: 1-Fix findings, 2-Skip to post-review testing, 3-Quit. Wait for response.
+**If issues found:** Call AskUserQuestion: 1-Fix findings, 2-Skip to post-review testing, 3-Quit. Wait for response — do not proceed until the user answers.
 - Fix → fix issues, commit: `fix: Address code review findings. [task_key]`, re-run `/review`, return to 10.2
 
-**If no issues:** Call AskUserQuestion: 1-Continue to post-review testing, 2-Make changes, 3-Quit. Wait for response.
+**If no issues:** Call AskUserQuestion: 1-Continue to post-review testing, 2-Make changes, 3-Quit. Wait for response — do not proceed until the user answers.
 
 ---
 
@@ -539,7 +530,7 @@ Always call AskUserQuestion here — regardless of whether issues were found:
 
 Update state: `current_step` = "11.2".
 
-Call AskUserQuestion: 1-Tests passed — continue, 2-Tests failed — need fixes, 3-Quit. Wait for response.
+Call AskUserQuestion: 1-Tests passed — continue, 2-Tests failed — need fixes, 3-Quit. Wait for response — do not proceed until the user answers.
 - "2" → ask for details, fix, commit: `fix: Address post-review test failures. [task_key]`, retry from 11.1
 
 ---
@@ -561,10 +552,10 @@ Display findings (updates needed or "no documentation updates needed").
 
 Update state: `current_step` = "12.3".
 
-**If updates needed:** Call AskUserQuestion: 1-Apply updates, 2-Skip updates, 3-Quit. Wait for response.
+**If updates needed:** Call AskUserQuestion: 1-Apply updates, 2-Skip updates, 3-Quit. Wait for response — do not proceed until the user answers.
 - Apply → edit files, commit: `docs: Update project documentation. [task_key]`
 
-**If no updates needed:** Call AskUserQuestion: 1-Continue to summary, 2-Quit. Wait for response.
+**If no updates needed:** Call AskUserQuestion: 1-Continue to summary, 2-Quit. Wait for response — do not proceed until the user answers.
 
 ---
 
@@ -574,7 +565,7 @@ Update state: `current_step` = "12.3".
 
 Display full absolute file paths (PRD if exists, plan, state).
 
-Call AskUserQuestion: 1-Keep files (recommended), 2-Delete files, 3-Quit. Wait for response.
+Call AskUserQuestion: 1-Keep files (recommended), 2-Delete files, 3-Quit. Wait for response — do not proceed until the user answers.
 - Delete → `git rm` files, commit: `docs: Remove planning files. [task_key]`
 
 ### Step 13.1: Display Summary

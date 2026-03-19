@@ -333,7 +333,7 @@ Call AskUserQuestion: 1-Create pull request, 2-Skip PR (done). Wait for response
   ```
   Display PR URL. Continue to PC.4.
 
-- Skip → STOP. Workflow complete.
+- Skip → Continue to PC.5 (offer branch switch).
 
 ### PC.4: Merge Pull Request
 
@@ -345,11 +345,11 @@ Call AskUserQuestion: 1-Merge PR, 2-Skip merge (done). Wait for response — mer
   ```
   Set `pr_merged = true`. Continue to PC.5.
 
-- Skip → STOP. Workflow complete.
+- Skip → Continue to PC.5 (offer branch switch).
 
 ### PC.5: Switch Back to Original Branch
 
-**Only if `pr_merged = true`.**
+**If `pr_merged = true`:**
 
 ```bash
 git checkout [original_branch]
@@ -357,5 +357,19 @@ git pull
 ```
 
 Display: "Switched to `[original_branch]` and pulled latest changes."
+
+**If `pr_merged = false` (user skipped PR or merge):**
+
+Check if currently on a feature branch different from `original_branch`. If so:
+
+Call AskUserQuestion: 1-Switch back to `[original_branch]`, 2-Stay on `[branch_name]`. Wait for response.
+
+- Switch back:
+  ```bash
+  git checkout [original_branch]
+  ```
+  Display: "Switched to `[original_branch]`."
+
+- Stay → Display: "Staying on `[branch_name]`."
 
 STOP — workflow complete.

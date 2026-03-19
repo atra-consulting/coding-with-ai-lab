@@ -35,7 +35,7 @@ Use the AskUserQuestion tool for all user prompts. This is the built-in tool tha
 
 **Freeform input:** Pass the question as the `question` parameter.
 
-**Wait rule:** After calling AskUserQuestion, you MUST wait for the user's response before taking any further action. Never assume a choice, skip the question, or proceed without the user's answer.
+**Wait rule:** After calling AskUserQuestion, you MUST wait for the user's response before taking any further action. Never assume a choice, skip the question, or proceed without the user's answer. The user's response drives what happens next.
 
 ## User Autonomy
 
@@ -345,7 +345,7 @@ Analyze project documentation to understand goals, requirements, and conventions
 
 ### Step 4.1: Read PRD (if exists)
 
-Search for PRD files: `find . -maxdepth 3 -name "PRD*.md" -o -name "prd*.md" | head -5`
+Search for PRD files using Glob tool with pattern `**/PRD*.md` or `**/prd*.md`.
 
 If found: Read with Read tool (use offset/limit for files >220KB). Extract purpose, goals, requirements, success criteria.
 
