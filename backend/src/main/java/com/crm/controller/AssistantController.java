@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,7 @@ import com.crm.service.AnthropicClient;
 import com.crm.service.ChatHistoryService;
 import com.crm.service.CrmContextBuilder;
 
+import jakarta.annotation.PreDestroy;
 import jakarta.validation.Valid;
 
 @RestController
@@ -45,6 +47,11 @@ public class AssistantController {
         this.chatHistoryService = chatHistoryService;
     }
 
+    @PreDestroy
+    void shutdown() {
+        executor.shutdown();
+    }
+
     @PostMapping("/chat")
     public SseEmitter chat(@Valid @RequestBody ChatRequestDTO request,
                            Authentication authentication) {
@@ -62,6 +69,7 @@ public class AssistantController {
 
         executor.execute(() -> {
             StringBuilder fullResponse = new StringBuilder();
+            AtomicBoolean aborted = new AtomicBoolean(false);
             try {
                 String crmContext = contextBuilder.buildContext(
                         request.message(), authentication.getAuthorities());
@@ -76,15 +84,18 @@ public class AssistantController {
                         systemPrompt,
                         messages,
                         chunk -> {
+                            if (aborted.get()) return;
                             try {
                                 fullResponse.append(chunk);
                                 emitter.send(SseEmitter.event().data(chunk));
                             } catch (IOException e) {
                                 log.warn("SSE send failed", e);
+                                aborted.set(true);
                                 emitter.completeWithError(e);
                             }
                         },
                         () -> {
+                            if (aborted.get()) return;
                             try {
                                 emitter.send(SseEmitter.event().data("[DONE]"));
                                 emitter.complete();
@@ -96,6 +107,7 @@ public class AssistantController {
                         }
                 );
             } catch (Exception e) {
+                if (aborted.get()) return;
                 log.error("Assistant chat error", e);
                 try {
                     String errorMsg = resolveErrorMessage(e);

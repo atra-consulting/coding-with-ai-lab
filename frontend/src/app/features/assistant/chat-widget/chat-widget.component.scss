@@ -215,3 +215,13 @@ $chat-header-height: 48px;
     border-radius: 8px;
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-panel {
+    animation: none;
+  }
+  .streaming-cursor {
+    animation: none;
+    opacity: 1;
+  }
+}

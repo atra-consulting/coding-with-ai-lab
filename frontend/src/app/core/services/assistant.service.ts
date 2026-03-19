@@ -40,7 +40,12 @@ export class AssistantService {
         return;
       }
 
-      const reader = response.body!.getReader();
+      if (!response.body) {
+        callbacks.onError('Keine Antwort vom Assistenten.');
+        return;
+      }
+
+      const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = '';
       let receivedDone = false;

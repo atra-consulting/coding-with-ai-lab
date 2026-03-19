@@ -123,11 +123,14 @@ export class ChatWidgetComponent implements OnDestroy {
         this.messages.update((msgs) => {
           const updated = [...msgs];
           const last = updated[updated.length - 1];
+          const hasPartialContent = !!last.content;
           updated[updated.length - 1] = {
             ...last,
-            content: last.content || error,
+            content: hasPartialContent
+              ? last.content + '\n\n[' + error + ']'
+              : error,
             isStreaming: false,
-            isError: !last.content,
+            isError: true,
           };
           return updated;
         });

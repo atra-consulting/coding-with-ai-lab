@@ -3,7 +3,6 @@ package com.crm.service;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -35,18 +34,12 @@ public class ChatHistoryService {
             return List.of();
         }
         session.touch();
-        return Collections.unmodifiableList(new ArrayList<>(session.messages));
+        return session.getMessages();
     }
 
     public void addExchange(Long benutzerId, String userMessage, String assistantResponse) {
         ChatSession session = sessions.computeIfAbsent(benutzerId, k -> new ChatSession());
-        session.messages.add(new ChatMessageDTO("user", userMessage));
-        session.messages.add(new ChatMessageDTO("assistant", assistantResponse));
-        while (session.messages.size() > maxPairs * 2) {
-            session.messages.removeFirst();
-            session.messages.removeFirst();
-        }
-        session.touch();
+        session.addExchange(userMessage, assistantResponse, maxPairs);
     }
 
     @Scheduled(fixedRate = 300_000)
@@ -67,8 +60,22 @@ public class ChatHistoryService {
     }
 
     private static class ChatSession {
-        final List<ChatMessageDTO> messages = new ArrayList<>();
+        private final List<ChatMessageDTO> messages = new ArrayList<>();
         volatile Instant lastAccess = Instant.now();
+
+        synchronized List<ChatMessageDTO> getMessages() {
+            return List.copyOf(messages);
+        }
+
+        synchronized void addExchange(String userMessage, String assistantResponse, int maxPairs) {
+            messages.add(new ChatMessageDTO("user", userMessage));
+            messages.add(new ChatMessageDTO("assistant", assistantResponse));
+            while (messages.size() > maxPairs * 2) {
+                messages.removeFirst();
+                messages.removeFirst();
+            }
+            touch();
+        }
 
         void touch() {
             lastAccess = Instant.now();

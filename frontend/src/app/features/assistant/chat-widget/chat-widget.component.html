@@ -67,7 +67,7 @@
           <div class="chat-bubble">
             <span class="chat-bubble-text" [style.white-space]="'pre-wrap'">{{ msg.content }}</span>
             @if (msg.isStreaming) {
-              <span class="streaming-cursor">|</span>
+              <span class="streaming-cursor" aria-hidden="true">|</span>
             }
           </div>
         </div>
