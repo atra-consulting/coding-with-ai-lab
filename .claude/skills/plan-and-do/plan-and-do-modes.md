@@ -303,7 +303,7 @@ git status --porcelain
 
 ### PC.2: Push Confirmation
 
-Use AskUserQuestion: 1-Push commits to remote, 2-Skip push (local only).
+Call AskUserQuestion: 1-Push commits to remote, 2-Skip push (local only). Wait for response — do not push without user confirmation.
 
 - Push:
   ```bash
@@ -312,7 +312,7 @@ Use AskUserQuestion: 1-Push commits to remote, 2-Skip push (local only).
 
 ### PC.3: Create Pull Request
 
-Use AskUserQuestion: 1-Create pull request, 2-Skip PR (done).
+Call AskUserQuestion: 1-Create pull request, 2-Skip PR (done). Wait for response — do not create a PR without user confirmation.
 
 - Create:
   Push if not already pushed:
@@ -337,7 +337,7 @@ Use AskUserQuestion: 1-Create pull request, 2-Skip PR (done).
 
 ### PC.4: Merge Pull Request
 
-Use AskUserQuestion: 1-Merge PR, 2-Skip merge (done).
+Call AskUserQuestion: 1-Merge PR, 2-Skip merge (done). Wait for response — merging is destructive, never merge without explicit user confirmation.
 
 - Merge:
   ```bash
