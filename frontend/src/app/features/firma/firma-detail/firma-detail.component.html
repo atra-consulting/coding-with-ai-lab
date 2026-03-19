@@ -32,7 +32,7 @@
     </div>
   </div>
 
-  <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs">
+  <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" (activeIdChange)="onTabChange($event)" class="nav-tabs">
     <li [ngbNavItem]="1">
       <button ngbNavLink>Personen ({{ firma.personenCount }})</button>
       <ng-template ngbNavContent>
@@ -104,6 +104,54 @@
           }
         } @else {
           <p class="text-muted mt-3">Keine Abteilungen vorhanden.</p>
+        }
+      </ng-template>
+    </li>
+    <li [ngbNavItem]="3">
+      <button ngbNavLink>Standorte ({{ firma.adressenCount }})</button>
+      <ng-template ngbNavContent>
+        @if (adressen.length > 0) {
+          @if (geocodedAdressen.length > 1) {
+            <div class="d-flex align-items-center gap-3 mt-3">
+              <button class="btn btn-sm" [class.btn-primary]="!routeLayer" [class.btn-outline-danger]="routeLayer" (click)="toggleRoute()" [disabled]="routeLoading">
+                @if (routeLoading) {
+                  <span class="spinner-border spinner-border-sm me-1"></span>Berechne...
+                } @else if (routeLayer) {
+                  Route entfernen
+                } @else {
+                  Route anzeigen
+                }
+              </button>
+              @if (routeInfo) {
+                <span class="text-muted">{{ routeInfo.distance }} &middot; {{ routeInfo.duration }}</span>
+              }
+            </div>
+          }
+          @if (geocodedAdressen.length > 0) {
+            <div #mapContainer class="mt-3" style="height: 400px; border-radius: 0.5rem"></div>
+          }
+          <table class="table table-hover mt-3">
+            <thead>
+              <tr>
+                <th>Strasse</th>
+                <th>PLZ</th>
+                <th>Stadt</th>
+                <th>Land</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (adresse of adressen; track adresse.id) {
+                <tr class="cursor-pointer" (click)="highlightAdresse(adresse)">
+                  <td>{{ adresse.street }} {{ adresse.houseNumber }}</td>
+                  <td>{{ adresse.postalCode }}</td>
+                  <td>{{ adresse.city }}</td>
+                  <td>{{ adresse.country }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          <p class="text-muted mt-3">Keine Standorte vorhanden.</p>
         }
       </ng-template>
     </li>

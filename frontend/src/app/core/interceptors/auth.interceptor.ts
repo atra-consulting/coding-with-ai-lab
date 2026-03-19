@@ -19,8 +19,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const notification = inject(NotificationService);
   const router = inject(Router);
 
-  // Don't add auth header to auth endpoints (except /me)
+  // Don't add auth header to auth endpoints (except /me) or external URLs
   if (req.url.includes('/api/auth/') && !req.url.includes('/api/auth/me')) {
+    return next(req);
+  }
+  if (!req.url.startsWith('/')) {
     return next(req);
   }
 

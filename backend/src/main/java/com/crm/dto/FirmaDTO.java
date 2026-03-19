@@ -13,5 +13,6 @@ public record FirmaDTO(
     LocalDateTime createdAt,
     LocalDateTime updatedAt,
     int personenCount,
-    int abteilungenCount
+    int abteilungenCount,
+    int adressenCount
 ) {}

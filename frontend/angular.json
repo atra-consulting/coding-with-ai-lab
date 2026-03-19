@@ -45,16 +45,31 @@
             "inlineStyleLanguage": "scss",
             "stylePreprocessorOptions": {
               "sass": {
-                "silenceDeprecations": ["import", "global-builtin", "color-functions", "if-function"]
+                "silenceDeprecations": [
+                  "import",
+                  "global-builtin",
+                  "color-functions",
+                  "if-function"
+                ]
               }
             },
             "assets": [
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "**/*",
+                "input": "node_modules/leaflet/dist/images",
+                "output": "/assets/leaflet"
               }
             ],
-            "styles": ["src/_variables.scss", "node_modules/bootstrap/scss/bootstrap.scss", "src/styles.scss"]
+            "styles": [
+              "src/_variables.scss",
+              "node_modules/bootstrap/scss/bootstrap.scss",
+              "node_modules/leaflet/dist/leaflet.css",
+              "src/styles.scss"
+            ]
           },
           "configurations": {
             "production": {
@@ -106,7 +121,12 @@
             "inlineStyleLanguage": "scss",
             "stylePreprocessorOptions": {
               "sass": {
-                "silenceDeprecations": ["import", "global-builtin", "color-functions", "if-function"]
+                "silenceDeprecations": [
+                  "import",
+                  "global-builtin",
+                  "color-functions",
+                  "if-function"
+                ]
               }
             },
             "assets": [

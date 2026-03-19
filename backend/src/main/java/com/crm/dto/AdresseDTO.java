@@ -7,6 +7,8 @@ public record AdresseDTO(
     String postalCode,
     String city,
     String country,
+    Double latitude,
+    Double longitude,
     Long firmaId,
     String firmaName,
     Long personId,

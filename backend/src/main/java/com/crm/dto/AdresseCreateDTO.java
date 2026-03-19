@@ -8,6 +8,8 @@ public record AdresseCreateDTO(
     @NotBlank String postalCode,
     @NotBlank String city,
     String country,
+    Double latitude,
+    Double longitude,
     Long firmaId,
     Long personId
 ) {}

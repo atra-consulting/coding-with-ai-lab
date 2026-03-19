@@ -4,6 +4,10 @@ import { catchError, throwError } from 'rxjs';
 import { NotificationService } from '../services/notification.service';
 
 export const apiErrorInterceptor: HttpInterceptorFn = (req, next) => {
+  // Skip error handling for external URLs
+  if (!req.url.startsWith('/')) {
+    return next(req);
+  }
   const notification = inject(NotificationService);
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {

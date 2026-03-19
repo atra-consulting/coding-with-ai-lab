@@ -2,6 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Abteilung } from '../models/abteilung.model';
+import { Adresse } from '../models/adresse.model';
 import { Firma, FirmaCreate } from '../models/firma.model';
 import { Page } from '../models/page.model';
 import { Person } from '../models/person.model';
@@ -48,5 +49,10 @@ export class FirmaService {
   getAbteilungen(id: number, page = 0, size = 10): Observable<Page<Abteilung>> {
     const params = new HttpParams().set('page', page).set('size', size);
     return this.http.get<Page<Abteilung>>(`${this.baseUrl}/${id}/abteilungen`, { params });
+  }
+
+  getAdressen(id: number, page = 0, size = 100): Observable<Page<Adresse>> {
+    const params = new HttpParams().set('page', page).set('size', size);
+    return this.http.get<Page<Adresse>>(`${this.baseUrl}/${id}/adressen`, { params });
   }
 }

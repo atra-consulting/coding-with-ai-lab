@@ -33,6 +33,12 @@ public class Adresse {
     @Column(length = 255)
     private String country = "Deutschland";
 
+    @Column
+    private Double latitude;
+
+    @Column
+    private Double longitude;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "firma_id")
     private Firma firma;
@@ -53,6 +59,10 @@ public class Adresse {
     public void setCity(String city) { this.city = city; }
     public String getCountry() { return country; }
     public void setCountry(String country) { this.country = country; }
+    public Double getLatitude() { return latitude; }
+    public void setLatitude(Double latitude) { this.latitude = latitude; }
+    public Double getLongitude() { return longitude; }
+    public void setLongitude(Double longitude) { this.longitude = longitude; }
     public Firma getFirma() { return firma; }
     public void setFirma(Firma firma) { this.firma = firma; }
     public Person getPerson() { return person; }

@@ -33,11 +33,6 @@ if [ "$RESET_DB" = true ]; then
 fi
 
 # Check prerequisites
-if ! command -v mvn &> /dev/null; then
-  echo "ERROR: Maven (mvn) is not installed"
-  exit 1
-fi
-
 if ! command -v node &> /dev/null; then
   echo "ERROR: Node.js is not installed"
   exit 1
@@ -123,7 +118,7 @@ else
   # Start CIAM service (generates RSA keys on first run)
   echo "Starting CIAM service..."
   cd "${ROOT_DIR}/ciam"
-  mvn spring-boot:run -Dspring-boot.run.arguments="--app.demo-mode=${DEMO_MODE}" -q &
+  ./mvnw spring-boot:run -Dspring-boot.run.arguments="--app.demo-mode=${DEMO_MODE}" -q &
   CIAM_PID=$!
   disown $CIAM_PID
   CIAM_STARTED_BY_US=true
@@ -166,7 +161,7 @@ fi
 
 echo "Starting backend..."
 cd "${ROOT_DIR}/backend"
-mvn spring-boot:run -Dspring-boot.run.arguments="--app.demo-mode=${DEMO_MODE}" -Dspring-boot.run.profiles=dev -q &
+./mvnw spring-boot:run -Dspring-boot.run.arguments="--app.demo-mode=${DEMO_MODE}" -Dspring-boot.run.profiles=dev -q &
 BACKEND_PID=$!
 cd "${ROOT_DIR}"
 

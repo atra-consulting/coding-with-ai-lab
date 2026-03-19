@@ -75,6 +75,7 @@ public class DataSeeder implements CommandLineRunner {
         String[] streets = {"Hauptstrasse", "Bahnhofstrasse", "Gartenweg", "Industriestrasse", "Marktplatz", "Schulstrasse", "Parkweg", "Rosenstrasse", "Bergstrasse", "Lindenallee", "Kirchgasse", "Waldweg", "Am Rathaus", "Muehlenweg", "Dorfstrasse"};
         String[] cities = {"Berlin", "Muenchen", "Hamburg", "Koeln", "Frankfurt am Main", "Stuttgart", "Duesseldorf", "Leipzig", "Dortmund", "Essen", "Bremen", "Dresden", "Hannover", "Nuernberg", "Duisburg"};
         String[] postalCodes = {"10115", "80331", "20095", "50667", "60311", "70173", "40213", "04109", "44135", "45127", "28195", "01067", "30159", "90402", "47051"};
+        double[][] cityCoords = {{52.52, 13.405}, {48.1351, 11.582}, {53.5511, 9.9937}, {50.9375, 6.9603}, {50.1109, 8.6821}, {48.7758, 9.1829}, {51.2277, 6.7735}, {51.3397, 12.3731}, {51.5136, 7.4653}, {51.4556, 7.0116}, {53.0793, 8.8017}, {51.0504, 13.7373}, {52.3759, 9.732}, {49.4521, 11.0767}, {51.4344, 6.7623}};
         String[] aktivitaetSubjects = {"Erstgespraech", "Follow-up", "Projektbesprechung", "Angebotserstellung", "Status-Update", "Quartalsreview", "Vertragsverhandlung", "Produktpraesentation", "Reklamationsbearbeitung", "Schulung"};
         String[] vertragTitel = {"Servicevertrag", "Lizenzvertrag", "Wartungsvertrag", "Beratungsvertrag", "Rahmenvertrag", "SLA-Vertrag"};
         String[] chanceTitel = {"Neukundengewinnung", "Upselling", "Erweiterungsprojekt", "Systemwechsel", "Digitalisierung"};
@@ -154,6 +155,8 @@ public class DataSeeder implements CommandLineRunner {
             a.setPostalCode(postalCodes[ci]);
             a.setCity(cities[ci]);
             a.setCountry("Deutschland");
+            a.setLatitude(cityCoords[ci][0] + (random.nextDouble() - 0.5) * 0.02);
+            a.setLongitude(cityCoords[ci][1] + (random.nextDouble() - 0.5) * 0.02);
             a.setFirma(firmen.get(random.nextInt(firmen.size())));
             adressen.add(a);
         }
@@ -165,6 +168,8 @@ public class DataSeeder implements CommandLineRunner {
             a.setPostalCode(postalCodes[ci]);
             a.setCity(cities[ci]);
             a.setCountry("Deutschland");
+            a.setLatitude(cityCoords[ci][0] + (random.nextDouble() - 0.5) * 0.02);
+            a.setLongitude(cityCoords[ci][1] + (random.nextDouble() - 0.5) * 0.02);
             a.setPerson(personen.get(random.nextInt(personen.size())));
             adressen.add(a);
         }

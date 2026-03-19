@@ -10,6 +10,7 @@ export interface Firma {
   updatedAt: string;
   personenCount: number;
   abteilungenCount: number;
+  adressenCount: number;
 }
 
 export interface FirmaCreate {

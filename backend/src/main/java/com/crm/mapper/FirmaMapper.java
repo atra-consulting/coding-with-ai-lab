@@ -19,7 +19,8 @@ public final class FirmaMapper {
             e.getCreatedAt(),
             e.getUpdatedAt(),
             e.getPersonen().size(),
-            e.getAbteilungen().size()
+            e.getAbteilungen().size(),
+            e.getAdressen().size()
         );
     }
 

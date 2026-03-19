@@ -17,6 +17,8 @@ public final class AdresseMapper {
             e.getPostalCode(),
             e.getCity(),
             e.getCountry(),
+            e.getLatitude(),
+            e.getLongitude(),
             e.getFirma() != null ? e.getFirma().getId() : null,
             e.getFirma() != null ? e.getFirma().getName() : null,
             e.getPerson() != null ? e.getPerson().getId() : null,
@@ -38,5 +40,7 @@ public final class AdresseMapper {
         e.setPostalCode(dto.postalCode());
         e.setCity(dto.city());
         e.setCountry(dto.country());
+        e.setLatitude(dto.latitude());
+        e.setLongitude(dto.longitude());
     }
 }

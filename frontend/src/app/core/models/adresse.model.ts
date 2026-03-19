@@ -5,6 +5,8 @@ export interface Adresse {
   postalCode: string;
   city: string;
   country: string;
+  latitude: number | null;
+  longitude: number | null;
   firmaId: number | null;
   firmaName: string | null;
   personId: number | null;
@@ -17,6 +19,8 @@ export interface AdresseCreate {
   postalCode: string;
   city: string;
   country?: string;
+  latitude?: number | null;
+  longitude?: number | null;
   firmaId?: number | null;
   personId?: number | null;
 }
