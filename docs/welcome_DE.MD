@@ -40,10 +40,10 @@ Dies startet den kompletten Stack:
 Erstelle deinen eigenen Branch mit diesem Format:
 
 ```
-training-<MMJJ>/<vornamenachname>
+training-<DDMMJJ>/<vornamenachname>
 ```
 
-Beispiel: `training-0324/john-doe` (März 2024, John Doe)
+Beispiel: `training-190324/john-doe` (19. März 2024, John Doe)
 
 ## Wie du an Tasks arbeitest
 
