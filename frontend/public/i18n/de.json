@@ -1,0 +1,475 @@
+{
+  "app": { "title": "CRM System" },
+  "nav": { "logout": "Abmelden" },
+  "sidebar": {
+    "sections": {
+      "overview": "Übersicht",
+      "customers": "Kunden & Kontakte",
+      "sales": "Vertrieb",
+      "reports": "Auswertungen",
+      "hr": "Personal",
+      "admin": "Administration"
+    },
+    "dashboard": "Dashboard",
+    "firmen": "Firmen",
+    "personen": "Personen",
+    "abteilungen": "Abteilungen",
+    "adressen": "Adressen",
+    "chancen": "Chancen",
+    "aktivitaeten": "Aktivitäten",
+    "vertraege": "Verträge",
+    "pipeline": "Pipeline",
+    "gehaelter": "Gehälter",
+    "benutzer": "Benutzer"
+  },
+  "common": {
+    "save": "Speichern",
+    "create": "Erstellen",
+    "cancel": "Abbrechen",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "back": "Zurück",
+    "loading": "Lädt...",
+    "noData": "Keine Einträge vorhanden",
+    "close": "Schließen",
+    "required": "Pflichtfeld",
+    "list": "Liste",
+    "board": "Board"
+  },
+  "fields": {
+    "name": "Name",
+    "email": "E-Mail",
+    "phone": "Telefon",
+    "website": "Webseite",
+    "notes": "Notizen",
+    "description": "Beschreibung",
+    "industry": "Branche",
+    "createdAt": "Erstellt",
+    "updatedAt": "Aktualisiert",
+    "createdAtAt": "Erstellt am",
+    "updatedAtAt": "Aktualisiert am",
+    "firstName": "Vorname",
+    "lastName": "Nachname",
+    "position": "Position",
+    "firma": "Firma",
+    "abteilung": "Abteilung",
+    "status": "Status",
+    "currency": "Währung",
+    "value": "Wert",
+    "date": "Datum",
+    "amount": "Betrag",
+    "typ": "Typ",
+    "person": "Person",
+    "username": "Benutzername",
+    "password": "Passwort",
+    "active": "Aktiv",
+    "roles": "Rollen",
+    "street": "Straße",
+    "houseNumber": "Hausnummer",
+    "postalCode": "PLZ",
+    "city": "Stadt",
+    "country": "Land",
+    "subject": "Betreff",
+    "probability": "Wahrscheinlichkeit",
+    "expectedDate": "Erwartetes Datum",
+    "startDate": "Startdatum",
+    "endDate": "Enddatum",
+    "contactPerson": "Kontaktperson",
+    "numPersons": "Personen",
+    "numEmployees": "Mitarbeiter"
+  },
+  "login": {
+    "subtitle": "Melden Sie sich an, um fortzufahren",
+    "username": "Benutzername",
+    "password": "Passwort",
+    "submit": "Anmelden",
+    "fillDemo": "Demodaten ausfüllen",
+    "failed": "Anmeldung fehlgeschlagen"
+  },
+  "dialog": {
+    "confirm": "Bestätigung",
+    "areYouSure": "Sind Sie sicher?",
+    "delete": "Löschen",
+    "cancel": "Abbrechen"
+  },
+  "firma": {
+    "listTitle": "Firmen",
+    "newButton": "Neue Firma",
+    "editTitle": "Firma bearbeiten",
+    "createTitle": "Neue Firma",
+    "fields": {
+      "name": "Name",
+      "industry": "Branche",
+      "email": "E-Mail",
+      "phone": "Telefon",
+      "website": "Webseite",
+      "notes": "Notizen",
+      "numPersons": "Personen"
+    },
+    "validation": {
+      "nameRequired": "Name ist erforderlich",
+      "emailInvalid": "Ungültige E-Mail-Adresse"
+    },
+    "notifications": {
+      "updated": "Firma erfolgreich aktualisiert",
+      "created": "Firma erfolgreich erstellt",
+      "deleted": "Firma erfolgreich gelöscht"
+    },
+    "tabs": {
+      "persons": "Personen",
+      "departments": "Abteilungen",
+      "locations": "Standorte"
+    },
+    "noPersons": "Keine Personen vorhanden.",
+    "noDepartments": "Keine Abteilungen vorhanden.",
+    "noLocations": "Keine Standorte vorhanden.",
+    "route": { "calculating": "Berechne..." },
+    "routeShow": "Route anzeigen",
+    "routeRemove": "Route entfernen"
+  },
+  "person": {
+    "listTitle": "Personen",
+    "newButton": "Neue Person",
+    "editTitle": "Person bearbeiten",
+    "createTitle": "Neue Person",
+    "fields": {
+      "firstName": "Vorname",
+      "lastName": "Nachname",
+      "email": "E-Mail",
+      "phone": "Telefon",
+      "firma": "Firma",
+      "abteilung": "Abteilung",
+      "position": "Position",
+      "notes": "Notizen"
+    },
+    "validation": {
+      "firstNameRequired": "Vorname ist erforderlich",
+      "lastNameRequired": "Nachname ist erforderlich"
+    },
+    "notifications": {
+      "updated": "Person erfolgreich aktualisiert",
+      "created": "Person erfolgreich erstellt",
+      "deleted": "Person erfolgreich gelöscht"
+    },
+    "placeholders": {
+      "selectFirma": "Firma auswählen...",
+      "noAbteilung": "Keine Abteilung"
+    }
+  },
+  "abteilung": {
+    "listTitle": "Abteilungen",
+    "newButton": "Neue Abteilung",
+    "editTitle": "Abteilung bearbeiten",
+    "createTitle": "Neue Abteilung",
+    "fields": {
+      "name": "Name",
+      "description": "Beschreibung",
+      "firma": "Firma",
+      "numPersons": "Mitarbeiter",
+      "numPersonsFull": "Anzahl Personen"
+    },
+    "validation": {
+      "nameRequired": "Name ist erforderlich"
+    },
+    "notifications": {
+      "updated": "Abteilung erfolgreich aktualisiert",
+      "created": "Abteilung erfolgreich erstellt",
+      "deleted": "Abteilung erfolgreich gelöscht"
+    },
+    "placeholders": {
+      "selectFirma": "Firma auswählen..."
+    }
+  },
+  "adresse": {
+    "listTitle": "Adressen",
+    "newButton": "Neue Adresse",
+    "editTitle": "Adresse bearbeiten",
+    "createTitle": "Neue Adresse",
+    "fields": {
+      "address": "Adresse",
+      "postalCity": "PLZ / Ort",
+      "country": "Land",
+      "affiliation": "Zugehörigkeit",
+      "street": "Straße",
+      "houseNumber": "Hausnummer",
+      "postalCode": "PLZ",
+      "city": "Stadt",
+      "firma": "Firma",
+      "person": "Person"
+    },
+    "affiliation": "Zugehörigkeit",
+    "assignFirma": "Firma",
+    "assignPerson": "Person",
+    "affiliationPrefix": {
+      "firma": "Firma",
+      "person": "Person"
+    },
+    "validation": {
+      "streetRequired": "Straße ist erforderlich",
+      "postalRequired": "PLZ ist erforderlich",
+      "cityRequired": "Stadt ist erforderlich"
+    },
+    "notifications": {
+      "updated": "Adresse erfolgreich aktualisiert",
+      "created": "Adresse erfolgreich erstellt",
+      "deleted": "Adresse erfolgreich gelöscht"
+    },
+    "placeholders": {
+      "noFirma": "-- Keine Firma --",
+      "noPerson": "-- Keine Person --"
+    }
+  },
+  "chance": {
+    "listTitle": "Chancen",
+    "newButton": "Neue Chance",
+    "editTitle": "Chance bearbeiten",
+    "createTitle": "Neue Chance",
+    "fields": {
+      "titel": "Titel",
+      "firma": "Firma",
+      "contactPerson": "Kontaktperson",
+      "phase": "Phase",
+      "value": "Wert",
+      "probability": "Wahrscheinlichkeit",
+      "expectedDate": "Erwartetes Datum",
+      "description": "Beschreibung",
+      "currency": "Währung",
+      "probabilityPct": "Wahrscheinlichkeit (%)"
+    },
+    "validation": {
+      "titelRequired": "Titel ist erforderlich",
+      "phaseRequired": "Phase ist erforderlich",
+      "firmaRequired": "Firma ist erforderlich",
+      "probabilityRange": "Wert zwischen 0 und 100"
+    },
+    "notifications": {
+      "updated": "Chance erfolgreich aktualisiert",
+      "created": "Chance erfolgreich erstellt",
+      "deleted": "Chance erfolgreich gelöscht"
+    },
+    "placeholders": {
+      "selectFirma": "-- Firma auswählen --",
+      "noContact": "-- Keine Kontaktperson --"
+    }
+  },
+  "aktivitaet": {
+    "listTitle": "Aktivitäten",
+    "newButton": "Neue Aktivität",
+    "editTitle": "Aktivität bearbeiten",
+    "createTitle": "Neue Aktivität",
+    "fields": {
+      "subject": "Betreff",
+      "typ": "Typ",
+      "datum": "Datum",
+      "firma": "Firma",
+      "person": "Person",
+      "description": "Beschreibung"
+    },
+    "validation": {
+      "typRequired": "Typ ist erforderlich",
+      "datumRequired": "Datum ist erforderlich",
+      "subjectRequired": "Betreff ist erforderlich"
+    },
+    "notifications": {
+      "updated": "Aktivität erfolgreich aktualisiert",
+      "created": "Aktivität erfolgreich erstellt",
+      "deleted": "Aktivität erfolgreich gelöscht"
+    },
+    "placeholders": {
+      "selectTyp": "Typ auswählen...",
+      "noFirma": "Keine Firma",
+      "noPerson": "Keine Person"
+    }
+  },
+  "vertrag": {
+    "listTitle": "Verträge",
+    "newButton": "Neuer Vertrag",
+    "editTitle": "Vertrag bearbeiten",
+    "createTitle": "Neuer Vertrag",
+    "fields": {
+      "titel": "Titel",
+      "firma": "Firma",
+      "contactPerson": "Kontaktperson",
+      "status": "Status",
+      "value": "Wert",
+      "currency": "Währung",
+      "startDate": "Startdatum",
+      "endDate": "Enddatum",
+      "notes": "Notizen"
+    },
+    "validation": {
+      "titelRequired": "Titel ist erforderlich",
+      "statusRequired": "Status ist erforderlich",
+      "firmaRequired": "Firma ist erforderlich"
+    },
+    "notifications": {
+      "updated": "Vertrag erfolgreich aktualisiert",
+      "created": "Vertrag erfolgreich erstellt",
+      "deleted": "Vertrag erfolgreich gelöscht"
+    },
+    "placeholders": {
+      "selectStatus": "Status auswählen...",
+      "selectFirma": "Firma auswählen...",
+      "noContact": "Keine Kontaktperson"
+    }
+  },
+  "gehalt": {
+    "listTitle": "Gehälter",
+    "newButton": "Neues Gehalt",
+    "editTitle": "Gehalt bearbeiten",
+    "createTitle": "Neues Gehalt",
+    "fields": {
+      "person": "Person",
+      "typ": "Typ",
+      "amount": "Betrag",
+      "currency": "Währung",
+      "date": "Datum"
+    },
+    "validation": {
+      "personRequired": "Person ist erforderlich",
+      "typRequired": "Typ ist erforderlich",
+      "amountRequired": "Betrag ist erforderlich und muss positiv sein",
+      "dateRequired": "Datum ist erforderlich"
+    },
+    "notifications": {
+      "updated": "Gehalt erfolgreich aktualisiert",
+      "created": "Gehalt erfolgreich erstellt",
+      "deleted": "Gehalt erfolgreich gelöscht"
+    },
+    "placeholders": {
+      "selectPerson": "-- Person auswählen --",
+      "selectTyp": "-- Typ auswählen --"
+    },
+    "types": {
+      "GRUNDGEHALT": "Grundgehalt",
+      "BONUS": "Bonus",
+      "PROVISION": "Provision",
+      "SONDERZAHLUNG": "Sonderzahlung"
+    }
+  },
+  "benutzer": {
+    "listTitle": "Benutzer",
+    "newButton": "Neuer Benutzer",
+    "editTitle": "Benutzer bearbeiten",
+    "createTitle": "Neuer Benutzer",
+    "fields": {
+      "username": "Benutzername",
+      "firstName": "Vorname",
+      "lastName": "Nachname",
+      "email": "E-Mail",
+      "password": "Passwort",
+      "passwordHint": "(leer lassen um es nicht zu ändern)",
+      "roles": "Rollen",
+      "active": "Aktiv",
+      "name": "Name",
+      "status": "Status"
+    },
+    "status": {
+      "active": "Aktiv",
+      "inactive": "Inaktiv"
+    },
+    "validation": {
+      "usernameRequired": "Benutzername ist erforderlich",
+      "firstNameRequired": "Vorname ist erforderlich",
+      "lastNameRequired": "Nachname ist erforderlich",
+      "emailRequired": "E-Mail ist erforderlich",
+      "emailInvalid": "Ungültige E-Mail-Adresse",
+      "passwordMinLength": "Passwort muss mindestens 8 Zeichen lang sein",
+      "roleRequired": "Mindestens eine Rolle muss ausgewählt werden"
+    },
+    "notifications": {
+      "updated": "Benutzer erfolgreich aktualisiert",
+      "created": "Benutzer erfolgreich erstellt"
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "widgets": {
+      "firmen": "Firmen",
+      "personen": "Personen",
+      "aktivitaeten": "Aktivitäten",
+      "offeneChancen": "Offene Chancen"
+    },
+    "topFirmen": {
+      "title": "Top Firmen",
+      "columns": {
+        "rank": "#",
+        "firma": "Firma",
+        "persons": "Personen",
+        "contractValue": "Vertragswert"
+      },
+      "noData": "Keine Daten vorhanden"
+    },
+    "recentActivities": {
+      "title": "Letzte Aktivitäten",
+      "noData": "Keine Aktivitäten vorhanden"
+    },
+    "salaryStats": {
+      "title": "Durchschnittsgehalt nach Abteilung",
+      "noData": "Keine Gehaltsdaten vorhanden"
+    }
+  },
+  "pipeline": {
+    "title": "Auswertungen: Pipeline",
+    "editMode": {
+      "addWidget": "Widget",
+      "reportBuilder": "Report-Builder",
+      "reset": "Zurücksetzen",
+      "done": "Fertig",
+      "customize": "Anpassen",
+      "savedReports": "Gespeicherte Reports"
+    },
+    "noWidgets": {
+      "line1": "Keine Widgets ausgewählt.",
+      "line2": "Klicken Sie auf \"+ Widget\", um Widgets hinzuzufügen."
+    },
+    "widgets": {
+      "kpi-cards": "KPI-Kacheln",
+      "bar-chart": "Pipeline-Wert nach Phase",
+      "doughnut-chart": "Verteilung nach Phase",
+      "top-firmen": "Top 10 Firmen",
+      "pivot-table": "Übersicht nach Phase"
+    },
+    "kpis": {
+      "openPipelineValue": "Offener Pipeline-Wert",
+      "openChances": "Offene Chancen",
+      "winRate": "Gewinnrate",
+      "avgDealSize": "Durchschn. Deal-Größe"
+    },
+    "charts": {
+      "pipelineByPhase": "Pipeline-Wert nach Phase",
+      "distributionByPhase": "Verteilung nach Phase",
+      "top10Firms": "Top 10 Firmen nach offenem Pipeline-Wert"
+    },
+    "pivot": {
+      "title": "Übersicht nach Phase",
+      "phase": "Phase",
+      "count": "Anzahl",
+      "sumValue": "Summe Wert",
+      "avgValue": "Durchschn. Wert",
+      "weightedValue": "Gewichteter Wert",
+      "total": "Gesamt"
+    },
+    "unknownReport": "Unbekannter Report"
+  },
+  "assistant": {
+    "title": "CRM Assistent",
+    "open": "CRM Assistent oeffnen",
+    "minimize": "Minimieren",
+    "close": "Schliessen",
+    "clearChat": "Chat leeren",
+    "send": "Senden",
+    "placeholder": "Nachricht eingeben...",
+    "welcome": "Willkommen beim CRM Assistenten.",
+    "welcomeHint": "Stellen Sie Fragen zu Ihren CRM-Daten, z.B.:",
+    "welcomeExample": "Welche Firmen gibt es in Muenchen?",
+    "errors": {
+      "unavailable": "Assistent ist derzeit nicht verfuegbar.",
+      "notConfigured": "Assistent nicht konfiguriert.",
+      "connectionLost": "Verbindung unterbrochen.",
+      "aborted": "Antwort abgebrochen.",
+      "accessDenied": "Zugriff verweigert.",
+      "rateLimited": "Bitte warten Sie einen Moment."
+    }
+  }
+}

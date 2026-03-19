@@ -1,0 +1,102 @@
+@if (!isOpen()) {
+  <button
+    class="chat-fab"
+    (click)="toggle()"
+    aria-label="CRM Assistent oeffnen"
+    title="CRM Assistent"
+  >
+    <fa-icon [icon]="faComment" size="lg" />
+  </button>
+}
+
+@if (isOpen()) {
+  <div class="chat-panel" role="dialog" aria-label="CRM Assistent">
+    <div class="chat-header">
+      <span class="chat-title">CRM Assistent</span>
+      <div class="chat-header-actions">
+        @if (hasMessages()) {
+          <button
+            class="btn btn-sm btn-link chat-header-btn"
+            (click)="clearChat()"
+            title="Chat leeren"
+            aria-label="Chat leeren"
+          >
+            <fa-icon [icon]="faTrash" />
+          </button>
+        }
+        <button
+          class="btn btn-sm btn-link chat-header-btn"
+          (click)="minimize()"
+          title="Minimieren"
+          aria-label="Minimieren"
+        >
+          <fa-icon [icon]="faMinus" />
+        </button>
+        <button
+          class="btn btn-sm btn-link chat-header-btn"
+          (click)="toggle()"
+          title="Schliessen"
+          aria-label="Schliessen"
+        >
+          <fa-icon [icon]="faTimes" />
+        </button>
+      </div>
+    </div>
+
+    <div
+      class="chat-messages"
+      #messagesContainer
+      (scroll)="onScroll($event)"
+    >
+      @if (!hasMessages()) {
+        <div class="chat-empty">
+          <p class="text-muted mb-1">Willkommen beim CRM Assistenten.</p>
+          <p class="text-muted small">
+            Stellen Sie Fragen zu Ihren CRM-Daten, z.B.:<br />
+            &laquo;Welche Firmen gibt es in Muenchen?&raquo;
+          </p>
+        </div>
+      }
+      @for (msg of messages(); track $index) {
+        <div
+          class="chat-message"
+          [class.chat-message-user]="msg.role === 'user'"
+          [class.chat-message-assistant]="msg.role === 'assistant'"
+          [class.chat-message-error]="msg.isError"
+        >
+          <div class="chat-bubble">
+            <span class="chat-bubble-text" [style.white-space]="'pre-wrap'">{{ msg.content }}</span>
+            @if (msg.isStreaming) {
+              <span class="streaming-cursor">|</span>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="chat-input-area">
+      <div class="input-group">
+        <textarea
+          class="form-control chat-input"
+          [ngModel]="inputText()"
+          (ngModelChange)="inputText.set($event)"
+          (keydown)="onKeydown($event)"
+          placeholder="Nachricht eingeben..."
+          rows="1"
+          [maxlength]="2000"
+          [disabled]="isLoading()"
+          aria-label="Nachricht eingeben"
+        ></textarea>
+        <button
+          class="btn btn-primary chat-send-btn"
+          (click)="send()"
+          [disabled]="!canSend()"
+          title="Senden"
+          aria-label="Nachricht senden"
+        >
+          <fa-icon [icon]="faPaperPlane" />
+        </button>
+      </div>
+    </div>
+  </div>
+}
