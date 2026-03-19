@@ -7,6 +7,9 @@
       <router-outlet />
     </div>
   </div>
+  @if (showAssistant()) {
+    <app-chat-widget />
+  }
 } @else {
   <app-notification />
   <router-outlet />

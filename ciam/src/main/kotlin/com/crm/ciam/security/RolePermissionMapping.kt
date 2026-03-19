@@ -18,7 +18,8 @@ object RolePermissionMapping {
             Permission.AKTIVITAETEN,
             Permission.VERTRAEGE,
             Permission.CHANCEN,
-            Permission.AUSWERTUNGEN
+            Permission.AUSWERTUNGEN,
+            Permission.CRM_ASSISTENT
         ))
 
         put(BenutzerRolle.PERSONAL, EnumSet.of(

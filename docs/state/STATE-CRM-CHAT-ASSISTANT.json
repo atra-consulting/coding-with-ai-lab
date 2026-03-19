@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "task_key": "CRM-CHAT-ASSISTANT",
+  "status": "completed",
+  "current_step": "13",
+  "started": "2026-03-19T10:00:00Z",
+  "updated": "2026-03-19T16:00:00Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "In-App CRM-Assistent (Chat) - Collapsible chat widget for asking questions about CRM data with streaming AI responses",
+    "special_instructions": null,
+    "branch_name": "crm-chat-assistant",
+    "original_branch": "training-19032026/david-kreutzer",
+    "docs_folder": "docs",
+    "stay_on_main": false
+  },
+  "discovery": {
+    "agents_available": true,
+    "writer_agents": ["ba-writer"],
+    "coding_agents": ["be-coder", "fe-coder", "db-coder", "ui-designer"],
+    "review_agents": ["ba-reviewer", "be-reviewer", "fe-reviewer", "db-reviewer", "ui-reviewer"],
+    "test_command": "cd ciam && mvn clean compile && cd ../backend && mvn clean compile && cd ../frontend && npx ng build"
+  },
+  "artifacts": {
+    "prd_skipped": false,
+    "prd_file": "docs/prds/010-crm-chat-assistant.md",
+    "plan_file": "docs/plans/PLAN-CRM-CHAT-ASSISTANT.md"
+  },
+  "completed_steps": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13"]
+}
