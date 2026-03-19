@@ -2,8 +2,8 @@
 name: "project:plan-and-do"
 description: "End-to-end implementation workflow from idea to code review. Use for building features, implementing tasks, fixing complex bugs, or any substantial coding work. Handles planning, implementation, testing, and review automatically."
 argument-hint: ["description"] [special-instructions|resume:<step>]
-version: 1.3.0
-last-modified: 2026-03-17
+version: 1.5.0
+last-modified: 2026-03-19
 allowed-tools:
   - Read
   - Write
@@ -36,6 +36,8 @@ Prerequisites: git, test execution capability
 
 All commits go to the NEW BRANCH created by this skill. The original branch stays clean unless user opts to stay on main/master. State file written to disk first, committed after switching to new branch.
 
+**PR Target Rule:** PRs always target `original_branch` — the branch that was active when the skill started. This branch is captured in Step 4.4 via `git branch --show-current` and stored in `config.original_branch`. Never default to main/master for PRs.
+
 ---
 
 ## PLAN MODE CHECK
@@ -52,7 +54,7 @@ If NOT in plan mode → continue.
 ## SKILL HEADER
 
 ```
-Plan and Do (v1.3.0, 2026-03-17)
+Plan and Do (v1.5.0, 2026-03-19)
 ************************************
 
 Plan and implement any work from freeform description
@@ -78,11 +80,13 @@ When displaying any file path to the user, ALWAYS use the full absolute path. Ge
 
 ## HOW TO ASK THE USER FOR DECISIONS
 
-Use the AskUserQuestion tool for all user prompts.
+Use the AskUserQuestion tool for all user prompts. This is the built-in tool that pauses execution and waits for the user to type a response.
 
 **Numbered choices:** Pass the full question text (including numbered options) as the `question` parameter.
 
 **Freeform input:** Pass the question as the `question` parameter.
+
+**Wait rule:** After calling AskUserQuestion, you MUST wait for the user's response before taking any further action. Never assume a choice, skip the question, or proceed without the user's answer. The user's response drives what happens next.
 
 ---
 
@@ -95,13 +99,6 @@ When user chooses "quit" at any checkpoint:
 2. Commit state file: `git add [state_file] && git commit -m "docs: Save state at Step [N]. [task_key]"`
 3. Display: "Progress saved. Resume with: /plan-and-do [input]"
 4. STOP (clean exit)
-
-### Standard Checkpoint
-
-At each checkpoint, use AskUserQuestion with three choices:
-- Continue → proceed to next step
-- Edit → use AskUserQuestion to ask what changes needed, apply, return to checkpoint
-- Quit → execute Quit Pattern above
 
 ---
 
@@ -140,7 +137,7 @@ Read `plan-and-do-modes.md` and execute matching section. STOP.
    **Path A — Freeform text** (non-empty):
    - Store as `user_description`
    - Extract UPPERCASE task name (2-4 words, hyphenated). Example: "Add Redis caching" → "ADD-REDIS-CACHING"
-   - Output understanding and suggested key. Use AskUserQuestion: 1-Approve, 2-Change key, 3-Clarify.
+   - Output understanding and suggested key. Call AskUserQuestion: 1-Approve, 2-Change key, 3-Clarify. Wait for response before continuing.
    - Set `branch_prefix` = lowercase task_key, `input_mode` = "freeform"
 
    **Path B — Empty:**
@@ -161,7 +158,7 @@ Read `plan-and-do-modes.md` and execute matching section. STOP.
         N - Start new task
 
       ```
-      Use AskUserQuestion with this list.
+      Call AskUserQuestion with this list. Wait for response.
 
       - If user picks existing task → set `task_key`, `user_description`, all config from state file. Set `branch_prefix` = lowercase task_key, `input_mode` = "freeform". Jump to step 1.2 (state file check).
       - If user picks "Start new task" → use AskUserQuestion: "What would you like to implement?" Then follow Path A.
@@ -172,7 +169,7 @@ Read `plan-and-do-modes.md` and execute matching section. STOP.
 
 2. Check for state file in `doc/state/` or `docs/state/`.
 
-3. **If state file exists with status=PAUSED:** Show progress. Use AskUserQuestion: 1-Resume, 2-Start fresh, 3-Quit.
+3. **If state file exists with status=PAUSED:** Show progress. Call AskUserQuestion: 1-Resume, 2-Start fresh, 3-Quit. Wait for response — do not proceed until the user answers.
 
    **If COMPLETED or IN_PROGRESS:** Continue.
 
@@ -286,9 +283,13 @@ If exists: append random 6-digit number to `branch_name`.
 
 ### Step 4.4: Create and Push Branch
 
-Get current branch → store as `original_branch`.
+**First:** Capture current branch immediately — before any branch operations:
+```bash
+git branch --show-current
+```
+Store result as `original_branch`. Update state file `config.original_branch`. This value determines the PR target later — it must reflect the branch the user was on when the skill started.
 
-**If on main/master:** Warn user. Use AskUserQuestion: 1-Create new branch (recommended), 2-Stay on main.
+**If on main/master:** Warn user. Call AskUserQuestion: 1-Create new branch (recommended), 2-Stay on main. Wait for response — do not proceed until the user answers.
 - If stay → set `stay_on_main = true`, skip to Step 4.5.
 
 **Create branch** (unless `stay_on_main`):
@@ -309,7 +310,7 @@ git commit -m "docs: Initialize state tracking for [task_key]"
 
 ## STEP 5: SPECIFICATIONS (PRD) DECISION
 
-Use AskUserQuestion: 1-Create specifications (PRD) first (recommended for complex features), 2-Skip to detailed plan.
+Call AskUserQuestion: 1-Create specifications (PRD) first (recommended for complex features), 2-Skip to detailed plan. Wait for response — do not choose for the user.
 
 - "1" → `prd_skipped = false`, continue to STEP 6
 - "2" → `prd_skipped = true`, `prd_file = nil`, update state → STEP 7
@@ -347,7 +348,7 @@ Write to `[prd_dir]/PRD-[task_key].md`. Store as `prd_file`.
 
 Update state: `current_step` = "6.4", set `artifacts.prd_file`.
 
-Display PRD content and full absolute file path. Standard Checkpoint (Continue/Edit/Quit).
+Display PRD content and full absolute file path. Call AskUserQuestion: 1-Continue, 2-Edit, 3-Quit. Wait for response — do not proceed until the user answers.
 
 ### Step 6.5: Commit PRD
 
@@ -366,8 +367,8 @@ git commit -m "docs: Add specifications (PRD) for [task summary]. [task_key]"
 
 Check in order:
 1. **CLAUDE.md** — if found, use directly (no confirmation needed)
-2. **README.md / README.adoc** — if found, confirm with user
-3. **Not found** — use AskUserQuestion: "How do you run tests? Type your test command:"
+2. **README.md / README.adoc** — if found, call AskUserQuestion to confirm: "Found test command `[cmd]` in README. 1-Use this, 2-Enter different command." Wait for response — do not proceed until the user answers.
+3. **Not found** — call AskUserQuestion: "How do you run tests? Type your test command:" Wait for response — do not proceed until the user answers.
 
 Store as `test_command`. Do not continue until confirmed.
 
@@ -419,7 +420,7 @@ Write to `[plan_dir]/PLAN-[task_key].md`. Store as `plan_file`.
 
 Update state: `current_step` = "7.5", set `artifacts.plan_file`, `discovery.test_command`.
 
-Display plan content and full absolute file path. Standard Checkpoint (Continue/Edit/Quit).
+Display plan content and full absolute file path. Call AskUserQuestion: 1-Continue, 2-Edit, 3-Quit. Wait for response — do not proceed until the user answers. The user must approve the plan before any code is written.
 
 ### Step 7.6: Commit Plan
 
@@ -457,7 +458,7 @@ For each task in PLAN:
 
 ### Step 8.2: Interactive Assistance
 
-If questions arise: explain issue, use AskUserQuestion with numbered alternatives.
+If questions arise: explain issue, call AskUserQuestion with numbered alternatives. Wait for response before continuing.
 
 ---
 
@@ -477,11 +478,11 @@ Execute `[test_command]`.
 3. Re-run tests
 4. If still failing: show details, use AskUserQuestion: "What should I try next?" Apply guidance. Retry.
 
-### Step 9.4: Checkpoint 9 — Implementation Complete
+### Step 9.3: Checkpoint 9 — Implementation Complete
 
-Update state: `current_step` = "9.4".
+Update state: `current_step` = "9.3".
 
-Output: "All tests pass." Use AskUserQuestion: 1-Continue to code review, 2-Make changes, 3-Quit.
+Output: "All tests pass." Call AskUserQuestion: 1-Continue to code review, 2-Make changes, 3-Quit. Wait for response — do not proceed until the user answers.
 
 - "2" → ask what changes, return to STEP 8
 
@@ -501,17 +502,19 @@ Wait for completion.
 
 Read `[review_dir]/REVIEW-*.md`.
 
-**No issues:** "Code review passed." → STEP 11.
 **Issues found:** Display by severity (critical, warnings, suggestions).
+**No issues:** Display: "Code review passed — no issues found."
 
 ### Step 10.3: Checkpoint 10
 
 Update state: `current_step` = "10.3".
 
-If issues found, use AskUserQuestion: 1-Fix findings, 2-Skip to summary, 3-Quit.
+Always call AskUserQuestion here — regardless of whether issues were found:
 
+**If issues found:** Call AskUserQuestion: 1-Fix findings, 2-Skip to post-review testing, 3-Quit. Wait for response — do not proceed until the user answers.
 - Fix → fix issues, commit: `fix: Address code review findings. [task_key]`, re-run `/review`, return to 10.2
-- Skip → STEP 11
+
+**If no issues:** Call AskUserQuestion: 1-Continue to post-review testing, 2-Make changes, 3-Quit. Wait for response — do not proceed until the user answers.
 
 ---
 
@@ -519,14 +522,16 @@ If issues found, use AskUserQuestion: 1-Fix findings, 2-Skip to summary, 3-Quit.
 
 ### Step 11.1: Testing Approach
 
-**If agents_available:** Launch testing agents for end-to-end verification.
+**If agents_available:** Launch testing agents for end-to-end verification. After agents complete, display results.
 
-**Otherwise:** Propose manual test steps. Use AskUserQuestion: 1-Tests passed, 2-Tests failed, 3-Quit.
-- Failed → ask for details, fix, commit, retry
+**Otherwise:** Propose manual test steps.
 
 ### Step 11.2: Checkpoint 11
 
-Update state: `current_step` = "11.2". → STEP 12.
+Update state: `current_step` = "11.2".
+
+Call AskUserQuestion: 1-Tests passed — continue, 2-Tests failed — need fixes, 3-Quit. Wait for response — do not proceed until the user answers.
+- "2" → ask for details, fix, commit: `fix: Address post-review test failures. [task_key]`, retry from 11.1
 
 ---
 
@@ -541,14 +546,16 @@ Check CLAUDE.md, docs/specs/, docs/prds/ for needed updates based on implementat
 **If agents_available:** Launch agents to analyze and propose.
 **Otherwise:** Analyze directly.
 
-**If updates needed:** Use AskUserQuestion: 1-Apply, 2-Skip, 3-Quit.
-- Apply → edit files, commit: `docs: Update project documentation. [task_key]`
-
-**No updates needed:** Display message. Continue.
+Display findings (updates needed or "no documentation updates needed").
 
 ### Step 12.3: Checkpoint 12
 
-Update state: `current_step` = "12.3". → STEP 13.
+Update state: `current_step` = "12.3".
+
+**If updates needed:** Call AskUserQuestion: 1-Apply updates, 2-Skip updates, 3-Quit. Wait for response — do not proceed until the user answers.
+- Apply → edit files, commit: `docs: Update project documentation. [task_key]`
+
+**If no updates needed:** Call AskUserQuestion: 1-Continue to summary, 2-Quit. Wait for response — do not proceed until the user answers.
 
 ---
 
@@ -558,7 +565,7 @@ Update state: `current_step` = "12.3". → STEP 13.
 
 Display full absolute file paths (PRD if exists, plan, state).
 
-Use AskUserQuestion: 1-Keep files (recommended), 2-Delete files, 3-Quit.
+Call AskUserQuestion: 1-Keep files (recommended), 2-Delete files, 3-Quit. Wait for response — do not proceed until the user answers.
 - Delete → `git rm` files, commit: `docs: Remove planning files. [task_key]`
 
 ### Step 13.1: Display Summary

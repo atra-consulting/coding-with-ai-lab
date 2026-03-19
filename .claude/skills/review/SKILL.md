@@ -2,8 +2,8 @@
 name: "project:review"
 description: "Local code review with multi-round review & fix cycle. Use for reviewing code, checking changes, getting feedback on a branch, or before creating a PR."
 argument-hint: (optional special instructions)
-version: 1.4.0
-last-modified: 2026-03-17
+version: 1.5.0
+last-modified: 2026-03-19
 allowed-tools:
   - Read
   - Edit
@@ -29,11 +29,13 @@ When displaying any file path to the user, ALWAYS use the full absolute path. Ge
 
 ## HOW TO ASK THE USER FOR DECISIONS
 
-Use the AskUserQuestion tool for all user prompts.
+Use the AskUserQuestion tool for all user prompts. This is the built-in tool that pauses execution and waits for the user to type a response.
 
 **Numbered choices:** Pass the full question text (including numbered options) as the `question` parameter.
 
 **Freeform input:** Pass the question as the `question` parameter.
+
+**Wait rule:** After calling AskUserQuestion, you MUST wait for the user's response before taking any further action. Never assume a choice, skip the question, or proceed without the user's answer. The user's response drives what happens next.
 
 ## User Autonomy
 
@@ -71,7 +73,7 @@ Then STOP immediately.
 If NOT in plan mode, display header:
 
 ```
-Code Review (v1.4.0, 2026-03-17)
+Code Review (v1.5.0, 2026-03-19)
 ****************************************
 
 Local code review - multi-round review & fix cycle
@@ -113,7 +115,7 @@ Proceed to PHASE 1.3: TASK UNDERSTANDING CONFIRMATION.
 
 Repeat back your understanding of the review focus to the user:
 
-Output understanding, then use AskUserQuestion:
+Output understanding, then call AskUserQuestion:
 ```
 My understanding: Review local changes with focus on [brief summary of special_instructions].
 
@@ -121,10 +123,10 @@ My understanding: Review local changes with focus on [brief summary of special_i
   2 - Clarify instructions
 ```
 
-After receiving the user's response:
+Wait for the user's response before continuing:
 - "1" or "ok"/"yes"/"correct" → Continue to PHASE 1.5.
-- "2" or "clarify"/"change" → Use AskUserQuestion: "What should I change?" Update `special_instructions`. Return to this step.
-- Anything else → Use AskUserQuestion again with the same options.
+- "2" or "clarify"/"change" → Call AskUserQuestion: "What should I change?" Wait for response. Update `special_instructions`. Return to this step.
+- Anything else → Call AskUserQuestion again with the same options. Wait for response.
 
 **If no special_instructions (default review mode):**
 - Skip confirmation (nothing custom to confirm).
@@ -343,7 +345,7 @@ Analyze project documentation to understand goals, requirements, and conventions
 
 ### Step 4.1: Read PRD (if exists)
 
-Search for PRD files: `find . -maxdepth 3 -name "PRD*.md" -o -name "prd*.md" | head -5`
+Search for PRD files using Glob tool with pattern `**/PRD*.md` or `**/prd*.md`.
 
 If found: Read with Read tool (use offset/limit for files >220KB). Extract purpose, goals, requirements, success criteria.
 
@@ -675,7 +677,7 @@ Clean pass. No issues found.
 - Create PR when ready
 
 ---
-Generated with Claude Code - review v1.4.0
+Generated with Claude Code - review v1.5.0
 ```
 
 ### Step 6.3: Write Review File
