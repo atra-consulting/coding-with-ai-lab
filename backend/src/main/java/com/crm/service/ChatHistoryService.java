@@ -37,6 +37,10 @@ public class ChatHistoryService {
         return session.getMessages();
     }
 
+    public void clearHistory(Long benutzerId) {
+        sessions.remove(benutzerId);
+    }
+
     public void addExchange(Long benutzerId, String userMessage, String assistantResponse) {
         ChatSession session = sessions.computeIfAbsent(benutzerId, k -> new ChatSession());
         session.addExchange(userMessage, assistantResponse, maxPairs);

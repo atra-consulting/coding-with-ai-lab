@@ -58,6 +58,7 @@ export class ChatWidgetComponent implements OnDestroy {
   clearChat(): void {
     this.messages.set([]);
     this.assistantService.abort();
+    this.assistantService.clearHistory();
     this.isLoading.set(false);
   }
 

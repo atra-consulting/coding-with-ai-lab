@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -35,4 +36,7 @@ public interface ChanceRepository extends JpaRepository<Chance, Long> {
 
     @Query("SELECT c.firma.id, c.firma.name, COUNT(c), COALESCE(SUM(c.wert), 0) FROM Chance c WHERE c.phase NOT IN :phases GROUP BY c.firma.id, c.firma.name ORDER BY SUM(c.wert) DESC")
     List<Object[]> getTopFirmenRaw(@org.springframework.data.repository.query.Param("phases") List<ChancePhase> phases, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"firma"})
+    Page<Chance> findAllWithFirmaBy(Pageable pageable);
 }
