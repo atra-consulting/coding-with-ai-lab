@@ -61,32 +61,8 @@ export class AssistantService {
         let currentEventType = 'message';
         const dataLines: string[] = [];
 
-        for (const line of lines) {
-          if (line.startsWith('event:')) {
-            currentEventType = line.slice(6).trim();
-          } else if (line.startsWith('data:')) {
-            dataLines.push(line.slice(5).trim());
-          } else if (line === '') {
-            // Blank line = end of SSE event
-            if (dataLines.length > 0) {
-              const data = dataLines.join('\n');
-              dataLines.length = 0;
-
-              if (currentEventType === 'error') {
-                callbacks.onError(data);
-                receivedDone = true;
-              } else if (data === '[DONE]') {
-                receivedDone = true;
-              } else if (data) {
-                callbacks.onToken(data);
-              }
-            }
-            currentEventType = 'message';
-          }
-        }
-
-        // Flush remaining data lines (incomplete event without trailing blank line)
-        if (dataLines.length > 0) {
+        const processEvent = () => {
+          if (dataLines.length === 0) return;
           const data = dataLines.join('\n');
           dataLines.length = 0;
 
@@ -98,7 +74,21 @@ export class AssistantService {
           } else if (data) {
             callbacks.onToken(data);
           }
+          currentEventType = 'message';
+        };
+
+        for (const line of lines) {
+          if (line.startsWith('event:')) {
+            currentEventType = line.slice(6).trim();
+          } else if (line.startsWith('data:')) {
+            dataLines.push(line.slice(5).trim());
+          } else if (line === '') {
+            processEvent();
+          }
         }
+
+        // Flush remaining data lines (incomplete event without trailing blank line)
+        processEvent();
       }
 
       if (receivedDone) {
