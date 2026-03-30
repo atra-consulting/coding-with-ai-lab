@@ -30,8 +30,8 @@ if ! command -v java &> /dev/null; then
 fi
 
 # Check Java version is 21+
-JAVA_VERSION=$(java -version 2>&1 | head -1 | sed 's/.*"\([0-9]*\)\..*/\1/')
-if [ "$JAVA_VERSION" -lt 21 ] 2>/dev/null; then
+JAVA_VERSION=$(java -version 2>&1 | head -1 | sed 's/.*version "\([0-9]*\).*/\1/')
+if ! [[ "$JAVA_VERSION" =~ ^[0-9]+$ ]] || [ "$JAVA_VERSION" -lt 21 ]; then
   echo "ERROR: Java 21 or later is required. Found: Java ${JAVA_VERSION}."
   echo "Install via: brew install openjdk@21  OR  sdk install java 21.0.10-tem"
   exit 1
@@ -56,6 +56,13 @@ if [ "$NODE_MAJOR" -lt 20 ] 2>/dev/null || { [ "$NODE_MAJOR" -eq 20 ] && [ "$NOD
   exit 1
 fi
 echo "Node.js ${NODE_VERSION} detected."
+
+# Check npm is available (bundled with Node.js)
+if ! command -v npm &> /dev/null; then
+  echo "ERROR: npm is not installed (should be bundled with Node.js)."
+  echo "Reinstall Node.js: brew install node@22  OR  nvm install 22"
+  exit 1
+fi
 
 # Optionally reset database
 if [ "$RESET_DB" = true ]; then
@@ -89,6 +96,8 @@ trap cleanup SIGINT SIGTERM
 
 echo "Starting backend..."
 cd "${ROOT_DIR}/backend"
+# Ensure mvnw is executable (may lose executable bit on Windows checkouts)
+[ ! -x "./mvnw" ] && chmod +x "./mvnw"
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev -q &
 BACKEND_PID=$!
 cd "${ROOT_DIR}"
