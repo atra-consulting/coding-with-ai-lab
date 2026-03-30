@@ -63,12 +63,6 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./features/auswertung/auswertung.routes').then((m) => m.AUSWERTUNG_ROUTES),
       },
-      {
-        path: 'benutzer',
-        canActivate: [permissionGuard('BENUTZERVERWALTUNG')],
-        loadChildren: () =>
-          import('./features/benutzer/benutzer.routes').then((m) => m.BENUTZER_ROUTES),
-      },
     ],
   },
   { path: '**', redirectTo: 'dashboard' },

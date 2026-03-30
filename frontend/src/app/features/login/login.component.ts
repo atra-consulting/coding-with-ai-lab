@@ -1,68 +1,53 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
-import { FaIconComponent } from '@fortawesome/angular-fontawesome';
-import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { AuthService } from '../../core/services/auth.service';
+
+interface UserCard {
+  benutzername: string;
+  passwort: string;
+  displayName: string;
+  rollen: string;
+  color: string;
+}
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule, FaIconComponent],
+  imports: [],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
 })
-export class LoginComponent implements OnInit {
-  private fb = inject(FormBuilder);
+export class LoginComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
-  private http = inject(HttpClient);
 
-  faEye = faEye;
-  faEyeSlash = faEyeSlash;
+  readonly users: UserCard[] = [
+    { benutzername: 'admin', passwort: 'admin123', displayName: 'Admin System', rollen: 'ADMIN', color: '#dc3545' },
+    { benutzername: 'vertrieb', passwort: 'test123', displayName: 'Vera Vertrieb', rollen: 'VERTRIEB', color: '#0d6efd' },
+    { benutzername: 'personal', passwort: 'test123', displayName: 'Paul Personal', rollen: 'PERSONAL', color: '#198754' },
+    { benutzername: 'allrounder', passwort: 'test123', displayName: 'Alex Allrounder', rollen: 'VERTRIEB + PERSONAL', color: '#6f42c1' },
+    { benutzername: 'demo', passwort: 'demo1234', displayName: 'David Demo', rollen: 'ADMIN', color: '#fd7e14' },
+  ];
 
-  form: FormGroup = this.fb.group({
-    benutzername: ['', Validators.required],
-    passwort: ['', Validators.required],
-  });
+  loadingUser = signal<string | null>(null);
+  errorMessage = signal<string>('');
 
-  errorMessage = '';
-  showPassword = false;
-  loading = false;
-  demoEnabled = false;
+  loginAs(user: UserCard): void {
+    if (this.loadingUser() !== null) return;
 
-  ngOnInit(): void {
-    this.http.get<{ enabled: boolean }>('/api/auth/demo-mode').subscribe({
-      next: (res) => (this.demoEnabled = res.enabled),
-      error: () => (this.demoEnabled = false),
-    });
-  }
+    this.loadingUser.set(user.benutzername);
+    this.errorMessage.set('');
 
-  fillDemo(): void {
-    this.form.patchValue({ benutzername: 'demo', passwort: 'demo1234' });
-  }
-
-  onSubmit(): void {
-    if (this.form.invalid) return;
-
-    this.loading = true;
-    this.errorMessage = '';
-
-    this.authService.login(this.form.value).subscribe({
+    this.authService.login({ benutzername: user.benutzername, passwort: user.passwort }).subscribe({
       next: () => {
         const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
         const safeUrl = returnUrl.startsWith('/') && !returnUrl.startsWith('//') ? returnUrl : '/dashboard';
         this.router.navigateByUrl(safeUrl);
       },
       error: (err) => {
-        this.loading = false;
-        this.errorMessage = err.error?.message || 'Anmeldung fehlgeschlagen';
+        this.loadingUser.set(null);
+        this.errorMessage.set(err.error?.message || 'Anmeldung fehlgeschlagen');
       },
     });
-  }
-
-  togglePassword(): void {
-    this.showPassword = !this.showPassword;
   }
 }

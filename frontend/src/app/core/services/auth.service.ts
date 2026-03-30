@@ -2,14 +2,13 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, catchError, of, switchMap, tap } from 'rxjs';
-import { BenutzerInfo, LoginRequest, LoginResponse, RefreshResponse } from '../models/auth.model';
+import { BenutzerInfo, LoginRequest, LoginResponse } from '../models/auth.model';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
 
-  private accessToken: string | null = null;
   private currentUserSignal = signal<BenutzerInfo | null>(null);
 
   currentUser = this.currentUserSignal.asReadonly();
@@ -17,11 +16,8 @@ export class AuthService {
 
   login(request: LoginRequest): Observable<LoginResponse> {
     return this.http
-      .post<LoginResponse>('/api/auth/login', request, { withCredentials: true })
+      .post<LoginResponse>('/api/auth/login', request)
       .pipe(
-        tap((response) => {
-          this.accessToken = response.accessToken;
-        }),
         switchMap((response) =>
           this.fetchCurrentUser().pipe(
             switchMap(() => of(response)),
@@ -31,7 +27,7 @@ export class AuthService {
   }
 
   logout(): void {
-    this.http.post('/api/auth/logout', {}, { withCredentials: true }).subscribe({
+    this.http.post('/api/auth/logout', {}).subscribe({
       complete: () => {
         this.clearAuth();
         this.router.navigate(['/login']);
@@ -43,37 +39,14 @@ export class AuthService {
     });
   }
 
-  refresh(): Observable<RefreshResponse | null> {
-    return this.http
-      .post<RefreshResponse>('/api/auth/refresh', {}, { withCredentials: true })
-      .pipe(
-        tap((response) => {
-          this.accessToken = response.accessToken;
-        }),
-        catchError(() => {
-          this.clearAuth();
-          return of(null);
-        }),
-      );
-  }
-
-  getAccessToken(): string | null {
-    return this.accessToken;
-  }
-
   hasPermission(permission: string): boolean {
     const user = this.currentUserSignal();
     return user?.permissions?.includes(permission) ?? false;
   }
 
-  initializeAuth(): Observable<RefreshResponse | null> {
-    return this.refresh().pipe(
-      switchMap((response) => {
-        if (response) {
-          return this.fetchCurrentUser().pipe(switchMap(() => of(response)));
-        }
-        return of(null);
-      }),
+  initializeAuth(): Observable<BenutzerInfo | null> {
+    return this.fetchCurrentUser().pipe(
+      catchError(() => of(null)),
     );
   }
 
@@ -88,7 +61,6 @@ export class AuthService {
   }
 
   private clearAuth(): void {
-    this.accessToken = null;
     this.currentUserSignal.set(null);
   }
 }

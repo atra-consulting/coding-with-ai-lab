@@ -4,15 +4,10 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  accessToken: string;
   benutzername: string;
   vorname: string;
   nachname: string;
   rollen: string[];
-}
-
-export interface RefreshResponse {
-  accessToken: string;
 }
 
 export interface BenutzerInfo {

@@ -5,72 +5,38 @@
         <img src="assets/images/atra_logo.svg" alt="atra.consulting Logo" />
       </div>
       <h2>CRM System</h2>
-      <p>Melden Sie sich an, um fortzufahren</p>
+      <p>Bitte Benutzer auswählen</p>
     </div>
 
     <div class="login-body">
-      @if (errorMessage) {
-        <div class="alert alert-danger d-flex align-items-center" role="alert">
-          <span>{{ errorMessage }}</span>
+      @if (errorMessage()) {
+        <div class="alert alert-danger" role="alert">
+          {{ errorMessage() }}
         </div>
       }
 
-      <form [formGroup]="form" (ngSubmit)="onSubmit()">
-        <div class="form-floating mb-3">
-          <input
-            type="text"
-            class="form-control"
-            id="benutzername"
-            formControlName="benutzername"
-            placeholder="Benutzername"
-            autocomplete="username"
-          />
-          <label for="benutzername">Benutzername</label>
-        </div>
-
-        <div class="form-floating mb-4">
-          <input
-            [type]="showPassword ? 'text' : 'password'"
-            class="form-control"
-            id="passwort"
-            formControlName="passwort"
-            placeholder="Passwort"
-            autocomplete="current-password"
-          />
-          <label for="passwort">Passwort</label>
+      <div class="user-cards">
+        @for (user of users; track user.benutzername) {
           <button
-            class="password-toggle"
+            class="user-card"
             type="button"
-            (click)="togglePassword()"
-            tabindex="-1"
+            (click)="loginAs(user)"
+            [disabled]="loadingUser() !== null"
           >
-            <fa-icon [icon]="showPassword ? faEyeSlash : faEye"></fa-icon>
+            <div class="user-card-header" [style.background-color]="user.color"></div>
+            <div class="user-card-body">
+              <div class="user-card-name">{{ user.displayName }}</div>
+              <div class="user-card-username text-muted">{{ user.benutzername }}</div>
+              <div class="user-card-footer">
+                <span class="badge" [style.background-color]="user.color">{{ user.rollen }}</span>
+                @if (loadingUser() === user.benutzername) {
+                  <span class="spinner-border spinner-border-sm ms-2" role="status"></span>
+                }
+              </div>
+            </div>
           </button>
-        </div>
-
-        <button
-          type="submit"
-          class="btn btn-login w-100"
-          [disabled]="form.invalid || loading"
-        >
-          @if (loading) {
-            <span class="spinner-border spinner-border-sm me-2"></span>
-          }
-          Anmelden
-        </button>
-      </form>
-
-      @if (demoEnabled) {
-        <div class="mt-3 text-center">
-          <button
-            type="button"
-            class="btn btn-outline-secondary btn-sm"
-            (click)="fillDemo()"
-          >
-            Demodaten ausfüllen
-          </button>
-        </div>
-      }
+        }
+      </div>
     </div>
 
     <div class="login-footer">
