@@ -13,6 +13,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
@@ -146,18 +148,18 @@ public class SecurityConfig {
         return source;
     }
 
-    private org.springframework.security.core.GrantedAuthority[] buildAuthorities(String role, String[] permissions) {
+    private GrantedAuthority[] buildAuthorities(String role, String[] permissions) {
         return buildAuthorities(new String[]{role}, permissions);
     }
 
-    private org.springframework.security.core.GrantedAuthority[] buildAuthorities(String[] roles, String[] permissions) {
-        List<org.springframework.security.core.GrantedAuthority> authorities = new java.util.ArrayList<>();
+    private GrantedAuthority[] buildAuthorities(String[] roles, String[] permissions) {
+        List<GrantedAuthority> authorities = new java.util.ArrayList<>();
         for (String role : roles) {
-            authorities.add(new org.springframework.security.core.authority.SimpleGrantedAuthority(role));
+            authorities.add(new SimpleGrantedAuthority(role));
         }
         for (String permission : permissions) {
-            authorities.add(new org.springframework.security.core.authority.SimpleGrantedAuthority(permission));
+            authorities.add(new SimpleGrantedAuthority(permission));
         }
-        return authorities.toArray(new org.springframework.security.core.GrantedAuthority[0]);
+        return authorities.toArray(new GrantedAuthority[0]);
     }
 }

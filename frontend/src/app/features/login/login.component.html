@@ -30,7 +30,7 @@
               <div class="user-card-footer">
                 <span class="badge" [style.background-color]="user.color">{{ user.rollen }}</span>
                 @if (loadingUser() === user.benutzername) {
-                  <span class="spinner-border spinner-border-sm ms-2" role="status"></span>
+                  <span class="spinner-border spinner-border-sm ms-2" role="status"><span class="visually-hidden">Laden...</span></span>
                 }
               </div>
             </div>

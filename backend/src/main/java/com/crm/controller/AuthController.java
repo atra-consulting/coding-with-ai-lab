@@ -54,7 +54,7 @@ public class AuthController {
                 new UsernamePasswordAuthenticationToken(request.benutzername(), request.passwort())
         );
 
-        CrmPrincipal principal = userIdentityService.buildPrincipal(request.benutzername());
+        CrmPrincipal principal = userIdentityService.buildPrincipal(authentication.getName());
 
         UsernamePasswordAuthenticationToken authWithPrincipal = new UsernamePasswordAuthenticationToken(
                 principal, null, authentication.getAuthorities()
@@ -92,10 +92,6 @@ public class AuthController {
     @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<MeResponse> me(Authentication authentication) {
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(401).build();
-        }
-
         CrmPrincipal principal = (CrmPrincipal) authentication.getPrincipal();
 
         List<String> rollen = authentication.getAuthorities().stream()

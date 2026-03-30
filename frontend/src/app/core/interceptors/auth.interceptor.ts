@@ -16,7 +16,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401) {
-        router.navigate(['/login']);
+        if (router.url !== '/login') {
+          router.navigate(['/login'], { queryParams: { returnUrl: router.url } });
+        } else {
+          router.navigate(['/login']);
+        }
         return throwError(() => error);
       }
       if (error.status === 403) {

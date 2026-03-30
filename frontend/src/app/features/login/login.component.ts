@@ -40,6 +40,7 @@ export class LoginComponent {
 
     this.authService.login({ benutzername: user.benutzername, passwort: user.passwort }).subscribe({
       next: () => {
+        this.loadingUser.set(null);
         const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
         const safeUrl = returnUrl.startsWith('/') && !returnUrl.startsWith('//') ? returnUrl : '/dashboard';
         this.router.navigateByUrl(safeUrl);
