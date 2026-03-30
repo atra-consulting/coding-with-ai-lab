@@ -68,35 +68,30 @@ public class SecurityConfig {
         var admin = User.builder()
                 .username("admin")
                 .password(encoder.encode("admin123"))
-                .roles("ADMIN")
                 .authorities(buildAuthorities("ROLE_ADMIN", allPermissions))
                 .build();
 
         var vertrieb = User.builder()
                 .username("vertrieb")
                 .password(encoder.encode("test123"))
-                .roles("VERTRIEB")
                 .authorities(buildAuthorities("ROLE_VERTRIEB", vertriebPermissions))
                 .build();
 
         var personal = User.builder()
                 .username("personal")
                 .password(encoder.encode("test123"))
-                .roles("PERSONAL")
                 .authorities(buildAuthorities("ROLE_PERSONAL", personalPermissions))
                 .build();
 
         var allrounder = User.builder()
                 .username("allrounder")
                 .password(encoder.encode("test123"))
-                .roles("VERTRIEB", "PERSONAL")
                 .authorities(buildAuthorities(new String[]{"ROLE_VERTRIEB", "ROLE_PERSONAL"}, allrounderPermissions))
                 .build();
 
         var demo = User.builder()
                 .username("demo")
                 .password(encoder.encode("demo1234"))
-                .roles("ADMIN")
                 .authorities(buildAuthorities("ROLE_ADMIN", allPermissions))
                 .build();
 
