@@ -1,4 +1,4 @@
-# Aufgabe 3: Firmendossier via LLM (Gemini)
+# Aufgabe 4: Firmendossier via LLM (Gemini)
 
 ## Beschreibung
 
