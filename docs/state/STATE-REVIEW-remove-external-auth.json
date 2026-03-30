@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "branch": "remove-external-auth",
+  "main_branch": "main",
+  "docs_folder": "docs",
+  "special_instructions": null,
+  "review_agents_available": true,
+  "fix_agents_available": true,
+  "all_reviewers": ["ba-reviewer", "be-reviewer", "fe-reviewer", "db-reviewer", "ui-reviewer"],
+  "all_coders": ["be-coder", "fe-coder", "db-coder", "ui-designer"],
+  "all_designers": [],
+  "dry_run_mode": false,
+  "started": "2026-03-30T16:00:00Z"
+}

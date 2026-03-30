@@ -23,4 +23,8 @@ frontend/.angular/
 # OS
 .DS_Store
 Thumbs.db
+
+# Screenshots
+/*.png
+/*.jpg
 \n# Gemini CLI temporary files\n.playwright-mcp/
