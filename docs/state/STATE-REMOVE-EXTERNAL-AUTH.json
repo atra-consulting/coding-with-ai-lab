@@ -1,8 +1,8 @@
 {
   "version": 1,
   "task_key": "REMOVE-EXTERNAL-AUTH",
-  "status": "in_progress",
-  "current_step": "7.5",
+  "status": "completed",
+  "current_step": "13",
   "started": "2026-03-30T10:00:00Z",
   "updated": "2026-03-30T10:01:00Z",
   "config": {
@@ -14,7 +14,7 @@
     "branch_name": "remove-external-auth",
     "original_branch": "main",
     "docs_folder": "docs",
-    "workflow_scope": null
+    "workflow_scope": "full"
   },
   "discovery": {
     "agents_available": true,
