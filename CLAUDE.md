@@ -9,14 +9,16 @@ Full-stack CRM application. Spring Boot 4.0.3 (Java 21) backend, Angular 21 fron
 ```bash
 ./start.sh                                        # Full stack (backend:7070 + frontend:7200)
 ./start.sh --reset-db                             # Delete H2 database (recreated on startup)
-cd backend && mvn spring-boot:run                  # Backend only
+cd backend && ./mvnw spring-boot:run               # Backend only
 cd frontend && npx ng serve --port 7200 --proxy-config proxy.conf.json  # Frontend only
-cd backend && mvn clean compile                    # Backend compile check
+cd backend && ./mvnw clean compile                 # Backend compile check
 cd frontend && npx ng build                        # Frontend build check
 ```
 
+**Prerequisites:** Java 21+, Node.js 20.19+ (checked by `start.sh`). Maven is provided via Maven Wrapper (`./mvnw`).
+
 **Hot reload during development:**
-- **Backend:** DevTools auto-restarts on recompile. Change Java code → run `cd backend && mvn compile` (or use IDE auto-build) → backend restarts automatically.
+- **Backend:** DevTools auto-restarts on recompile. Change Java code → run `cd backend && ./mvnw compile` (or use IDE auto-build) → backend restarts automatically.
 - **Frontend:** Angular `ng serve` watches for file changes and reloads the browser automatically.
 
 ## Coding Conventions
