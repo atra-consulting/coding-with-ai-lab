@@ -4,7 +4,7 @@ import {
 } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { catchError, throwError } from 'rxjs';
+import { EMPTY, catchError, throwError } from 'rxjs';
 import { NotificationService } from '../services/notification.service';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
@@ -18,10 +18,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       if (error.status === 401) {
         if (router.url !== '/login') {
           router.navigate(['/login'], { queryParams: { returnUrl: router.url } });
-        } else {
-          router.navigate(['/login']);
         }
-        return throwError(() => error);
+        return EMPTY;
       }
       if (error.status === 403) {
         notification.error('Zugriff verweigert');
