@@ -4,6 +4,11 @@ import { permissionGuard } from './core/guards/permission.guard';
 
 export const routes: Routes = [
   {
+    path: 'welcome',
+    loadComponent: () =>
+      import('./features/welcome/welcome.component').then((m) => m.WelcomeComponent),
+  },
+  {
     path: 'login',
     loadComponent: () =>
       import('./features/login/login.component').then((m) => m.LoginComponent),

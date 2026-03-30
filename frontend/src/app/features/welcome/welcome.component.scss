@@ -1,0 +1,189 @@
+@use "sass:color";
+
+$primary: #264892;
+$success: #16a34a;
+
+.welcome-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f6f8 0%, #e8eaf0 50%, #dde1ea 100%);
+}
+
+.welcome-card {
+  width: 480px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow:
+    0 10px 40px rgba(38, 72, 146, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.06);
+  background: #fff;
+  animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.welcome-header {
+  background: linear-gradient(135deg, $primary 0%, color.adjust($primary, $lightness: -8%) 100%);
+  padding: 2.5rem 2rem 2rem;
+  text-align: center;
+  color: #fff;
+
+  h2 {
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  .subtitle {
+    margin: 0.75rem 0 0;
+    font-size: 1rem;
+    opacity: 0.9;
+    line-height: 1.5;
+  }
+}
+
+.welcome-logo {
+  margin: 0 auto 1rem;
+  text-align: center;
+
+  img {
+    height: 48px;
+    width: auto;
+  }
+}
+
+.checkmark {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: $success;
+  color: #fff;
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+  animation: scaleIn 0.5s ease-out 0.3s both;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.welcome-body {
+  padding: 2rem;
+  text-align: center;
+}
+
+.countdown-label {
+  font-size: 0.875rem;
+  color: #6c757d;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.countdown {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+
+.countdown-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 64px;
+}
+
+.countdown-value {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: $primary;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.countdown-unit {
+  font-size: 0.7rem;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 0.25rem;
+}
+
+.countdown-separator {
+  font-size: 2rem;
+  font-weight: 700;
+  color: $primary;
+  opacity: 0.4;
+  line-height: 1;
+}
+
+.ready-text {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: $success;
+  margin-bottom: 1.5rem;
+}
+
+.btn-login {
+  background: linear-gradient(135deg, $primary 0%, color.adjust($primary, $lightness: -6%) 100%);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  display: block;
+  text-align: center;
+  transition: transform 0.15s, box-shadow 0.15s;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba($primary, 0.35);
+    color: #fff;
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.welcome-footer {
+  text-align: center;
+  padding: 0 2rem 1.5rem;
+  font-size: 0.75rem;
+  color: #adb5bd;
+
+  a {
+    color: #adb5bd;
+    text-decoration: none;
+
+    &:hover {
+      color: $primary;
+    }
+  }
+}
