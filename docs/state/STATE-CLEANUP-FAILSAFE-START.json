@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "task_key": "CLEANUP-FAILSAFE-START",
+  "status": "in_progress",
+  "current_step": "3.3",
+  "started": "2026-03-30T10:00:00Z",
+  "updated": "2026-03-30T10:00:00Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Remove workshop task descriptions, make start.sh failsafe with Java 21+ check, switch to Gradle Wrapper, explore Node wrapper for Angular",
+    "special_instructions": null,
+    "ticket_id": null,
+    "ticket_url": null,
+    "branch_name": null,
+    "original_branch": "main",
+    "docs_folder": "docs",
+    "workflow_scope": null
+  },
+  "discovery": {
+    "agents_available": true,
+    "writer_agents": ["ba-writer"],
+    "coding_agents": ["be-coder", "db-coder", "fe-coder", "ui-designer"],
+    "review_agents": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer"],
+    "test_command": null,
+    "youtrack_available": false,
+    "youtrack_mcp": null,
+    "youtrack_on_start": null,
+    "youtrack_on_resolve": null
+  },
+  "artifacts": {
+    "prd_skipped": null,
+    "prd_file": null,
+    "plan_file": null,
+    "pr_url": null
+  },
+  "completed_steps": []
+}
