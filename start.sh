@@ -19,30 +19,43 @@ for arg in "$@"; do
   esac
 done
 
-# Check prerequisites
-if ! command -v mvn &> /dev/null; then
-  echo "ERROR: Maven (mvn) is not installed"
+# --- Prerequisite checks ---
+
+# Check Java is installed
+if ! command -v java &> /dev/null; then
+  echo "ERROR: Java is not installed."
+  echo "This project requires Java 21 or later."
+  echo "Install via: brew install openjdk@21  OR  sdk install java 21.0.10-tem"
   exit 1
 fi
 
+# Check Java version is 21+
+JAVA_VERSION=$(java -version 2>&1 | head -1 | sed 's/.*"\([0-9]*\)\..*/\1/')
+if [ "$JAVA_VERSION" -lt 21 ] 2>/dev/null; then
+  echo "ERROR: Java 21 or later is required. Found: Java ${JAVA_VERSION}."
+  echo "Install via: brew install openjdk@21  OR  sdk install java 21.0.10-tem"
+  exit 1
+fi
+echo "Java ${JAVA_VERSION} detected."
+
+# Check Node.js is installed
 if ! command -v node &> /dev/null; then
-  echo "ERROR: Node.js is not installed"
+  echo "ERROR: Node.js is not installed."
+  echo "This project requires Node.js 20.19+ (Angular 21 requirement)."
+  echo "Install via: brew install node@22  OR  nvm install 22"
   exit 1
 fi
 
-if ! command -v npm &> /dev/null; then
-  echo "ERROR: npm is not installed"
+# Check Node.js version is 20.19+
+NODE_VERSION=$(node --version | sed 's/^v//')
+NODE_MAJOR=$(echo "$NODE_VERSION" | cut -d. -f1)
+NODE_MINOR=$(echo "$NODE_VERSION" | cut -d. -f2)
+if [ "$NODE_MAJOR" -lt 20 ] 2>/dev/null || { [ "$NODE_MAJOR" -eq 20 ] && [ "$NODE_MINOR" -lt 19 ]; }; then
+  echo "ERROR: Node.js 20.19 or later is required. Found: Node ${NODE_VERSION}."
+  echo "Install via: brew install node@22  OR  nvm install 22"
   exit 1
 fi
-
-# Set JAVA_HOME to Java 21 if available
-if [ -d "/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home" ]; then
-  export JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home"
-  echo "Using Java 21: $JAVA_HOME"
-elif [ -d "$(brew --prefix openjdk@21 2>/dev/null)/libexec/openjdk.jdk/Contents/Home" ]; then
-  export JAVA_HOME="$(brew --prefix openjdk@21)/libexec/openjdk.jdk/Contents/Home"
-  echo "Using Java 21 (Homebrew): $JAVA_HOME"
-fi
+echo "Node.js ${NODE_VERSION} detected."
 
 # Optionally reset database
 if [ "$RESET_DB" = true ]; then
@@ -76,7 +89,7 @@ trap cleanup SIGINT SIGTERM
 
 echo "Starting backend..."
 cd "${ROOT_DIR}/backend"
-mvn spring-boot:run -Dspring-boot.run.profiles=dev -q &
+./mvnw spring-boot:run -Dspring-boot.run.profiles=dev -q &
 BACKEND_PID=$!
 cd "${ROOT_DIR}"
 
