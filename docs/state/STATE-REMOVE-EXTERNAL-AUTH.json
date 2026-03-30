@@ -2,17 +2,17 @@
   "version": 1,
   "task_key": "REMOVE-EXTERNAL-AUTH",
   "status": "in_progress",
-  "current_step": "3.3",
+  "current_step": "7.5",
   "started": "2026-03-30T10:00:00Z",
-  "updated": "2026-03-30T10:00:00Z",
+  "updated": "2026-03-30T10:01:00Z",
   "config": {
     "input_mode": "freeform",
     "user_description": "Remove the external auth server completely. Replace it with some hardcoded logins that are shown on the login page.",
     "special_instructions": null,
     "ticket_id": null,
     "ticket_url": null,
-    "branch_name": null,
-    "original_branch": null,
+    "branch_name": "remove-external-auth",
+    "original_branch": "main",
     "docs_folder": "docs",
     "workflow_scope": null
   },
@@ -28,9 +28,9 @@
     "youtrack_on_resolve": null
   },
   "artifacts": {
-    "prd_skipped": null,
-    "prd_file": null,
-    "plan_file": null,
+    "prd_skipped": false,
+    "prd_file": "docs/prds/PRD-REMOVE-EXTERNAL-AUTH.md",
+    "plan_file": "docs/plans/PLAN-REMOVE-EXTERNAL-AUTH.md",
     "pr_url": null
   },
   "completed_steps": []
