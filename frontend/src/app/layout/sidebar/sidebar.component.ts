@@ -13,7 +13,6 @@ import {
   faSitemap,
   faTachometerAlt,
   faUsers,
-  faUsersCog,
   faAngleDoubleLeft,
   faAngleDoubleRight,
 } from '@fortawesome/free-solid-svg-icons';
@@ -78,12 +77,6 @@ export class SidebarComponent {
       title: 'Personal',
       items: [
         { label: 'Gehälter', route: '/gehaelter', icon: faMoneyBillWave, permission: 'GEHAELTER' },
-      ],
-    },
-    {
-      title: 'Administration',
-      items: [
-        { label: 'Benutzer', route: '/benutzer', icon: faUsersCog, permission: 'BENUTZERVERWALTUNG' },
       ],
     },
   ];

@@ -12,7 +12,7 @@ $accent: #dc421e;
 }
 
 .login-card {
-  width: 420px;
+  width: 480px;
   border-radius: 12px;
   overflow: hidden;
   box-shadow:
@@ -64,40 +64,7 @@ $accent: #dc421e;
 }
 
 .login-body {
-  padding: 2rem;
-
-  .form-floating {
-    position: relative;
-
-    .form-control {
-      border-radius: 8px;
-      border: 1.5px solid #dee2e6;
-      transition: border-color 0.2s, box-shadow 0.2s;
-
-      &:focus {
-        border-color: $primary;
-        box-shadow: 0 0 0 3px rgba($primary, 0.12);
-      }
-    }
-  }
-
-  .password-toggle {
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    color: #6c757d;
-    cursor: pointer;
-    padding: 4px;
-    z-index: 5;
-    line-height: 1;
-
-    &:hover {
-      color: $primary;
-    }
-  }
+  padding: 1.5rem 2rem;
 
   .alert {
     border-radius: 8px;
@@ -105,24 +72,31 @@ $accent: #dc421e;
     border: none;
     background-color: #fef2f2;
     color: #991b1b;
+    margin-bottom: 1rem;
   }
 }
 
-.btn-login {
-  background: linear-gradient(135deg, $primary 0%, color.adjust($primary, $lightness: -6%) 100%);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  padding: 0.75rem;
-  font-size: 1rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  transition: transform 0.15s, box-shadow 0.15s;
+.user-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.user-card {
+  background: #fff;
+  border: 1.5px solid #dee2e6;
+  border-radius: 10px;
+  text-align: left;
+  cursor: pointer;
+  padding: 0;
+  overflow: hidden;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+  width: 100%;
 
   &:hover:not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba($primary, 0.35);
-    color: #fff;
+    border-color: $primary;
+    box-shadow: 0 4px 12px rgba($primary, 0.15);
+    transform: translateY(-2px);
   }
 
   &:active:not(:disabled) {
@@ -131,7 +105,48 @@ $accent: #dc421e;
 
   &:disabled {
     opacity: 0.65;
+    cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary;
+    outline-offset: 2px;
+  }
+}
+
+.user-card-header {
+  height: 4px;
+  border-radius: 10px 10px 0 0;
+}
+
+.user-card-body {
+  padding: 0.75rem 1rem;
+}
+
+.user-card-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #212529;
+  margin-bottom: 0.15rem;
+}
+
+.user-card-username {
+  font-size: 0.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.user-card-footer {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+
+  .badge {
+    font-size: 0.7rem;
+    font-weight: 500;
     color: #fff;
+    border-radius: 4px;
+    padding: 0.2em 0.5em;
   }
 }
 

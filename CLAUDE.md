@@ -2,29 +2,22 @@
 
 ## Project
 
-Full-stack CRM application with separate CIAM microservice. Spring Boot 4.0.3 (Java 21) backend, CIAM service in Kotlin (Spring Boot 4.0.3), Angular 21 frontend. German domain model: Firma, Person, Abteilung, Adresse, Gehalt, Aktivitaet, Vertrag, Chance. H2 file-based databases (separate DBs for CRM and CIAM).
+Full-stack CRM application. Spring Boot 4.0.3 (Java 21) backend, Angular 21 frontend. German domain model: Firma, Person, Abteilung, Adresse, Gehalt, Aktivitaet, Vertrag, Chance. H2 file-based database. Authentication via hardcoded in-memory users with session-based auth (5 users: admin, vertrieb, personal, allrounder, demo).
 
 ## Build & Run
 
 ```bash
-./start.sh                                        # Full stack (CIAM:8081 + backend:7070 + frontend:7200)
-./start.sh --restart-ciam                         # Force restart CIAM (normally stays running)
-./start.sh --reset-db                             # Delete DBs + restart CIAM (recreated on startup)
-./stop.sh                                         # Stop persistent CIAM service
-cd ciam && mvn spring-boot:run                     # CIAM only (must start first, generates RSA keys)
-cd backend && mvn spring-boot:run                  # Backend only (needs CIAM's public key)
+./start.sh                                        # Full stack (backend:7070 + frontend:7200)
+./start.sh --reset-db                             # Delete H2 database (recreated on startup)
+cd backend && mvn spring-boot:run                  # Backend only
 cd frontend && npx ng serve --port 7200 --proxy-config proxy.conf.json  # Frontend only
-cd ciam && mvn clean compile                       # CIAM compile check
 cd backend && mvn clean compile                    # Backend compile check
 cd frontend && npx ng build                        # Frontend build check
 ```
 
-**CIAM persistence:** CIAM stays running after Ctrl+C. Next `./start.sh` reuses it (skips ~10s startup). Use `--restart-ciam` to force restart.
-
 **Hot reload during development:**
 - **Backend:** DevTools auto-restarts on recompile. Change Java code → run `cd backend && mvn compile` (or use IDE auto-build) → backend restarts automatically.
 - **Frontend:** Angular `ng serve` watches for file changes and reloads the browser automatically.
-- **CIAM:** No DevTools. Restart manually with `./start.sh --restart-ciam` if needed.
 
 ## Coding Conventions
 
@@ -44,11 +37,11 @@ cd frontend && npx ng build                        # Frontend build check
 
 ## Adding a New Entity
 
-Backend (7 files): Entity → DTO + CreateDTO → Mapper → Repository → Service → Controller at `/api/<plural>`. **Controller must have `@PreAuthorize`** — either `hasAuthority('PERMISSION')` (add permission to CIAM `Permission.kt` + `RolePermissionMapping.kt`) or `hasAnyRole(...)`.
+Backend (7 files): Entity → DTO + CreateDTO → Mapper → Repository → Service → Controller at `/api/<plural>`. **Controller must have `@PreAuthorize`** — either `hasAuthority('PERMISSION')` or `hasAnyRole(...)`.
 
 Frontend (8+ files): Model interface → Service → Route file → List/Detail/Form components → register in `app.routes.ts` **with `canActivate: [permissionGuard('PERMISSION')]`** + add `permission: 'PERMISSION'` to sidebar item.
 
-**Adding a new permission**: Add to `Permission.kt` enum → assign to roles in `RolePermissionMapping.kt` (ADMIN gets all via `allOf` automatically) → use `hasAuthority('NAME')` on controller → add `permissionGuard('NAME')` on frontend route + `permission: 'NAME'` on sidebar item.
+**Adding a new permission**: Add the permission string to the user's `GrantedAuthority` list in `SecurityConfig.java` → use `hasAuthority('NAME')` on controller → add `permissionGuard('NAME')` on frontend route + `permission: 'NAME'` on sidebar item.
 
 ## Commits & PRDs
 
@@ -63,7 +56,7 @@ Frontend (8+ files): Model interface → Service → Route file → List/Detail/
 | admin | Local dev environment, H2 databases, process management | ops |
 | ba-reviewer | Review PRDs, specs, plans for gaps and issues | review |
 | ba-writer | Create business specs, requirements, plans | writing |
-| be-coder | Spring Boot / Java backend code (+ CIAM Kotlin) | coding |
+| be-coder | Spring Boot / Java backend code | coding |
 | be-reviewer | Review backend code, security, patterns | review |
 | db-coder | JPA queries, entity schemas, data access | coding |
 | db-reviewer | Review queries, JPA mappings, performance | review |
@@ -78,4 +71,4 @@ Agent files: `.claude/agents/`
 
 ## Specifications
 
-Full system specs: [`docs/specs/SPECS.md`](docs/specs/SPECS.md) — root document linking to per-area specs (CIAM, backend, frontend, infrastructure).
+Full system specs: [`docs/specs/SPECS.md`](docs/specs/SPECS.md) — root document linking to per-area specs (backend, frontend, infrastructure).

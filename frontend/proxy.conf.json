@@ -1,19 +1,4 @@
 {
-  "/api/auth": {
-    "target": "http://localhost:8081",
-    "secure": false,
-    "changeOrigin": true
-  },
-  "/api/benutzer": {
-    "target": "http://localhost:8081",
-    "secure": false,
-    "changeOrigin": true
-  },
-  "/.well-known": {
-    "target": "http://localhost:8081",
-    "secure": false,
-    "changeOrigin": true
-  },
   "/api": {
     "target": "http://localhost:7070",
     "secure": false,
