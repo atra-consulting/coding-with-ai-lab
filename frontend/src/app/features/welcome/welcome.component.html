@@ -35,6 +35,8 @@
         </div>
       } @else {
         <p class="ready-text">Die Schulung hat begonnen!</p>
+      }
+      @if (countdownFinished()) {
         <a routerLink="/login" class="btn btn-login w-100">Anmelden</a>
       }
     </div>
