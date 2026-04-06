@@ -8,7 +8,7 @@ import { RouterLink } from '@angular/router';
   styleUrl: './welcome.component.scss',
 })
 export class WelcomeComponent implements OnInit, OnDestroy {
-  private targetDate = new Date('2026-04-07T13:00:00');
+  private targetDate = new Date('2026-04-06T00:00:00');
   private intervalId: ReturnType<typeof setInterval> | null = null;
 
   days = signal(0);

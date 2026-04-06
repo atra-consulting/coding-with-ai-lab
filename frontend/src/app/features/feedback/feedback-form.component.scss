@@ -1,0 +1,429 @@
+@use "sass:color";
+
+$primary: #264892;
+$success: #16a34a;
+$star-color: #f59e0b;
+
+// ─── Page ───────────────────────────────────────────────────────────
+
+.feedback-page {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  background: linear-gradient(160deg, #f0f2f7 0%, #e2e6f0 50%, #d8dde9 100%);
+}
+
+// ─── Card ───────────────────────────────────────────────────────────
+
+.feedback-card {
+  width: 100%;
+  max-width: 580px;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow:
+    0 20px 60px rgba(38, 72, 146, 0.10),
+    0 4px 16px rgba(0, 0, 0, 0.05);
+  background: #fff;
+  animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// ─── Header ─────────────────────────────────────────────────────────
+
+.feedback-header {
+  background: linear-gradient(135deg, $primary 0%, color.adjust($primary, $lightness: -10%) 100%);
+  padding: 2.5rem 2rem 2rem;
+  text-align: center;
+  color: #fff;
+
+  h1 {
+    margin: 0;
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+  }
+
+  .subtitle {
+    margin: 0.5rem 0 0;
+    font-size: 1rem;
+    opacity: 0.92;
+  }
+
+  .trainers {
+    margin: 0.25rem 0 0;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .welcome-text {
+    margin: 1.25rem 0 0;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: 0.01em;
+  }
+
+  .welcome-subtext {
+    margin: 0.25rem 0 0;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.8);
+  }
+}
+
+.logo {
+  margin: 0 auto 1.25rem;
+  text-align: center;
+
+  img {
+    height: 44px;
+    width: auto;
+  }
+}
+
+// ─── Form Body ──────────────────────────────────────────────────────
+
+.feedback-body {
+  padding: 1.75rem 2rem 1.25rem;
+}
+
+.form-group {
+  margin-bottom: 0;
+  padding: 0.75rem 0;
+}
+
+.question-divider {
+  border: none;
+  border-top: 1px solid #eef0f4;
+  margin: 0.25rem 0;
+}
+
+// ─── Question Labels ────────────────────────────────────────────────
+
+.question-label {
+  display: flex !important;
+  align-items: flex-start;
+  gap: 0.75rem;
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: #2d3748;
+  margin-bottom: 0.75rem;
+  line-height: 1.45;
+}
+
+.question-number {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: $primary;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0px;
+}
+
+// ─── Star Rating ────────────────────────────────────────────────────
+
+.star-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+  margin-left: calc(26px + 0.75rem);
+}
+
+.star {
+  background: none;
+  border: none;
+  font-size: 2.25rem;
+  color: #e2e6f0;
+  cursor: pointer;
+  padding: 0.125rem;
+  line-height: 1;
+  transition: color 0.15s, transform 0.15s;
+
+  &:hover {
+    transform: scale(1.2);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  &.active {
+    color: $star-color;
+  }
+}
+
+.rating-label {
+  margin-left: 0.75rem;
+  font-size: 0.8rem;
+  color: #8895a7;
+  font-style: italic;
+  white-space: nowrap;
+}
+
+.multi-hint {
+  font-size: 0.75rem;
+  color: #8895a7;
+  margin: -0.25rem 0 0.5rem calc(26px + 0.75rem);
+  font-style: italic;
+}
+
+// ─── Option Pills (Single / Multi Choice) ──────────────────────────
+
+.option-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-left: calc(26px + 0.75rem);
+}
+
+.option-pill {
+  display: inline-flex !important;
+  align-items: center;
+  min-height: 40px;
+  padding: 0.5rem 1.125rem;
+  border: 1.5px solid #dee2e6;
+  border-radius: 24px;
+  font-size: 0.85rem !important;
+  font-weight: 500 !important;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+
+  input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+  }
+
+  &:hover {
+    border-color: $primary;
+    color: $primary;
+    background: rgba($primary, 0.04);
+  }
+
+  &.selected {
+    background: $primary;
+    border-color: $primary;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba($primary, 0.25);
+  }
+}
+
+// ─── Text Fields ────────────────────────────────────────────────────
+
+.form-control {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1.5px solid #e2e6f0;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  font-family: inherit;
+  box-sizing: border-box;
+  background: #fafbfc;
+  margin-left: calc(26px + 0.75rem);
+  width: calc(100% - 26px - 0.75rem);
+
+  &:focus {
+    outline: 2px solid $primary;
+    outline-offset: -1px;
+    border-color: $primary;
+    background: #fff;
+  }
+
+  &::placeholder {
+    color: #b0b8c4;
+  }
+}
+
+textarea.form-control {
+  resize: vertical;
+  min-height: 72px;
+}
+
+// ─── Error ──────────────────────────────────────────────────────────
+
+.error-message {
+  background: #fef2f2;
+  color: #dc2626;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  margin: 0.75rem 0 1rem;
+  border: 1px solid #fecaca;
+}
+
+// ─── Submit Button ──────────────────────────────────────────────────
+
+.btn-submit {
+  width: 100%;
+  background: linear-gradient(135deg, $primary 0%, color.adjust($primary, $lightness: -6%) 100%);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba($primary, 0.30);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// ─── Footer ─────────────────────────────────────────────────────────
+
+.feedback-footer {
+  text-align: center;
+  padding: 0.5rem 2rem 1.5rem;
+  font-size: 0.75rem;
+  color: #8895a7;
+
+  a {
+    color: #8895a7;
+    text-decoration: none;
+
+    &:hover {
+      color: $primary;
+    }
+  }
+}
+
+// ─── Success View ───────────────────────────────────────────────────
+
+.success-view {
+  padding: 4rem 2rem 3rem;
+  text-align: center;
+  animation: slideUp 0.5s ease-out;
+
+  .logo {
+    margin-bottom: 2rem;
+  }
+
+  h2 {
+    margin: 1.25rem 0 0.75rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2d3748;
+  }
+
+  p {
+    color: #64748b;
+    font-size: 1rem;
+    margin: 0;
+    line-height: 1.5;
+  }
+}
+
+.success-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, $success 0%, color.adjust($success, $lightness: -8%) 100%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  box-shadow: 0 8px 24px rgba($success, 0.25);
+  animation: scaleIn 0.5s ease-out 0.2s both;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+// ─── Responsive ─────────────────────────────────────────────────────
+
+@media (max-width: 600px) {
+  .feedback-page {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .feedback-card {
+    border-radius: 16px;
+  }
+
+  .feedback-header {
+    padding: 2rem 1.5rem 1.5rem;
+  }
+
+  .feedback-body {
+    padding: 1.25rem 1.25rem 0.75rem;
+  }
+
+  .star {
+    font-size: 1.85rem;
+  }
+
+  .star-rating,
+  .option-group,
+  .form-control {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .option-pill {
+    min-height: 44px;
+  }
+}

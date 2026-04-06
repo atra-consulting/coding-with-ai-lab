@@ -1,0 +1,127 @@
+@use "sass:color";
+
+$primary: #264892;
+
+.thankyou-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: #fff;
+  padding: 2rem;
+}
+
+.thankyou-card {
+  text-align: center;
+  max-width: 720px;
+  animation: fadeIn 0.8s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.logo {
+  margin-bottom: 3rem;
+
+  img {
+    height: 56px;
+    width: auto;
+  }
+}
+
+h1 {
+  color: $primary;
+  font-size: 3rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.divider {
+  width: 80px;
+  height: 3px;
+  background: rgba($primary, 0.2);
+  border-radius: 2px;
+  margin: 2rem auto;
+}
+
+.subtitle {
+  color: #2d3748;
+  font-size: 1.35rem;
+  font-weight: 500;
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+
+.date {
+  color: #8895a7;
+  font-size: 1rem;
+  margin: 0.25rem 0 0;
+}
+
+.trainers {
+  display: flex;
+  justify-content: center;
+  gap: 2.5rem;
+  margin-top: 3rem;
+}
+
+.trainer {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #2d3748;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.trainer-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba($primary, 0.08);
+  border: 2px solid rgba($primary, 0.2);
+  color: $primary;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.footer {
+  margin-top: 4rem;
+  font-size: 0.85rem;
+
+  a {
+    color: #adb5bd;
+    text-decoration: none;
+    transition: color 0.2s;
+
+    &:hover {
+      color: $primary;
+    }
+  }
+}
+
+@media (max-width: 600px) {
+  h1 {
+    font-size: 2rem;
+  }
+
+  .trainers {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+}

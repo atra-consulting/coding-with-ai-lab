@@ -1,0 +1,141 @@
+<div class="feedback-page">
+  <div class="feedback-card">
+    @if (!submitted()) {
+      <div class="feedback-header">
+        <div class="logo">
+          <img src="assets/images/atra_logo.svg" alt="" />
+        </div>
+        <h1>{{ config.title }}</h1>
+        <p class="subtitle">{{ config.subtitle }}</p>
+        <p class="trainers">{{ config.trainers }}</p>
+        <p class="welcome-text">{{ config.thankYou }}</p>
+        <p class="welcome-subtext">{{ config.welcomeSubtext }}</p>
+      </div>
+
+      <form class="feedback-body" (ngSubmit)="submitFeedback()">
+        @for (question of questions; track question.key; let idx = $index; let last = $last) {
+          <div class="form-group">
+
+            @if (question.type === 'stars') {
+              <label [id]="question.key + '-label'" class="question-label">
+                <span class="question-number">{{ idx + 1 }}</span>
+                {{ question.label }}
+              </label>
+              <div
+                class="star-rating"
+                role="radiogroup"
+                [attr.aria-labelledby]="question.key + '-label'"
+                (mouseleave)="resetHover(question.key)"
+              >
+                @for (i of [1, 2, 3, 4, 5]; track i) {
+                  <button
+                    type="button"
+                    [class]="getStarClass(question.key, i)"
+                    role="radio"
+                    [attr.aria-checked]="answers[question.key] === i"
+                    (mouseenter)="hoverStar(question.key, i)"
+                    (click)="setRating(question.key, i)"
+                    [attr.aria-label]="i + ' von 5 Sternen'"
+                  >
+                    &#9733;
+                  </button>
+                }
+                <span class="rating-label">{{ getStarLabel($any(question)) }}</span>
+              </div>
+            }
+
+            @if (question.type === 'choice') {
+              <label class="question-label">
+                <span class="question-number">{{ idx + 1 }}</span>
+                {{ question.label }}
+              </label>
+              <div class="option-group">
+                @for (option of $any(question).options; track option.value) {
+                  <label class="option-pill" [class.selected]="answers[question.key] === option.value">
+                    <input
+                      type="radio"
+                      [name]="question.key"
+                      [value]="option.value"
+                      (change)="answers[question.key] = option.value"
+                    />
+                    {{ option.label }}
+                  </label>
+                }
+              </div>
+            }
+
+            @if (question.type === 'multichoice') {
+              <label class="question-label">
+                <span class="question-number">{{ idx + 1 }}</span>
+                {{ question.label }}
+              </label>
+              <p class="multi-hint">Mehrfachauswahl möglich</p>
+              <div class="option-group">
+                @for (option of $any(question).options; track option.value) {
+                  <label
+                    class="option-pill"
+                    [class.selected]="isMultiSelected(question.key, option.value)"
+                    (click)="toggleMultiChoice(question.key, option.value)"
+                  >
+                    {{ option.label }}
+                  </label>
+                }
+              </div>
+            }
+
+            @if (question.type === 'text') {
+              <label [for]="question.key" class="question-label">
+                <span class="question-number">{{ idx + 1 }}</span>
+                {{ question.label }}
+              </label>
+              <textarea
+                [id]="question.key"
+                class="form-control"
+                rows="3"
+                [placeholder]="$any(question).placeholder"
+                [ngModel]="answers[question.key] || ''"
+                (ngModelChange)="answers[question.key] = $event"
+                [name]="question.key"
+                autocomplete="off"
+              ></textarea>
+            }
+
+          </div>
+
+          @if (!last) {
+            <hr class="question-divider" />
+          }
+        }
+
+        @if (error()) {
+          <div class="error-message" role="alert">{{ error() }}</div>
+        }
+
+        <button type="submit" class="btn-submit" [disabled]="submitting()">
+          @if (submitting()) {
+            <span class="spinner"></span> Wird gesendet...
+          } @else {
+            Feedback absenden
+          }
+        </button>
+      </form>
+
+      <div class="feedback-footer">
+        Made by <a href="https://atra.consulting/" target="_blank" rel="noopener noreferrer">atra.consulting</a>
+      </div>
+    } @else {
+      <div class="success-view">
+        <div class="logo">
+          <img src="assets/images/atra_logo.svg" alt="" />
+        </div>
+        <div class="success-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </div>
+        <h2>{{ config.thankYou }}</h2>
+        <p>{{ config.successMessage }}</p>
+      </div>
+    }
+  </div>
+</div>

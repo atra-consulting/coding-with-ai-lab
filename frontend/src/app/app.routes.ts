@@ -14,6 +14,21 @@ export const routes: Routes = [
       import('./features/login/login.component').then((m) => m.LoginComponent),
   },
   {
+    path: 'feedback',
+    loadComponent: () =>
+      import('./features/feedback/feedback-form.component').then((m) => m.FeedbackFormComponent),
+  },
+  {
+    path: 'danke',
+    loadComponent: () =>
+      import('./features/feedback/thankyou.component').then((m) => m.ThankyouComponent),
+  },
+  {
+    path: 'feedback-qr',
+    loadComponent: () =>
+      import('./features/feedback/feedback-qr.component').then((m) => m.FeedbackQrComponent),
+  },
+  {
     path: '',
     canActivate: [authGuard],
     children: [

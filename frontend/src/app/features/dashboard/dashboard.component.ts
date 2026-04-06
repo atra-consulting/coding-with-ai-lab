@@ -6,6 +6,7 @@ import { RecentActivitiesComponent } from './widgets/recent-activities/recent-ac
 import { SalaryStatisticsComponent } from './widgets/salary-statistics/salary-statistics.component';
 import { StatsOverviewComponent } from './widgets/stats-overview/stats-overview.component';
 import { TopCompaniesComponent } from './widgets/top-companies/top-companies.component';
+import { FeedbackCtaComponent } from './widgets/feedback-cta/feedback-cta.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -15,6 +16,7 @@ import { TopCompaniesComponent } from './widgets/top-companies/top-companies.com
     RecentActivitiesComponent,
     SalaryStatisticsComponent,
     TopCompaniesComponent,
+    FeedbackCtaComponent,
   ],
   templateUrl: './dashboard.component.html',
 })
