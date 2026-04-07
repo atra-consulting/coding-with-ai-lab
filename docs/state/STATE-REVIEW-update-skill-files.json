@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "branch": "update-skill-files",
+  "main_branch": "main",
+  "docs_folder": "docs",
+  "special_instructions": null,
+  "review_agents_available": true,
+  "fix_agents_available": true,
+  "all_reviewers": ["ba-reviewer", "be-reviewer", "fe-reviewer", "db-reviewer", "ui-reviewer"],
+  "all_coders": ["be-coder", "fe-coder", "db-coder", "ui-designer"],
+  "all_designers": [],
+  "changed_files": [".claude/skills/plan-and-do/SKILL.md", ".claude/skills/review/SKILL.md"],
+  "dry_run_mode": false,
+  "started": "2026-04-07T12:30:00Z"
+}
