@@ -1,0 +1,41 @@
+@if (loading) {
+  <app-loading-spinner />
+} @else if (produkt) {
+  <div class="page-header">
+    <h2>{{ produkt.name }}</h2>
+    <div>
+      <a [routerLink]="['/', 'produkte', produkt.id, 'bearbeiten']" class="btn btn-primary me-2"
+        >Bearbeiten</a
+      >
+      <button class="btn btn-outline-danger me-2" (click)="onDelete()">Löschen</button>
+      <a routerLink="/produkte" class="btn btn-outline-secondary">Zurück</a>
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <p><strong>Produkt-Nr.:</strong> {{ produkt.produktNummer || '-' }}</p>
+          <p><strong>Kategorie:</strong> {{ produkt.kategorie }}</p>
+          <p>
+            <strong>Status:</strong>
+            <span class="badge" [class]="getStatusBadgeClass(produkt.aktiv)">{{
+              produkt.aktiv ? 'Aktiv' : 'Inaktiv'
+            }}</span>
+          </p>
+          <p><strong>Preis:</strong> {{ produkt.preis | eurCurrency: produkt.currency }}</p>
+        </div>
+        <div class="col-md-6">
+          <p><strong>Einheit:</strong> {{ produkt.einheit || '-' }}</p>
+          <p><strong>Währung:</strong> {{ produkt.currency || '-' }}</p>
+          <p><strong>Erstellt:</strong> {{ produkt.createdAt | date: 'dd.MM.yyyy' }}</p>
+          <p><strong>Aktualisiert:</strong> {{ produkt.updatedAt | date: 'dd.MM.yyyy' }}</p>
+        </div>
+      </div>
+      @if (produkt.beschreibung) {
+        <p><strong>Beschreibung:</strong> {{ produkt.beschreibung }}</p>
+      }
+    </div>
+  </div>
+}
