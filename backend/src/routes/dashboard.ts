@@ -11,9 +11,9 @@ router.get(
   '/stats',
   requireAuth,
   requireRole(...ALL_ROLES),
-  (_req: Request, res: Response, next: NextFunction): void => {
+  (req: Request, res: Response, next: NextFunction): void => {
     try {
-      res.json(dashboardService.getStats());
+      res.json(dashboardService.getStats(req.currentUser?.roles ?? []));
     } catch (err) {
       next(err);
     }

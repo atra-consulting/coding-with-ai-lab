@@ -105,11 +105,30 @@ export const abteilungService = {
     page: number,
     size: number
   ): PageResult<PersonDTO> {
-    // Implementation is set via module-level override below to avoid circular reference issues
-    void abteilungId;
-    void page;
-    void size;
-    return {} as PageResult<PersonDTO>;
+    this.findById(abteilungId); // throws 404 if not found
+
+    const BASE_PERSON_QUERY = `
+      SELECT p.id, p.firstName, p.lastName, p.email, p.phone, p.position, p.notes,
+             p.firmaId, f.name AS firmaName,
+             p.abteilungId, a.name AS abteilungName,
+             p.createdAt, p.updatedAt
+      FROM person p
+      LEFT JOIN firma f ON p.firmaId = f.id
+      LEFT JOIN abteilung a ON p.abteilungId = a.id
+    `;
+
+    const countRow = sqlite
+      .prepare('SELECT COUNT(*) AS cnt FROM person WHERE abteilungId = ?')
+      .get(abteilungId) as { cnt: number };
+    const total = Number(countRow.cnt);
+
+    const rows = sqlite
+      .prepare(
+        `${BASE_PERSON_QUERY} WHERE p.abteilungId = ? ORDER BY p.lastName ASC, p.firstName ASC LIMIT ? OFFSET ?`
+      )
+      .all(abteilungId, size, page * size) as PersonDTO[];
+
+    return buildPage(rows, total, page, size);
   },
 
   create(dto: AbteilungCreateDTO): AbteilungDTO {
@@ -137,34 +156,3 @@ export const abteilungService = {
   },
 };
 
-// Override findPersonenByAbteilungId with proper implementation
-abteilungService.findPersonenByAbteilungId = function (
-  abteilungId: number,
-  page: number,
-  size: number
-): PageResult<PersonDTO> {
-  abteilungService.findById(abteilungId); // throws 404 if not found
-
-  const BASE_PERSON_QUERY = `
-    SELECT p.id, p.firstName, p.lastName, p.email, p.phone, p.position, p.notes,
-           p.firmaId, f.name AS firmaName,
-           p.abteilungId, a.name AS abteilungName,
-           p.createdAt, p.updatedAt
-    FROM person p
-    LEFT JOIN firma f ON p.firmaId = f.id
-    LEFT JOIN abteilung a ON p.abteilungId = a.id
-  `;
-
-  const countRow = sqlite
-    .prepare('SELECT COUNT(*) AS cnt FROM person WHERE abteilungId = ?')
-    .get(abteilungId) as { cnt: number };
-  const total = Number(countRow.cnt);
-
-  const rows = sqlite
-    .prepare(
-      `${BASE_PERSON_QUERY} WHERE p.abteilungId = ? ORDER BY p.lastName ASC, p.firstName ASC LIMIT ? OFFSET ?`
-    )
-    .all(abteilungId, size, page * size) as PersonDTO[];
-
-  return buildPage(rows, total, page, size);
-};

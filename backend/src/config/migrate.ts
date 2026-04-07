@@ -127,5 +127,22 @@ export function runMigrations(): void {
     );
   `);
 
+  sqlite.exec(`
+    CREATE INDEX IF NOT EXISTS idx_person_firmaId ON person(firmaId);
+    CREATE INDEX IF NOT EXISTS idx_person_abteilungId ON person(abteilungId);
+    CREATE INDEX IF NOT EXISTS idx_abteilung_firmaId ON abteilung(firmaId);
+    CREATE INDEX IF NOT EXISTS idx_aktivitaet_firmaId ON aktivitaet(firmaId);
+    CREATE INDEX IF NOT EXISTS idx_aktivitaet_personId ON aktivitaet(personId);
+    CREATE INDEX IF NOT EXISTS idx_aktivitaet_datum ON aktivitaet(datum DESC);
+    CREATE INDEX IF NOT EXISTS idx_chance_firmaId ON chance(firmaId);
+    CREATE INDEX IF NOT EXISTS idx_chance_phase ON chance(phase);
+    CREATE INDEX IF NOT EXISTS idx_vertrag_firmaId ON vertrag(firmaId);
+    CREATE INDEX IF NOT EXISTS idx_vertrag_status ON vertrag(status);
+    CREATE INDEX IF NOT EXISTS idx_gehalt_personId ON gehalt(personId);
+    CREATE INDEX IF NOT EXISTS idx_adresse_firmaId ON adresse(firmaId);
+    CREATE INDEX IF NOT EXISTS idx_adresse_personId ON adresse(personId);
+    CREATE INDEX IF NOT EXISTS idx_savedReport_benutzerId ON savedReport(benutzerId);
+  `);
+
   console.log('Database migrations complete.');
 }

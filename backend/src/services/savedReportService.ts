@@ -6,7 +6,6 @@ export interface SavedReportDTO {
   id: number;
   name: string;
   config: string;
-  benutzerId: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -25,7 +24,6 @@ function toDTO(row: SavedReportRow): SavedReportDTO {
     id: row.id,
     name: row.name,
     config: row.config,
-    benutzerId: row.benutzerId,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };

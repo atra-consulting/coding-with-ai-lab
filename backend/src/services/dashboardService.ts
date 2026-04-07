@@ -28,7 +28,8 @@ export interface DashboardStatsDTO {
 const CLOSED_PHASES = ['GEWONNEN', 'VERLOREN'];
 
 export const dashboardService = {
-  getStats(): DashboardStatsDTO {
+  getStats(roles: string[] = []): DashboardStatsDTO {
+    const canSeeSalary = roles.some((r) => r === 'ADMIN' || r === 'PERSONAL');
     const firmenCount = Number(
       (sqlite.prepare('SELECT COUNT(*) AS cnt FROM firma').get() as { cnt: number }).cnt
     );
@@ -60,7 +61,7 @@ export const dashboardService = {
 
     const recentAktivitaeten = this.getRecentActivities();
     const topFirmen = this.getTopCompanies();
-    const salaryByDepartment = this.getSalaryStatistics();
+    const salaryByDepartment = canSeeSalary ? this.getSalaryStatistics() : [];
 
     return {
       firmenCount,
