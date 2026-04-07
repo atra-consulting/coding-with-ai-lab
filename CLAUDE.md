@@ -2,33 +2,35 @@
 
 ## Project
 
-Full-stack CRM application. Spring Boot 4.0.3 (Java 21) backend, Angular 21 frontend. German domain model: Firma, Person, Abteilung, Adresse, Gehalt, Aktivitaet, Vertrag, Chance. H2 file-based database. Authentication via hardcoded in-memory users with session-based auth (5 users: admin, vertrieb, personal, allrounder, demo).
+Full-stack CRM application. Node.js/TypeScript (Express + Drizzle ORM + SQLite) backend, Angular 21 frontend. German domain model: Firma, Person, Abteilung, Adresse, Gehalt, Aktivitaet, Vertrag, Chance. SQLite file-based database. Authentication via hardcoded in-memory users with session-based auth (5 users: admin, vertrieb, personal, allrounder, demo).
 
 ## Build & Run
 
 ```bash
 ./start.sh                                        # Full stack (backend:7070 + frontend:7200)
-./start.sh --reset-db                             # Delete H2 database (recreated on startup)
-cd backend && ./mvnw spring-boot:run               # Backend only
+./start.sh --reset-db                             # Delete SQLite database (recreated on startup)
+cd backend && npx tsx --watch src/index.ts         # Backend only (with hot reload)
 cd frontend && npx ng serve --port 7200 --proxy-config proxy.conf.json  # Frontend only
-cd backend && ./mvnw clean compile                 # Backend compile check
 cd frontend && npx ng build                        # Frontend build check
 ```
 
-**Prerequisites:** Java 21+, Node.js 20.19+ (checked by `start.sh`). Maven is provided via Maven Wrapper (`./mvnw`).
+**Prerequisites:** Node.js 20.19+ (checked by `start.sh`).
 
 **Hot reload during development:**
-- **Backend:** DevTools auto-restarts on recompile. Change Java code → run `cd backend && ./mvnw compile` (or use IDE auto-build) → backend restarts automatically.
+- **Backend:** `tsx --watch` restarts on file changes automatically.
 - **Frontend:** Angular `ng serve` watches for file changes and reloads the browser automatically.
 
 ## Coding Conventions
 
 ### Backend
 
-- **`open-in-view=false`**: All service methods touching lazy collections must use `@Transactional(readOnly = true)`.
-- **H2 quirk**: Aggregate `@Query` returning `Object[]` yields `Double` not `BigDecimal`. Cast via `BigDecimal.valueOf(((Number) val).doubleValue())`.
-- **Sort parsing**: Sort arrives as `String[]`, parsed with `Sort.by(Direction.fromString(sort[1]), sort[0])`.
-- **Authorization**: Every controller MUST have `@PreAuthorize` — see specs for permission/role patterns.
+- **SQLite dates**: All dates stored as ISO-8601 text strings. Use `new Date().toISOString()` for timestamps.
+- **SQLite numeric**: Monetary values (`wert`, `amount`) stored as REAL. Returned as JSON numbers.
+- **PRAGMA foreign_keys**: Must be `ON` for cascade deletes to work. Set on every connection in `config/db.ts`.
+- **Sort parsing**: Sort arrives as query param `field,direction` (e.g., `name,asc`). Validated against per-entity field whitelists to prevent SQL injection.
+- **Authorization**: Every route file uses `requireRole(...)` or `requirePermission(...)` middleware from `middleware/auth.ts`.
+- **Error responses**: `{ status, message, timestamp, fieldErrors }` via global error handler in `middleware/errorHandler.ts`.
+- **Pagination**: Spring Data Page format: `{ content, totalElements, totalPages, size, number, first, last }`. `number` is 0-indexed.
 
 ### Frontend
 
@@ -39,11 +41,11 @@ cd frontend && npx ng build                        # Frontend build check
 
 ## Adding a New Entity
 
-Backend (7 files): Entity → DTO + CreateDTO → Mapper → Repository → Service → Controller at `/api/<plural>`. **Controller must have `@PreAuthorize`** — either `hasAuthority('PERMISSION')` or `hasAnyRole(...)`.
+Backend (3 files): Drizzle schema in `db/schema/schema.ts` + CREATE TABLE in `config/migrate.ts` → Service in `services/` → Route handler in `routes/`. **Route file must use `requireRole(...)` or `requirePermission(...)`**.
 
 Frontend (8+ files): Model interface → Service → Route file → List/Detail/Form components → register in `app.routes.ts` **with `canActivate: [permissionGuard('PERMISSION')]`** + add `permission: 'PERMISSION'` to sidebar item.
 
-**Adding a new permission**: Add the permission string to the user's `GrantedAuthority` list in `SecurityConfig.java` → use `hasAuthority('NAME')` on controller → add `permissionGuard('NAME')` on frontend route + `permission: 'NAME'` on sidebar item.
+**Adding a new permission**: Add the permission string to the user's permissions array in `config/users.ts` → use `requirePermission('NAME')` on route → add `permissionGuard('NAME')` on frontend route + `permission: 'NAME'` on sidebar item.
 
 ## Commits & PRDs
 
@@ -55,13 +57,13 @@ Frontend (8+ files): Model interface → Service → Route file → List/Detail/
 
 | Agent | Purpose | Type |
 |-------|---------|------|
-| admin | Local dev environment, H2 databases, process management | ops |
+| admin | Local dev environment, SQLite databases, process management | ops |
 | ba-reviewer | Review PRDs, specs, plans for gaps and issues | review |
 | ba-writer | Create business specs, requirements, plans | writing |
-| be-coder | Spring Boot / Java backend code | coding |
+| be-coder | Node.js / TypeScript backend code | coding |
 | be-reviewer | Review backend code, security, patterns | review |
-| db-coder | JPA queries, entity schemas, data access | coding |
-| db-reviewer | Review queries, JPA mappings, performance | review |
+| db-coder | Drizzle ORM queries, entity schemas, data access | coding |
+| db-reviewer | Review queries, Drizzle mappings, performance | review |
 | fe-coder | Angular 21 frontend code, components, services | coding |
 | fe-reviewer | Review frontend code, patterns, accessibility | review |
 | md-reader | Read, search, summarize Markdown documentation | utility |
