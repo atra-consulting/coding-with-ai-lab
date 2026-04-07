@@ -2,8 +2,8 @@
 name: "project:review"
 description: "Local code review with multi-round review & fix cycle. Use for reviewing code, checking changes, getting feedback on a branch, or before creating a PR."
 argument-hint: (optional special instructions)
-version: 1.5.0
-last-modified: 2026-03-19
+version: 1.6.0
+last-modified: 2026-04-07
 allowed-tools:
   - Read
   - Edit
@@ -73,7 +73,7 @@ Then STOP immediately.
 If NOT in plan mode, display header:
 
 ```
-Code Review (v1.5.0, 2026-03-19)
+Code Review (v1.6.0, 2026-04-07)
 ****************************************
 
 Local code review - multi-round review & fix cycle
@@ -189,6 +189,8 @@ Continue to PHASE 2: VALIDATION & SETUP.
 ## Context Recovery
 
 If you lose track of variables (e.g., after context compression), re-read the state file at `[docs_folder]/state/STATE-REVIEW-<branch>.json`. It contains all runtime configuration, discovered agents, and progress. Trust the file over conversation memory.
+
+Note: The state file is created in Phase 3.4. If context compresses before that, re-derive `docs_folder` and `current_branch` from git before reading the state file.
 
 ---
 
@@ -353,7 +355,7 @@ If not found: Infer project context from repository name and structure.
 
 ### Step 4.2: Read CLAUDE.md (if exists)
 
-Search: `find . -maxdepth 2 -name "CLAUDE.md" -o -name "claude.md"`
+Search using Glob tool with patterns `**/CLAUDE.md` and `**/claude.md`.
 
 If found: Read with Read tool (use offset/limit for files >220KB). Extract required/prohibited practices, code conventions, technology stack, testing requirements.
 
@@ -367,9 +369,7 @@ Create context summary from PRD (purpose, goals, requirements) and CLAUDE.md (co
 
 ## PHASE 5: MULTI-ROUND REVIEW & FIX CYCLE
 
-Three review rounds. Each round: reviewers find issues, fixers plan fixes, reviewers approve plan, fixes applied.
-
-Rounds 2 and 3 finding zero issues is normal and expected.
+One review round. Reviewers find issues, fixers plan fixes, reviewers approve plan, fixes applied.
 
 Complete all rounds autonomously without prompting the user mid-review.
 
@@ -385,8 +385,7 @@ Create tracking structure:
   - `fix_description` (what changed — null until fixed)
   - `fixed_by` (agent name or "direct fix" — null until fixed)
 - `current_round = 1`
-- `max_rounds = 3`
-- If `fix_agents_available = false`: set `max_rounds = 1`. The review loop only helps when fixes happen between rounds. Without fixers, subsequent rounds find the same unfixed issues.
+- `max_rounds = 1`
 
 ### Step 5.1: REVIEW PHASE
 
@@ -628,7 +627,7 @@ Format review as markdown:
 **Branch**: <Current Branch>
 **Base**: <Main Branch>
 **Files Reviewed**: <Count>
-**Review Rounds**: 3
+**Review Rounds**: <max_rounds>
 
 ## Summary
 
@@ -677,7 +676,7 @@ Clean pass. No issues found.
 - Create PR when ready
 
 ---
-Generated with Claude Code - review v1.5.0
+Generated with Claude Code - review v1.6.0
 ```
 
 ### Step 6.3: Write Review File
@@ -702,16 +701,15 @@ Local Review Complete
 
 Branch: <CURRENT> (vs <BASE>)
 Files reviewed: <COUNT>
-Review rounds: 3
+Review rounds: <max_rounds>
 Reviewer agents: <list of reviewer agents used, or "None (built-in checklist)">
 Fix agents: <list of coder/designer agents used, or "None">
 
 Findings written to: <FULL_PATH>
 
 Round summary:
-- Round 1: <issues found> issues -> <fixes applied> fixes applied
-- Round 2: <issues found> issues -> <fixes applied> fixes applied
-- Round 3: <issues found> issues -> <fixes applied> fixes applied
+<For each round 1 through max_rounds:>
+- Round N: <issues found> issues -> <fixes applied> fixes applied
 - Remaining issues: <COUNT>
 
 Next steps:
