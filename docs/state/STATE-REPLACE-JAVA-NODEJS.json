@@ -2,31 +2,32 @@
   "version": 1,
   "task_key": "REPLACE-JAVA-NODEJS",
   "status": "in_progress",
-  "current_step": "3.3",
+  "current_step": "8.1",
   "started": "2026-04-07T00:00:00Z",
   "updated": "2026-04-07T00:00:00Z",
   "config": {
     "input_mode": "freeform",
     "user_description": "Replace Java back end with NodeJS back end",
     "special_instructions": null,
-    "branch_name": null,
-    "original_branch": null,
+    "branch_name": "replace-java-nodejs",
+    "original_branch": "main",
     "docs_folder": "docs",
     "is_git_repo": true,
-    "workflow_scope": null
+    "workflow_scope": "full"
   },
   "discovery": {
     "agents_available": true,
     "writer_agents": ["ba-writer"],
     "coding_agents": ["be-coder", "fe-coder", "db-coder", "ui-designer"],
     "review_agents": ["ba-reviewer", "be-reviewer", "fe-reviewer", "db-reviewer", "ui-reviewer"],
-    "test_command": null
+    "test_command": "cd backend && npx playwright test",
+    "test_command_frontend": "cd frontend && npx ng build"
   },
   "artifacts": {
-    "prd_skipped": null,
-    "prd_file": null,
-    "plan_file": null,
+    "prd_skipped": false,
+    "prd_file": "docs/prds/PRD-REPLACE-JAVA-NODEJS.md",
+    "plan_file": "docs/plans/PLAN-REPLACE-JAVA-NODEJS.md",
     "pr_url": null
   },
-  "completed_steps": []
+  "completed_steps": ["3.3", "4.4", "4.5", "5.1", "6.4", "7.5"]
 }
