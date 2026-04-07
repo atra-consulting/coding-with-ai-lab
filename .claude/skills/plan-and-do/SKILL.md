@@ -525,7 +525,7 @@ Execute `[test_command]`.
 
 ### Step 9.2: Handle Results
 
-**If tests pass:** Continue to Step 9.4.
+**If tests pass:** Continue to Step 9.3.
 
 **If tests fail:**
 1. Show failures, attempt automatic fix (no prompt)
