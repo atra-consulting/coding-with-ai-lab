@@ -2,8 +2,8 @@
 name: "project:plan-and-do"
 description: "End-to-end implementation workflow from idea to code review. Use for building features, implementing tasks, fixing complex bugs, or any substantial coding work. Handles planning, implementation, testing, and review automatically."
 argument-hint: ["description"] [special-instructions|resume:<step>]
-version: 1.5.0
-last-modified: 2026-03-19
+version: 1.6.0
+last-modified: 2026-04-07
 allowed-tools:
   - Read
   - Write
@@ -34,9 +34,11 @@ Prerequisites: git, test execution capability
 
 ## Branch Protection
 
-All commits go to the NEW BRANCH created by this skill. The original branch stays clean unless user opts to stay on main/master. State file written to disk first, committed after switching to new branch.
+All commits go to the NEW BRANCH created by this skill. The original branch always stays clean. State file written to disk first, committed after switching to new branch.
 
 **PR Target Rule:** PRs always target `original_branch` — the branch that was active when the skill started. This branch is captured in Step 4.4 via `git branch --show-current` and stored in `config.original_branch`. Never default to main/master for PRs.
+
+**Non-git mode:** If the project directory is not a git repository (e.g., ZIP download), all git operations (branch, commit, push, PR) are skipped. The skill still runs: state file, PRD, plan, implementation, and review all work without git.
 
 ---
 
@@ -54,7 +56,7 @@ If NOT in plan mode → continue.
 ## SKILL HEADER
 
 ```
-Plan and Do (v1.5.0, 2026-03-19)
+Plan and Do (v1.6.0, 2026-04-07)
 ************************************
 
 Plan and implement any work from freeform description
@@ -63,6 +65,11 @@ Plan and implement any work from freeform description
 ---
 
 # Plan and Do
+
+**CRITICAL — MANDATORY WORKFLOW. NO SHORTCUTS.**
+You MUST execute every numbered step (1–13) in strict order. No skipping. No combining. No "just doing it" because the task looks simple. Every task — no matter how trivial — gets: state file, branch, PRD decision, plan, checkpoints, review, summary. The user relies on checkpoints to stay in control. Skipping steps breaks the skill. Do NOT write any implementation code before Step 8. If you feel tempted to skip ahead, STOP and follow the next step instead.
+
+**CHECKPOINT RULE: NEVER auto-continue past a Standard Checkpoint.** You MUST use AskUserQuestion and WAIT for the user's response at every checkpoint. The user must explicitly choose "Continue" before you proceed. No exceptions.
 
 You are a senior developer implementing a complete feature from a freeform task description through to code review.
 
@@ -76,17 +83,26 @@ Short and brief. Short sentences. Simple words non-native speakers understand. N
 
 When displaying any file path to the user, ALWAYS use the full absolute path. Get the project root with `pwd` and prepend it to relative paths. Example: `/Users/dev/project/docs/plans/PLAN-FOO.md` instead of `docs/plans/PLAN-FOO.md`. This lets users Command-click paths in the terminal to open them.
 
+## ARTIFACT PATH DISPLAY RULE
+
+**Before EVERY checkpoint prompt**, display full absolute paths of all artifact files that exist. Always in this order:
+
+1. Specifications (PRD): `[full path to prd_file]` (if exists)
+2. Plan: `[full path to plan_file]` (if exists)
+3. Review: `[full path to review file]` (if exists)
+4. State: `[full path to state_file]`
+
+**If the user edited any file since the last checkpoint**, re-display all artifact paths so the user can re-open them.
+
 ---
 
 ## HOW TO ASK THE USER FOR DECISIONS
 
-Use the AskUserQuestion tool for all user prompts. This is the built-in tool that pauses execution and waits for the user to type a response.
+Use the AskUserQuestion tool for all user prompts.
 
 **Numbered choices:** Pass the full question text (including numbered options) as the `question` parameter.
 
 **Freeform input:** Pass the question as the `question` parameter.
-
-**Wait rule:** After calling AskUserQuestion, you MUST wait for the user's response before taking any further action. Never assume a choice, skip the question, or proceed without the user's answer. The user's response drives what happens next.
 
 ---
 
@@ -96,9 +112,22 @@ Use the AskUserQuestion tool for all user prompts. This is the built-in tool tha
 
 When user chooses "quit" at any checkpoint:
 1. Update state file: set `status` = "paused"
-2. Commit state file: `git add [state_file] && git commit -m "docs: Save state at Step [N]. [task_key]"`
+2. **If `is_git_repo`:** Commit state file: `git add [state_file] && git commit -m "docs: Save state at Step [N]. [task_key]"`
 3. Display: "Progress saved. Resume with: /plan-and-do [input]"
 4. STOP (clean exit)
+
+### Standard Checkpoint
+
+**You MUST wait for user response. NEVER auto-continue past a checkpoint.**
+
+Before presenting choices, display artifact paths per the ARTIFACT PATH DISPLAY RULE above.
+
+At each checkpoint, use AskUserQuestion with three choices:
+- Continue → proceed to next step
+- Edit → use AskUserQuestion to ask what changes needed, apply, return to checkpoint
+- Quit → execute Quit Pattern above
+
+When asking for approval, also display the full absolute path of every file that was created or changed since the last checkpoint.
 
 ---
 
@@ -137,7 +166,7 @@ Read `plan-and-do-modes.md` and execute matching section. STOP.
    **Path A — Freeform text** (non-empty):
    - Store as `user_description`
    - Extract UPPERCASE task name (2-4 words, hyphenated). Example: "Add Redis caching" → "ADD-REDIS-CACHING"
-   - Output understanding and suggested key. Call AskUserQuestion: 1-Approve, 2-Change key, 3-Clarify. Wait for response before continuing.
+   - Display understanding and key. Do NOT ask for approval — just show it and continue.
    - Set `branch_prefix` = lowercase task_key, `input_mode` = "freeform"
 
    **Path B — Empty:**
@@ -187,13 +216,15 @@ Otherwise → STEP 2.
 
 ---
 
-## STEP 2: TOOL VALIDATION
+## STEP 2: TOOL VALIDATION & GIT DETECTION
 
 ```bash
-git --version
+git rev-parse --git-dir 2>/dev/null
 ```
-If fails: "REQUIRED: git unavailable. Install: brew install git" → STOP.
-If succeeds: "git available" → STEP 3.
+- If succeeds: set `is_git_repo = true`. Display: "Git repository detected."
+- If fails: set `is_git_repo = false`. Display: "Not a git repository. Running without git (no branches, commits, or PRs)."
+
+Continue to STEP 3 either way.
 
 ---
 
@@ -230,7 +261,8 @@ Write `[state_dir]/STATE-[task_key].json` using Write tool:
     "branch_name": null,
     "original_branch": null,
     "docs_folder": "[docs_folder]",
-    "stay_on_main": false
+    "is_git_repo": true,
+    "workflow_scope": null
   },
   "discovery": {
     "agents_available": false,
@@ -242,7 +274,8 @@ Write `[state_dir]/STATE-[task_key].json` using Write tool:
   "artifacts": {
     "prd_skipped": null,
     "prd_file": null,
-    "plan_file": null
+    "plan_file": null,
+    "pr_url": null
   },
   "completed_steps": []
 }
@@ -283,16 +316,13 @@ If exists: append random 6-digit number to `branch_name`.
 
 ### Step 4.4: Create and Push Branch
 
-**First:** Capture current branch immediately — before any branch operations:
-```bash
-git branch --show-current
-```
-Store result as `original_branch`. Update state file `config.original_branch`. This value determines the PR target later — it must reflect the branch the user was on when the skill started.
+**If `is_git_repo = false`:** Skip this step entirely. Continue to Step 5.
 
-**If on main/master:** Warn user. Call AskUserQuestion: 1-Create new branch (recommended), 2-Stay on main. Wait for response — do not proceed until the user answers.
-- If stay → set `stay_on_main = true`, skip to Step 4.5.
+Get current branch → store as `original_branch`.
 
-**Create branch** (unless `stay_on_main`):
+**If on main/master:** Display: "On [branch]. Creating new branch [branch_name]." Always create the branch. Never ask. Never allow staying on main/master.
+
+**Create branch:**
 ```bash
 git checkout -b [branch_name]
 git push -u origin [branch_name]
@@ -300,6 +330,8 @@ git push -u origin [branch_name]
 If push fails: warn, continue local-only.
 
 ### Step 4.5: Commit State File
+
+**If `is_git_repo = false`:** Skip this step.
 
 ```bash
 git add [state_dir]/STATE-[task_key].json
@@ -310,10 +342,18 @@ git commit -m "docs: Initialize state tracking for [task_key]"
 
 ## STEP 5: SPECIFICATIONS (PRD) DECISION
 
-Call AskUserQuestion: 1-Create specifications (PRD) first (recommended for complex features), 2-Skip to detailed plan. Wait for response — do not choose for the user.
+### Step 5.1: Assess Task Scope
+
+Evaluate the task based on user_description and codebase analysis:
+- **Small task:** Few files, single concern, straightforward change (e.g., config update, single-file fix, small refactor, updating a markdown skill file)
+- **Complex task:** Multiple components, new feature with multiple touch points, architectural changes, cross-cutting concerns
+
+**If small/limited scope:** Display: "Task is small. Skipping specifications (PRD)." Set `prd_skipped = true`, `prd_file = null`, update state: `current_step` = "5.1", `artifacts.prd_skipped = true` → STEP 7.
+
+**If complex:** Use AskUserQuestion: 1-Create specifications (PRD) first (recommended for complex features), 2-Skip to detailed plan.
 
 - "1" → `prd_skipped = false`, continue to STEP 6
-- "2" → `prd_skipped = true`, `prd_file = nil`, update state → STEP 7
+- "2" → `prd_skipped = true`, `prd_file = null`, update state: `current_step` = "5.1", `artifacts.prd_skipped = true` → STEP 7
 
 ---
 
@@ -329,7 +369,7 @@ Analyze user_description and codebase using Grep/Glob. Identify patterns, module
 
 **If agents_available:**
 
-1. **Draft:** Launch `ba-writer` (or first `writer_agent`) via Task tool to write the PRD. If no writer agents exist, use the first `coding_agent` instead. Provide user_description, codebase context from Step 6.1, and the structure below.
+1. **Draft:** Launch `ba-writer` (or first `writer_agent`) via Task tool to write the PRD. If no writer agents exist, use the first `coding_agent` instead. If no coding agents exist either, write the PRD directly. Provide user_description, codebase context from Step 6.1, and the structure below.
 2. **Review:** Launch ALL `review_agents` in parallel via Task tool. Each reviewer gets the draft PRD and checks for completeness, correctness, and feasibility from their domain perspective.
 3. **Fix:** Collect all reviewer findings. Fix issues automatically — no user prompt needed. If reviewers disagree, prefer the more conservative/thorough approach.
 4. **Result:** The reviewed and fixed PRD becomes the final draft for user approval.
@@ -352,6 +392,7 @@ Display PRD content and full absolute file path. Call AskUserQuestion: 1-Continu
 
 ### Step 6.5: Commit PRD
 
+**If `is_git_repo`:**
 ```bash
 git add [prd_dir]/PRD-[task_key].md
 git commit -m "docs: Add specifications (PRD) for [task summary]. [task_key]"
@@ -367,8 +408,8 @@ git commit -m "docs: Add specifications (PRD) for [task summary]. [task_key]"
 
 Check in order:
 1. **CLAUDE.md** — if found, use directly (no confirmation needed)
-2. **README.md / README.adoc** — if found, call AskUserQuestion to confirm: "Found test command `[cmd]` in README. 1-Use this, 2-Enter different command." Wait for response — do not proceed until the user answers.
-3. **Not found** — call AskUserQuestion: "How do you run tests? Type your test command:" Wait for response — do not proceed until the user answers.
+2. **README.md / README.adoc** — if found, confirm with user
+3. **Not found** — use AskUserQuestion: "How do you run tests? Type your test command:"
 
 Store as `test_command`. Do not continue until confirmed.
 
@@ -418,12 +459,26 @@ Write to `[plan_dir]/PLAN-[task_key].md`. Store as `plan_file`.
 
 ### Step 7.5: Checkpoint 7 — Plan Approval
 
-Update state: `current_step` = "7.5", set `artifacts.plan_file`, `discovery.test_command`.
+Update state: `current_step` = "7.5", set `artifacts.plan_file`, `discovery.test_command`, `config.workflow_scope`.
 
-Display plan content and full absolute file path. Call AskUserQuestion: 1-Continue, 2-Edit, 3-Quit. Wait for response — do not proceed until the user answers. The user must approve the plan before any code is written.
+Display plan content. Display artifact paths per the ARTIFACT PATH DISPLAY RULE.
+
+**Plan Approval Checkpoint — NOT a Standard Checkpoint.** Use AskUserQuestion with these choices. Always in this order. Add "(Recommended)" after the one you recommend based on task complexity:
+
+1. **Approve and implement** — Run implementation and tests (Steps 8-9). Stop after testing. Best for small, low-risk changes.
+2. **Approve, implement, and review** — Run implementation, tests, and code review (Steps 8-10). Stop after review. Good for medium changes.
+3. **Approve, implement, review, and create PR** — Full workflow through PR creation (Steps 8-13). Best for complex or team-shared work.
+4. **Edit** — Request changes to the plan.
+5. **Quit** — Execute Quit Pattern.
+
+Store the user's choice in state as `config.workflow_scope`:
+- Choice 1 → `"implement"`
+- Choice 2 → `"implement-review"`
+- Choice 3 → `"full"`
 
 ### Step 7.6: Commit Plan
 
+**If `is_git_repo`:**
 ```bash
 git add [plan_dir]/PLAN-[task_key].md
 git commit -m "docs: Add detailed plan for [task summary]. [task_key]"
@@ -454,11 +509,11 @@ For each task in PLAN:
 2. Make changes (Edit/Write tools) — narrate: "Updating [file] to add [feature]..."
 3. Explain briefly what was done
 4. Mark task complete in PLAN file
-5. Commit logical change groups: `feat: [description]. [task_key]`
+5. **If `is_git_repo`:** Commit logical change groups: `feat: [description]. [task_key]`
 
 ### Step 8.2: Interactive Assistance
 
-If questions arise: explain issue, call AskUserQuestion with numbered alternatives. Wait for response before continuing.
+If questions arise: explain issue, use AskUserQuestion with numbered alternatives.
 
 ---
 
@@ -482,7 +537,13 @@ Execute `[test_command]`.
 
 Update state: `current_step` = "9.3".
 
-Output: "All tests pass." Call AskUserQuestion: 1-Continue to code review, 2-Make changes, 3-Quit. Wait for response — do not proceed until the user answers.
+Display artifact paths per the ARTIFACT PATH DISPLAY RULE.
+
+Output: "All tests pass."
+
+**If `workflow_scope == "implement"`:** Skip to STEP 13 (summary). Do not ask — the user already chose this scope at plan approval.
+
+**Otherwise:** Use AskUserQuestion: 1-Continue to code review, 2-Make changes, 3-Quit.
 
 - "2" → ask what changes, return to STEP 8
 
@@ -502,19 +563,21 @@ Wait for completion.
 
 Read `[review_dir]/REVIEW-*.md`.
 
+**No issues:** "Code review passed." → STEP 11.
 **Issues found:** Display by severity (critical, warnings, suggestions).
-**No issues:** Display: "Code review passed — no issues found."
 
 ### Step 10.3: Checkpoint 10
 
 Update state: `current_step` = "10.3".
 
-Always call AskUserQuestion here — regardless of whether issues were found:
+Display artifact paths per the ARTIFACT PATH DISPLAY RULE.
 
-**If issues found:** Call AskUserQuestion: 1-Fix findings, 2-Skip to post-review testing, 3-Quit. Wait for response — do not proceed until the user answers.
+If issues found, use AskUserQuestion: 1-Fix findings, 2-Skip to summary, 3-Quit.
+
 - Fix → fix issues, commit: `fix: Address code review findings. [task_key]`, re-run `/review`, return to 10.2
+- Skip → STEP 11
 
-**If no issues:** Call AskUserQuestion: 1-Continue to post-review testing, 2-Make changes, 3-Quit. Wait for response — do not proceed until the user answers.
+**After Checkpoint 10 resolves (no issues or user chose Skip):** If `workflow_scope == "implement-review"`, skip to STEP 13 (summary). Do not ask — the user already chose this scope at plan approval.
 
 ---
 
@@ -522,16 +585,14 @@ Always call AskUserQuestion here — regardless of whether issues were found:
 
 ### Step 11.1: Testing Approach
 
-**If agents_available:** Launch testing agents for end-to-end verification. After agents complete, display results.
+**If agents_available:** Launch testing agents for end-to-end verification.
 
-**Otherwise:** Propose manual test steps.
+**Otherwise:** Propose manual test steps. Use AskUserQuestion: 1-Tests passed, 2-Tests failed, 3-Quit.
+- Failed → ask for details, fix, commit, retry
 
 ### Step 11.2: Checkpoint 11
 
-Update state: `current_step` = "11.2".
-
-Call AskUserQuestion: 1-Tests passed — continue, 2-Tests failed — need fixes, 3-Quit. Wait for response — do not proceed until the user answers.
-- "2" → ask for details, fix, commit: `fix: Address post-review test failures. [task_key]`, retry from 11.1
+Update state: `current_step` = "11.2". → STEP 12.
 
 ---
 
@@ -546,16 +607,14 @@ Check CLAUDE.md, docs/specs/, docs/prds/ for needed updates based on implementat
 **If agents_available:** Launch agents to analyze and propose.
 **Otherwise:** Analyze directly.
 
-Display findings (updates needed or "no documentation updates needed").
+**If updates needed:** Use AskUserQuestion: 1-Apply, 2-Skip, 3-Quit.
+- Apply → edit files, commit: `docs: Update project documentation. [task_key]`
+
+**No updates needed:** Display message. Continue.
 
 ### Step 12.3: Checkpoint 12
 
-Update state: `current_step` = "12.3".
-
-**If updates needed:** Call AskUserQuestion: 1-Apply updates, 2-Skip updates, 3-Quit. Wait for response — do not proceed until the user answers.
-- Apply → edit files, commit: `docs: Update project documentation. [task_key]`
-
-**If no updates needed:** Call AskUserQuestion: 1-Continue to summary, 2-Quit. Wait for response — do not proceed until the user answers.
+Update state: `current_step` = "12.3". → STEP 13.
 
 ---
 
@@ -565,8 +624,8 @@ Update state: `current_step` = "12.3".
 
 Display full absolute file paths (PRD if exists, plan, state).
 
-Call AskUserQuestion: 1-Keep files (recommended), 2-Delete files, 3-Quit. Wait for response — do not proceed until the user answers.
-- Delete → `git rm` files, commit: `docs: Remove planning files. [task_key]`
+Use AskUserQuestion: 1-Keep files (recommended), 2-Delete files, 3-Quit.
+- Delete → `git rm --ignore-unmatch` tracked files and `rm -f` untracked files, commit: `docs: Remove planning files. [task_key]`
 
 ### Step 13.1: Display Summary
 
@@ -607,7 +666,7 @@ Read `plan-and-do-modes.md` and execute "POST-COMPLETION WORKFLOW" section. This
 
 ## Success Criteria
 
-- Branch created (original branch stays clean unless user confirmed main)
+- Branch always created when git available (original branch stays clean)
 - State file tracks progress; committed at init, pause, and completion only
 - PRD created or explicitly skipped
 - Detailed plan created with test cases
