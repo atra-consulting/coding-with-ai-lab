@@ -7,7 +7,7 @@ export interface AktivitaetDTO {
   id: number;
   typ: string;
   subject: string;
-  beschreibung: string | null;
+  description: string | null;
   datum: string;
   firmaId: number | null;
   firmaName: string | null;
@@ -21,7 +21,7 @@ interface AktivitaetRow {
   id: number;
   typ: string;
   subject: string;
-  beschreibung: string | null;
+  description: string | null;
   datum: string;
   firmaId: number | null;
   firmaName: string | null;
@@ -42,7 +42,7 @@ function toDTO(row: AktivitaetRow): AktivitaetDTO {
     id: row.id,
     typ: row.typ,
     subject: row.subject,
-    beschreibung: row.beschreibung,
+    description: row.description,
     datum: row.datum,
     firmaId: row.firmaId,
     firmaName: row.firmaName,
@@ -54,7 +54,7 @@ function toDTO(row: AktivitaetRow): AktivitaetDTO {
 }
 
 const BASE_QUERY = `
-  SELECT ak.id, ak.typ, ak.subject, ak.beschreibung, ak.datum,
+  SELECT ak.id, ak.typ, ak.subject, ak.description, ak.datum,
          ak.firmaId, f.name AS firmaName,
          ak.personId, p.firstName AS personFirstName, p.lastName AS personLastName,
          ak.createdAt, ak.updatedAt
@@ -98,13 +98,13 @@ export const aktivitaetService = {
     const now = new Date().toISOString();
     const result = sqlite
       .prepare(
-        `INSERT INTO aktivitaet (typ, subject, beschreibung, datum, firmaId, personId, createdAt, updatedAt)
+        `INSERT INTO aktivitaet (typ, subject, description, datum, firmaId, personId, createdAt, updatedAt)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
       )
       .run(
         dto.typ,
         dto.subject,
-        dto.beschreibung ?? null,
+        dto.description ?? null,
         dto.datum,
         dto.firmaId ?? null,
         dto.personId ?? null,
@@ -119,12 +119,12 @@ export const aktivitaetService = {
     const now = new Date().toISOString();
     sqlite
       .prepare(
-        `UPDATE aktivitaet SET typ=?, subject=?, beschreibung=?, datum=?, firmaId=?, personId=?, updatedAt=? WHERE id=?`
+        `UPDATE aktivitaet SET typ=?, subject=?, description=?, datum=?, firmaId=?, personId=?, updatedAt=? WHERE id=?`
       )
       .run(
         dto.typ,
         dto.subject,
-        dto.beschreibung ?? null,
+        dto.description ?? null,
         dto.datum,
         dto.firmaId ?? null,
         dto.personId ?? null,

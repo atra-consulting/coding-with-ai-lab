@@ -6,11 +6,12 @@ import type { VertragCreateDTO } from '../utils/validation.js';
 export interface VertragDTO {
   id: number;
   titel: string;
-  beschreibung: string | null;
+  notes: string | null;
   wert: number | null;
+  currency: string;
   status: string;
-  startDatum: string | null;
-  endDatum: string | null;
+  startDate: string | null;
+  endDate: string | null;
   firmaId: number;
   firmaName: string | null;
   kontaktPersonId: number | null;
@@ -22,11 +23,12 @@ export interface VertragDTO {
 interface VertragRow {
   id: number;
   titel: string;
-  beschreibung: string | null;
+  notes: string | null;
   wert: number | null;
+  currency: string;
   status: string;
-  startDatum: string | null;
-  endDatum: string | null;
+  startDate: string | null;
+  endDate: string | null;
   firmaId: number;
   firmaName: string | null;
   kontaktPersonId: number | null;
@@ -45,11 +47,12 @@ function toDTO(row: VertragRow): VertragDTO {
   return {
     id: row.id,
     titel: row.titel,
-    beschreibung: row.beschreibung,
+    notes: row.notes,
     wert: row.wert,
+    currency: row.currency,
     status: row.status,
-    startDatum: row.startDatum,
-    endDatum: row.endDatum,
+    startDate: row.startDate,
+    endDate: row.endDate,
     firmaId: row.firmaId,
     firmaName: row.firmaName,
     kontaktPersonId: row.kontaktPersonId,
@@ -60,7 +63,7 @@ function toDTO(row: VertragRow): VertragDTO {
 }
 
 const BASE_QUERY = `
-  SELECT v.id, v.titel, v.beschreibung, v.wert, v.status, v.startDatum, v.endDatum,
+  SELECT v.id, v.titel, v.notes, v.wert, v.currency, v.status, v.startDate, v.endDate,
          v.firmaId, f.name AS firmaName,
          v.kontaktPersonId, p.firstName AS kontaktPersonFirstName, p.lastName AS kontaktPersonLastName,
          v.createdAt, v.updatedAt
@@ -104,16 +107,17 @@ export const vertragService = {
     const now = new Date().toISOString();
     const result = sqlite
       .prepare(
-        `INSERT INTO vertrag (titel, beschreibung, wert, status, startDatum, endDatum, firmaId, kontaktPersonId, createdAt, updatedAt)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        `INSERT INTO vertrag (titel, notes, wert, currency, status, startDate, endDate, firmaId, kontaktPersonId, createdAt, updatedAt)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
       .run(
         dto.titel,
-        dto.beschreibung ?? null,
+        dto.notes ?? null,
         dto.wert ?? null,
+        dto.currency ?? 'EUR',
         dto.status ?? 'ENTWURF',
-        dto.startDatum ?? null,
-        dto.endDatum ?? null,
+        dto.startDate ?? null,
+        dto.endDate ?? null,
         dto.firmaId,
         dto.kontaktPersonId ?? null,
         now,
@@ -127,15 +131,16 @@ export const vertragService = {
     const now = new Date().toISOString();
     sqlite
       .prepare(
-        `UPDATE vertrag SET titel=?, beschreibung=?, wert=?, status=?, startDatum=?, endDatum=?, firmaId=?, kontaktPersonId=?, updatedAt=? WHERE id=?`
+        `UPDATE vertrag SET titel=?, notes=?, wert=?, currency=?, status=?, startDate=?, endDate=?, firmaId=?, kontaktPersonId=?, updatedAt=? WHERE id=?`
       )
       .run(
         dto.titel,
-        dto.beschreibung ?? null,
+        dto.notes ?? null,
         dto.wert ?? null,
+        dto.currency ?? 'EUR',
         dto.status ?? 'ENTWURF',
-        dto.startDatum ?? null,
-        dto.endDatum ?? null,
+        dto.startDate ?? null,
+        dto.endDate ?? null,
         dto.firmaId,
         dto.kontaktPersonId ?? null,
         now,

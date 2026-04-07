@@ -78,7 +78,7 @@ export const dashboardService = {
   getRecentActivities(): AktivitaetDTO[] {
     const rows = sqlite
       .prepare(
-        `SELECT ak.id, ak.typ, ak.subject, ak.beschreibung, ak.datum,
+        `SELECT ak.id, ak.typ, ak.subject, ak.description, ak.datum,
                 ak.firmaId, f.name AS firmaName,
                 ak.personId, p.firstName AS personFirstName, p.lastName AS personLastName,
                 ak.createdAt, ak.updatedAt
@@ -91,7 +91,7 @@ export const dashboardService = {
         id: number;
         typ: string;
         subject: string;
-        beschreibung: string | null;
+        description: string | null;
         datum: string;
         firmaId: number | null;
         firmaName: string | null;
@@ -106,7 +106,7 @@ export const dashboardService = {
       id: row.id,
       typ: row.typ,
       subject: row.subject,
-      beschreibung: row.beschreibung,
+      description: row.description,
       datum: row.datum,
       firmaId: row.firmaId,
       firmaName: row.firmaName,

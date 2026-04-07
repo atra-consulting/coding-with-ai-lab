@@ -101,10 +101,10 @@ function buildMetrikSelect(metriken: ReportMetrik[]): string[] {
       switch (metrik) {
         case 'ANZAHL':
           return 'COUNT(*) AS metrik_ANZAHL';
-        case 'GESAMTWERT':
-          return 'COALESCE(SUM(c.wert), 0) AS metrik_GESAMTWERT';
-        case 'DURCHSCHNITTSWERT':
-          return 'COALESCE(AVG(c.wert), 0) AS metrik_DURCHSCHNITTSWERT';
+        case 'SUMME_WERT':
+          return 'COALESCE(SUM(c.wert), 0) AS metrik_SUMME_WERT';
+        case 'DURCHSCHNITT_WERT':
+          return 'COALESCE(AVG(c.wert), 0) AS metrik_DURCHSCHNITT_WERT';
         case 'GEWICHTETER_WERT':
           return 'COALESCE(SUM(c.wert * c.wahrscheinlichkeit / 100.0), 0) AS metrik_GEWICHTETER_WERT';
         default:

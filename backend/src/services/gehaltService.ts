@@ -6,9 +6,9 @@ import type { GehaltCreateDTO } from '../utils/validation.js';
 export interface GehaltDTO {
   id: number;
   amount: number;
+  currency: string;
   typ: string;
   effectiveDate: string;
-  beschreibung: string | null;
   personId: number;
   personName: string | null;
   createdAt: string;
@@ -18,9 +18,9 @@ export interface GehaltDTO {
 interface GehaltRow {
   id: number;
   amount: number;
+  currency: string;
   typ: string;
   effectiveDate: string;
-  beschreibung: string | null;
   personId: number;
   personFirstName: string | null;
   personLastName: string | null;
@@ -37,9 +37,9 @@ function toDTO(row: GehaltRow): GehaltDTO {
   return {
     id: row.id,
     amount: row.amount,
+    currency: row.currency,
     typ: row.typ,
     effectiveDate: row.effectiveDate,
-    beschreibung: row.beschreibung,
     personId: row.personId,
     personName,
     createdAt: row.createdAt,
@@ -48,7 +48,7 @@ function toDTO(row: GehaltRow): GehaltDTO {
 }
 
 const BASE_QUERY = `
-  SELECT g.id, g.amount, g.typ, g.effectiveDate, g.beschreibung,
+  SELECT g.id, g.amount, g.currency, g.typ, g.effectiveDate,
          g.personId, p.firstName AS personFirstName, p.lastName AS personLastName,
          g.createdAt, g.updatedAt
   FROM gehalt g
@@ -90,14 +90,14 @@ export const gehaltService = {
     const now = new Date().toISOString();
     const result = sqlite
       .prepare(
-        `INSERT INTO gehalt (amount, typ, effectiveDate, beschreibung, personId, createdAt, updatedAt)
+        `INSERT INTO gehalt (amount, currency, typ, effectiveDate, personId, createdAt, updatedAt)
          VALUES (?, ?, ?, ?, ?, ?, ?)`
       )
       .run(
         dto.amount,
-        dto.typ ?? 'MONATLICH',
+        dto.currency ?? 'EUR',
+        dto.typ ?? 'GRUNDGEHALT',
         dto.effectiveDate,
-        dto.beschreibung ?? null,
         dto.personId,
         now,
         now
@@ -110,13 +110,13 @@ export const gehaltService = {
     const now = new Date().toISOString();
     sqlite
       .prepare(
-        `UPDATE gehalt SET amount=?, typ=?, effectiveDate=?, beschreibung=?, personId=?, updatedAt=? WHERE id=?`
+        `UPDATE gehalt SET amount=?, currency=?, typ=?, effectiveDate=?, personId=?, updatedAt=? WHERE id=?`
       )
       .run(
         dto.amount,
-        dto.typ ?? 'MONATLICH',
+        dto.currency ?? 'EUR',
+        dto.typ ?? 'GRUNDGEHALT',
         dto.effectiveDate,
-        dto.beschreibung ?? null,
         dto.personId,
         now,
         id

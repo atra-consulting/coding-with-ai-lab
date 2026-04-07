@@ -8,8 +8,9 @@ export interface PersonDTO {
   firstName: string;
   lastName: string;
   email: string | null;
-  telefon: string | null;
+  phone: string | null;
   position: string | null;
+  notes: string | null;
   firmaId: number;
   firmaName: string | null;
   abteilungId: number | null;
@@ -23,8 +24,9 @@ interface PersonRow {
   firstName: string;
   lastName: string;
   email: string | null;
-  telefon: string | null;
+  phone: string | null;
   position: string | null;
+  notes: string | null;
   firmaId: number;
   firmaName: string | null;
   abteilungId: number | null;
@@ -39,8 +41,9 @@ function toDTO(row: PersonRow): PersonDTO {
     firstName: row.firstName,
     lastName: row.lastName,
     email: row.email,
-    telefon: row.telefon,
+    phone: row.phone,
     position: row.position,
+    notes: row.notes,
     firmaId: row.firmaId,
     firmaName: row.firmaName,
     abteilungId: row.abteilungId,
@@ -51,7 +54,7 @@ function toDTO(row: PersonRow): PersonDTO {
 }
 
 const BASE_QUERY = `
-  SELECT p.id, p.firstName, p.lastName, p.email, p.telefon, p.position,
+  SELECT p.id, p.firstName, p.lastName, p.email, p.phone, p.position, p.notes,
          p.firmaId, f.name AS firmaName,
          p.abteilungId, a.name AS abteilungName,
          p.createdAt, p.updatedAt
@@ -118,15 +121,16 @@ export const personService = {
     const now = new Date().toISOString();
     const result = sqlite
       .prepare(
-        `INSERT INTO person (firstName, lastName, email, telefon, position, firmaId, abteilungId, createdAt, updatedAt)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        `INSERT INTO person (firstName, lastName, email, phone, position, notes, firmaId, abteilungId, createdAt, updatedAt)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
       .run(
         dto.firstName,
         dto.lastName,
         dto.email ?? null,
-        dto.telefon ?? null,
+        dto.phone ?? null,
         dto.position ?? null,
+        dto.notes ?? null,
         dto.firmaId,
         dto.abteilungId ?? null,
         now,
@@ -140,14 +144,15 @@ export const personService = {
     const now = new Date().toISOString();
     sqlite
       .prepare(
-        `UPDATE person SET firstName=?, lastName=?, email=?, telefon=?, position=?, firmaId=?, abteilungId=?, updatedAt=? WHERE id=?`
+        `UPDATE person SET firstName=?, lastName=?, email=?, phone=?, position=?, notes=?, firmaId=?, abteilungId=?, updatedAt=? WHERE id=?`
       )
       .run(
         dto.firstName,
         dto.lastName,
         dto.email ?? null,
-        dto.telefon ?? null,
+        dto.phone ?? null,
         dto.position ?? null,
+        dto.notes ?? null,
         dto.firmaId,
         dto.abteilungId ?? null,
         now,

@@ -5,8 +5,7 @@ import type { SavedReportCreateDTO } from '../utils/validation.js';
 export interface SavedReportDTO {
   id: number;
   name: string;
-  beschreibung: string | null;
-  queryJson: string;
+  config: string;
   benutzerId: number;
   createdAt: string;
   updatedAt: string;
@@ -15,8 +14,7 @@ export interface SavedReportDTO {
 interface SavedReportRow {
   id: number;
   name: string;
-  beschreibung: string | null;
-  queryJson: string;
+  config: string;
   benutzerId: number;
   createdAt: string;
   updatedAt: string;
@@ -26,8 +24,7 @@ function toDTO(row: SavedReportRow): SavedReportDTO {
   return {
     id: row.id,
     name: row.name,
-    beschreibung: row.beschreibung,
-    queryJson: row.queryJson,
+    config: row.config,
     benutzerId: row.benutzerId,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
@@ -57,10 +54,10 @@ export const savedReportService = {
     const now = new Date().toISOString();
     const result = sqlite
       .prepare(
-        `INSERT INTO savedReport (name, beschreibung, queryJson, benutzerId, createdAt, updatedAt)
-         VALUES (?, ?, ?, ?, ?, ?)`
+        `INSERT INTO savedReport (name, config, benutzerId, createdAt, updatedAt)
+         VALUES (?, ?, ?, ?, ?)`
       )
-      .run(dto.name, dto.beschreibung ?? null, dto.queryJson, benutzerId, now, now);
+      .run(dto.name, dto.config, benutzerId, now, now);
     const row = sqlite
       .prepare('SELECT * FROM savedReport WHERE id = ?')
       .get(Number(result.lastInsertRowid)) as SavedReportRow;
@@ -72,9 +69,9 @@ export const savedReportService = {
     const now = new Date().toISOString();
     sqlite
       .prepare(
-        `UPDATE savedReport SET name=?, beschreibung=?, queryJson=?, updatedAt=? WHERE id=?`
+        `UPDATE savedReport SET name=?, config=?, updatedAt=? WHERE id=?`
       )
-      .run(dto.name, dto.beschreibung ?? null, dto.queryJson, now, id);
+      .run(dto.name, dto.config, now, id);
     return requireOwned(id, benutzerId);
   },
 

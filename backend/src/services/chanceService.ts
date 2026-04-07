@@ -9,6 +9,7 @@ export interface ChanceDTO {
   titel: string;
   beschreibung: string | null;
   wert: number | null;
+  currency: string;
   phase: string;
   wahrscheinlichkeit: number | null;
   erwartetesDatum: string | null;
@@ -23,7 +24,7 @@ export interface ChanceDTO {
 export interface BoardSummaryItem {
   phase: string;
   count: number;
-  gesamtwert: number;
+  totalWert: number;
 }
 
 interface ChanceRow {
@@ -31,6 +32,7 @@ interface ChanceRow {
   titel: string;
   beschreibung: string | null;
   wert: number | null;
+  currency: string;
   phase: string;
   wahrscheinlichkeit: number | null;
   erwartetesDatum: string | null;
@@ -54,6 +56,7 @@ function toDTO(row: ChanceRow): ChanceDTO {
     titel: row.titel,
     beschreibung: row.beschreibung,
     wert: row.wert,
+    currency: row.currency,
     phase: row.phase,
     wahrscheinlichkeit: row.wahrscheinlichkeit,
     erwartetesDatum: row.erwartetesDatum,
@@ -67,7 +70,7 @@ function toDTO(row: ChanceRow): ChanceDTO {
 }
 
 const BASE_QUERY = `
-  SELECT c.id, c.titel, c.beschreibung, c.wert, c.phase, c.wahrscheinlichkeit, c.erwartetesDatum,
+  SELECT c.id, c.titel, c.beschreibung, c.wert, c.currency, c.phase, c.wahrscheinlichkeit, c.erwartetesDatum,
          c.firmaId, f.name AS firmaName,
          c.kontaktPersonId, p.firstName AS kontaktPersonFirstName, p.lastName AS kontaktPersonLastName,
          c.createdAt, c.updatedAt
@@ -128,10 +131,10 @@ export const chanceService = {
   getBoardSummary(): BoardSummaryItem[] {
     const rows = sqlite
       .prepare(
-        `SELECT phase, COUNT(*) AS count, COALESCE(SUM(wert), 0) AS gesamtwert
+        `SELECT phase, COUNT(*) AS count, COALESCE(SUM(wert), 0) AS totalWert
          FROM chance GROUP BY phase`
       )
-      .all() as { phase: string; count: number; gesamtwert: number }[];
+      .all() as { phase: string; count: number; totalWert: number }[];
 
     const map = new Map(rows.map((r) => [r.phase, r]));
 
@@ -140,7 +143,7 @@ export const chanceService = {
       return {
         phase,
         count: row ? Number(row.count) : 0,
-        gesamtwert: row ? Number(row.gesamtwert) : 0,
+        totalWert: row ? Number(row.totalWert) : 0,
       };
     });
   },
@@ -161,14 +164,15 @@ export const chanceService = {
     const now = new Date().toISOString();
     const result = sqlite
       .prepare(
-        `INSERT INTO chance (titel, beschreibung, wert, phase, wahrscheinlichkeit, erwartetesDatum, firmaId, kontaktPersonId, createdAt, updatedAt)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        `INSERT INTO chance (titel, beschreibung, wert, currency, phase, wahrscheinlichkeit, erwartetesDatum, firmaId, kontaktPersonId, createdAt, updatedAt)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
       .run(
         dto.titel,
         dto.beschreibung ?? null,
         dto.wert ?? null,
-        (dto.phase as ChancePhase) ?? 'LEAD',
+        dto.currency ?? 'EUR',
+        (dto.phase as ChancePhase) ?? 'NEU',
         dto.wahrscheinlichkeit ?? null,
         dto.erwartetesDatum ?? null,
         dto.firmaId,
@@ -184,13 +188,14 @@ export const chanceService = {
     const now = new Date().toISOString();
     sqlite
       .prepare(
-        `UPDATE chance SET titel=?, beschreibung=?, wert=?, phase=?, wahrscheinlichkeit=?, erwartetesDatum=?, firmaId=?, kontaktPersonId=?, updatedAt=? WHERE id=?`
+        `UPDATE chance SET titel=?, beschreibung=?, wert=?, currency=?, phase=?, wahrscheinlichkeit=?, erwartetesDatum=?, firmaId=?, kontaktPersonId=?, updatedAt=? WHERE id=?`
       )
       .run(
         dto.titel,
         dto.beschreibung ?? null,
         dto.wert ?? null,
-        (dto.phase as ChancePhase) ?? 'LEAD',
+        dto.currency ?? 'EUR',
+        (dto.phase as ChancePhase) ?? 'NEU',
         dto.wahrscheinlichkeit ?? null,
         dto.erwartetesDatum ?? null,
         dto.firmaId,

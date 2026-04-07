@@ -10,17 +10,17 @@ export interface PipelineKpisDTO {
 
 export interface PhaseAggregateDTO {
   phase: string;
-  count: number;
+  anzahl: number;
   summeWert: number;
   durchschnittWert: number;
-  gewichteterWert: number;
+  summeGewichtet: number;
 }
 
 export interface TopFirmaChanceDTO {
-  id: number;
-  name: string;
-  personenCount: number;
-  vertragswert: number;
+  firmaId: number;
+  firmaName: string;
+  anzahlChancen: number;
+  summeWert: number;
 }
 
 const CLOSED_PHASES = ['GEWONNEN', 'VERLOREN'];
@@ -69,19 +69,19 @@ export const auswertungService = {
     const rows = sqlite
       .prepare(
         `SELECT phase,
-                COUNT(*) AS count,
+                COUNT(*) AS anzahl,
                 COALESCE(SUM(wert), 0) AS summeWert,
                 COALESCE(AVG(wert), 0) AS durchschnittWert,
-                COALESCE(SUM(wert * wahrscheinlichkeit / 100.0), 0) AS gewichteterWert
+                COALESCE(SUM(wert * wahrscheinlichkeit / 100.0), 0) AS summeGewichtet
          FROM chance
          GROUP BY phase`
       )
       .all() as {
       phase: string;
-      count: number;
+      anzahl: number;
       summeWert: number;
       durchschnittWert: number;
-      gewichteterWert: number;
+      summeGewichtet: number;
     }[];
 
     const map = new Map(rows.map((r) => [r.phase, r]));
@@ -90,10 +90,10 @@ export const auswertungService = {
       const row = map.get(phase);
       return {
         phase,
-        count: row ? Number(row.count) : 0,
+        anzahl: row ? Number(row.anzahl) : 0,
         summeWert: row ? Number(row.summeWert) : 0,
         durchschnittWert: row ? Number(row.durchschnittWert) : 0,
-        gewichteterWert: row ? Number(row.gewichteterWert) : 0,
+        summeGewichtet: row ? Number(row.summeGewichtet) : 0,
       };
     });
   },
@@ -101,23 +101,22 @@ export const auswertungService = {
   getTopFirmen(limit: number): TopFirmaChanceDTO[] {
     const rows = sqlite
       .prepare(
-        `SELECT f.id, f.name,
-                COUNT(DISTINCT p.id) AS personenCount,
-                COALESCE(SUM(c.wert), 0) AS vertragswert
+        `SELECT f.id AS firmaId, f.name AS firmaName,
+                COUNT(c.id) AS anzahlChancen,
+                COALESCE(SUM(c.wert), 0) AS summeWert
          FROM firma f
-         LEFT JOIN person p ON p.firmaId = f.id
          LEFT JOIN chance c ON c.firmaId = f.id
          GROUP BY f.id, f.name
-         ORDER BY vertragswert DESC
+         ORDER BY summeWert DESC
          LIMIT ?`
       )
-      .all(limit) as { id: number; name: string; personenCount: number; vertragswert: number }[];
+      .all(limit) as { firmaId: number; firmaName: string; anzahlChancen: number; summeWert: number }[];
 
     return rows.map((row) => ({
-      id: row.id,
-      name: row.name,
-      personenCount: Number(row.personenCount),
-      vertragswert: Number(row.vertragswert),
+      firmaId: row.firmaId,
+      firmaName: row.firmaName,
+      anzahlChancen: Number(row.anzahlChancen),
+      summeWert: Number(row.summeWert),
     }));
   },
 };

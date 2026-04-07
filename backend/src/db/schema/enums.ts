@@ -1,6 +1,6 @@
 export const CHANCE_PHASE = [
-  'LEAD',
-  'QUALIFIZIERUNG',
+  'NEU',
+  'QUALIFIZIERT',
   'ANGEBOT',
   'VERHANDLUNG',
   'GEWONNEN',
@@ -20,15 +20,16 @@ export const AKTIVITAET_TYP = [
   'ANRUF',
   'EMAIL',
   'MEETING',
-  'AUFGABE',
   'NOTIZ',
+  'AUFGABE',
 ] as const;
 export type AktivitaetTyp = (typeof AKTIVITAET_TYP)[number];
 
 export const GEHALT_TYP = [
-  'MONATLICH',
-  'JAEHRLICH',
-  'STUENDLICH',
+  'GRUNDGEHALT',
+  'BONUS',
+  'PROVISION',
+  'SONDERZAHLUNG',
 ] as const;
 export type GehaltTyp = (typeof GEHALT_TYP)[number];
 
@@ -44,8 +45,8 @@ export type ReportDimension = (typeof REPORT_DIMENSION)[number];
 
 export const REPORT_METRIK = [
   'ANZAHL',
-  'GESAMTWERT',
-  'DURCHSCHNITTSWERT',
+  'SUMME_WERT',
+  'DURCHSCHNITT_WERT',
   'GEWICHTETER_WERT',
   'GEWINNRATE',
 ] as const;

@@ -7,6 +7,7 @@ import type { AbteilungCreateDTO } from '../utils/validation.js';
 export interface AbteilungDTO {
   id: number;
   name: string;
+  description: string | null;
   firmaId: number;
   firmaName: string | null;
   personenCount: number;
@@ -17,6 +18,7 @@ export interface AbteilungDTO {
 interface AbteilungRow {
   id: number;
   name: string;
+  description: string | null;
   firmaId: number;
   firmaName: string | null;
   personenCount: number;
@@ -28,6 +30,7 @@ function toDTO(row: AbteilungRow): AbteilungDTO {
   return {
     id: row.id,
     name: row.name,
+    description: row.description,
     firmaId: row.firmaId,
     firmaName: row.firmaName,
     personenCount: Number(row.personenCount),
@@ -37,7 +40,7 @@ function toDTO(row: AbteilungRow): AbteilungDTO {
 }
 
 const BASE_QUERY = `
-  SELECT a.id, a.name, a.firmaId, f.name AS firmaName,
+  SELECT a.id, a.name, a.description, a.firmaId, f.name AS firmaName,
          (SELECT COUNT(*) FROM person p WHERE p.abteilungId = a.id) AS personenCount,
          a.createdAt, a.updatedAt
   FROM abteilung a
@@ -113,9 +116,9 @@ export const abteilungService = {
     const now = new Date().toISOString();
     const result = sqlite
       .prepare(
-        `INSERT INTO abteilung (name, firmaId, createdAt, updatedAt) VALUES (?, ?, ?, ?)`
+        `INSERT INTO abteilung (name, description, firmaId, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?)`
       )
-      .run(dto.name, dto.firmaId, now, now);
+      .run(dto.name, dto.description ?? null, dto.firmaId, now, now);
     return this.findById(Number(result.lastInsertRowid));
   },
 
@@ -123,8 +126,8 @@ export const abteilungService = {
     this.findById(id);
     const now = new Date().toISOString();
     sqlite
-      .prepare(`UPDATE abteilung SET name=?, firmaId=?, updatedAt=? WHERE id=?`)
-      .run(dto.name, dto.firmaId, now, id);
+      .prepare(`UPDATE abteilung SET name=?, description=?, firmaId=?, updatedAt=? WHERE id=?`)
+      .run(dto.name, dto.description ?? null, dto.firmaId, now, id);
     return this.findById(id);
   },
 
@@ -143,7 +146,7 @@ abteilungService.findPersonenByAbteilungId = function (
   abteilungService.findById(abteilungId); // throws 404 if not found
 
   const BASE_PERSON_QUERY = `
-    SELECT p.id, p.firstName, p.lastName, p.email, p.telefon, p.position,
+    SELECT p.id, p.firstName, p.lastName, p.email, p.phone, p.position, p.notes,
            p.firmaId, f.name AS firmaName,
            p.abteilungId, a.name AS abteilungName,
            p.createdAt, p.updatedAt

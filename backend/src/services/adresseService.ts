@@ -5,12 +5,11 @@ import type { AdresseCreateDTO } from '../utils/validation.js';
 
 export interface AdresseDTO {
   id: number;
-  strasse: string | null;
-  hausnummer: string | null;
-  plz: string | null;
-  stadt: string | null;
-  land: string | null;
-  typ: string | null;
+  street: string | null;
+  houseNumber: string | null;
+  postalCode: string | null;
+  city: string | null;
+  country: string | null;
   firmaId: number | null;
   firmaName: string | null;
   personId: number | null;
@@ -21,12 +20,11 @@ export interface AdresseDTO {
 
 interface AdresseRow {
   id: number;
-  strasse: string | null;
-  hausnummer: string | null;
-  plz: string | null;
-  stadt: string | null;
-  land: string | null;
-  typ: string | null;
+  street: string | null;
+  houseNumber: string | null;
+  postalCode: string | null;
+  city: string | null;
+  country: string | null;
   firmaId: number | null;
   firmaName: string | null;
   personId: number | null;
@@ -44,12 +42,11 @@ function toDTO(row: AdresseRow): AdresseDTO {
 
   return {
     id: row.id,
-    strasse: row.strasse,
-    hausnummer: row.hausnummer,
-    plz: row.plz,
-    stadt: row.stadt,
-    land: row.land,
-    typ: row.typ,
+    street: row.street,
+    houseNumber: row.houseNumber,
+    postalCode: row.postalCode,
+    city: row.city,
+    country: row.country,
     firmaId: row.firmaId,
     firmaName: row.firmaName,
     personId: row.personId,
@@ -60,7 +57,7 @@ function toDTO(row: AdresseRow): AdresseDTO {
 }
 
 const BASE_QUERY = `
-  SELECT a.id, a.strasse, a.hausnummer, a.plz, a.stadt, a.land, a.typ,
+  SELECT a.id, a.street, a.houseNumber, a.postalCode, a.city, a.country,
          a.firmaId, f.name AS firmaName,
          a.personId, p.firstName AS personFirstName, p.lastName AS personLastName,
          a.createdAt, a.updatedAt
@@ -87,7 +84,7 @@ export const adresseService = {
 
   listAll(): AdresseDTO[] {
     const rows = sqlite
-      .prepare(`${BASE_QUERY} ORDER BY a.stadt ASC`)
+      .prepare(`${BASE_QUERY} ORDER BY a.city ASC`)
       .all() as AdresseRow[];
     return rows.map(toDTO);
   },
@@ -104,16 +101,15 @@ export const adresseService = {
     const now = new Date().toISOString();
     const result = sqlite
       .prepare(
-        `INSERT INTO adresse (strasse, hausnummer, plz, stadt, land, typ, firmaId, personId, createdAt, updatedAt)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        `INSERT INTO adresse (street, houseNumber, postalCode, city, country, firmaId, personId, createdAt, updatedAt)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
       .run(
-        dto.strasse ?? null,
-        dto.hausnummer ?? null,
-        dto.plz ?? null,
-        dto.stadt ?? null,
-        dto.land ?? null,
-        dto.typ ?? null,
+        dto.street ?? null,
+        dto.houseNumber ?? null,
+        dto.postalCode ?? null,
+        dto.city ?? null,
+        dto.country ?? null,
         dto.firmaId ?? null,
         dto.personId ?? null,
         now,
@@ -127,15 +123,14 @@ export const adresseService = {
     const now = new Date().toISOString();
     sqlite
       .prepare(
-        `UPDATE adresse SET strasse=?, hausnummer=?, plz=?, stadt=?, land=?, typ=?, firmaId=?, personId=?, updatedAt=? WHERE id=?`
+        `UPDATE adresse SET street=?, houseNumber=?, postalCode=?, city=?, country=?, firmaId=?, personId=?, updatedAt=? WHERE id=?`
       )
       .run(
-        dto.strasse ?? null,
-        dto.hausnummer ?? null,
-        dto.plz ?? null,
-        dto.stadt ?? null,
-        dto.land ?? null,
-        dto.typ ?? null,
+        dto.street ?? null,
+        dto.houseNumber ?? null,
+        dto.postalCode ?? null,
+        dto.city ?? null,
+        dto.country ?? null,
         dto.firmaId ?? null,
         dto.personId ?? null,
         now,

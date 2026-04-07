@@ -6,11 +6,11 @@ import type { FirmaCreateDTO } from '../utils/validation.js';
 export interface FirmaDTO {
   id: number;
   name: string;
-  branche: string | null;
+  industry: string | null;
   website: string | null;
-  telefon: string | null;
+  phone: string | null;
   email: string | null;
-  beschreibung: string | null;
+  notes: string | null;
   personenCount: number;
   abteilungenCount: number;
   createdAt: string;
@@ -20,11 +20,11 @@ export interface FirmaDTO {
 interface FirmaRow {
   id: number;
   name: string;
-  branche: string | null;
+  industry: string | null;
   website: string | null;
-  telefon: string | null;
+  phone: string | null;
   email: string | null;
-  beschreibung: string | null;
+  notes: string | null;
   createdAt: string;
   updatedAt: string;
   personenCount: number;
@@ -35,11 +35,11 @@ function toDTO(row: FirmaRow): FirmaDTO {
   return {
     id: row.id,
     name: row.name,
-    branche: row.branche,
+    industry: row.industry,
     website: row.website,
-    telefon: row.telefon,
+    phone: row.phone,
     email: row.email,
-    beschreibung: row.beschreibung,
+    notes: row.notes,
     personenCount: Number(row.personenCount),
     abteilungenCount: Number(row.abteilungenCount),
     createdAt: row.createdAt,
@@ -48,7 +48,7 @@ function toDTO(row: FirmaRow): FirmaDTO {
 }
 
 const BASE_QUERY = `
-  SELECT f.id, f.name, f.branche, f.website, f.telefon, f.email, f.beschreibung,
+  SELECT f.id, f.name, f.industry, f.website, f.phone, f.email, f.notes,
          f.createdAt, f.updatedAt,
          (SELECT COUNT(*) FROM person p WHERE p.firmaId = f.id) AS personenCount,
          (SELECT COUNT(*) FROM abteilung a WHERE a.firmaId = f.id) AS abteilungenCount
@@ -100,16 +100,16 @@ export const firmaService = {
     const now = new Date().toISOString();
     const result = sqlite
       .prepare(
-        `INSERT INTO firma (name, branche, website, telefon, email, beschreibung, createdAt, updatedAt)
+        `INSERT INTO firma (name, industry, website, phone, email, notes, createdAt, updatedAt)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
       )
       .run(
         dto.name,
-        dto.branche ?? null,
+        dto.industry ?? null,
         dto.website ?? null,
-        dto.telefon ?? null,
+        dto.phone ?? null,
         dto.email ?? null,
-        dto.beschreibung ?? null,
+        dto.notes ?? null,
         now,
         now
       );
@@ -121,15 +121,15 @@ export const firmaService = {
     const now = new Date().toISOString();
     sqlite
       .prepare(
-        `UPDATE firma SET name=?, branche=?, website=?, telefon=?, email=?, beschreibung=?, updatedAt=? WHERE id=?`
+        `UPDATE firma SET name=?, industry=?, website=?, phone=?, email=?, notes=?, updatedAt=? WHERE id=?`
       )
       .run(
         dto.name,
-        dto.branche ?? null,
+        dto.industry ?? null,
         dto.website ?? null,
-        dto.telefon ?? null,
+        dto.phone ?? null,
         dto.email ?? null,
-        dto.beschreibung ?? null,
+        dto.notes ?? null,
         now,
         id
       );

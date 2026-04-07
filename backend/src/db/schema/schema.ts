@@ -5,11 +5,11 @@ import { sql } from 'drizzle-orm';
 export const firma = sqliteTable('firma', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   name: text('name').notNull(),
-  branche: text('branche'),
+  industry: text('industry'),
   website: text('website'),
-  telefon: text('telefon'),
+  phone: text('phone'),
   email: text('email'),
-  beschreibung: text('beschreibung'),
+  notes: text('notes'),
   createdAt: text('createdAt').notNull().default(sql`(datetime('now'))`),
   updatedAt: text('updatedAt').notNull().default(sql`(datetime('now'))`),
 });
@@ -18,6 +18,7 @@ export const firma = sqliteTable('firma', {
 export const abteilung = sqliteTable('abteilung', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   name: text('name').notNull(),
+  description: text('description'),
   firmaId: integer('firmaId')
     .notNull()
     .references(() => firma.id, { onDelete: 'cascade' }),
@@ -31,8 +32,9 @@ export const person = sqliteTable('person', {
   firstName: text('firstName').notNull(),
   lastName: text('lastName').notNull(),
   email: text('email'),
-  telefon: text('telefon'),
+  phone: text('phone'),
   position: text('position'),
+  notes: text('notes'),
   firmaId: integer('firmaId')
     .notNull()
     .references(() => firma.id, { onDelete: 'cascade' }),
@@ -46,12 +48,11 @@ export const person = sqliteTable('person', {
 // ─── adresse ──────────────────────────────────────────────────────────────────
 export const adresse = sqliteTable('adresse', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  strasse: text('strasse'),
-  hausnummer: text('hausnummer'),
-  plz: text('plz'),
-  stadt: text('stadt'),
-  land: text('land'),
-  typ: text('typ'),
+  street: text('street'),
+  houseNumber: text('houseNumber'),
+  postalCode: text('postalCode'),
+  city: text('city'),
+  country: text('country'),
   firmaId: integer('firmaId').references(() => firma.id, {
     onDelete: 'cascade',
   }),
@@ -67,7 +68,7 @@ export const aktivitaet = sqliteTable('aktivitaet', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   typ: text('typ').notNull(),
   subject: text('subject').notNull(),
-  beschreibung: text('beschreibung'),
+  description: text('description'),
   datum: text('datum').notNull(),
   firmaId: integer('firmaId').references(() => firma.id, {
     onDelete: 'cascade',
@@ -85,7 +86,8 @@ export const chance = sqliteTable('chance', {
   titel: text('titel').notNull(),
   beschreibung: text('beschreibung'),
   wert: real('wert'),
-  phase: text('phase').notNull().default('LEAD'),
+  currency: text('currency').notNull().default('EUR'),
+  phase: text('phase').notNull().default('NEU'),
   wahrscheinlichkeit: integer('wahrscheinlichkeit'),
   erwartetesDatum: text('erwartetesDatum'),
   firmaId: integer('firmaId')
@@ -102,11 +104,12 @@ export const chance = sqliteTable('chance', {
 export const vertrag = sqliteTable('vertrag', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   titel: text('titel').notNull(),
-  beschreibung: text('beschreibung'),
+  notes: text('notes'),
   wert: real('wert'),
+  currency: text('currency').notNull().default('EUR'),
   status: text('status').notNull().default('ENTWURF'),
-  startDatum: text('startDatum'),
-  endDatum: text('endDatum'),
+  startDate: text('startDate'),
+  endDate: text('endDate'),
   firmaId: integer('firmaId')
     .notNull()
     .references(() => firma.id, { onDelete: 'cascade' }),
@@ -121,9 +124,9 @@ export const vertrag = sqliteTable('vertrag', {
 export const gehalt = sqliteTable('gehalt', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   amount: real('amount').notNull(),
-  typ: text('typ').notNull().default('MONATLICH'),
+  currency: text('currency').notNull().default('EUR'),
+  typ: text('typ').notNull().default('GRUNDGEHALT'),
   effectiveDate: text('effectiveDate').notNull(),
-  beschreibung: text('beschreibung'),
   personId: integer('personId')
     .notNull()
     .references(() => person.id, { onDelete: 'cascade' }),
@@ -135,8 +138,7 @@ export const gehalt = sqliteTable('gehalt', {
 export const savedReport = sqliteTable('savedReport', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   name: text('name').notNull(),
-  beschreibung: text('beschreibung'),
-  queryJson: text('queryJson').notNull(),
+  config: text('config').notNull(),
   benutzerId: integer('benutzerId').notNull(),
   createdAt: text('createdAt').notNull().default(sql`(datetime('now'))`),
   updatedAt: text('updatedAt').notNull().default(sql`(datetime('now'))`),
@@ -146,7 +148,7 @@ export const savedReport = sqliteTable('savedReport', {
 export const dashboardConfig = sqliteTable('dashboardConfig', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   benutzerId: integer('benutzerId').notNull().unique(),
-  visibleWidgets: text('visibleWidgets').notNull(),
+  config: text('config').notNull(),
   createdAt: text('createdAt').notNull().default(sql`(datetime('now'))`),
   updatedAt: text('updatedAt').notNull().default(sql`(datetime('now'))`),
 });

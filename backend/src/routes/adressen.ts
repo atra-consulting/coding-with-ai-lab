@@ -31,7 +31,7 @@ router.get(
       const { page, size } = parsePaginationParams(req.query as Record<string, unknown>);
       const sort = parseSort(
         req.query['sort'] as string | string[] | undefined,
-        'stadt',
+        'city',
         'ASC',
         'adresse'
       );

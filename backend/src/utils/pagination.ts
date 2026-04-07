@@ -24,7 +24,7 @@ export interface SortParams {
 const ALLOWED_SORT_FIELDS: Record<string, Record<string, string>> = {
   firma: {
     name: 'name',
-    branche: 'branche',
+    industry: 'industry',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
   },
@@ -43,9 +43,9 @@ const ALLOWED_SORT_FIELDS: Record<string, Record<string, string>> = {
     updatedAt: 'updatedAt',
   },
   adresse: {
-    stadt: 'stadt',
-    plz: 'plz',
-    strasse: 'strasse',
+    city: 'city',
+    postalCode: 'postalCode',
+    street: 'street',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
   },
@@ -69,7 +69,8 @@ const ALLOWED_SORT_FIELDS: Record<string, Record<string, string>> = {
     titel: 'titel',
     wert: 'wert',
     status: 'status',
-    startDatum: 'startDatum',
+    startDate: 'startDate',
+    endDate: 'endDate',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
   },
