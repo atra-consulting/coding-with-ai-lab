@@ -18,10 +18,12 @@ import com.crm.entity.Chance;
 import com.crm.entity.Firma;
 import com.crm.entity.Gehalt;
 import com.crm.entity.Person;
+import com.crm.entity.Produkt;
 import com.crm.entity.Vertrag;
 import com.crm.entity.enums.AktivitaetTyp;
 import com.crm.entity.enums.ChancePhase;
 import com.crm.entity.enums.GehaltTyp;
+import com.crm.entity.enums.ProduktKategorie;
 import com.crm.entity.enums.VertragStatus;
 import com.crm.repository.AbteilungRepository;
 import com.crm.repository.AdresseRepository;
@@ -30,6 +32,7 @@ import com.crm.repository.ChanceRepository;
 import com.crm.repository.FirmaRepository;
 import com.crm.repository.GehaltRepository;
 import com.crm.repository.PersonRepository;
+import com.crm.repository.ProduktRepository;
 import com.crm.repository.VertragRepository;
 
 @Component
@@ -43,11 +46,13 @@ public class DataSeeder implements CommandLineRunner {
     private final AktivitaetRepository aktivitaetRepository;
     private final VertragRepository vertragRepository;
     private final ChanceRepository chanceRepository;
+    private final ProduktRepository produktRepository;
 
     public DataSeeder(FirmaRepository firmaRepository, AbteilungRepository abteilungRepository,
                       PersonRepository personRepository, AdresseRepository adresseRepository,
                       GehaltRepository gehaltRepository, AktivitaetRepository aktivitaetRepository,
-                      VertragRepository vertragRepository, ChanceRepository chanceRepository) {
+                      VertragRepository vertragRepository, ChanceRepository chanceRepository,
+                      ProduktRepository produktRepository) {
         this.firmaRepository = firmaRepository;
         this.abteilungRepository = abteilungRepository;
         this.personRepository = personRepository;
@@ -56,6 +61,7 @@ public class DataSeeder implements CommandLineRunner {
         this.aktivitaetRepository = aktivitaetRepository;
         this.vertragRepository = vertragRepository;
         this.chanceRepository = chanceRepository;
+        this.produktRepository = produktRepository;
     }
 
     @Override
@@ -240,7 +246,39 @@ public class DataSeeder implements CommandLineRunner {
         vertragRepository.saveAll(vertraege);
         vertragRepository.flush();
 
-        // 8. Create 300 Chancen
+        // 8. Create 50 Produkte
+        String[] produktNames = {"CRM Enterprise", "CRM Professional", "CRM Starter", "Cloud Hosting Basic", "Cloud Hosting Premium", "Cloud Hosting Enterprise", "Datenbank-Lizenz Standard", "Datenbank-Lizenz Enterprise", "API Gateway", "Monitoring Service", "Backup-Loesung", "Firewall Advanced", "E-Mail Suite", "Collaboration Platform", "Dokumentenmanagement", "ERP-Modul Finanzen", "ERP-Modul Logistik", "ERP-Modul Personal", "Wartungsvertrag Standard", "Wartungsvertrag Premium", "Support Basic", "Support Premium", "Support Enterprise", "Schulung Grundkurs", "Schulung Expertenkurs", "Beratung Digitalisierung", "Beratung Prozessoptimierung", "Beratung IT-Strategie", "Server Rack Unit", "Netzwerk-Switch 48-Port", "Router Enterprise", "Storage Array 10TB", "Storage Array 50TB", "Workstation Pro", "Laptop Business", "Monitor 4K", "Drucker Laser", "Scanner Dokumenten", "USV Anlage", "Klimaanlage Serverraum", "VPN-Lizenz", "Antivirus-Lizenz", "Office-Suite", "Projektmanagement-Tool", "Analytics Dashboard", "BI-Reporting-Modul", "IoT Gateway", "Sensoren-Kit", "Mobile App Lizenz", "Desktop App Lizenz"};
+        String[] einheiten = {"Lizenz", "Stueck", "Monat", "Jahr", "Stunde", "Pauschal", "pro User"};
+        ProduktKategorie[] kategorien = ProduktKategorie.values();
+        List<Produkt> produkte = new ArrayList<>();
+        for (int i = 0; i < produktNames.length; i++) {
+            Produkt p = new Produkt();
+            p.setName(produktNames[i]);
+            p.setBeschreibung("Beschreibung fuer " + produktNames[i]);
+            p.setProduktNummer("PRD-" + String.format("%04d", i + 1));
+            p.setPreis(BigDecimal.valueOf(100 + random.nextInt(49900)));
+            p.setCurrency("EUR");
+            p.setEinheit(einheiten[random.nextInt(einheiten.length)]);
+            // Assign kategorie based on product name pattern
+            if (i < 3) p.setKategorie(ProduktKategorie.SOFTWARE);
+            else if (i < 6) p.setKategorie(ProduktKategorie.DIENSTLEISTUNG);
+            else if (i < 8) p.setKategorie(ProduktKategorie.LIZENZ);
+            else if (i < 12) p.setKategorie(ProduktKategorie.SOFTWARE);
+            else if (i < 18) p.setKategorie(ProduktKategorie.SOFTWARE);
+            else if (i < 21) p.setKategorie(ProduktKategorie.WARTUNG);
+            else if (i < 24) p.setKategorie(ProduktKategorie.WARTUNG);
+            else if (i < 26) p.setKategorie(ProduktKategorie.DIENSTLEISTUNG);
+            else if (i < 29) p.setKategorie(ProduktKategorie.DIENSTLEISTUNG);
+            else if (i < 40) p.setKategorie(ProduktKategorie.HARDWARE);
+            else if (i < 46) p.setKategorie(ProduktKategorie.LIZENZ);
+            else p.setKategorie(kategorien[random.nextInt(kategorien.length)]);
+            p.setAktiv(random.nextInt(10) > 0); // ~90% active
+            produkte.add(p);
+        }
+        produktRepository.saveAll(produkte);
+        produktRepository.flush();
+
+        // 9. Create 300 Chancen
         List<Chance> chancen = new ArrayList<>();
         for (int i = 0; i < 300; i++) {
             Chance c = new Chance();
@@ -271,7 +309,7 @@ public class DataSeeder implements CommandLineRunner {
         chanceRepository.saveAll(chancen);
         chanceRepository.flush();
 
-        System.out.println("=== DataSeeder: " + firmen.size() + " Firmen, " + abteilungen.size() + " Abteilungen, " + personen.size() + " Personen, " + adressen.size() + " Adressen, " + gehaelter.size() + " Gehaelter, " + aktivitaeten.size() + " Aktivitaeten, " + vertraege.size() + " Vertraege, " + chancen.size() + " Chancen erstellt ===");
+        System.out.println("=== DataSeeder: " + firmen.size() + " Firmen, " + abteilungen.size() + " Abteilungen, " + personen.size() + " Personen, " + adressen.size() + " Adressen, " + gehaelter.size() + " Gehaelter, " + aktivitaeten.size() + " Aktivitaeten, " + vertraege.size() + " Vertraege, " + produkte.size() + " Produkte, " + chancen.size() + " Chancen erstellt ===");
     }
 
 }

@@ -4,6 +4,7 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import {
   faBuilding,
+  faBoxOpen,
   faCalendarCheck,
   faChartLine,
   faChartPie,
@@ -63,6 +64,7 @@ export class SidebarComponent {
       title: 'Vertrieb',
       items: [
         { label: 'Chancen', route: '/chancen', icon: faChartLine, permission: 'CHANCEN' },
+        { label: 'Produkte', route: '/produkte', icon: faBoxOpen, permission: 'PRODUKTE' },
         { label: 'Aktivitäten', route: '/aktivitaeten', icon: faCalendarCheck, permission: 'AKTIVITAETEN' },
         { label: 'Verträge', route: '/vertraege', icon: faFileContract, permission: 'VERTRAEGE' },
       ],

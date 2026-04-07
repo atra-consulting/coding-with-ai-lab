@@ -48,14 +48,14 @@ public class SecurityConfig {
 
     @Bean
     public UserDetailsService userDetailsService(PasswordEncoder encoder) {
-        // All 11 permissions
+        // All 12 permissions
         String[] allPermissions = {
             "DASHBOARD", "FIRMEN", "PERSONEN", "ABTEILUNGEN", "ADRESSEN",
-            "AKTIVITAETEN", "GEHAELTER", "VERTRAEGE", "CHANCEN", "AUSWERTUNGEN", "BENUTZERVERWALTUNG"
+            "AKTIVITAETEN", "GEHAELTER", "VERTRAEGE", "CHANCEN", "PRODUKTE", "AUSWERTUNGEN", "BENUTZERVERWALTUNG"
         };
         String[] vertriebPermissions = {
             "DASHBOARD", "FIRMEN", "PERSONEN", "ABTEILUNGEN", "ADRESSEN",
-            "AKTIVITAETEN", "VERTRAEGE", "CHANCEN", "AUSWERTUNGEN"
+            "AKTIVITAETEN", "VERTRAEGE", "CHANCEN", "PRODUKTE", "AUSWERTUNGEN"
         };
         String[] personalPermissions = {
             "DASHBOARD", "FIRMEN", "PERSONEN", "ABTEILUNGEN", "ADRESSEN",
@@ -64,7 +64,7 @@ public class SecurityConfig {
         // allrounder = union of vertrieb + personal
         String[] allrounderPermissions = {
             "DASHBOARD", "FIRMEN", "PERSONEN", "ABTEILUNGEN", "ADRESSEN",
-            "AKTIVITAETEN", "GEHAELTER", "VERTRAEGE", "CHANCEN", "AUSWERTUNGEN"
+            "AKTIVITAETEN", "GEHAELTER", "VERTRAEGE", "CHANCEN", "PRODUKTE", "AUSWERTUNGEN"
         };
 
         var admin = User.builder()

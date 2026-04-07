@@ -73,6 +73,12 @@ export const routes: Routes = [
           import('./features/vertrag/vertrag.routes').then((m) => m.VERTRAG_ROUTES),
       },
       {
+        path: 'produkte',
+        canActivate: [permissionGuard('PRODUKTE')],
+        loadChildren: () =>
+          import('./features/produkt/produkt.routes').then((m) => m.PRODUKT_ROUTES),
+      },
+      {
         path: 'chancen',
         canActivate: [permissionGuard('CHANCEN')],
         loadChildren: () => import('./features/chance/chance.routes').then((m) => m.CHANCE_ROUTES),

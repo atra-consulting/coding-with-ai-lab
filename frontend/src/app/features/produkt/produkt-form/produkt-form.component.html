@@ -1,0 +1,94 @@
+<div class="page-header">
+  <h2>{{ isEdit ? 'Produkt bearbeiten' : 'Neues Produkt' }}</h2>
+</div>
+
+@if (loading) {
+  <app-loading-spinner />
+} @else {
+  <div class="card">
+    <div class="card-body">
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="name" class="form-label">Name *</label>
+            <input
+              type="text"
+              class="form-control"
+              id="name"
+              formControlName="name"
+              [class.is-invalid]="form.get('name')?.invalid && form.get('name')?.touched"
+            />
+            @if (form.get('name')?.invalid && form.get('name')?.touched) {
+              <div class="invalid-feedback">Name ist erforderlich</div>
+            }
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="kategorie" class="form-label">Kategorie *</label>
+            <select
+              class="form-select"
+              id="kategorie"
+              formControlName="kategorie"
+              [class.is-invalid]="form.get('kategorie')?.invalid && form.get('kategorie')?.touched"
+            >
+              <option value="" disabled>Kategorie auswählen...</option>
+              @for (k of kategorieOptions; track k) {
+                <option [value]="k">{{ k }}</option>
+              }
+            </select>
+            @if (form.get('kategorie')?.invalid && form.get('kategorie')?.touched) {
+              <div class="invalid-feedback">Kategorie ist erforderlich</div>
+            }
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="produktNummer" class="form-label">Produkt-Nr.</label>
+            <input
+              type="text"
+              class="form-control"
+              id="produktNummer"
+              formControlName="produktNummer"
+            />
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="einheit" class="form-label">Einheit</label>
+            <input type="text" class="form-control" id="einheit" formControlName="einheit" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="preis" class="form-label">Preis</label>
+            <input
+              type="number"
+              class="form-control"
+              id="preis"
+              formControlName="preis"
+              step="0.01"
+            />
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="currency" class="form-label">Währung</label>
+            <input type="text" class="form-control" id="currency" formControlName="currency" />
+          </div>
+        </div>
+        <div class="mb-3">
+          <label for="beschreibung" class="form-label">Beschreibung</label>
+          <textarea
+            class="form-control"
+            id="beschreibung"
+            formControlName="beschreibung"
+            rows="3"
+          ></textarea>
+        </div>
+        <div class="mb-3 form-check">
+          <input type="checkbox" class="form-check-input" id="aktiv" formControlName="aktiv" />
+          <label class="form-check-label" for="aktiv">Aktiv</label>
+        </div>
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary" [disabled]="form.invalid">Speichern</button>
+          <a routerLink="/produkte" class="btn btn-outline-secondary">Abbrechen</a>
+        </div>
+      </form>
+    </div>
+  </div>
+}
