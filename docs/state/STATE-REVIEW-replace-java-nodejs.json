@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "branch": "replace-java-nodejs",
+  "main_branch": "main",
+  "docs_folder": "docs",
+  "special_instructions": null,
+  "review_agents_available": true,
+  "fix_agents_available": true,
+  "all_reviewers": ["ba-reviewer", "be-reviewer", "fe-reviewer", "db-reviewer"],
+  "all_coders": ["be-coder", "fe-coder", "db-coder"],
+  "all_designers": ["ui-designer"],
+  "dry_run_mode": false,
+  "started": "2026-04-08T00:00:00Z"
+}
