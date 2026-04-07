@@ -22,6 +22,7 @@
 - [ ] **Simplify HOW TO ASK section** — Remove "Wait rule" paragraph
 - [ ] **Add Standard Checkpoint to REUSABLE PATTERNS** — Define the Continue/Edit/Quit pattern once
 - [ ] **Branch Protection simplification** — Remove "unless user opts to stay on main/master"
+- [ ] **Make git operations conditional** — All git commands (branch, commit, push, PR) only run when directory is a git repo. People may use ZIP downloads without git.
 - [ ] **Step 13.0 cleanup** — Use `git rm --ignore-unmatch` for tracked + `rm -f` for untracked
 - [ ] **State file additions** — Add `workflow_scope` to config, add `pr_url` to artifacts
 - [ ] **Update date** from 2026-03-19 to 2026-03-22
@@ -31,9 +32,10 @@
 
 - [ ] **Phase 4.2: Use Glob instead of find** — Replace `find . -maxdepth 2` with Glob tool patterns
 - [ ] **Context Recovery: Add state file timing note** — Add paragraph about state file creation timing
-- [ ] **Phase 5.0: Dynamic max_rounds** — Change "Three review rounds" to "Up to three review rounds (one round when no fix agents available)"
+- [ ] **Phase 5.0: Reduce to 1 review round** — Change `max_rounds = 3` to `max_rounds = 1`. One round is enough; multiple rounds waste time on this project.
 - [ ] **Phase 6.2: Dynamic review rounds** — Use `<max_rounds>` instead of hardcoded "3"
 - [ ] **Phase 7: Dynamic round display** — Use `<max_rounds>` instead of hardcoded "3"
+- [ ] **Make git-dependent operations conditional** — Review skill validation should handle non-git directories gracefully (ZIP downloads)
 
 ### 4. Verification
 - [ ] Review diffs for both files
