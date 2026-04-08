@@ -13,30 +13,13 @@ for arg in "$@"; do
     --reset-db) RESET_DB=true ;;
     *)
       echo "Usage: $0 [--reset-db]"
-      echo "  --reset-db      Delete local H2 database (will be recreated with seed data)"
+      echo "  --reset-db      Delete local SQLite database (will be recreated with seed data)"
       exit 1
       ;;
   esac
 done
 
 # --- Prerequisite checks ---
-
-# Check Java is installed
-if ! command -v java &> /dev/null; then
-  echo "ERROR: Java is not installed."
-  echo "This project requires Java 21 or later."
-  echo "Install via: brew install openjdk@21  OR  sdk install java 21.0.10-tem"
-  exit 1
-fi
-
-# Check Java version is 21+
-JAVA_VERSION=$(java -version 2>&1 | head -1 | sed 's/.*version "\([0-9]*\).*/\1/')
-if ! [[ "$JAVA_VERSION" =~ ^[0-9]+$ ]] || [ "$JAVA_VERSION" -lt 21 ]; then
-  echo "ERROR: Java 21 or later is required. Found: Java ${JAVA_VERSION}."
-  echo "Install via: brew install openjdk@21  OR  sdk install java 21.0.10-tem"
-  exit 1
-fi
-echo "Java ${JAVA_VERSION} detected."
 
 # Check Node.js is installed
 if ! command -v node &> /dev/null; then
@@ -96,16 +79,21 @@ trap cleanup SIGINT SIGTERM
 
 echo "Starting backend..."
 cd "${ROOT_DIR}/backend"
-# Ensure mvnw is executable (may lose executable bit on Windows checkouts)
-[ ! -x "./mvnw" ] && chmod +x "./mvnw"
-./mvnw spring-boot:run -Dspring-boot.run.profiles=dev -q &
+
+# Install node modules if not present
+if [ ! -d "node_modules" ]; then
+  echo "Backend node modules not found. Running npm install..."
+  npm install
+fi
+
+npx tsx --watch src/index.ts &
 BACKEND_PID=$!
 cd "${ROOT_DIR}"
 
 # Wait for backend to be ready
 echo "Waiting for backend to start..."
 for i in $(seq 1 60); do
-  if curl -s "http://localhost:7070/api/firmen" -o /dev/null -w '%{http_code}' 2>/dev/null | grep -q '401\|200'; then
+  if curl -s "http://localhost:7070/api/health" -o /dev/null -w '%{http_code}' 2>/dev/null | grep -q '200'; then
     echo "Backend is ready!"
     break
   fi
