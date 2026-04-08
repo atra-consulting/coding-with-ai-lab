@@ -1,6 +1,7 @@
 # Backend
 backend/target/
 backend/data/
+backend/test-results/
 *.class
 *.jar
 *.log
