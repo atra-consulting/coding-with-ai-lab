@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "task_key": "REDUCE-APP-COMPLEXITY",
+  "status": "in_progress",
+  "current_step": "3.3",
+  "started": "2026-04-08T10:00:00Z",
+  "updated": "2026-04-08T10:00:00Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Implement phases 1, 2, 4, 5 from PLAN-REDUCE-APP-COMPLEXITY.md: Remove report builder, dashboard widgets, Kanban board, simplify auth",
+    "special_instructions": null,
+    "branch_name": null,
+    "original_branch": null,
+    "docs_folder": "docs",
+    "is_git_repo": true,
+    "workflow_scope": null
+  },
+  "discovery": {
+    "agents_available": true,
+    "writer_agents": ["ba-writer"],
+    "coding_agents": ["be-coder", "fe-coder", "db-coder", "ui-designer"],
+    "review_agents": ["ba-reviewer", "be-reviewer", "fe-reviewer", "db-reviewer", "ui-reviewer"],
+    "test_command": "cd backend && npx playwright test"
+  },
+  "artifacts": {
+    "prd_skipped": null,
+    "prd_file": null,
+    "plan_file": "/Users/karsten/workspaces/fh/repos/coding-with-ai-lab/docs/plans/PLAN-REDUCE-APP-COMPLEXITY.md",
+    "pr_url": null
+  },
+  "completed_steps": []
+}

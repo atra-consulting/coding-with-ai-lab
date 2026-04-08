@@ -5,7 +5,6 @@ export function runMigrations(): void {
 
   // Tables created in FK dependency order:
   // firma -> abteilung -> person -> adresse, aktivitaet, chance, vertrag, gehalt
-  // savedReport and dashboardConfig reference only benutzerId (not a DB FK)
 
   sqlite.exec(`
     CREATE TABLE IF NOT EXISTS firma (
@@ -109,22 +108,6 @@ export function runMigrations(): void {
       updatedAt     TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
-    CREATE TABLE IF NOT EXISTS savedReport (
-      id          INTEGER PRIMARY KEY AUTOINCREMENT,
-      name        TEXT NOT NULL,
-      config      TEXT NOT NULL,
-      benutzerId  INTEGER NOT NULL,
-      createdAt   TEXT NOT NULL DEFAULT (datetime('now')),
-      updatedAt   TEXT NOT NULL DEFAULT (datetime('now'))
-    );
-
-    CREATE TABLE IF NOT EXISTS dashboardConfig (
-      id             INTEGER PRIMARY KEY AUTOINCREMENT,
-      benutzerId     INTEGER NOT NULL UNIQUE,
-      config         TEXT NOT NULL,
-      createdAt      TEXT NOT NULL DEFAULT (datetime('now')),
-      updatedAt      TEXT NOT NULL DEFAULT (datetime('now'))
-    );
   `);
 
   sqlite.exec(`
@@ -141,7 +124,6 @@ export function runMigrations(): void {
     CREATE INDEX IF NOT EXISTS idx_gehalt_personId ON gehalt(personId);
     CREATE INDEX IF NOT EXISTS idx_adresse_firmaId ON adresse(firmaId);
     CREATE INDEX IF NOT EXISTS idx_adresse_personId ON adresse(personId);
-    CREATE INDEX IF NOT EXISTS idx_savedReport_benutzerId ON savedReport(benutzerId);
   `);
 
   console.log('Database migrations complete.');
