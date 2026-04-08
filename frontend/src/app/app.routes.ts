@@ -77,12 +77,6 @@ export const routes: Routes = [
         canActivate: [permissionGuard('CHANCEN')],
         loadChildren: () => import('./features/chance/chance.routes').then((m) => m.CHANCE_ROUTES),
       },
-      {
-        path: 'auswertungen',
-        canActivate: [permissionGuard('AUSWERTUNGEN')],
-        loadChildren: () =>
-          import('./features/auswertung/auswertung.routes').then((m) => m.AUSWERTUNG_ROUTES),
-      },
     ],
   },
   { path: '**', redirectTo: 'welcome' },

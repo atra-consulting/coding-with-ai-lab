@@ -32,22 +32,3 @@ export const GEHALT_TYP = [
   'SONDERZAHLUNG',
 ] as const;
 export type GehaltTyp = (typeof GEHALT_TYP)[number];
-
-export const REPORT_DIMENSION = [
-  'PHASE',
-  'FIRMA',
-  'PERSON',
-  'MONAT',
-  'QUARTAL',
-  'JAHR',
-] as const;
-export type ReportDimension = (typeof REPORT_DIMENSION)[number];
-
-export const REPORT_METRIK = [
-  'ANZAHL',
-  'SUMME_WERT',
-  'DURCHSCHNITT_WERT',
-  'GEWICHTETER_WERT',
-  'GEWINNRATE',
-] as const;
-export type ReportMetrik = (typeof REPORT_METRIK)[number];

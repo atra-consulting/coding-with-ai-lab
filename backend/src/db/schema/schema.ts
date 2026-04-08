@@ -134,21 +134,3 @@ export const gehalt = sqliteTable('gehalt', {
   updatedAt: text('updatedAt').notNull().default(sql`(datetime('now'))`),
 });
 
-// ─── savedReport ──────────────────────────────────────────────────────────────
-export const savedReport = sqliteTable('savedReport', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  name: text('name').notNull(),
-  config: text('config').notNull(),
-  benutzerId: integer('benutzerId').notNull(),
-  createdAt: text('createdAt').notNull().default(sql`(datetime('now'))`),
-  updatedAt: text('updatedAt').notNull().default(sql`(datetime('now'))`),
-});
-
-// ─── dashboardConfig ──────────────────────────────────────────────────────────
-export const dashboardConfig = sqliteTable('dashboardConfig', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  benutzerId: integer('benutzerId').notNull().unique(),
-  config: text('config').notNull(),
-  createdAt: text('createdAt').notNull().default(sql`(datetime('now'))`),
-  updatedAt: text('updatedAt').notNull().default(sql`(datetime('now'))`),
-});
