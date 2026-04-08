@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
-import { permissionGuard } from './core/guards/permission.guard';
 
 export const routes: Routes = [
   {
@@ -58,7 +57,6 @@ export const routes: Routes = [
       },
       {
         path: 'gehaelter',
-        canActivate: [permissionGuard('GEHAELTER')],
         loadChildren: () => import('./features/gehalt/gehalt.routes').then((m) => m.GEHALT_ROUTES),
       },
       {
@@ -68,13 +66,11 @@ export const routes: Routes = [
       },
       {
         path: 'vertraege',
-        canActivate: [permissionGuard('VERTRAEGE')],
         loadChildren: () =>
           import('./features/vertrag/vertrag.routes').then((m) => m.VERTRAG_ROUTES),
       },
       {
         path: 'chancen',
-        canActivate: [permissionGuard('CHANCEN')],
         loadChildren: () => import('./features/chance/chance.routes').then((m) => m.CHANCE_ROUTES),
       },
     ],

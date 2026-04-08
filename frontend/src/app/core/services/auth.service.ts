@@ -39,11 +39,6 @@ export class AuthService {
     });
   }
 
-  hasPermission(permission: string): boolean {
-    const user = this.currentUserSignal();
-    return user?.permissions?.includes(permission) ?? false;
-  }
-
   initializeAuth(): Observable<BenutzerInfo | null> {
     return this.fetchCurrentUser().pipe(
       catchError(() => of(null)),

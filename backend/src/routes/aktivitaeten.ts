@@ -1,17 +1,15 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { requireAuth, requireRole } from '../middleware/auth.js';
+import { requireAuth } from '../middleware/auth.js';
 import { aktivitaetService } from '../services/aktivitaetService.js';
 import { parsePaginationParams, parseSort } from '../utils/pagination.js';
 import { validate, AktivitaetCreateSchema } from '../utils/validation.js';
 
 const router = Router();
-const ROLES = ['ADMIN', 'VERTRIEB', 'PERSONAL'];
 
 // GET /api/aktivitaeten/all
 router.get(
   '/all',
   requireAuth,
-  requireRole(...ROLES),
   (_req: Request, res: Response, next: NextFunction): void => {
     try {
       res.json(aktivitaetService.listAll());
@@ -25,7 +23,6 @@ router.get(
 router.get(
   '/',
   requireAuth,
-  requireRole(...ROLES),
   (req: Request, res: Response, next: NextFunction): void => {
     try {
       const { page, size } = parsePaginationParams(req.query as Record<string, unknown>);
@@ -46,7 +43,6 @@ router.get(
 router.get(
   '/:id',
   requireAuth,
-  requireRole(...ROLES),
   (req: Request, res: Response, next: NextFunction): void => {
     try {
       const id = parseInt(req.params['id'], 10);
@@ -61,7 +57,6 @@ router.get(
 router.post(
   '/',
   requireAuth,
-  requireRole(...ROLES),
   (req: Request, res: Response, next: NextFunction): void => {
     try {
       const dto = validate(AktivitaetCreateSchema, req.body);
@@ -76,7 +71,6 @@ router.post(
 router.put(
   '/:id',
   requireAuth,
-  requireRole(...ROLES),
   (req: Request, res: Response, next: NextFunction): void => {
     try {
       const id = parseInt(req.params['id'], 10);
@@ -92,7 +86,6 @@ router.put(
 router.delete(
   '/:id',
   requireAuth,
-  requireRole(...ROLES),
   (req: Request, res: Response, next: NextFunction): void => {
     try {
       const id = parseInt(req.params['id'], 10);

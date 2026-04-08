@@ -1,17 +1,15 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { requireAuth, requireRole } from '../middleware/auth.js';
+import { requireAuth } from '../middleware/auth.js';
 import { abteilungService } from '../services/abteilungService.js';
 import { parsePaginationParams, parseSort } from '../utils/pagination.js';
 import { validate, AbteilungCreateSchema } from '../utils/validation.js';
 
 const router = Router();
-const ROLES = ['ADMIN', 'VERTRIEB', 'PERSONAL'];
 
 // GET /api/abteilungen/all
 router.get(
   '/all',
   requireAuth,
-  requireRole(...ROLES),
   (_req: Request, res: Response, next: NextFunction): void => {
     try {
       res.json(abteilungService.listAll());
@@ -26,7 +24,6 @@ router.get(
 router.get(
   '/firma/:firmaId',
   requireAuth,
-  requireRole(...ROLES),
   (req: Request, res: Response, next: NextFunction): void => {
     try {
       const firmaId = parseInt(req.params['firmaId'], 10);
@@ -41,7 +38,6 @@ router.get(
 router.get(
   '/',
   requireAuth,
-  requireRole(...ROLES),
   (req: Request, res: Response, next: NextFunction): void => {
     try {
       const { page, size } = parsePaginationParams(req.query as Record<string, unknown>);
@@ -62,7 +58,6 @@ router.get(
 router.get(
   '/:id/personen',
   requireAuth,
-  requireRole(...ROLES),
   (req: Request, res: Response, next: NextFunction): void => {
     try {
       const id = parseInt(req.params['id'], 10);
@@ -78,7 +73,6 @@ router.get(
 router.get(
   '/:id',
   requireAuth,
-  requireRole(...ROLES),
   (req: Request, res: Response, next: NextFunction): void => {
     try {
       const id = parseInt(req.params['id'], 10);
@@ -93,7 +87,6 @@ router.get(
 router.post(
   '/',
   requireAuth,
-  requireRole(...ROLES),
   (req: Request, res: Response, next: NextFunction): void => {
     try {
       const dto = validate(AbteilungCreateSchema, req.body);
@@ -108,7 +101,6 @@ router.post(
 router.put(
   '/:id',
   requireAuth,
-  requireRole(...ROLES),
   (req: Request, res: Response, next: NextFunction): void => {
     try {
       const id = parseInt(req.params['id'], 10);
@@ -124,7 +116,6 @@ router.put(
 router.delete(
   '/:id',
   requireAuth,
-  requireRole(...ROLES),
   (req: Request, res: Response, next: NextFunction): void => {
     try {
       const id = parseInt(req.params['id'], 10);

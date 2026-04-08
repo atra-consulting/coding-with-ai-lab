@@ -1,17 +1,15 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { requireAuth, requirePermission } from '../middleware/auth.js';
+import { requireAuth } from '../middleware/auth.js';
 import { vertragService } from '../services/vertragService.js';
 import { parsePaginationParams, parseSort } from '../utils/pagination.js';
 import { validate, VertragCreateSchema } from '../utils/validation.js';
 
 const router = Router();
-const PERM = 'VERTRAEGE';
 
 // GET /api/vertraege/all
 router.get(
   '/all',
   requireAuth,
-  requirePermission(PERM),
   (_req: Request, res: Response, next: NextFunction): void => {
     try {
       res.json(vertragService.listAll());
@@ -25,7 +23,6 @@ router.get(
 router.get(
   '/',
   requireAuth,
-  requirePermission(PERM),
   (req: Request, res: Response, next: NextFunction): void => {
     try {
       const { page, size } = parsePaginationParams(req.query as Record<string, unknown>);
@@ -46,7 +43,6 @@ router.get(
 router.get(
   '/:id',
   requireAuth,
-  requirePermission(PERM),
   (req: Request, res: Response, next: NextFunction): void => {
     try {
       const id = parseInt(req.params['id'], 10);
@@ -61,7 +57,6 @@ router.get(
 router.post(
   '/',
   requireAuth,
-  requirePermission(PERM),
   (req: Request, res: Response, next: NextFunction): void => {
     try {
       const dto = validate(VertragCreateSchema, req.body);
@@ -76,7 +71,6 @@ router.post(
 router.put(
   '/:id',
   requireAuth,
-  requirePermission(PERM),
   (req: Request, res: Response, next: NextFunction): void => {
     try {
       const id = parseInt(req.params['id'], 10);
@@ -92,7 +86,6 @@ router.put(
 router.delete(
   '/:id',
   requireAuth,
-  requirePermission(PERM),
   (req: Request, res: Response, next: NextFunction): void => {
     try {
       const id = parseInt(req.params['id'], 10);

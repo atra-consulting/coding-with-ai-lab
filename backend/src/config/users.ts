@@ -29,43 +29,6 @@ const ALL_PERMISSIONS = [
   'BENUTZERVERWALTUNG',
 ];
 
-const VERTRIEB_PERMISSIONS = [
-  'DASHBOARD',
-  'FIRMEN',
-  'PERSONEN',
-  'ABTEILUNGEN',
-  'ADRESSEN',
-  'AKTIVITAETEN',
-  'VERTRAEGE',
-  'CHANCEN',
-];
-
-const PERSONAL_PERMISSIONS = [
-  'DASHBOARD',
-  'FIRMEN',
-  'PERSONEN',
-  'ABTEILUNGEN',
-  'ADRESSEN',
-  'AKTIVITAETEN',
-  'GEHAELTER',
-];
-
-const ALLROUNDER_PERMISSIONS = [
-  'DASHBOARD',
-  'FIRMEN',
-  'PERSONEN',
-  'ABTEILUNGEN',
-  'ADRESSEN',
-  'AKTIVITAETEN',
-  'GEHAELTER',
-  'VERTRAEGE',
-  'CHANCEN',
-];
-
-// Bcrypt hashes (cost 10):
-// admin123  -> generated below
-// test123   -> generated below
-// demo1234  -> generated below
 const USERS: CrmUser[] = [
   {
     id: 1,
@@ -79,36 +42,16 @@ const USERS: CrmUser[] = [
   },
   {
     id: 2,
-    benutzername: 'vertrieb',
-    vorname: 'Vera',
-    nachname: 'Vertrieb',
+    benutzername: 'user',
+    vorname: 'Test',
+    nachname: 'User',
     // test123
     passwordHash: '$2a$10$.5uWhO/HqnIqI4iAl1DhJ.QBXsFoMKjjX2qg/4ExXdbqIMV0Padru',
-    roles: ['VERTRIEB'],
-    permissions: VERTRIEB_PERMISSIONS,
+    roles: ['USER'],
+    permissions: ALL_PERMISSIONS,
   },
   {
     id: 3,
-    benutzername: 'personal',
-    vorname: 'Peter',
-    nachname: 'Personal',
-    // test123
-    passwordHash: '$2a$10$.5uWhO/HqnIqI4iAl1DhJ.QBXsFoMKjjX2qg/4ExXdbqIMV0Padru',
-    roles: ['PERSONAL'],
-    permissions: PERSONAL_PERMISSIONS,
-  },
-  {
-    id: 4,
-    benutzername: 'allrounder',
-    vorname: 'Alex',
-    nachname: 'Allrounder',
-    // test123
-    passwordHash: '$2a$10$.5uWhO/HqnIqI4iAl1DhJ.QBXsFoMKjjX2qg/4ExXdbqIMV0Padru',
-    roles: ['VERTRIEB', 'PERSONAL'],
-    permissions: ALLROUNDER_PERMISSIONS,
-  },
-  {
-    id: 5,
     benutzername: 'demo',
     vorname: 'Demo',
     nachname: 'User',

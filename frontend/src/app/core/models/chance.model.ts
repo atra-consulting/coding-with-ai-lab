@@ -35,8 +35,3 @@ export interface ChanceCreate {
   kontaktPersonId?: number | null;
 }
 
-export interface BoardSummary {
-  phase: ChancePhase;
-  count: number;
-  totalWert: number;
-}

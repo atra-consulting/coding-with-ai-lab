@@ -1,4 +1,4 @@
-import { Component, inject, computed } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
@@ -15,14 +15,12 @@ import {
   faAngleDoubleLeft,
   faAngleDoubleRight,
 } from '@fortawesome/free-solid-svg-icons';
-import { AuthService } from '../../core/services/auth.service';
 import { LayoutService } from '../../core/services/layout.service';
 
 interface NavItem {
   label: string;
   route: string;
   icon: IconDefinition;
-  permission?: string;
 }
 
 interface NavSection {
@@ -36,7 +34,6 @@ interface NavSection {
   templateUrl: './sidebar.component.html',
 })
 export class SidebarComponent {
-  private authService = inject(AuthService);
   layoutService = inject(LayoutService);
 
   faAngleDoubleLeft = faAngleDoubleLeft;
@@ -46,42 +43,31 @@ export class SidebarComponent {
     {
       title: 'Übersicht',
       items: [
-        { label: 'Dashboard', route: '/dashboard', icon: faTachometerAlt, permission: 'DASHBOARD' },
+        { label: 'Dashboard', route: '/dashboard', icon: faTachometerAlt },
       ],
     },
     {
       title: 'Kunden & Kontakte',
       items: [
-        { label: 'Firmen', route: '/firmen', icon: faBuilding, permission: 'FIRMEN' },
-        { label: 'Personen', route: '/personen', icon: faUsers, permission: 'PERSONEN' },
-        { label: 'Abteilungen', route: '/abteilungen', icon: faSitemap, permission: 'ABTEILUNGEN' },
-        { label: 'Adressen', route: '/adressen', icon: faMapMarkerAlt, permission: 'ADRESSEN' },
+        { label: 'Firmen', route: '/firmen', icon: faBuilding },
+        { label: 'Personen', route: '/personen', icon: faUsers },
+        { label: 'Abteilungen', route: '/abteilungen', icon: faSitemap },
+        { label: 'Adressen', route: '/adressen', icon: faMapMarkerAlt },
       ],
     },
     {
       title: 'Vertrieb',
       items: [
-        { label: 'Chancen', route: '/chancen', icon: faChartLine, permission: 'CHANCEN' },
-        { label: 'Aktivitäten', route: '/aktivitaeten', icon: faCalendarCheck, permission: 'AKTIVITAETEN' },
-        { label: 'Verträge', route: '/vertraege', icon: faFileContract, permission: 'VERTRAEGE' },
+        { label: 'Chancen', route: '/chancen', icon: faChartLine },
+        { label: 'Aktivitäten', route: '/aktivitaeten', icon: faCalendarCheck },
+        { label: 'Verträge', route: '/vertraege', icon: faFileContract },
       ],
     },
     {
       title: 'Personal',
       items: [
-        { label: 'Gehälter', route: '/gehaelter', icon: faMoneyBillWave, permission: 'GEHAELTER' },
+        { label: 'Gehälter', route: '/gehaelter', icon: faMoneyBillWave },
       ],
     },
   ];
-
-  filteredSections = computed(() =>
-    this.sections
-      .map((section) => ({
-        ...section,
-        visibleItems: section.items.filter(
-          (item) => !item.permission || this.authService.hasPermission(item.permission),
-        ),
-      }))
-      .filter((section) => section.visibleItems.length > 0),
-  );
 }
