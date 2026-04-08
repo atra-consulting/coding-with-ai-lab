@@ -17,7 +17,6 @@ export interface CrmUser {
 }
 
 const ALL_PERMISSIONS = [
-  'DASHBOARD',
   'FIRMEN',
   'PERSONEN',
   'ABTEILUNGEN',

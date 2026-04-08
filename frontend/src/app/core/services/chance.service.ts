@@ -1,18 +1,12 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Chance, ChanceCreate } from '../models/chance.model';
-import { Page } from '../models/page.model';
 
 @Injectable({ providedIn: 'root' })
 export class ChanceService {
   private http = inject(HttpClient);
   private baseUrl = '/api/chancen';
-
-  getAll(page = 0, size = 10, sort = 'titel,asc'): Observable<Page<Chance>> {
-    const params = new HttpParams().set('page', page).set('size', size).set('sort', sort);
-    return this.http.get<Page<Chance>>(this.baseUrl, { params });
-  }
 
   listAll(): Observable<Chance[]> {
     return this.http.get<Chance[]>(`${this.baseUrl}/all`);

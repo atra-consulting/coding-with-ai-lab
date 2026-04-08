@@ -100,33 +100,6 @@ export const GehaltCreateSchema = z.object({
 });
 export type GehaltCreateDTO = z.infer<typeof GehaltCreateSchema>;
 
-// ─── SavedReport ──────────────────────────────────────────────────────────────
-export const SavedReportCreateSchema = z.object({
-  name: z.string().min(1, 'Name ist erforderlich').max(255),
-  config: z.string().min(1, 'Config ist erforderlich'),
-});
-export type SavedReportCreateDTO = z.infer<typeof SavedReportCreateSchema>;
-
-// ─── DashboardConfig ──────────────────────────────────────────────────────────
-export const DashboardConfigSchema = z.object({
-  visibleWidgets: z.array(z.string()).min(1, 'Mindestens ein Widget ist erforderlich'),
-});
-export type DashboardConfigDTO = z.infer<typeof DashboardConfigSchema>;
-
-// ─── ReportQuery ──────────────────────────────────────────────────────────────
-export const ReportQuerySchema = z.object({
-  dimension: z.string().min(1, 'Dimension ist erforderlich'),
-  metriken: z.array(z.string()).min(1, 'Mindestens eine Metrik ist erforderlich'),
-  filter: z
-    .object({
-      phasen: z.array(z.string()).optional(),
-      datumVon: z.string().optional(),
-      datumBis: z.string().optional(),
-    })
-    .optional(),
-});
-export type ReportQueryDTO = z.infer<typeof ReportQuerySchema>;
-
 // ─── validate() helper ────────────────────────────────────────────────────────
 export function validate<T>(schema: z.ZodSchema<T>, data: unknown): T {
   const result = schema.safeParse(data);
