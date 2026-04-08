@@ -27,4 +27,6 @@ Thumbs.db
 # Screenshots
 /*.png
 /*.jpg
-\n# Gemini CLI temporary files\n.playwright-mcp/
+
+# Playwright MCP
+.playwright-mcp/
