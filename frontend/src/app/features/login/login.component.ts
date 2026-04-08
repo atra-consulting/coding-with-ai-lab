@@ -22,11 +22,9 @@ export class LoginComponent {
   private route = inject(ActivatedRoute);
 
   readonly users: UserCard[] = [
-    { benutzername: 'admin', passwort: 'admin123', displayName: 'Admin System', rollen: 'ADMIN', color: '#dc3545' },
-    { benutzername: 'vertrieb', passwort: 'test123', displayName: 'Vera Vertrieb', rollen: 'VERTRIEB', color: '#0d6efd' },
-    { benutzername: 'personal', passwort: 'test123', displayName: 'Paul Personal', rollen: 'PERSONAL', color: '#198754' },
-    { benutzername: 'allrounder', passwort: 'test123', displayName: 'Alex Allrounder', rollen: 'VERTRIEB + PERSONAL', color: '#6f42c1' },
-    { benutzername: 'demo', passwort: 'demo1234', displayName: 'David Demo', rollen: 'ADMIN', color: '#fd7e14' },
+    { benutzername: 'admin', passwort: 'admin123', displayName: 'Admin User', rollen: 'ADMIN', color: '#dc3545' },
+    { benutzername: 'user', passwort: 'test123', displayName: 'Test User', rollen: 'USER', color: '#0d6efd' },
+    { benutzername: 'demo', passwort: 'demo1234', displayName: 'Demo User', rollen: 'ADMIN', color: '#fd7e14' },
   ];
 
   loadingUser = signal<string | null>(null);
