@@ -6,39 +6,11 @@
       </div>
       <div class="checkmark">&#10003;</div>
       <h2>Glückwunsch!</h2>
-      <p class="subtitle">Du bist nun bereit für die Schulung am<br><strong>07.04.2026, 13:00 Uhr</strong></p>
+      <p class="subtitle">Du bist nun bereit für die Schulung.</p>
     </div>
 
     <div class="welcome-body">
-      @if (!countdownFinished()) {
-        <p class="countdown-label">Countdown bis zur Schulung</p>
-        <div class="countdown">
-          <div class="countdown-item">
-            <span class="countdown-value">{{ days() }}</span>
-            <span class="countdown-unit">Tage</span>
-          </div>
-          <div class="countdown-separator">:</div>
-          <div class="countdown-item">
-            <span class="countdown-value">{{ hours().toString().padStart(2, '0') }}</span>
-            <span class="countdown-unit">Stunden</span>
-          </div>
-          <div class="countdown-separator">:</div>
-          <div class="countdown-item">
-            <span class="countdown-value">{{ minutes().toString().padStart(2, '0') }}</span>
-            <span class="countdown-unit">Minuten</span>
-          </div>
-          <div class="countdown-separator">:</div>
-          <div class="countdown-item">
-            <span class="countdown-value">{{ seconds().toString().padStart(2, '0') }}</span>
-            <span class="countdown-unit">Sekunden</span>
-          </div>
-        </div>
-      } @else {
-        <p class="ready-text">Die Schulung hat begonnen!</p>
-      }
-      @if (countdownFinished()) {
-        <a routerLink="/login" class="btn btn-login w-100">Anmelden</a>
-      }
+      <a routerLink="/login" class="btn btn-login w-100">Anmelden</a>
     </div>
 
     <div class="welcome-footer">
