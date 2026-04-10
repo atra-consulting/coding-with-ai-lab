@@ -94,59 +94,6 @@ $success: #16a34a;
   text-align: center;
 }
 
-.countdown-label {
-  font-size: 0.875rem;
-  color: #6c757d;
-  margin-bottom: 1rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.countdown {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 0.25rem;
-}
-
-.countdown-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 64px;
-}
-
-.countdown-value {
-  font-size: 2.25rem;
-  font-weight: 700;
-  color: $primary;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-
-.countdown-unit {
-  font-size: 0.7rem;
-  color: #6c757d;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-top: 0.25rem;
-}
-
-.countdown-separator {
-  font-size: 2rem;
-  font-weight: 700;
-  color: $primary;
-  opacity: 0.4;
-  line-height: 1;
-}
-
-.ready-text {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: $success;
-  margin-bottom: 1.5rem;
-}
-
 .btn-login {
   background: linear-gradient(135deg, $primary 0%, color.adjust($primary, $lightness: -6%) 100%);
   color: #fff;
