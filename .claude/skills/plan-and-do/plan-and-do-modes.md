@@ -34,7 +34,7 @@ File Naming:
 
 Examples:
   /plan-and-do "Add Redis caching for sessions"
-  /plan-and-do "Add Redis caching" "Use Spring Cache abstraction"
+  /plan-and-do "Add Redis caching" "Use node-cache with 5 min TTL"
   /plan-and-do "Fix login button" resume:10
 
 Prerequisites:

@@ -26,7 +26,7 @@ allowed-tools:
 Usage: /plan-and-do ["description"] [special-instructions]
 Usage: /plan-and-do                                (scans for resumable tasks)
 Example: /plan-and-do "Add Redis caching for sessions"
-Example with instructions: /plan-and-do "Add Redis caching" "Use Spring Cache abstraction"
+Example with instructions: /plan-and-do "Add Redis caching" "Use node-cache with 5 min TTL"
 Variables: $ARGUMENTS (captures freeform description and optional special instructions)
 Workflow: End-to-end implementation from task description to code review
 Prerequisites: git, test execution capability

@@ -2,7 +2,7 @@
 
 ## Project
 
-Full-stack CRM application. Node.js/TypeScript (Express + Drizzle ORM + SQLite) backend, Angular 21 frontend. German domain model: Firma, Person, Abteilung, Adresse, Gehalt, Aktivitaet, Vertrag, Chance. SQLite file-based database. Authentication via hardcoded in-memory users with session-based auth (5 users: admin, vertrieb, personal, allrounder, demo).
+Full-stack CRM application. Node.js/TypeScript (Express + Drizzle ORM + SQLite) backend, Angular 21 frontend. German domain model: Firma, Person, Abteilung, Adresse, Gehalt, Aktivitaet, Vertrag, Chance. SQLite file-based database at `backend/data/crmdb.sqlite`. Authentication via hardcoded in-memory users (`backend/src/config/users.ts`) with session-based auth (3 users: admin/admin123, user/test123, demo/demo1234 — all with full permissions).
 
 ## Build & Run
 
@@ -30,14 +30,15 @@ cd frontend && npx ng build                        # Frontend build check
 - **Sort parsing**: Sort arrives as query param `field,direction` (e.g., `name,asc`). Validated against per-entity field whitelists to prevent SQL injection.
 - **Authorization**: Every route file uses `requireRole(...)` or `requirePermission(...)` middleware from `middleware/auth.ts`.
 - **Error responses**: `{ status, message, timestamp, fieldErrors }` via global error handler in `middleware/errorHandler.ts`.
-- **Pagination**: Spring Data Page format: `{ content, totalElements, totalPages, size, number, first, last }`. `number` is 0-indexed.
+- **Pagination**: Response shape mimics Spring Data Page: `{ content, totalElements, totalPages, size, number, first, last }`. `number` is 0-indexed.
+- **Testing**: Backend uses Playwright (`@playwright/test`) for end-to-end API tests under `backend/src/test/`.
 
 ### Frontend
 
 - **Angular 21 standalone components** — no NgModules, no `standalone: true` (it's the default). Use `imports: [...]` in `@Component`.
 - **DI**: `private service = inject(Service)`, not constructor injection.
 - **Control flow**: `@if`/`@for`/`@switch` blocks only, never `*ngIf`/`*ngFor`. `@for` requires `track`.
-- **Pagination**: NgbPagination is 1-indexed, Spring Data is 0-indexed. Convert with `this.currentPage - 1` in service calls.
+- **Pagination**: NgbPagination is 1-indexed, backend is 0-indexed. Convert with `this.currentPage - 1` in service calls.
 
 ## Adding a New Entity
 
