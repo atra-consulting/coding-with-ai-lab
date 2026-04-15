@@ -13,35 +13,12 @@ if "%~1"=="--reset-db" set "RESET_DB=true"
 if "%~1"=="" goto :args_done
 if not "%~1"=="--reset-db" (
     echo Usage: %~nx0 [--reset-db]
-    echo   --reset-db      Delete local H2 database ^(will be recreated with seed data^)
+    echo   --reset-db      Delete local SQLite database ^(will be recreated with seed data^)
     exit /b 1
 )
 :args_done
 
 :: --- Prerequisite checks ---
-
-:: Check Java is installed
-where java >nul 2>&1
-if errorlevel 1 (
-    echo ERROR: Java is not installed.
-    echo This project requires Java 21 or later.
-    echo Install from: https://adoptium.net/
-    exit /b 1
-)
-
-:: Check Java version is 21+
-for /f "tokens=3 delims= " %%v in ('java -version 2^>^&1 ^| findstr /i "version"') do (
-    set "JAVA_VER_RAW=%%~v"
-    goto :java_ver_found
-)
-:java_ver_found
-for /f "tokens=1 delims=." %%m in ("%JAVA_VER_RAW%") do set "JAVA_MAJOR=%%m"
-if %JAVA_MAJOR% LSS 21 (
-    echo ERROR: Java 21 or later is required. Found: Java %JAVA_MAJOR%.
-    echo Install from: https://adoptium.net/
-    exit /b 1
-)
-echo Java %JAVA_MAJOR% detected.
 
 :: Check Node.js is installed
 where node >nul 2>&1
@@ -89,7 +66,14 @@ if "%RESET_DB%"=="true" (
 
 echo Starting backend...
 cd /d "%ROOT_DIR%\backend"
-start "CRM-Backend" /b cmd /c "mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=dev -q"
+
+:: Install node modules if not present
+if not exist "node_modules" (
+    echo Backend node modules not found. Running npm install...
+    call npm install
+)
+
+start "CRM-Backend" /b cmd /c "npx tsx --watch src/index.ts"
 cd /d "%ROOT_DIR%"
 
 :: Wait for backend to be ready
@@ -97,7 +81,7 @@ echo Waiting for backend to start...
 set "BACKEND_READY=false"
 for /l %%i in (1,1,60) do (
     if "!BACKEND_READY!"=="false" (
-        curl -s -o nul -w "%%{http_code}" "http://localhost:7070/api/firmen" 2>nul | findstr /r "401 200" >nul 2>&1
+        curl -s -o nul -w "%%{http_code}" "http://localhost:7070/api/health" 2>nul | findstr "200" >nul 2>&1
         if not errorlevel 1 (
             echo Backend is ready!
             set "BACKEND_READY=true"

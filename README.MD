@@ -99,9 +99,8 @@ npm --version    # Wird mit Node.js mitgeliefert
 
 ```bash
 ./start.sh           # macOS / Linux
+start.bat            # Windows
 ```
-
-> **Windows:** `start.bat` existiert, ist aber aktuell noch nicht auf den neuen Tech-Stack migriert. Bitte `start.sh` via WSL oder Git Bash verwenden.
 
 Das Skript installiert bei Bedarf die npm-Abhängigkeiten, startet Backend und Frontend und wartet, bis beide bereit sind.
 
@@ -164,7 +163,8 @@ cd frontend && npx ng serve --port 7200 --proxy-config proxy.conf.json
 │   ├── prds/           Product Requirement Documents
 │   ├── adr/            Architecture Decision Records
 │   └── uxdr/           UX Design Records
-├── start.sh            Startskript (macOS/Linux/WSL)
+├── start.sh            Startskript (macOS/Linux)
+├── start.bat           Startskript (Windows)
 └── CLAUDE.md           Anweisungen für AI-Coding-Assistenten
 ```
 
