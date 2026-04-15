@@ -4,53 +4,51 @@
 
 ```
 coding-with-ai-lab/
-├── backend/                    # CRM Backend (Spring Boot, Java 21)
-│   ├── pom.xml
-│   ├── data/                   # H2 database files (gitignored)
-│   └── src/main/java/com/crm/
-│       ├── controller/         # REST endpoints
-│       ├── service/            # Business logic
-│       ├── repository/         # JPA repositories
-│       ├── mapper/             # DTO ↔ Entity mappers
-│       ├── entity/             # JPA entities + enums
-│       ├── dto/                # Java records
-│       ├── security/           # JWT validation
-│       ├── config/             # Spring configuration
-│       ├── exception/          # Error handling
-│       └── seed/               # DataSeeder
-├── ciam/                       # Identity & Access Management (Spring Boot, Kotlin)
-│   ├── pom.xml
-│   ├── data/                   # H2 database files (gitignored)
-│   ├── keys/                   # RSA key pair (gitignored)
-│   └── src/main/kotlin/com/crm/ciam/
-│       ├── controller/
-│       ├── service/
-│       ├── repository/
-│       ├── mapper/
-│       ├── entity/
-│       ├── dto/
-│       ├── security/           # JWT signing, permissions, rate limiting
-│       ├── config/             # RSA key pair, security
-│       ├── exception/
-│       └── seed/               # UserSeeder
+├── backend/                    # CRM Backend (Node.js, TypeScript, Express)
+│   ├── package.json
+│   ├── data/                   # SQLite database file (gitignored)
+│   │   └── crmdb.sqlite
+│   └── src/
+│       ├── index.ts            # Entry point — runs migrations, seeds, starts server
+│       ├── app.ts              # Express app setup
+│       ├── config/
+│       │   ├── db.ts           # SQLite connection + Drizzle ORM instance
+│       │   ├── migrate.ts      # CREATE TABLE statements (run on startup)
+│       │   └── users.ts        # In-memory users + permissions
+│       ├── db/schema/
+│       │   ├── schema.ts       # Drizzle table definitions
+│       │   └── enums.ts        # TypeScript enums
+│       ├── routes/             # Express route handlers (one per entity)
+│       ├── services/           # Business logic (one per entity)
+│       ├── middleware/
+│       │   ├── auth.ts         # requireRole / requirePermission guards
+│       │   ├── cors.ts         # CORS setup
+│       │   ├── errorHandler.ts # Global error handler
+│       │   └── session.ts      # express-session configuration
+│       ├── seed/
+│       │   └── seeder.ts       # Demo data seeder (runs if DB is empty)
+│       └── utils/
+│           ├── errors.ts       # Error types
+│           ├── pagination.ts   # Spring Data page format helper
+│           └── validation.ts   # Zod validation helpers
 ├── frontend/                   # Angular 21 SPA
 │   ├── package.json
 │   ├── angular.json
 │   ├── proxy.conf.json
 │   └── src/app/
 │       ├── core/               # Services, models, guards, interceptors
-│       ├── features/           # Feature modules (one per entity)
+│       ├── features/           # Feature components (one per entity)
 │       └── layout/             # Navbar, sidebar
 ├── docs/
 │   ├── architecture.md
-│   ├── adr/                    # Architecture Decision Records (4)
-│   ├── prds/                   # Product Requirement Documents (9)
-│   ├── uxdr/                   # UX Design Records (1)
+│   ├── adr/                    # Architecture Decision Records
+│   ├── prds/                   # Product Requirement Documents
+│   ├── uxdr/                   # UX Design Records
 │   ├── reviews/                # Code reviews
 │   └── specs/                  # This specification
 ├── .claude/
-│   ├── agents/                 # 13 Claude agents
-│   └── skills/                 # 2 Claude skills
+│   ├── agents/                 # Claude agents
+│   └── skills/                 # Claude skills
 ├── start.sh                    # Full-stack launcher
 ├── CLAUDE.md                   # AI coding instructions
 └── README.MD                   # Project overview
@@ -58,72 +56,78 @@ coding-with-ai-lab/
 
 ## Dependencies
 
-### Backend (pom.xml)
+### Backend (package.json)
 
-Parent: `spring-boot-starter-parent:3.5.3`
+Runtime: Node.js 20.19+. Language: TypeScript. Executed via `tsx`.
 
-| Dependency | Version | Scope |
-|-----------|---------|-------|
-| spring-boot-starter-web | 3.5.3 | compile |
-| spring-boot-starter-data-jpa | 3.5.3 | compile |
-| spring-boot-starter-validation | 3.5.3 | compile |
-| spring-boot-starter-security | 3.5.3 | compile |
-| h2 | inherited | runtime |
-| jjwt-api | 0.12.6 | compile |
-| jjwt-impl | 0.12.6 | runtime |
-| jjwt-jackson | 0.12.6 | runtime |
-| spring-boot-starter-test | 3.5.3 | test |
+| Dependency | Version | Purpose |
+|-----------|---------|---------|
+| express | ^4.21.2 | HTTP server and routing |
+| express-session | ^1.18.1 | Session-based authentication |
+| memorystore | ^1.6.7 | In-memory session store |
+| better-sqlite3 | ^9.6.0 | SQLite driver |
+| drizzle-orm | ^0.41.0 | Type-safe ORM for SQLite |
+| bcryptjs | ^2.4.3 | Password hashing |
+| cors | ^2.8.5 | CORS middleware |
+| zod | ^3.23.8 | Runtime input validation |
 
-### CIAM (pom.xml)
+Dev dependencies:
 
-Parent: `spring-boot-starter-parent:3.5.3`
-
-Same as backend plus:
-
-| Dependency | Version |
-|-----------|---------|
-| kotlin-stdlib | 2.1.10 |
-| kotlin-reflect | 2.1.10 |
-| jackson-module-kotlin | inherited |
-
-Build: `kotlin-maven-plugin:2.1.10` with spring + jpa compiler plugins.
+| Dependency | Version | Purpose |
+|-----------|---------|---------|
+| tsx | ^4.19.4 | TypeScript execution + hot reload |
+| typescript | ^5.8.3 | TypeScript compiler |
+| @playwright/test | ^1.52.0 | End-to-end tests |
+| @types/* | various | TypeScript type definitions |
 
 ### Frontend (package.json)
 
-| Dependency | Version |
-|-----------|---------|
-| @angular/* | ^21.2.1 |
-| @angular/cdk | ^21.2.1 |
-| @ng-bootstrap/ng-bootstrap | ^20.0.0 |
-| bootstrap | ^5.3.8 |
-| @fortawesome/angular-fontawesome | ^4.0.0 |
-| @fortawesome/fontawesome-svg-core | ^7.2.0 |
-| @fortawesome/free-solid-svg-icons | ^7.2.0 |
-| ag-grid-angular | ^35.1.0 |
-| chart.js | ^4.5.1 |
-| ng2-charts | ^10.0.0 |
-| rxjs | ~7.8.0 |
-| zone.js | ~0.15.0 |
-| typescript (dev) | ~5.9.2 |
-| @angular/cli (dev) | ^21.2.1 |
+| Dependency | Version | Purpose |
+|-----------|---------|---------|
+| @angular/* | ^21.2.1 | Angular framework |
+| @angular/cdk | ^21.2.1 | Component Dev Kit |
+| @ng-bootstrap/ng-bootstrap | ^20.0.0 | Bootstrap UI components |
+| bootstrap | ^5.3.8 | CSS framework |
+| @fortawesome/angular-fontawesome | ^4.0.0 | Icon components |
+| @fortawesome/fontawesome-svg-core | ^7.2.0 | Icon core library |
+| @fortawesome/free-solid-svg-icons | ^7.2.0 | Solid icon set |
+| ag-grid-angular | ^35.1.0 | Data grid component |
+| ag-grid-community | ^35.1.0 | Data grid core |
+| chart.js | ^4.5.1 | Chart rendering |
+| ng2-charts | ^10.0.0 | Angular chart wrapper |
+| qrcode | ^1.5.4 | QR code generation |
+| rxjs | ~7.8.0 | Reactive programming |
+| zone.js | ~0.15.0 | Angular change detection |
 
-## Databases
+Dev dependencies:
 
-### CRM Database (backend/data/crmdb)
+| Dependency | Version | Purpose |
+|-----------|---------|---------|
+| @angular/cli | ^21.2.1 | Angular build tooling |
+| @angular/build | ^21.2.1 | Vite-based builder |
+| @angular/compiler-cli | ^21.2.1 | Template compilation |
+| typescript | ~5.9.2 | TypeScript compiler |
+| karma + jasmine | various | Unit test runner |
 
-- Engine: H2 file-based
-- URL: `jdbc:h2:file:./data/crmdb;DB_CLOSE_ON_EXIT=FALSE;AUTO_RECONNECT=TRUE`
-- Credentials: sa / (empty)
-- DDL: Hibernate auto-update
-- Tables: firma, person, abteilung, adresse, gehalt, aktivitaet, vertrag, chance, dashboard_config, saved_report
+## Database
 
-### CIAM Database (ciam/data/ciamdb)
+### CRM Database
 
-- Engine: H2 file-based
-- URL: `jdbc:h2:file:./data/ciamdb;DB_CLOSE_ON_EXIT=FALSE;AUTO_RECONNECT=TRUE`
-- Credentials: sa / (empty)
-- DDL: Hibernate auto-update
-- Tables: benutzer, benutzer_rollen, refresh_token
+- Engine: SQLite (via `better-sqlite3`)
+- File path: `backend/data/crmdb.sqlite`
+- Created automatically on first startup
+- Schema: Drizzle ORM definitions in `backend/src/db/schema/schema.ts`
+- Migrations: Plain `CREATE TABLE IF NOT EXISTS` statements in `backend/src/config/migrate.ts`. Run on every startup.
+- `PRAGMA foreign_keys = ON` — set on every connection. Required for cascade deletes.
+- Tables: firma, person, abteilung, adresse, gehalt, aktivitaet, vertrag, chance
+
+### Authentication
+
+No separate auth database. Users are hardcoded in `backend/src/config/users.ts`.
+
+Three users: `admin`, `user`, `demo`.
+
+Sessions stored in memory via `memorystore`. No JWT. No RSA keys.
 
 ## Startup
 
@@ -131,49 +135,75 @@ Build: `kotlin-maven-plugin:2.1.10` with spring + jpa compiler plugins.
 
 Launches full stack in order:
 
-1. **CIAM** (Port 8081) — must start first to generate RSA keys
-2. **Backend** (Port 8080) — needs CIAM's public key at `../ciam/keys/public.pem`
-3. **Frontend** (Port 4200) — Angular dev server with proxy
+1. **Backend** (Port 7070) — installs npm dependencies if missing, starts with `npx tsx --watch`
+2. Waits for `GET /api/health` to return HTTP 200
+3. **Frontend** (Port 7200) — installs npm dependencies if missing, starts with `npx ng serve`
 
 Flags:
-- `--reset-db` — Delete H2 database files before starting
-- `--no-demo` — Disable demo mode
+- `--reset-db` — Delete `backend/data/` before starting. Database recreates with seed data on next startup.
 
 ### Manual Start
 
 ```bash
-cd ciam && mvn spring-boot:run          # Start CIAM first
-cd backend && mvn spring-boot:run       # Then backend
-cd frontend && npx ng serve --proxy-config proxy.conf.json  # Then frontend
+# Backend only (with hot reload)
+cd backend && npx tsx --watch src/index.ts
+
+# Frontend only
+cd frontend && npx ng serve --port 7200 --proxy-config proxy.conf.json
+
+# Frontend build check (no server)
+cd frontend && npx ng build
 ```
 
+### Startup Sequence (index.ts)
+
+1. `runMigrations()` — creates tables if they do not exist
+2. `runSeeder()` — inserts demo data if database is empty
+3. `app.listen(7070)` — starts the HTTP server
+
 ## Configuration
-
-### Environment Variables
-
-| Variable | Default | Service | Description |
-|----------|---------|---------|-------------|
-| JWT_PUBLIC_KEY_PATH | ../ciam/keys/public.pem | Backend | RSA public key path |
-| JWT_KEY_DIR | ./keys | CIAM | RSA key pair directory |
-| CORS_ORIGINS | http://localhost:4200 | Both | Allowed CORS origins |
-| COOKIE_SECURE | true | CIAM | HTTPS-only refresh cookies |
 
 ### Ports
 
 | Service | Port |
 |---------|------|
-| CIAM | 8081 |
-| Backend | 8080 |
-| Frontend | 4200 |
+| Backend | 7070 |
+| Frontend | 7200 |
+
+### Proxy
+
+`frontend/proxy.conf.json` forwards all `/api` requests to the backend.
+
+```json
+{
+  "/api": {
+    "target": "http://localhost:7070",
+    "secure": false,
+    "changeOrigin": true
+  }
+}
+```
+
+No split routing. All API traffic goes to a single backend.
+
+### Environment Variables
+
+One optional variable:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| PORT | 7070 | Backend HTTP port |
+
+No JWT secrets. No RSA key paths. No CORS origin variables. No cookie flags.
 
 ## Documentation
 
 | Directory | Contents |
 |-----------|---------|
-| docs/architecture.md | System diagram, microservice boundaries |
-| docs/adr/ | 4 Architecture Decision Records |
-| docs/prds/ | 9 Product Requirement Documents |
-| docs/uxdr/ | 1 UX Design Record |
+| docs/architecture.md | System overview |
+| docs/adr/ | Architecture Decision Records |
+| docs/prds/ | Product Requirement Documents |
+| docs/uxdr/ | UX Design Records |
 | docs/reviews/ | Code review reports |
 | docs/specs/ | System specifications (this) |
 
