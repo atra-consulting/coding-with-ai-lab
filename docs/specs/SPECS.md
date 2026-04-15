@@ -1,67 +1,71 @@
 # System Specifications
 
-Full-stack CRM application with separate CIAM microservice for Identity & Access Management.
+Full-Stack-CRM-Anwendung. Node.js/TypeScript-Backend mit Angular-Frontend.
 
-## Architecture Overview
+## Architektur-Übersicht
 
 ```
-┌─────────────┐     ┌─────────────────┐     ┌──────────────┐
-│  Angular 21  │────▶│  Spring Boot    │     │  CIAM        │
-│  Frontend    │     │  Backend (CRM)  │     │  (Kotlin)    │
-│  Port 4200   │────▶│  Port 8080      │     │  Port 8081   │
-└─────────────┘     └─────────────────┘     └──────────────┘
-       │                    │                       │
-       │              H2 File DB              H2 File DB
-       │            backend/data/           ciam/data/
-       │                                        │
-       └──── /api/auth, /api/benutzer ─────────▶┘
-       └──── /api/* ───────────────────▶ Backend
+┌─────────────┐     ┌─────────────────┐
+│  Angular 21  │────▶│  Node.js/Express│
+│  Frontend    │     │  Backend (CRM)  │
+│  Port 7200   │     │  Port 7070      │
+└─────────────┘     └─────────────────┘
+                            │
+                     SQLite-Datenbank
+                  backend/data/crmdb.sqlite
 ```
 
-- **Monorepo**: Three services in one git repo (`backend/`, `ciam/`, `frontend/`)
-- **Auth flow**: CIAM signs RS256 JWTs, Backend validates with public key
-- **Proxy**: Angular dev server routes auth to CIAM:8081, rest to Backend:8080
-- **Databases**: Separate H2 file-based DBs, Hibernate `ddl-auto=update`
+- **Monorepo**: Zwei Verzeichnisse in einem Git-Repo (`backend/`, `frontend/`)
+- **Auth-Flow**: Session-basierte Authentifizierung (express-session + bcryptjs)
+- **Benutzer**: Hardcodiert in `config/users.ts` — nicht in der Datenbank
+- **Proxy**: Angular Dev Server leitet `/api` an Backend:7070 weiter
+- **Datenbank**: Einzelne SQLite-Datei, Drizzle ORM verwaltet Schema und Migrationen
 
 ## Tech Stack
 
-| Layer | Technology | Version |
-|-------|-----------|---------|
-| Backend | Spring Boot (Java) | 3.5.3 (Java 21) |
-| CIAM | Spring Boot (Kotlin) | 3.5.3 (Kotlin 2.1.10) |
+| Schicht | Technologie | Version |
+|---------|------------|---------|
+| Backend | Node.js / TypeScript mit Express | 4.21 (Node.js 20.19+) |
+| ORM | Drizzle ORM + better-sqlite3 | aktuell |
+| Auth | express-session + bcryptjs | aktuell |
+| Validierung | Zod | aktuell |
+| TS-Ausführung | tsx (mit Hot Reload) | aktuell |
+| Datenbank | SQLite | single file |
 | Frontend | Angular | 21.2.1 |
 | UI Framework | Bootstrap + ng-bootstrap | 5.3.8 / 20.0.0 |
+| Icons | @fortawesome/angular-fontawesome | 4.0.0 |
 | Charts | Chart.js + ng2-charts | 4.5.1 / 10.0.0 |
+| Datentabelle | AG Grid | 35.1.0 |
 | Drag & Drop | @angular/cdk | 21.2.1 |
-| JWT | JJWT | 0.12.6 |
-| Database | H2 | inherited from Spring Boot parent |
+| QR-Code | qrcode | 1.5.4 |
 | TypeScript | | 5.9.2 |
-| Data Table | AG Grid | 35.1.0 |
 
-## Domain Model (German)
+## Domain-Modell (Deutsch)
 
-| Entity | Translation | Key Relationships |
-|--------|------------|-------------------|
-| Firma | Company | has many: Person, Abteilung, Adresse, Aktivitaet, Vertrag, Chance |
-| Person | Contact | belongs to Firma, optional Abteilung; has many: Adresse, Gehalt, Aktivitaet |
-| Abteilung | Department | belongs to Firma; has many Person |
-| Adresse | Address | belongs to Firma or Person |
-| Gehalt | Salary | belongs to Person |
-| Aktivitaet | Activity | optional Firma and/or Person |
-| Vertrag | Contract | belongs to Firma, optional kontaktPerson |
-| Chance | Opportunity | belongs to Firma, optional kontaktPerson; has Kanban phases |
-| Benutzer | User (CIAM) | has roles (ADMIN, VERTRIEB, PERSONAL) |
+| Entity | Übersetzung | Wichtige Beziehungen |
+|--------|------------|----------------------|
+| Firma | Unternehmen | hat viele: Person, Abteilung, Adresse, Aktivitaet, Vertrag, Chance |
+| Person | Kontaktperson | gehört zu Firma, optional Abteilung; hat viele: Adresse, Gehalt, Aktivitaet |
+| Abteilung | Abteilung | gehört zu Firma; hat viele Person |
+| Adresse | Adresse | gehört zu Firma oder Person |
+| Gehalt | Gehalt | gehört zu Person |
+| Aktivitaet | Aktivität | optional Firma und/oder Person |
+| Vertrag | Vertrag | gehört zu Firma, optional kontaktPerson |
+| Chance | Verkaufschance | gehört zu Firma, optional kontaktPerson; hat Kanban-Phasen |
+| Benutzer | Benutzer | hardcodiert in `config/users.ts`; Rollen: ADMIN, USER |
 
-## Specification Documents
+## Spezifikationsdokumente
 
-| Document | Scope |
-|----------|-------|
-| [SPECS-ciam.md](SPECS-ciam.md) | CIAM microservice: auth, JWT, users, permissions |
-| [SPECS-backend.md](SPECS-backend.md) | CRM backend: entities, API endpoints, services |
-| [SPECS-frontend.md](SPECS-frontend.md) | Angular frontend: components, routing, services |
-| [SPECS-infrastructure.md](SPECS-infrastructure.md) | Build, config, databases, project structure |
+| Dokument | Inhalt |
+|----------|--------|
+| [SPECS-backend.md](SPECS-backend.md) | CRM-Backend: Entities, API-Endpunkte, Services |
+| [SPECS-frontend.md](SPECS-frontend.md) | Angular-Frontend: Komponenten, Routing, Services |
+| [SPECS-infrastructure.md](SPECS-infrastructure.md) | Build, Konfiguration, Datenbank, Projektstruktur |
 
-## Seed Data
+## Seed-Daten
 
-- **CIAM**: 5 users (admin, vertrieb, personal, allrounder, demo)
+- **Benutzer**: 3 Benutzer — hardcodiert in `config/users.ts`, nicht in der Datenbank
+  - `admin` / `admin123` — Rolle: ADMIN
+  - `user` / `test123` — Rolle: USER
+  - `demo` / `demo1234` — Rolle: ADMIN
 - **Backend**: 100 Firmen, ~250 Abteilungen, ~600 Personen, 500 Adressen, ~600 Gehaelter, 1000 Aktivitaeten, 200 Vertraege, 300 Chancen

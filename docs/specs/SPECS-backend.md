@@ -1,281 +1,460 @@
 # CRM Backend Specification
 
-Spring Boot 3.5.3 resource server at Port 8080. Java 21. Pure JWT validation — no auth endpoints.
+Node.js/TypeScript backend. Express 4.21 on port 7070. SQLite file database via Drizzle ORM. Session-based authentication.
+
+## Stack
+
+| Component | Technology | Version |
+|-----------|-----------|---------|
+| Runtime | Node.js | 20.19+ |
+| Language | TypeScript | 5.8 |
+| Framework | Express | 4.21 |
+| ORM | Drizzle ORM | 0.41 |
+| Database | SQLite (better-sqlite3) | 9.6 |
+| Validation | Zod | 3.23 |
+| Auth | express-session + bcryptjs | 1.18 / 2.4 |
+| Session store | memorystore | 1.6 |
+| Dev runner | tsx --watch | 4.19 |
+
+Database file: `backend/data/crmdb.sqlite`. Created on first startup.
+
+## Startup Sequence
+
+1. `runMigrations()` — creates tables if missing.
+2. `runSeeder()` — seeds demo data if database is empty.
+3. `app.listen(7070)` — starts the Express server.
 
 ## Entities
 
+All tables use `integer` PKs with autoincrement. All timestamps are `text` columns storing ISO-8601 strings. Monetary values use `real` (SQLite REAL). Foreign keys enforce referential integrity. `PRAGMA foreign_keys = ON` is set on every connection.
+
 ### Firma
 
-| Field | Type | Constraints |
-|-------|------|------------|
-| id | Long | PK, auto-generated |
-| name | String | not null, max 255 |
-| industry | String | max 255 |
-| website | String | max 255 |
-| phone | String | max 50 |
-| email | String | max 255 |
-| notes | String | CLOB |
-| createdAt | LocalDateTime | not null, @PrePersist |
-| updatedAt | LocalDateTime | not null, @PreUpdate |
+| Column | SQLite Type | Constraints |
+|--------|-------------|-------------|
+| id | integer | PK, autoIncrement |
+| name | text | NOT NULL |
+| industry | text | nullable |
+| website | text | nullable |
+| phone | text | nullable |
+| email | text | nullable |
+| notes | text | nullable |
+| createdAt | text | NOT NULL, default `datetime('now')` |
+| updatedAt | text | NOT NULL, default `datetime('now')` |
 
-**Relationships**: OneToMany to Person, Abteilung, Adresse, Aktivitaet, Vertrag, Chance (cascade ALL, orphanRemoval).
+Cascade deletes to: Person, Abteilung, Adresse, Aktivitaet, Vertrag, Chance.
+
+DTO adds computed fields: `personenCount`, `abteilungenCount` (subquery counts).
 
 ### Person
 
-| Field | Type | Constraints |
-|-------|------|------------|
-| id | Long | PK |
-| firstName | String | not null, max 255 |
-| lastName | String | not null, max 255 |
-| email | String | max 255 |
-| phone | String | max 50 |
-| position | String | max 255 |
-| notes | String | CLOB |
-| createdAt / updatedAt | LocalDateTime | auto-set |
+| Column | SQLite Type | Constraints |
+|--------|-------------|-------------|
+| id | integer | PK, autoIncrement |
+| firstName | text | NOT NULL |
+| lastName | text | NOT NULL |
+| email | text | nullable |
+| phone | text | nullable |
+| position | text | nullable |
+| notes | text | nullable |
+| firmaId | integer | NOT NULL, FK → firma(id) CASCADE DELETE |
+| abteilungId | integer | nullable, FK → abteilung(id) SET NULL |
+| createdAt | text | NOT NULL |
+| updatedAt | text | NOT NULL |
 
-**Relationships**: ManyToOne Firma (not null), ManyToOne Abteilung (nullable). OneToMany to Adresse, Gehalt, Aktivitaet.
+Cascade deletes to: Adresse, Gehalt.
 
 ### Abteilung
 
-| Field | Type | Constraints |
-|-------|------|------------|
-| id | Long | PK |
-| name | String | not null, max 255 |
-| description | String | CLOB |
-
-**Relationships**: ManyToOne Firma (not null). OneToMany Person.
+| Column | SQLite Type | Constraints |
+|--------|-------------|-------------|
+| id | integer | PK, autoIncrement |
+| name | text | NOT NULL |
+| description | text | nullable |
+| firmaId | integer | NOT NULL, FK → firma(id) CASCADE DELETE |
+| createdAt | text | NOT NULL |
+| updatedAt | text | NOT NULL |
 
 ### Adresse
 
-| Field | Type | Constraints |
-|-------|------|------------|
-| id | Long | PK |
-| street | String | not null, max 255 |
-| houseNumber | String | max 20 |
-| postalCode | String | not null, max 20 |
-| city | String | not null, max 255 |
-| country | String | max 255, default "Deutschland" |
-
-**Relationships**: ManyToOne Firma (nullable), ManyToOne Person (nullable).
+| Column | SQLite Type | Constraints |
+|--------|-------------|-------------|
+| id | integer | PK, autoIncrement |
+| street | text | nullable |
+| houseNumber | text | nullable |
+| postalCode | text | nullable |
+| city | text | nullable |
+| country | text | nullable |
+| firmaId | integer | nullable, FK → firma(id) CASCADE DELETE |
+| personId | integer | nullable, FK → person(id) CASCADE DELETE |
+| createdAt | text | NOT NULL |
+| updatedAt | text | NOT NULL |
 
 ### Gehalt
 
-| Field | Type | Constraints |
-|-------|------|------------|
-| id | Long | PK |
-| amount | BigDecimal | not null, precision 12, scale 2 |
-| currency | String | max 3, default "EUR" |
-| effectiveDate | LocalDate | not null |
-| typ | GehaltTyp | @Enumerated(STRING), not null |
-
-**Relationships**: ManyToOne Person (not null).
+| Column | SQLite Type | Constraints |
+|--------|-------------|-------------|
+| id | integer | PK, autoIncrement |
+| amount | real | NOT NULL |
+| currency | text | NOT NULL, default `EUR` |
+| typ | text | NOT NULL, default `GRUNDGEHALT` |
+| effectiveDate | text | NOT NULL |
+| personId | integer | NOT NULL, FK → person(id) CASCADE DELETE |
+| createdAt | text | NOT NULL |
+| updatedAt | text | NOT NULL |
 
 ### Aktivitaet
 
-| Field | Type | Constraints |
-|-------|------|------------|
-| id | Long | PK |
-| typ | AktivitaetTyp | @Enumerated(STRING), not null |
-| subject | String | not null, max 255 |
-| description | String | CLOB |
-| datum | LocalDateTime | not null |
-| createdAt | LocalDateTime | @PrePersist |
-
-**Relationships**: ManyToOne Firma (nullable), ManyToOne Person (nullable).
+| Column | SQLite Type | Constraints |
+|--------|-------------|-------------|
+| id | integer | PK, autoIncrement |
+| typ | text | NOT NULL |
+| subject | text | NOT NULL |
+| description | text | nullable |
+| datum | text | NOT NULL |
+| firmaId | integer | nullable, FK → firma(id) CASCADE DELETE |
+| personId | integer | nullable, FK → person(id) CASCADE DELETE |
+| createdAt | text | NOT NULL |
+| updatedAt | text | NOT NULL |
 
 ### Vertrag
 
-| Field | Type | Constraints |
-|-------|------|------------|
-| id | Long | PK |
-| titel | String | not null, max 255 |
-| wert | BigDecimal | precision 15, scale 2 |
-| currency | String | max 3, default "EUR" |
-| status | VertragStatus | @Enumerated(STRING), not null |
-| startDate / endDate | LocalDate | nullable |
-| notes | String | CLOB |
-| createdAt / updatedAt | LocalDateTime | auto-set |
-
-**Relationships**: ManyToOne Firma (not null), ManyToOne kontaktPerson (nullable).
+| Column | SQLite Type | Constraints |
+|--------|-------------|-------------|
+| id | integer | PK, autoIncrement |
+| titel | text | NOT NULL |
+| notes | text | nullable |
+| wert | real | nullable |
+| currency | text | NOT NULL, default `EUR` |
+| status | text | NOT NULL, default `ENTWURF` |
+| startDate | text | nullable |
+| endDate | text | nullable |
+| firmaId | integer | NOT NULL, FK → firma(id) CASCADE DELETE |
+| kontaktPersonId | integer | nullable, FK → person(id) SET NULL |
+| createdAt | text | NOT NULL |
+| updatedAt | text | NOT NULL |
 
 ### Chance
 
-| Field | Type | Constraints |
-|-------|------|------------|
-| id | Long | PK |
-| titel | String | not null, max 255 |
-| beschreibung | String | CLOB |
-| wert | BigDecimal | precision 15, scale 2 |
-| currency | String | max 3, default "EUR" |
-| phase | ChancePhase | @Enumerated(STRING), not null |
-| wahrscheinlichkeit | Integer | 0-100 |
-| erwartetesDatum | LocalDate | nullable |
-| createdAt / updatedAt | LocalDateTime | auto-set |
-
-**Relationships**: ManyToOne Firma (not null), ManyToOne kontaktPerson (nullable).
-
-### DashboardConfig
-
-| Field | Type | Constraints |
-|-------|------|------------|
-| id | Long | PK |
-| benutzerId | Long | not null, unique, no JPA FK |
-| config | String | max 1024 |
-
-### SavedReport
-
-| Field | Type | Constraints |
-|-------|------|------------|
-| id | Long | PK |
-| benutzerId | Long | not null, no JPA FK |
-| name | String | not null, max 255 |
-| config | String | not null, max 2048 |
-| createdAt / updatedAt | LocalDateTime | auto-set |
+| Column | SQLite Type | Constraints |
+|--------|-------------|-------------|
+| id | integer | PK, autoIncrement |
+| titel | text | NOT NULL |
+| beschreibung | text | nullable |
+| wert | real | nullable |
+| currency | text | NOT NULL, default `EUR` |
+| phase | text | NOT NULL, default `NEU` |
+| wahrscheinlichkeit | integer | nullable, 0–100 |
+| erwartetesDatum | text | nullable |
+| firmaId | integer | NOT NULL, FK → firma(id) CASCADE DELETE |
+| kontaktPersonId | integer | nullable, FK → person(id) SET NULL |
+| createdAt | text | NOT NULL |
+| updatedAt | text | NOT NULL |
 
 ### Enums
 
-- **ChancePhase**: NEU, QUALIFIZIERT, ANGEBOT, VERHANDLUNG, GEWONNEN, VERLOREN
-- **GehaltTyp**: GRUNDGEHALT, BONUS, PROVISION, SONDERZAHLUNG
-- **AktivitaetTyp**: ANRUF, EMAIL, MEETING, NOTIZ, AUFGABE
-- **VertragStatus**: ENTWURF, AKTIV, ABGELAUFEN, GEKUENDIGT
-- **ReportDimension**: PHASE, FIRMA, PERSON, MONAT, QUARTAL, JAHR
-- **ReportMetrik**: ANZAHL, SUMME_WERT, DURCHSCHNITT_WERT, GEWICHTETER_WERT, GEWINNRATE
+Stored as plain `text` in SQLite. Validated by Zod on write. Defined in `src/db/schema/enums.ts`.
+
+| Enum | Values |
+|------|--------|
+| ChancePhase | NEU, QUALIFIZIERT, ANGEBOT, VERHANDLUNG, GEWONNEN, VERLOREN |
+| VertragStatus | ENTWURF, AKTIV, ABGELAUFEN, GEKUENDIGT |
+| AktivitaetTyp | ANRUF, EMAIL, MEETING, NOTIZ, AUFGABE |
+| GehaltTyp | GRUNDGEHALT, BONUS, PROVISION, SONDERZAHLUNG |
 
 ## API Endpoints
 
-### FirmaController (`/api/firmen`) — `hasAnyRole('ADMIN', 'VERTRIEB', 'PERSONAL')`
+All routes require authentication. `requireAuth` middleware checks `req.session.userId`. Unauthenticated requests get `401`.
+
+The current stack has no per-route role or permission guards. All authenticated users share the same access level.
+
+Base URL: `http://localhost:7070/api`
+
+### Auth (`/api/auth`)
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| POST | `/api/auth/login` | Public | Credentials → session cookie |
+| POST | `/api/auth/logout` | Public | Destroy session |
+| GET | `/api/auth/me` | requireAuth | Current user profile |
+| POST | `/api/auth/test-login` | Public (non-prod only) | Passwordless login for Playwright tests |
+
+Login request body:
+```json
+{ "benutzername": "admin", "passwort": "admin123" }
+```
+
+Login response:
+```json
+{ "benutzername": "admin", "vorname": "Admin", "nachname": "User", "rollen": ["ROLE_ADMIN"] }
+```
+
+`/me` response adds `id`, `email`, and `permissions` array.
+
+### Health
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/health` | Public | Returns `{ status: "ok", timestamp }` |
+
+### Firmen (`/api/firmen`)
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/api/firmen` | List (search, page, size, sort; default: name,asc) |
-| GET | `/api/firmen/{id}` | Get by ID |
+| GET | `/api/firmen` | Paginated list. Params: `search`, `page`, `size`, `sort`. Default sort: `name,ASC` |
+| GET | `/api/firmen/all` | Full list, no pagination |
+| GET | `/api/firmen/:id` | Single record |
+| GET | `/api/firmen/:id/personen` | Paginated persons for this Firma |
+| GET | `/api/firmen/:id/abteilungen` | Paginated Abteilungen for this Firma |
 | POST | `/api/firmen` | Create → 201 |
-| PUT | `/api/firmen/{id}` | Update |
-| DELETE | `/api/firmen/{id}` | Delete → 204 |
-| GET | `/api/firmen/{id}/personen` | Paginated persons for company |
-| GET | `/api/firmen/{id}/abteilungen` | Paginated departments for company |
+| PUT | `/api/firmen/:id` | Full update |
+| DELETE | `/api/firmen/:id` | Delete → 204 |
 
-### PersonController (`/api/personen`) — `hasAnyRole('ADMIN', 'VERTRIEB', 'PERSONAL')`
+Allowed sort fields: `name`, `industry`, `createdAt`, `updatedAt`.
+
+### Personen (`/api/personen`)
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/api/personen` | List (search, page, size, sort; default: lastName,asc) |
-| GET | `/api/personen/{id}` | Get by ID |
+| GET | `/api/personen` | Paginated list. Params: `search`, `page`, `size`, `sort`. Default: `lastName,ASC` |
+| GET | `/api/personen/all` | Full list, no pagination |
+| GET | `/api/personen/:id` | Single record |
 | POST | `/api/personen` | Create → 201 |
-| PUT | `/api/personen/{id}` | Update |
-| DELETE | `/api/personen/{id}` | Delete → 204 |
+| PUT | `/api/personen/:id` | Full update |
+| DELETE | `/api/personen/:id` | Delete → 204 |
 
-### AbteilungController (`/api/abteilungen`) — `hasAnyRole('ADMIN', 'VERTRIEB', 'PERSONAL')`
+Allowed sort fields: `firstName`, `lastName`, `email`, `position`, `createdAt`, `updatedAt`.
+
+### Abteilungen (`/api/abteilungen`)
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/api/abteilungen` | List (page, size, sort; default: name,asc) |
-| GET | `/api/abteilungen/{id}` | Get by ID |
+| GET | `/api/abteilungen` | Paginated list. Params: `page`, `size`, `sort`. Default: `name,ASC` |
+| GET | `/api/abteilungen/all` | Full list, no pagination |
+| GET | `/api/abteilungen/firma/:firmaId` | All Abteilungen for one Firma (no pagination) |
+| GET | `/api/abteilungen/:id` | Single record |
+| GET | `/api/abteilungen/:id/personen` | Paginated persons for this Abteilung |
 | POST | `/api/abteilungen` | Create → 201 |
-| PUT | `/api/abteilungen/{id}` | Update |
-| DELETE | `/api/abteilungen/{id}` | Delete → 204 |
-| GET | `/api/abteilungen/firma/{firmaId}` | All departments for company |
+| PUT | `/api/abteilungen/:id` | Full update |
+| DELETE | `/api/abteilungen/:id` | Delete → 204 |
 
-### AdresseController (`/api/adressen`) — `hasAnyRole('ADMIN', 'VERTRIEB', 'PERSONAL')`
+Allowed sort fields: `name`, `firmaId`, `createdAt`, `updatedAt`.
 
-Standard CRUD (page, size, sort; default: city,asc).
+### Adressen (`/api/adressen`)
 
-### GehaltController (`/api/gehaelter`) — `hasAuthority('GEHAELTER')`
+Standard CRUD. Default sort: `city,ASC`. Allowed sort fields: `city`, `postalCode`, `street`, `createdAt`, `updatedAt`.
 
-Standard CRUD (page, size; default: effectiveDate,desc).
+### Aktivitaeten (`/api/aktivitaeten`)
 
-### AktivitaetController (`/api/aktivitaeten`) — `hasAnyRole('ADMIN', 'VERTRIEB', 'PERSONAL')`
+Standard CRUD. Default sort: `datum,DESC`. Allowed sort fields: `datum`, `typ`, `subject`, `createdAt`, `updatedAt`.
 
-Standard CRUD (page, size; default: datum,desc).
+### Chancen (`/api/chancen`)
 
-### VertragController (`/api/vertraege`) — `hasAuthority('VERTRAEGE')`
+Standard CRUD. Default sort: `createdAt,DESC`. Allowed sort fields: `titel`, `wert`, `phase`, `wahrscheinlichkeit`, `erwartetesDatum`, `createdAt`, `updatedAt`.
 
-Standard CRUD (page, size; default: titel,asc).
+### Vertraege (`/api/vertraege`)
 
-### ChanceController (`/api/chancen`) — `hasAuthority('CHANCEN')`
+Standard CRUD. Default sort: `createdAt,DESC`. Allowed sort fields: `titel`, `wert`, `status`, `startDate`, `endDate`, `createdAt`, `updatedAt`.
 
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/api/chancen` | List (page, size; default: titel,asc) |
-| GET | `/api/chancen/board/summary` | Aggregates per phase (count, totalWert) |
-| GET | `/api/chancen/phase/{phase}` | By phase, paginated (default: wert,desc) |
-| PUT | `/api/chancen/{id}/phase` | Update phase only (PhaseUpdateDTO) |
-| GET | `/api/chancen/{id}` | Get by ID |
-| POST | `/api/chancen` | Create → 201 |
-| PUT | `/api/chancen/{id}` | Update |
-| DELETE | `/api/chancen/{id}` | Delete → 204 |
+### Gehaelter (`/api/gehaelter`)
 
-### DashboardController (`/api/dashboard`) — `hasAnyRole('ADMIN', 'VERTRIEB', 'PERSONAL')`
+Standard CRUD. Default sort: `effectiveDate,DESC`. Allowed sort fields: `amount`, `effectiveDate`, `typ`, `createdAt`, `updatedAt`.
+
+### Standard CRUD pattern
+
+Every standard CRUD resource exposes:
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/api/dashboard/stats` | Aggregated dashboard statistics |
-| GET | `/api/dashboard/recent-activities` | Top 10 recent activities |
-| GET | `/api/dashboard/top-companies` | Top 5 companies by contract value |
-| GET | `/api/dashboard/salary-statistics` | Avg salary by department (ADMIN, PERSONAL only) |
+| GET | `/api/{resource}` | Paginated list |
+| GET | `/api/{resource}/all` | Full unpaginated list |
+| GET | `/api/{resource}/:id` | Single record or 404 |
+| POST | `/api/{resource}` | Create → 201 |
+| PUT | `/api/{resource}/:id` | Full update or 404 |
+| DELETE | `/api/{resource}/:id` | Delete → 204 or 404 |
 
-### DashboardConfigController (`/api/dashboard-config`)
+## Pagination
 
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/api/dashboard-config` | Get config for current user |
-| PUT | `/api/dashboard-config` | Save config for current user |
+All paginated endpoints use the Spring Data Page response format for frontend compatibility.
 
-### SavedReportController (`/api/saved-reports`)
+Response shape:
+```json
+{
+  "content": [...],
+  "totalElements": 42,
+  "totalPages": 5,
+  "size": 10,
+  "number": 0,
+  "first": true,
+  "last": false
+}
+```
 
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/api/saved-reports` | List for current user |
-| POST | `/api/saved-reports` | Create → 201 |
-| PUT | `/api/saved-reports/{id}` | Update |
-| DELETE | `/api/saved-reports/{id}` | Delete → 204 |
+`number` is 0-indexed. `size` defaults to 10, max 200.
 
-### AuswertungController (`/api/auswertungen`) — `hasAuthority('AUSWERTUNGEN')`
+Sort query param format: `sort=field,asc` or `sort=field,desc`.
 
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/api/auswertungen/pipeline/kpis` | Pipeline KPIs |
-| GET | `/api/auswertungen/pipeline/by-phase` | Aggregates per phase |
-| GET | `/api/auswertungen/pipeline/top-firmen` | Top firms by chance value (limit param) |
-
-### ReportController (`/api/auswertungen`) — `hasAuthority('AUSWERTUNGEN')`
-
-| Method | Path | Description |
-|--------|------|-------------|
-| POST | `/api/auswertungen/report` | Execute dynamic report (ReportQueryDTO) |
+Sort fields are validated against a per-entity whitelist in `src/utils/pagination.ts`. Invalid field names return `400`.
 
 ## Security
 
-- **JWT validation only**: Loads RSA public key from `../ciam/keys/public.pem`
-- **JwtPrincipal**: `record(benutzerId, benutzername, vorname, nachname)`
-- **Authority mapping**: `rollen` → `ROLE_*`, `permissions` → plain authorities
-- **@EnableMethodSecurity**: Every controller has `@PreAuthorize`
-- **CORS**: Configurable (default `http://localhost:4200`)
-- **Session**: Stateless
+### Session auth
 
-## Architecture & Configuration
+- `express-session` with `memorystore` backend.
+- Cookie name: `JSESSIONID`. HttpOnly. SameSite: lax. MaxAge: 24 hours.
+- Session secret from env var `SESSION_SECRET`. Falls back to `crm-dev-secret-key` in development.
+- Login: `bcryptjs.compareSync()` compares submitted password to stored hash.
+- Session fixation protection: `req.session.regenerate()` on successful login.
+- Logout: `req.session.destroy()` + clear cookie.
 
-- **open-in-view=false**: Enforced in `application.properties`.
-- **Resource Server**: The CRM backend is a pure resource server. No auth endpoints; all auth is delegated to CIAM.
-- **Persistence**: All JPA collections use `FetchType.LAZY`. Lazy collections MUST be handled within `@Transactional(readOnly = true)` service methods.
+### Users
+
+Hardcoded in `src/config/users.ts`. No database table. No user management API.
+
+| Username | Password | Roles | Permissions |
+|----------|----------|-------|-------------|
+| admin | admin123 | ADMIN | All |
+| user | test123 | USER | All |
+| demo | demo1234 | ADMIN | All |
+
+Passwords stored as bcrypt hashes (cost factor 10). Generated once at build time.
+
+All 3 users currently hold all 9 permissions: `FIRMEN`, `PERSONEN`, `ABTEILUNGEN`, `ADRESSEN`, `AKTIVITAETEN`, `GEHAELTER`, `VERTRAEGE`, `CHANCEN`, `BENUTZERVERWALTUNG`.
+
+`CrmUser` interface fields: `id`, `benutzername`, `vorname`, `nachname`, `passwordHash`, `roles[]`, `permissions[]`.
+
+### Auth middleware
+
+`requireAuth` (in `src/middleware/auth.ts`):
+
+1. Reads `req.session.userId`.
+2. Looks up user in the hardcoded list via `findById()`.
+3. Sets `req.currentUser` on the request.
+4. Calls `next(new UnauthorizedError())` if session is missing or user not found.
+
+There is no `requireRole()` or `requirePermission()` middleware on routes yet. All authenticated users access all routes equally.
+
+### CORS
+
+Configured in `src/middleware/cors.ts`. Allowed origins from env var `CORS_ORIGINS`. Default: `http://localhost:7200`. Credentials allowed. Methods: GET, POST, PUT, DELETE, OPTIONS.
+
+## Architecture
+
+```
+src/
+  index.ts          — entry point: migrate → seed → listen
+  app.ts            — Express app wiring (middleware order, route mounting)
+  config/
+    db.ts           — better-sqlite3 + Drizzle setup, PRAGMA foreign_keys = ON
+    migrate.ts      — CREATE TABLE IF NOT EXISTS statements
+    users.ts        — hardcoded user list
+  db/schema/
+    schema.ts       — Drizzle table definitions
+    enums.ts        — TypeScript enum arrays and types
+  middleware/
+    auth.ts         — requireAuth
+    cors.ts         — CORS config
+    errorHandler.ts — global error handler (last middleware)
+    session.ts      — express-session config
+  routes/           — one file per entity (Express Router)
+  services/         — one file per entity (plain objects, raw SQL via better-sqlite3)
+  utils/
+    errors.ts       — typed error classes
+    pagination.ts   — parsePaginationParams, parseSort, buildPage
+    validation.ts   — Zod schemas and validate() helper
+  seed/
+    seeder.ts       — demo data seeder
+```
+
+Middleware order in `app.ts`: CORS → JSON body parser → session → routes → error handler.
 
 ## Exception Handling
 
-| Exception | HTTP Status |
-|-----------|------------|
-| ResourceNotFoundException | 404 |
-| MethodArgumentNotValidException | 400 (with field errors) |
-| AccessDeniedException | 403 |
-| IllegalArgumentException | 400 |
-| DataIntegrityViolationException | 409 |
-| Generic Exception | 500 |
+Global error handler in `src/middleware/errorHandler.ts`. Must be the last `app.use()` call.
 
-Response format: `{ status, message, timestamp, fieldErrors? }`
+| Error Class | HTTP Status |
+|-------------|------------|
+| ValidationError | 400 |
+| UnauthorizedError | 401 |
+| ForbiddenError | 403 |
+| NotFoundError | 404 |
+| ConflictError | 409 |
+| Unexpected Error | 500 |
+
+All error responses use this shape:
+```json
+{
+  "status": 404,
+  "message": "Firma mit ID 99 nicht gefunden",
+  "timestamp": "2026-04-15T10:30:00.123",
+  "fieldErrors": {}
+}
+```
+
+`ValidationError` populates `fieldErrors` as `{ "fieldName": "error message" }`. All other errors return an empty `fieldErrors` object.
+
+Timestamp strips the trailing `Z` for compatibility with the original Java `LocalDateTime` format.
 
 ## Code Pattern
 
-Each entity follows: Entity → DTO + CreateDTO (Java records) → Mapper (static) → Repository → Service (@Transactional) → Controller (@PreAuthorize).
+Each entity follows this pattern:
 
-- All FetchType.LAZY. Services use `@Transactional(readOnly = true)` for reads.
-- Mappers: `toDTO(entity)`, `toEntity(createDTO, ...fks)`, `applyToEntity(createDTO, entity)`.
-- Pagination: `page`/`size`/`sort` query params. Sort parsed as `String[]`.
+```
+Drizzle schema (schema.ts)
+  → Zod schema + CreateDTO (validation.ts)
+  → Service (services/<entity>Service.ts)  — raw SQL via better-sqlite3
+  → Route handler (routes/<entity>.ts)     — Express Router
+```
+
+### Service pattern
+
+Services are plain exported objects (not classes). They use `sqlite.prepare().get/all/run()` directly.
+
+```typescript
+export const firmaService = {
+  findAll(search, page, size, sort): PageResult<FirmaDTO> { ... },
+  listAll(): FirmaDTO[] { ... },
+  findById(id): FirmaDTO { ... },   // throws NotFoundError if missing
+  create(dto): FirmaDTO { ... },
+  update(id, dto): FirmaDTO { ... }, // calls findById first to get 404 on missing
+  delete(id): void { ... },          // calls findById first to get 404 on missing
+};
+```
+
+`create()` and `update()` set `updatedAt` to `new Date().toISOString()`.
+
+`findById()` throws `NotFoundError` when the row does not exist. Routes do not check for null.
+
+### Route pattern
+
+```typescript
+router.get('/:id', requireAuth, (req, res, next) => {
+  try {
+    const id = parseInt(req.params['id'], 10);
+    res.json(firmaService.findById(id));
+  } catch (err) {
+    next(err);
+  }
+});
+```
+
+All route handlers wrap logic in try/catch and call `next(err)`. The global error handler converts typed errors to HTTP responses.
+
+### Validation pattern
+
+Request bodies are validated with Zod before passing to the service:
+
+```typescript
+const dto = validate(FirmaCreateSchema, req.body);
+res.status(201).json(firmaService.create(dto));
+```
+
+`validate()` throws `ValidationError` (→ 400) with `fieldErrors` populated from Zod issues.
+
+### Adding a new entity
+
+Backend requires 3 changes:
+
+1. Add Drizzle table definition to `src/db/schema/schema.ts`.
+2. Add `CREATE TABLE IF NOT EXISTS` to `src/config/migrate.ts`.
+3. Add Zod schema + service + route file. Mount the router in `src/app.ts`.

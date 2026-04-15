@@ -13,7 +13,11 @@ Angular 21.2.1 standalone components. Bootstrap 5.3.8 + ng-bootstrap 20.0.0. Typ
 ## Routing
 
 ```
+/welcome                        → WelcomeComponent (no guard)
 /login                          → LoginComponent (no guard)
+/feedback                       → FeedbackFormComponent (no guard)
+/danke                          → ThankyouComponent (no guard)
+/feedback-qr                    → FeedbackQrComponent (no guard)
 / (authGuard)
   /dashboard                    → DashboardComponent
   /firmen                       → Firma CRUD (list/detail/form)
@@ -24,24 +28,25 @@ Angular 21.2.1 standalone components. Bootstrap 5.3.8 + ng-bootstrap 20.0.0. Typ
   /aktivitaeten                 → Aktivitaet CRUD (no detail)
   /vertraege                    → permissionGuard('VERTRAEGE') → Vertrag CRUD
   /chancen                      → permissionGuard('CHANCEN') → Chance CRUD + /board
-  /auswertungen                 → permissionGuard('AUSWERTUNGEN') → Pipeline dashboard
-  /benutzer                     → permissionGuard('BENUTZERVERWALTUNG') → Benutzer CRUD
-  **                            → redirect /dashboard
+  **                            → redirect /welcome
 ```
 
 Route sub-patterns per entity: `''` (list), `/neu` (create form), `/:id` (detail), `/:id/bearbeiten` (edit form).
 
 ## Authentication
 
+Session-based auth. The server sets an HTTP-only session cookie on login. The frontend does not store or manage tokens.
+
 ### AuthService
 
-- `login(LoginRequest)` → POST `/api/auth/login`, stores access token
-- `logout()` → POST `/api/auth/logout`, clears token, redirects to `/login`
-- `refresh()` → POST `/api/auth/refresh` (withCredentials for cookie)
-- `initializeAuth()` → called at app startup, attempts refresh to restore session
-- `fetchCurrentUser()` → GET `/api/auth/me`, updates currentUserSignal
-- `hasPermission(permission)` → checks JWT claims
-- Signals: `currentUserSignal`, `isAuthenticated` (computed)
+- `login(LoginRequest)` → POST `/api/auth/login`, then calls `fetchCurrentUser()` to populate the user signal
+- `logout()` → POST `/api/auth/logout`, clears user signal, redirects to `/login`
+- `initializeAuth()` → called at app startup, calls `fetchCurrentUser()` to restore session from cookie
+- `fetchCurrentUser()` (private) → GET `/api/auth/me`, updates `currentUserSignal`
+- `hasPermission(permission)` → checks `permissions` array on `BenutzerInfo`
+- Signals: `currentUserSignal` (readonly), `isAuthenticated` (computed)
+
+No refresh token. No access token storage. Session persistence relies on the browser cookie.
 
 ### Guards
 
@@ -50,8 +55,8 @@ Route sub-patterns per entity: `''` (list), `/neu` (create form), `/:id` (detail
 
 ### Interceptors
 
-- **authInterceptor**: Adds `Authorization: Bearer` header. On 401, attempts silent refresh with request queuing via BehaviorSubject. Shows 403 errors.
-- **apiErrorInterceptor**: Catches non-401/403 errors, shows German toast messages.
+- **authInterceptor**: Clones every request with `withCredentials: true` (sends session cookie). On 401, redirects to `/welcome` — but skips redirect if current path is already a public route (`/login`, `/welcome`, `/feedback`, `/feedback-qr`, `/danke`). On 403, shows "Zugriff verweigert" toast. No Bearer token header. No refresh logic.
+- **apiErrorInterceptor**: Catches non-401/403 errors. Shows German toast messages. Passes 401/403 through to `authInterceptor`.
 
 ## Models (core/models/)
 
@@ -67,12 +72,13 @@ Each entity has a response interface and a `*Create` input interface.
 | aktivitaet.model.ts | AktivitaetTyp, Aktivitaet, AktivitaetCreate |
 | vertrag.model.ts | VertragStatus, Vertrag, VertragCreate |
 | chance.model.ts | ChancePhase, Chance, ChanceCreate, BoardSummary |
-| benutzer.model.ts | Benutzer, BenutzerCreate |
 | dashboard.model.ts | DashboardStats, TopFirma, DepartmentSalary |
-| auth.model.ts | LoginRequest, LoginResponse, RefreshResponse, BenutzerInfo |
+| auth.model.ts | LoginRequest, LoginResponse, BenutzerInfo |
 | page.model.ts | Page\<T\> (content, totalElements, totalPages, size, number, first, last) |
 | report.model.ts | ReportDimension, ReportMetrik, ReportFilter, ReportQuery, ReportZeile, ReportResult, SavedReport, SavedReportCreate |
 | auswertung.model.ts | PipelineKpis, PhaseAggregate, TopFirma |
+
+`auth.model.ts` contains three interfaces. `LoginRequest` has `benutzername` and `passwort`. `LoginResponse` has `benutzername`, `vorname`, `nachname`, `rollen`. `BenutzerInfo` has `id`, `benutzername`, `vorname`, `nachname`, `email`, `rollen`, `permissions`. No `RefreshResponse`.
 
 ## Services (core/services/)
 
@@ -87,7 +93,6 @@ Additional methods:
 | FirmaService | `getPersonen(id, page, size)`, `getAbteilungen(id, page, size)` |
 | AbteilungService | `getAllByFirmaId(firmaId)` |
 | ChanceService | `getByPhase(phase, page, size, sort)`, `getBoardSummary()`, `updatePhase(id, phase)` |
-| BenutzerService | `toggleActive(id)` |
 | DashboardService | `getStats()`, `getRecentActivities()`, `getSalaryStatistics()`, `getTopCompanies()` |
 | AuswertungService | `getPipelineKpis()`, `getPhaseAggregates()`, `getTopFirmen(limit?)` |
 | ReportService | `executeReport(query)` |
@@ -98,6 +103,12 @@ Additional methods:
 
 ## Feature Components
 
+### Welcome
+
+- Public landing page. No auth required.
+- Entry point for unauthenticated users (401 redirects here).
+- Contains link to `/login`.
+
 ### Login
 
 - Reactive form with benutzername/passwort fields
@@ -105,12 +116,20 @@ Additional methods:
 - Password visibility toggle
 - Redirects to returnUrl or `/dashboard` on success
 
+### Feedback
+
+Three public components. No auth required. No backend calls — data posts directly to a Google Apps Script URL.
+
+- **FeedbackFormComponent** (`/feedback`): Multi-step survey. Question types: `stars` (1–5 rating), `choice` (single select), `multichoice` (multi select), `text` (free text). Submits JSON payload via `fetch` with `mode: no-cors`.
+- **ThankyouComponent** (`/danke`): Confirmation page after submission.
+- **FeedbackQrComponent** (`/feedback-qr`): Displays a QR code linking to `/feedback`. Uses the `qrcode` library. Intended for trainer display during sessions.
+
 ### Dashboard
 
 - Stats overview (firmenCount, personenCount, aktivitaetenCount, offeneChancenCount, gesamtVertragswert, durchschnittsGehalt)
 - Widget sub-components: recent activities, top companies, salary statistics
 
-### Entity CRUD (Firma, Person, Abteilung, Adresse, Gehalt, Aktivitaet, Vertrag, Chance, Benutzer)
+### Entity CRUD (Firma, Person, Abteilung, Adresse, Gehalt, Aktivitaet, Vertrag, Chance)
 
 **List pattern**: Pagination (NgbPagination, 1-indexed → 0-indexed), search input, delete with ConfirmDialogComponent modal, loading spinner.
 
@@ -178,8 +197,7 @@ Empty sections are hidden. Uses FontAwesome icons and RouterLinkActive.
 ## Proxy Configuration
 
 ```
-/api/auth       → http://localhost:8081 (CIAM)
-/api/benutzer   → http://localhost:8081 (CIAM)
-/.well-known    → http://localhost:8081 (CIAM JWKS)
-/api/*          → http://localhost:8080 (Backend)
+/api  →  http://localhost:7070  (Backend)
 ```
+
+Single rule. All `/api/*` calls proxy to the backend on port 7070. No CIAM service. No split routing.
