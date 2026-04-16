@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "CRM Node.js/TypeScript backend",
   "type": "module",
+  "engines": {
+    "node": ">=20.19"
+  },
   "scripts": {
     "start": "node --import tsx/esm --watch src/index.ts",
     "dev": "tsx --watch src/index.ts",
