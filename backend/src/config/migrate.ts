@@ -49,6 +49,8 @@ export function runMigrations(): void {
       postalCode  TEXT,
       city        TEXT,
       country     TEXT,
+      latitude    REAL,
+      longitude   REAL,
       firmaId     INTEGER REFERENCES firma(id) ON DELETE CASCADE,
       personId    INTEGER REFERENCES person(id) ON DELETE CASCADE,
       createdAt   TEXT NOT NULL DEFAULT (datetime('now')),

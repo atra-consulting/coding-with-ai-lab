@@ -53,6 +53,8 @@ export const adresse = sqliteTable('adresse', {
   postalCode: text('postalCode'),
   city: text('city'),
   country: text('country'),
+  latitude: real('latitude'),
+  longitude: real('longitude'),
   firmaId: integer('firmaId').references(() => firma.id, {
     onDelete: 'cascade',
   }),
