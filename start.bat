@@ -92,6 +92,7 @@ for /l %%i in (1,1,60) do (
 )
 if "%BACKEND_READY%"=="false" (
     echo ERROR: Backend failed to start within 60 seconds
+    call :cleanup
     exit /b 1
 )
 
@@ -118,6 +119,26 @@ if errorlevel 1 (
 start "CRM-Frontend" /b cmd /c "npx ng serve --port 7200 --proxy-config proxy.conf.json"
 cd /d "%ROOT_DIR%"
 
+:: Wait for frontend to bind (ng serve initial compile can take 30-60s)
+echo Waiting for frontend to be ready...
+set "FRONTEND_READY=false"
+for /l %%i in (1,1,120) do (
+    if "!FRONTEND_READY!"=="false" (
+        netstat -ano | findstr /c:":7200 " | findstr "LISTENING" >nul 2>&1
+        if not errorlevel 1 (
+            echo Frontend is ready!
+            set "FRONTEND_READY=true"
+        ) else (
+            timeout /t 1 /nobreak >nul
+        )
+    )
+)
+if "%FRONTEND_READY%"=="false" (
+    echo ERROR: Frontend failed to start within 120 seconds
+    call :cleanup
+    exit /b 1
+)
+
 echo.
 echo === CRM Application Started ===
 echo Backend:   http://localhost:7070
@@ -126,7 +147,33 @@ echo   ^^^>^^^>^^^>  http://localhost:7200  ^^^<^^^<^^^<
 echo.
 echo Press Ctrl+C to stop
 
-:: Keep the script running
-:wait_loop
+:: Monitor backend and frontend. If either stops listening, clean up and exit.
+:: (Ctrl+C is handled by Windows: the shared console forwards CTRL_C_EVENT to
+:: the tsx/ng child processes, which terminate themselves.)
+:monitor_loop
 timeout /t 5 /nobreak >nul
-goto :wait_loop
+netstat -ano | findstr /c:":7070 " | findstr "LISTENING" >nul 2>&1
+if errorlevel 1 (
+    echo.
+    echo Backend ^(port 7070^) has stopped.
+    goto :cleanup
+)
+netstat -ano | findstr /c:":7200 " | findstr "LISTENING" >nul 2>&1
+if errorlevel 1 (
+    echo.
+    echo Frontend ^(port 7200^) has stopped.
+    goto :cleanup
+)
+goto :monitor_loop
+
+:cleanup
+echo Shutting down...
+for /f "tokens=5" %%a in ('netstat -ano ^| findstr /c:":7200 " ^| findstr "LISTENING" 2^>nul') do (
+    taskkill /f /pid %%a >nul 2>&1
+)
+echo Frontend stopped.
+for /f "tokens=5" %%a in ('netstat -ano ^| findstr /c:":7070 " ^| findstr "LISTENING" 2^>nul') do (
+    taskkill /f /pid %%a >nul 2>&1
+)
+echo Backend stopped.
+exit /b 0
