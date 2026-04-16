@@ -86,6 +86,14 @@ if [ ! -d "node_modules" ]; then
   npm install
 fi
 
+# Ensure the native better-sqlite3 binary matches the current Node version.
+# (After a Node major upgrade, the cached .node file is compiled against the
+# old ABI and throws ERR_DLOPEN_FAILED on boot.)
+if ! node -e "require('better-sqlite3')" > /dev/null 2>&1; then
+  echo "better-sqlite3 binary mismatch with Node ${NODE_VERSION}, rebuilding..."
+  npm rebuild better-sqlite3
+fi
+
 npx tsx --watch src/index.ts &
 BACKEND_PID=$!
 cd "${ROOT_DIR}"

@@ -73,6 +73,15 @@ if not exist "node_modules" (
     call npm install
 )
 
+:: Ensure the native better-sqlite3 binary matches the current Node version.
+:: (After a Node major upgrade, the cached .node file is compiled against the
+:: old ABI and throws ERR_DLOPEN_FAILED on boot.)
+node -e "require('better-sqlite3')" >nul 2>&1
+if errorlevel 1 (
+    echo better-sqlite3 binary mismatch with Node %NODE_VERSION%, rebuilding...
+    call npm rebuild better-sqlite3
+)
+
 start "CRM-Backend" /b cmd /c "npx tsx --watch src/index.ts"
 cd /d "%ROOT_DIR%"
 
