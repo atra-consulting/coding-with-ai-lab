@@ -79,6 +79,43 @@ const FIRMA_SEEDS: FirmaSeed[] = [
   { name: 'Schneider Automotive GmbH',      industry: 'Automobilbranche', street: 'Karolinenstraße',    houseNumber: '10',  postalCode: '90402', city: 'Nürnberg',          latitude: 49.4509645, longitude: 11.0777527 },
 ];
 
+// ─── 25 Niederlassung (branch) addresses, parallel to FIRMA_SEEDS by index ────
+interface BranchSeed {
+  street: string;
+  houseNumber: string;
+  postalCode: string;
+  city: string;
+  latitude: number;
+  longitude: number;
+}
+const BRANCH_SEEDS: BranchSeed[] = [
+  { street: 'Leopoldstraße',        houseNumber: '5',   postalCode: '80802', city: 'München',      latitude: 48.1541199, longitude: 11.5823151 },
+  { street: 'Spitalerstraße',       houseNumber: '10',  postalCode: '20095', city: 'Hamburg',      latitude: 53.5522627, longitude: 10.0029745 },
+  { street: 'Breite Straße',        houseNumber: '20',  postalCode: '50667', city: 'Köln',         latitude: 50.9391523, longitude: 6.9526733  },
+  { street: 'Kaiserstraße',         houseNumber: '30',  postalCode: '60329', city: 'Frankfurt am Main', latitude: 50.1100651, longitude: 8.6732525 },
+  { street: 'Calwer Straße',        houseNumber: '10',  postalCode: '70173', city: 'Stuttgart',    latitude: 48.7752655, longitude: 9.1730846  },
+  { street: 'Leipziger Straße',     houseNumber: '50',  postalCode: '10117', city: 'Berlin',       latitude: 52.5107184, longitude: 13.4008696 },
+  { street: 'Theatinerstraße',      houseNumber: '10',  postalCode: '80333', city: 'München',      latitude: 48.1395683, longitude: 11.5759151 },
+  { street: 'Kampstraße',           houseNumber: '40',  postalCode: '44137', city: 'Dortmund',     latitude: 51.5150944, longitude: 7.4596355  },
+  { street: 'Breite Gasse',         houseNumber: '20',  postalCode: '90402', city: 'Nürnberg',     latitude: 49.4501087, longitude: 11.0762691 },
+  { street: 'Petersstraße',         houseNumber: '15',  postalCode: '04109', city: 'Leipzig',      latitude: 51.3387894, longitude: 12.3750043 },
+  { street: 'Annastraße',           houseNumber: '10',  postalCode: '86150', city: 'Augsburg',     latitude: 48.3691463, longitude: 10.8961117 },
+  { street: 'Schadowstraße',        houseNumber: '40',  postalCode: '40212', city: 'Düsseldorf',   latitude: 51.2266071, longitude: 6.7830266  },
+  { street: 'Remigiusstraße',       houseNumber: '20',  postalCode: '53111', city: 'Bonn',         latitude: 50.7345280, longitude: 7.1000316  },
+  { street: 'Am Brand',             houseNumber: '10',  postalCode: '55116', city: 'Mainz',        latitude: 50.0002675, longitude: 8.2743815  },
+  { street: 'Kirchgasse',           houseNumber: '20',  postalCode: '65183', city: 'Wiesbaden',    latitude: 50.0793140, longitude: 8.2378751  },
+  { street: 'Kaiserstraße',         houseNumber: '50',  postalCode: '76133', city: 'Karlsruhe',    latitude: 49.0096142, longitude: 8.4068933  },
+  { street: 'Theresienstraße',      houseNumber: '5',   postalCode: '85049', city: 'Ingolstadt',   latitude: 48.7642731, longitude: 11.4236893 },
+  { street: 'Limbecker Platz',      houseNumber: '1',   postalCode: '45127', city: 'Essen',        latitude: 51.4561430, longitude: 7.0050310  },
+  { street: 'Leipziger Straße',     houseNumber: '10',  postalCode: '06108', city: 'Halle',        latitude: 51.4820153, longitude: 11.9733705 },
+  { street: 'Kortumstraße',         houseNumber: '30',  postalCode: '44787', city: 'Bochum',       latitude: 51.4778879, longitude: 7.2169847  },
+  { street: 'Königstraße',          houseNumber: '20',  postalCode: '47051', city: 'Duisburg',     latitude: 51.4495969, longitude: 6.7142880  },
+  { street: 'Lange Straße',         houseNumber: '40',  postalCode: '26122', city: 'Oldenburg',    latitude: 53.1397384, longitude: 8.2132708  },
+  { street: 'Innere Klosterstraße', houseNumber: '5',   postalCode: '09111', city: 'Chemnitz',     latitude: 50.8340275, longitude: 12.9180671 },
+  { street: 'Damm',                 houseNumber: '10',  postalCode: '38100', city: 'Braunschweig', latitude: 52.2623618, longitude: 10.5245457 },
+  { street: 'Maximilianstraße',     houseNumber: '5',   postalCode: '93047', city: 'Regensburg',   latitude: 49.0173304, longitude: 12.1007100 },
+];
+
 // ─── Data pools ───────────────────────────────────────────────────────────────
 const VORNAMEN = [
   'Alexander','Anna','Benjamin','Christian','Daniel','Elena','Felix','Franziska','Hannah','Jan',
@@ -157,7 +194,7 @@ function wahrscheinlichkeitForPhase(p: string): number {
 interface FirmaRow { id: number; name: string; industry: string; website: string; phone: string; email: string; notes: string; createdAt: string; updatedAt: string; }
 interface AbteilungRow { id: number; name: string; description: string | null; firmaId: number; createdAt: string; updatedAt: string; }
 interface PersonRow { id: number; firstName: string; lastName: string; email: string; phone: string; position: string; notes: string | null; firmaId: number; abteilungId: number | null; createdAt: string; updatedAt: string; }
-interface AdresseRow { id: number; street: string; houseNumber: string; postalCode: string; city: string; country: string; latitude: number | null; longitude: number | null; firmaId: number | null; personId: number | null; createdAt: string; updatedAt: string; }
+interface AdresseRow { id: number; street: string; houseNumber: string; postalCode: string; city: string; country: string; latitude: number | null; longitude: number | null; typ: string | null; firmaId: number | null; personId: number | null; createdAt: string; updatedAt: string; }
 interface GehaltRow { id: number; amount: number; currency: string; typ: string; effectiveDate: string; personId: number; createdAt: string; updatedAt: string; }
 interface AktivitaetRow { id: number; typ: string; subject: string; description: string; datum: string; firmaId: number | null; personId: number | null; createdAt: string; updatedAt: string; }
 interface VertragRow { id: number; titel: string; notes: string; wert: number; currency: string; status: string; startDate: string | null; endDate: string | null; firmaId: number; kontaktPersonId: number | null; createdAt: string; updatedAt: string; }
@@ -236,8 +273,9 @@ for (const f of firma) {
   firmaPersonenMap.set(f.id, ids);
 }
 
-// ─── 4. Adresse (25 firma + 50 person = 75) ───────────────────────────────────
+// ─── 4. Adresse (25 HQ + 25 Niederlassung + 50 person = 100) ──────────────────
 let adresseCounter = 1;
+// Hauptquartier: one per firma
 FIRMA_SEEDS.forEach((seed, idx) => {
   const firmaId = idx + 1;
   const createdAt = randCreatedAt();
@@ -250,12 +288,34 @@ FIRMA_SEEDS.forEach((seed, idx) => {
     country: 'Deutschland',
     latitude: seed.latitude,
     longitude: seed.longitude,
+    typ: 'HAUPTQUARTIER',
     firmaId,
     personId: null,
     createdAt,
     updatedAt: createdAt,
   });
 });
+// Niederlassung: one per firma
+BRANCH_SEEDS.forEach((branch, idx) => {
+  const firmaId = idx + 1;
+  const createdAt = randCreatedAt();
+  adresse.push({
+    id: adresseCounter++,
+    street: branch.street,
+    houseNumber: branch.houseNumber,
+    postalCode: branch.postalCode,
+    city: branch.city,
+    country: 'Deutschland',
+    latitude: branch.latitude,
+    longitude: branch.longitude,
+    typ: 'NIEDERLASSUNG',
+    firmaId,
+    personId: null,
+    createdAt,
+    updatedAt: createdAt,
+  });
+});
+// Person addresses (no typ, no coords)
 const personenSample = pickN(person, 50);
 for (const p of personenSample) {
   const createdAt = randCreatedAt();
@@ -268,6 +328,7 @@ for (const p of personenSample) {
     country: 'Deutschland',
     latitude: null,
     longitude: null,
+    typ: null,
     firmaId: null,
     personId: p.id,
     createdAt,
@@ -388,7 +449,7 @@ console.log(`Wrote ${outPath}`);
 console.log(`  firma:      ${firma.length}`);
 console.log(`  abteilung:  ${abteilung.length}`);
 console.log(`  person:     ${person.length}`);
-console.log(`  adresse:    ${adresse.length}  (${FIRMA_SEEDS.length} with lat/lng)`);
+console.log(`  adresse:    ${adresse.length}  (${FIRMA_SEEDS.length} HQ + ${BRANCH_SEEDS.length} Niederlassung, all with lat/lng, + ${adresse.length - FIRMA_SEEDS.length - BRANCH_SEEDS.length} person)`);
 console.log(`  gehalt:     ${gehalt.length}`);
 console.log(`  aktivitaet: ${aktivitaet.length}`);
 console.log(`  vertrag:    ${vertrag.length}`);

@@ -14,6 +14,28 @@
 
   <div class="card mb-4">
     <div class="card-body">
+      @if (firma.adressen && firma.adressen.length > 0) {
+        <div class="row mb-3">
+          @for (adr of firma.adressen; track adr.id) {
+            <div class="col-md-6">
+              <p class="mb-1">
+                <strong>{{
+                  adr.typ === 'HAUPTQUARTIER'
+                    ? 'Hauptquartier'
+                    : adr.typ === 'NIEDERLASSUNG'
+                      ? 'Niederlassung'
+                      : 'Adresse'
+                }}:</strong>
+              </p>
+              <p class="mb-0">
+                {{ adr.street }} {{ adr.houseNumber }}<br />
+                {{ adr.postalCode }} {{ adr.city }}@if (adr.country) {, {{ adr.country }}}
+              </p>
+            </div>
+          }
+        </div>
+        <hr />
+      }
       <div class="row">
         <div class="col-md-6">
           <p><strong>Branche:</strong> {{ firma.industry || '-' }}</p>

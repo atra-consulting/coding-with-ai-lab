@@ -25,8 +25,8 @@ const INSERT_SQL: Record<keyof Fixture, string> = {
               VALUES (@id, @name, @description, @firmaId, @createdAt, @updatedAt)`,
   person: `INSERT INTO person (id, firstName, lastName, email, phone, position, notes, firmaId, abteilungId, createdAt, updatedAt)
            VALUES (@id, @firstName, @lastName, @email, @phone, @position, @notes, @firmaId, @abteilungId, @createdAt, @updatedAt)`,
-  adresse: `INSERT INTO adresse (id, street, houseNumber, postalCode, city, country, latitude, longitude, firmaId, personId, createdAt, updatedAt)
-            VALUES (@id, @street, @houseNumber, @postalCode, @city, @country, @latitude, @longitude, @firmaId, @personId, @createdAt, @updatedAt)`,
+  adresse: `INSERT INTO adresse (id, street, houseNumber, postalCode, city, country, latitude, longitude, typ, firmaId, personId, createdAt, updatedAt)
+            VALUES (@id, @street, @houseNumber, @postalCode, @city, @country, @latitude, @longitude, @typ, @firmaId, @personId, @createdAt, @updatedAt)`,
   gehalt: `INSERT INTO gehalt (id, amount, currency, typ, effectiveDate, personId, createdAt, updatedAt)
            VALUES (@id, @amount, @currency, @typ, @effectiveDate, @personId, @createdAt, @updatedAt)`,
   aktivitaet: `INSERT INTO aktivitaet (id, typ, subject, description, datum, firmaId, personId, createdAt, updatedAt)

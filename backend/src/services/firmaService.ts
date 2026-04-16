@@ -3,6 +3,18 @@ import { NotFoundError } from '../utils/errors.js';
 import { buildPage, type PageResult, type SortParams } from '../utils/pagination.js';
 import type { FirmaCreateDTO } from '../utils/validation.js';
 
+export interface FirmaAddressSummary {
+  id: number;
+  street: string | null;
+  houseNumber: string | null;
+  postalCode: string | null;
+  city: string | null;
+  country: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  typ: string | null;
+}
+
 export interface FirmaDTO {
   id: number;
   name: string;
@@ -13,6 +25,7 @@ export interface FirmaDTO {
   notes: string | null;
   personenCount: number;
   abteilungenCount: number;
+  adressen?: FirmaAddressSummary[];
   createdAt: string;
   updatedAt: string;
 }
@@ -93,7 +106,15 @@ export const firmaService = {
       .prepare(`${BASE_QUERY} WHERE f.id = ?`)
       .get(id) as FirmaRow | undefined;
     if (!row) throw new NotFoundError(`Firma mit ID ${id} nicht gefunden`);
-    return toDTO(row);
+    const adressen = sqlite
+      .prepare(
+        `SELECT id, street, houseNumber, postalCode, city, country, latitude, longitude, typ
+         FROM adresse
+         WHERE firmaId = ?
+         ORDER BY typ ASC, id ASC`
+      )
+      .all(id) as FirmaAddressSummary[];
+    return { ...toDTO(row), adressen };
   },
 
   create(dto: FirmaCreateDTO): FirmaDTO {
