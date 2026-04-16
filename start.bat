@@ -67,9 +67,10 @@ if "%RESET_DB%"=="true" (
 echo Starting backend...
 cd /d "%ROOT_DIR%\backend"
 
-:: Install node modules if not present
-if not exist "node_modules" (
-    echo Backend node modules not found. Running npm install...
+:: Install node modules if not present or incomplete (a partial install missing
+:: tsx produces MODULE_NOT_FOUND on start).
+if not exist "node_modules\.bin\tsx.cmd" (
+    echo Backend node modules missing or incomplete. Running npm install...
     call npm install
 )
 
@@ -110,9 +111,9 @@ if "%BACKEND_READY%"=="false" (
 echo Starting frontend...
 cd /d "%ROOT_DIR%\frontend"
 
-:: Install node modules if not present
-if not exist "node_modules" (
-    echo Node modules not found. Running npm install...
+:: Install node modules if not present or incomplete
+if not exist "node_modules\.bin\ng.cmd" (
+    echo Frontend node modules missing or incomplete. Running npm install...
     call npm install
 )
 

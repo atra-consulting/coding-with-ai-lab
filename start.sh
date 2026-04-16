@@ -80,9 +80,10 @@ trap cleanup SIGINT SIGTERM
 echo "Starting backend..."
 cd "${ROOT_DIR}/backend"
 
-# Install node modules if not present
-if [ ! -d "node_modules" ]; then
-  echo "Backend node modules not found. Running npm install..."
+# Install node modules if not present or incomplete (partial installs miss
+# binaries like tsx and make start fail with MODULE_NOT_FOUND).
+if [ ! -d "node_modules" ] || [ ! -f "node_modules/.bin/tsx" ]; then
+  echo "Backend node modules missing or incomplete. Running npm install..."
   npm install
 fi
 
@@ -117,9 +118,9 @@ done
 echo "Starting frontend..."
 cd "${ROOT_DIR}/frontend"
 
-# Install node modules if not present
-if [ ! -d "node_modules" ]; then
-  echo "Node modules not found. Running npm install..."
+# Install node modules if not present or incomplete
+if [ ! -d "node_modules" ] || [ ! -f "node_modules/.bin/ng" ]; then
+  echo "Frontend node modules missing or incomplete. Running npm install..."
   npm install
 fi
 
