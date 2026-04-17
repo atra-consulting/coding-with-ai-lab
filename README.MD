@@ -64,6 +64,16 @@ nvm install 22
 nvm use 22
 ```
 
+> **Wichtig bei der Installation über den offiziellen Installer:**
+> Im Installationsdialog die Checkbox **"Automatically install the necessary tools. [...]"** aktivieren. Damit werden Build-Tools (Python, Visual Studio Build Tools) mitinstalliert, die für native Module wie `better-sqlite3` benötigt werden.
+>
+> <!-- TODO: Screenshot des Installer-Dialogs einfügen (z.B. docs/images/node-installer-tools-checkbox.png) -->
+>
+> **Bei Berechtigungsproblemen** (z.B. wenn Skripte nicht ausgeführt werden dürfen) in PowerShell folgenden Befehl ausführen:
+> ```powershell
+> Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+> ```
+
 #### Linux (Ubuntu/Debian)
 
 ```bash

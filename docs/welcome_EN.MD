@@ -11,6 +11,11 @@
 
 - **AI subscription**: Claude (Claude.com) or GitHub Copilot
 - **Node.js & npm**: For frontend development
+  - **Windows:** During Node.js installation, check the **"Automatically install the necessary tools. [...]"** checkbox — this installs build tools (Python, Visual Studio Build Tools) required for native modules like `better-sqlite3`.
+  - **Windows:** If you encounter permission issues (scripts cannot be executed), run in PowerShell:
+    ```powershell
+    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+    ```
 - **Java**: JDK 21+ for backend
 - **Git CLI**: For version control, branching, and creating PRs with Claude
 - **Gemini API Key**: Some tasks require a Gemini API key. When the time comes, ask us and we'll send it to you.
