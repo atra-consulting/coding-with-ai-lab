@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "task_key": "REDUCE-MORE-COMPLEXITY",
+  "status": "in_progress",
+  "current_step": "4.5",
+  "started": "2026-04-17T00:00:00Z",
+  "updated": "2026-04-17T00:00:00Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Propose more functionality to remove from this Claude Code training project to save tokens.",
+    "special_instructions": null,
+    "ticket_id": null,
+    "ticket_url": null,
+    "branch_name": "reduce-more-complexity",
+    "original_branch": "main",
+    "docs_folder": "docs",
+    "workflow_scope": null,
+    "keep_files": null
+  },
+  "discovery": {
+    "agents_available": true,
+    "writer_agents": ["ba-writer"],
+    "coding_agents": ["be-coder", "fe-coder", "db-coder", "ui-designer"],
+    "review_agents": ["ba-reviewer", "be-reviewer", "fe-reviewer", "db-reviewer", "ui-reviewer"],
+    "test_command": null,
+    "youtrack_available": false,
+    "youtrack_mcp": null,
+    "youtrack_on_start": null,
+    "youtrack_on_resolve": null
+  },
+  "artifacts": {
+    "prd_skipped": null,
+    "prd_file": null,
+    "plan_file": null,
+    "pr_url": null
+  },
+  "completed_steps": []
+}
