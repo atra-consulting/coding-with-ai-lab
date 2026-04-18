@@ -2,7 +2,7 @@
 name: "project:plan-and-do"
 description: "End-to-end implementation workflow from idea to code review. Use for building features, implementing tasks, fixing complex bugs, or any substantial coding work. Handles planning, implementation, testing, and review automatically."
 argument-hint: ["description"] [special-instructions|resume:<step>]
-version: 1.7.0
+version: 1.8.0
 last-modified: 2026-04-18
 allowed-tools:
   - Read
@@ -56,7 +56,7 @@ If NOT in plan mode → continue.
 ## SKILL HEADER
 
 ```
-Plan and Do (v1.7.0, 2026-04-18)
+Plan and Do (v1.8.0, 2026-04-18)
 ************************************
 
 Plan and implement any work from freeform description
@@ -135,15 +135,19 @@ When asking for approval, also display the full absolute path of every file that
 
 Read project's CLAUDE.md for `## Agents` section.
 
-**If found:** Parse tables into four categories by suffix in the `name`:
-- Names ending in `-writer` or `-analyst` → `writer_agents` (e.g., `ba-writer`)
-- Names ending in `-coder` or `-designer` → `coding_agents` (e.g., `be-coder`, `fe-coder`, `ui-designer`)
-- Names ending in `-reviewer` → `review_agents` (e.g., `be-reviewer`, `fe-reviewer`)
-- Names ending in `-tester` → `testing_agents` (e.g., `web-tester`)
+**If found:** Parse each row's `name` and classify. Rules are **order-sensitive** — stop at the first match:
 
-Agents that match no suffix (e.g., `admin`, `md-reader`) are utilities — skip.
+1. Contains `-test-coder` → `test_coding_agents` (e.g., `be-test-coder`, `fe-test-coder`)
+2. Contains `-test-reviewer` → `test_review_agents` (e.g., `be-test-reviewer`, `fe-test-reviewer`)
+3. Contains `-test-runner` or ends with `-tester` → `test_runner_agents` (e.g., `be-test-runner`, `fe-test-runner`)
+4. Ends with `-writer` or `-analyst` → `writer_agents` (e.g., `ba-writer`)
+5. Ends with `-coder` or `-designer` → `coding_agents` (e.g., `be-coder`, `fe-coder`, `ui-designer`)
+6. Ends with `-reviewer` → `review_agents` (e.g., `be-reviewer`, `fe-reviewer`)
+7. Anything else (e.g., `admin`, `md-reader`) → skip as utility
 
-Display all lists in one block, then set `agents_available = true` if any of the four lists is non-empty.
+The order matters: `be-test-coder` must hit rule 1, NOT rule 5. Always check for `-test-` first.
+
+Display all six lists in one block, then set `agents_available = true` if any list is non-empty.
 
 **If not found:** Display: "No agents found. Running in direct mode." Set `agents_available = false`.
 
@@ -561,6 +565,19 @@ Omit the `PRD:` footer when no PRD exists.
 
 This catches issues early, before they compound across phases.
 
+**Test authoring phase (agents_available only):** After all implementation phases are committed, launch `test_coding_agents` to write tests for the new code. One runs per scope touched:
+
+- Backend files changed → `be-test-coder` writes Playwright API tests under `backend/src/test/`
+- Frontend files changed → `fe-test-coder` writes Jasmine specs colocated with sources
+
+Apply the **DISPATCH NARRATION RULE**. Launch in parallel when both scopes are touched. Each agent commits its test files: `test: Add tests for [description]. [task_key]` (with `PRD:` footer if applicable).
+
+Then launch matching `test_review_agents` (`be-test-reviewer` / `fe-test-reviewer`) in parallel to review the new tests. Auto-fix findings and commit: `fix: Address test review findings. [task_key]`. No user prompt.
+
+Skip the test authoring phase when:
+- The plan explicitly marks the change as test-inappropriate (e.g., a pure docs edit)
+- No `test_coding_agents` exist for the changed scope
+
 **Otherwise:** Implement directly:
 
 For each task in PLAN:
@@ -580,7 +597,14 @@ If questions arise: explain issue, use AskUserQuestion with numbered alternative
 
 ### Step 9.1: Run Tests
 
-Execute `[test_command]`.
+**If `test_runner_agents` is non-empty:** Launch each relevant runner in parallel via Task tool. Match by scope:
+- Backend files changed → `be-test-runner`
+- Frontend files changed → `fe-test-runner`
+- Both scopes → launch both in parallel
+
+Apply the **DISPATCH NARRATION RULE**. Collect each runner's pass/fail report.
+
+**Otherwise:** Execute `[test_command]` directly.
 
 ### Step 9.2: Handle Results
 
@@ -646,14 +670,16 @@ Display artifact paths per the ARTIFACT PATH DISPLAY RULE.
 
 ## STEP 11: POST-REVIEW TESTING
 
-### Step 11.1: Testing Approach
+### Step 11.1: Post-Review Verification
 
-**If `testing_agents` is non-empty:** Launch each `testing_agent` (e.g., `web-tester`) in parallel via Task tool for end-to-end verification. Apply the **DISPATCH NARRATION RULE**. Collect findings; auto-fix and re-run only if findings are clear and within scope. Otherwise summarize for the user.
+Code review may have changed implementation or test code. Re-run the relevant runners once to confirm the suite is still green.
 
-**If `agents_available` but no testing agents:** Skip end-to-end testing. Display: "No testing agent available. Skipping E2E verification — relying on Step 9 unit/integration tests."
+**If `test_runner_agents` is non-empty:** Launch the same runners as Step 9.1 (match by scope) in parallel via Task tool. Apply the **DISPATCH NARRATION RULE**.
 
-**Otherwise (no agents):** Propose manual test steps. Use AskUserQuestion: 1-Tests passed, 2-Tests failed, 3-Quit.
-- Failed → ask for details, fix, commit, retry
+- All pass → continue to STEP 12
+- Any fail → auto-fix the smallest case, commit `fix: Restore green tests after review. [task_key]`, re-run once. If still failing, surface the report and use AskUserQuestion: 1-Investigate (returns to STEP 8), 2-Skip to summary, 3-Quit.
+
+**Otherwise (no agents):** Re-run `[test_command]` directly. Same fail-handling as above.
 
 ### Step 11.2: Checkpoint 11
 
