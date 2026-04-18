@@ -301,25 +301,24 @@ git status --porcelain
 
 **If clean:** Display: "Working directory clean."
 
-### PC.2: Push Confirmation
+### PC.2: Push and Pull Request
 
-Call AskUserQuestion: 1-Push commits to remote, 2-Skip push (local only). Wait for response — do not push without user confirmation.
+Combined prompt — `gh pr create` cannot succeed without a push, so collapse the two decisions into one.
 
-- Push:
+Call AskUserQuestion:
+1. Push and create pull request (recommended)
+2. Push only (no PR)
+3. Skip — keep commits local
+
+Wait for response — do not push or create a PR without user confirmation.
+
+- **Push and create PR:**
   ```bash
-  git push 2>/dev/null || echo "No remote configured or push failed - commits are local only"
+  git push -u origin [branch_name]
   ```
+  If push fails: warn, ask whether to retry or skip; do not attempt PR creation on a failed push.
 
-### PC.3: Create Pull Request
-
-Call AskUserQuestion: 1-Create pull request, 2-Skip PR (done). Wait for response — do not create a PR without user confirmation.
-
-- Create:
-  Push if not already pushed:
-  ```bash
-  git push -u origin [branch_name] 2>/dev/null
-  ```
-  **CRITICAL:** The PR MUST target `original_branch` — the branch that was active when the skill started (stored in state file `config.original_branch`). Never default to main/master. Re-read the state file if `original_branch` is unknown.
+  **CRITICAL:** The PR MUST target `original_branch` — the branch active when the skill started (stored in state file `config.original_branch`). Never default to main/master. Re-read the state file if `original_branch` is unknown.
 
   Create PR using gh CLI. Do NOT add a test plan section — only include the summary.
   ```bash
@@ -333,7 +332,13 @@ Call AskUserQuestion: 1-Create pull request, 2-Skip PR (done). Wait for response
   ```
   Display PR URL. Continue to PC.4.
 
-- Skip → Continue to PC.5 (offer branch switch).
+- **Push only:**
+  ```bash
+  git push 2>/dev/null || echo "Push failed - commits are local only"
+  ```
+  Continue to PC.5.
+
+- **Skip:** Display "Commits stay local on `[branch_name]`." Continue to PC.5.
 
 ### PC.4: Merge Pull Request
 

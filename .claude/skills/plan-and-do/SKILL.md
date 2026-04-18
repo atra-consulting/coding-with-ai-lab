@@ -2,8 +2,8 @@
 name: "project:plan-and-do"
 description: "End-to-end implementation workflow from idea to code review. Use for building features, implementing tasks, fixing complex bugs, or any substantial coding work. Handles planning, implementation, testing, and review automatically."
 argument-hint: ["description"] [special-instructions|resume:<step>]
-version: 1.6.0
-last-modified: 2026-04-07
+version: 1.7.0
+last-modified: 2026-04-18
 allowed-tools:
   - Read
   - Write
@@ -56,7 +56,7 @@ If NOT in plan mode → continue.
 ## SKILL HEADER
 
 ```
-Plan and Do (v1.6.0, 2026-04-07)
+Plan and Do (v1.7.0, 2026-04-18)
 ************************************
 
 Plan and implement any work from freeform description
@@ -135,14 +135,43 @@ When asking for approval, also display the full absolute path of every file that
 
 Read project's CLAUDE.md for `## Agents` section.
 
-**If found:** Parse tables into three categories:
-- Names with `-writer`/`-analyst` → `writer_agents` (e.g., `ba-writer`)
-- Names with `-coder`/`-designer` → `coding_agents` (e.g., `be-coder`, `fe-coder`)
-- Names with `-reviewer` → `review_agents` (e.g., `be-reviewer`, `fe-reviewer`)
+**If found:** Parse tables into four categories by suffix in the `name`:
+- Names ending in `-writer` or `-analyst` → `writer_agents` (e.g., `ba-writer`)
+- Names ending in `-coder` or `-designer` → `coding_agents` (e.g., `be-coder`, `fe-coder`, `ui-designer`)
+- Names ending in `-reviewer` → `review_agents` (e.g., `be-reviewer`, `fe-reviewer`)
+- Names ending in `-tester` → `testing_agents` (e.g., `web-tester`)
 
-Display all lists. Set `agents_available = true`.
+Agents that match no suffix (e.g., `admin`, `md-reader`) are utilities — skip.
+
+Display all lists in one block, then set `agents_available = true` if any of the four lists is non-empty.
 
 **If not found:** Display: "No agents found. Running in direct mode." Set `agents_available = false`.
+
+## DISPATCH NARRATION RULE
+
+**Before EVERY `Task` tool call**, output ONE line:
+```
+→ Launching <agent_name>: <one-sentence purpose>
+```
+
+**When dispatching multiple agents in parallel**, output one line per agent BEFORE the parallel batch:
+```
+→ Launching be-reviewer, fe-reviewer, db-reviewer in parallel: review phase 1 output.
+```
+
+This keeps the user informed about which agents do what work, without breaking the parallel execution.
+
+## REVIEWER SCOPE FILTER
+
+When launching `review_agents` (Steps 6.2, 8.1, 11.1), do NOT launch every reviewer every time. Filter by domain match against the work being reviewed:
+
+- Files under `backend/` or backend keywords (route, service, middleware, schema) → include `be-reviewer`
+- Files under `frontend/` or frontend keywords (component, template, route, form) → include `fe-reviewer`
+- Schema/SQL/Drizzle/migration changes → include `db-reviewer`
+- Visual/CSS/SCSS/template changes → include `ui-reviewer`
+- PRDs, plans, or pure spec text → include `ba-reviewer`
+
+Always include at least one reviewer. If unsure, default to `be-reviewer` and `fe-reviewer`.
 
 ---
 
@@ -369,8 +398,8 @@ Analyze user_description and codebase using Grep/Glob. Identify patterns, module
 
 **If agents_available:**
 
-1. **Draft:** Launch `ba-writer` (or first `writer_agent`) via Task tool to write the PRD. If no writer agents exist, use the first `coding_agent` instead. If no coding agents exist either, write the PRD directly. Provide user_description, codebase context from Step 6.1, and the structure below.
-2. **Review:** Launch ALL `review_agents` in parallel via Task tool. Each reviewer gets the draft PRD and checks for completeness, correctness, and feasibility from their domain perspective.
+1. **Draft:** Launch `ba-writer` (or first `writer_agent`) via Task tool to write the PRD. If no writer agents exist, use the first `coding_agent` instead. If no coding agents exist either, write the PRD directly. Provide user_description, codebase context from Step 6.1, and the structure below. Apply the **DISPATCH NARRATION RULE**.
+2. **Review:** Apply the **REVIEWER SCOPE FILTER** — for a PRD always include `ba-reviewer`, plus any domain reviewers whose area the PRD covers. Launch them in parallel via Task tool. Apply the DISPATCH NARRATION RULE. Each reviewer gets the draft PRD and checks for completeness, correctness, and feasibility from their domain perspective.
 3. **Fix:** Collect all reviewer findings. Fix issues automatically — no user prompt needed. If reviewers disagree, prefer the more conservative/thorough approach.
 4. **Result:** The reviewed and fixed PRD becomes the final draft for user approval.
 
@@ -392,11 +421,18 @@ Display PRD content and full absolute file path. Call AskUserQuestion: 1-Continu
 
 ### Step 6.5: Commit PRD
 
-**If `is_git_repo`:**
+**If `is_git_repo`:** Use a HEREDOC so the `PRD:` footer lands on its own line per CLAUDE.md.
 ```bash
 git add [prd_dir]/PRD-[task_key].md
-git commit -m "docs: Add specifications (PRD) for [task summary]. [task_key]"
+git commit -m "$(cat <<'EOF'
+docs: Add specifications (PRD) for [task summary]. [task_key]
+
+PRD: [prd_file relative to repo root]
+EOF
+)"
 ```
+
+**Implementation commits in Step 8.1 must also include the `PRD: [path]` footer** when `prd_file` exists, so the commit ↔ PRD link is preserved per CLAUDE.md.
 
 ---
 
@@ -478,10 +514,15 @@ Store the user's choice in state as `config.workflow_scope`:
 
 ### Step 7.6: Commit Plan
 
-**If `is_git_repo`:**
+**If `is_git_repo`:** Append `PRD: [prd_file]` footer when `prd_file` exists.
 ```bash
 git add [plan_dir]/PLAN-[task_key].md
-git commit -m "docs: Add detailed plan for [task summary]. [task_key]"
+git commit -m "$(cat <<'EOF'
+docs: Add detailed plan for [task summary]. [task_key]
+
+PRD: [prd_file relative to repo root, or omit footer if no PRD]
+EOF
+)"
 ```
 
 ---
@@ -492,12 +533,30 @@ git commit -m "docs: Add detailed plan for [task summary]. [task_key]"
 
 ### Step 8.1: Execute Plan
 
-**If agents_available:** Dispatch task groups to coding agents via Task tool. Match by file type. Launch independent agents in parallel. Each commits: `feat: [description]. [task_key]`
+**If agents_available:** Dispatch task groups to coding agents via Task tool. Use this file-path → agent mapping (override only when CLAUDE.md says otherwise):
+
+| File pattern | Agent |
+|--------------|-------|
+| `backend/src/routes/**`, `backend/src/services/**`, `backend/src/middleware/**`, `backend/src/app.ts`, `backend/src/utils/**` | `be-coder` |
+| `backend/src/db/**`, `backend/src/config/migrate.ts`, `backend/src/config/db.ts`, `backend/src/seed/**` | `db-coder` |
+| `frontend/src/app/features/**`, `frontend/src/app/core/**`, `frontend/src/app/app.*` | `fe-coder` |
+| `frontend/src/styles.scss`, `*.scss`, visual/template-only changes | `ui-designer` |
+| Anything else (config, scripts, docs) | nearest match by domain, else direct mode |
+
+Apply the **DISPATCH NARRATION RULE** before every Task call. Launch independent agents in parallel.
+
+Each agent commits the work it produced. **If `prd_file` exists**, the commit message MUST end with `PRD: [prd_file]` per CLAUDE.md:
+```
+feat: [description]. [task_key]
+
+PRD: [prd_file relative to repo root]
+```
+Omit the `PRD:` footer when no PRD exists.
 
 **Phase review (agents_available only):** If the plan has multiple phases or numbered task groups, treat each group as a phase. After each phase completes:
-1. Launch ALL `review_agents` in parallel via Task tool. Each reviewer checks the phase output for correctness, consistency with the plan, and domain-specific issues.
+1. Apply the **REVIEWER SCOPE FILTER** — pick only the reviewers whose domain the phase touched. Launch them in parallel via Task tool. Apply the DISPATCH NARRATION RULE.
 2. Collect all reviewer findings. Fix issues automatically — no user prompt needed.
-3. Commit fixes: `fix: Address phase [N] review findings. [task_key]`
+3. Commit fixes: `fix: Address phase [N] review findings. [task_key]` (with `PRD:` footer if applicable)
 4. Then proceed to the next phase.
 
 This catches issues early, before they compound across phases.
@@ -509,7 +568,7 @@ For each task in PLAN:
 2. Make changes (Edit/Write tools) — narrate: "Updating [file] to add [feature]..."
 3. Explain briefly what was done
 4. Mark task complete in PLAN file
-5. **If `is_git_repo`:** Commit logical change groups: `feat: [description]. [task_key]`
+5. **If `is_git_repo`:** Commit logical change groups: `feat: [description]. [task_key]` (with `PRD:` footer if applicable)
 
 ### Step 8.2: Interactive Assistance
 
@@ -541,11 +600,12 @@ Display artifact paths per the ARTIFACT PATH DISPLAY RULE.
 
 Output: "All tests pass."
 
-**If `workflow_scope == "implement"`:** Skip to STEP 13 (summary). Do not ask — the user already chose this scope at plan approval.
+The user already chose `workflow_scope` at Step 7.5 — honor it without re-asking:
 
-**Otherwise:** Use AskUserQuestion: 1-Continue to code review, 2-Make changes, 3-Quit.
+- `workflow_scope == "implement"` → Skip to STEP 13 (summary).
+- `workflow_scope == "implement-review"` or `"full"` → Announce "Continuing to code review." and proceed to STEP 10. Do NOT prompt.
 
-- "2" → ask what changes, return to STEP 8
+To make changes instead, the user can interrupt and run `/plan-and-do <key> resume:8`.
 
 ---
 
@@ -572,10 +632,13 @@ Update state: `current_step` = "10.3".
 
 Display artifact paths per the ARTIFACT PATH DISPLAY RULE.
 
-If issues found, use AskUserQuestion: 1-Fix findings, 2-Skip to summary, 3-Quit.
+**If no issues:** Continue without prompting.
 
-- Fix → fix issues, commit: `fix: Address code review findings. [task_key]`, re-run `/review`, return to 10.2
-- Skip → STEP 11
+**If issues found:**
+- `workflow_scope == "full"` AND this is the first review round → Auto-fix, commit `fix: Address code review findings. [task_key]` (with `PRD:` footer if applicable), re-run `/review`, return to 10.2. No prompt.
+- Second review round, OR `workflow_scope == "implement-review"`, OR the same finding survives → Use AskUserQuestion: 1-Fix findings, 2-Skip to summary, 3-Quit.
+  - Fix → fix issues, commit, re-run `/review`, return to 10.2
+  - Skip → continue
 
 **After Checkpoint 10 resolves (no issues or user chose Skip):** If `workflow_scope == "implement-review"`, skip to STEP 13 (summary). Do not ask — the user already chose this scope at plan approval.
 
@@ -585,9 +648,11 @@ If issues found, use AskUserQuestion: 1-Fix findings, 2-Skip to summary, 3-Quit.
 
 ### Step 11.1: Testing Approach
 
-**If agents_available:** Launch testing agents for end-to-end verification.
+**If `testing_agents` is non-empty:** Launch each `testing_agent` (e.g., `web-tester`) in parallel via Task tool for end-to-end verification. Apply the **DISPATCH NARRATION RULE**. Collect findings; auto-fix and re-run only if findings are clear and within scope. Otherwise summarize for the user.
 
-**Otherwise:** Propose manual test steps. Use AskUserQuestion: 1-Tests passed, 2-Tests failed, 3-Quit.
+**If `agents_available` but no testing agents:** Skip end-to-end testing. Display: "No testing agent available. Skipping E2E verification — relying on Step 9 unit/integration tests."
+
+**Otherwise (no agents):** Propose manual test steps. Use AskUserQuestion: 1-Tests passed, 2-Tests failed, 3-Quit.
 - Failed → ask for details, fix, commit, retry
 
 ### Step 11.2: Checkpoint 11
@@ -604,13 +669,15 @@ Check CLAUDE.md, docs/specs/, docs/prds/ for needed updates based on implementat
 
 ### Step 12.2: Propose Updates
 
-**If agents_available:** Launch agents to analyze and propose.
+**If agents_available:** Launch agents to analyze and propose. Apply the **DISPATCH NARRATION RULE**.
 **Otherwise:** Analyze directly.
 
-**If updates needed:** Use AskUserQuestion: 1-Apply, 2-Skip, 3-Quit.
-- Apply → edit files, commit: `docs: Update project documentation. [task_key]`
+**If updates needed:**
+- `workflow_scope == "full"` → Apply automatically. Display "Applying documentation updates: [list]." Commit: `docs: Update project documentation. [task_key]` (with `PRD:` footer if applicable). No prompt.
+- Other scopes → Use AskUserQuestion: 1-Apply, 2-Skip, 3-Quit.
+  - Apply → edit files, commit as above.
 
-**No updates needed:** Display message. Continue.
+**No updates needed:** Display "No documentation updates needed." Continue.
 
 ### Step 12.3: Checkpoint 12
 
@@ -620,12 +687,15 @@ Update state: `current_step` = "12.3". → STEP 13.
 
 ## STEP 13: SUMMARY
 
-### Step 13.0: Cleanup Planning Files
+### Step 13.0: Planning Files
 
-Display full absolute file paths (PRD if exists, plan, state).
+Planning files (PRD, plan, state) stay in `[docs_folder]/` by default — they document why the change happened. Display the full absolute paths in the summary below so the user can delete manually if desired:
 
-Use AskUserQuestion: 1-Keep files (recommended), 2-Delete files, 3-Quit.
-- Delete → `git rm --ignore-unmatch` tracked files and `rm -f` untracked files, commit: `docs: Remove planning files. [task_key]`
+```
+rm [prd_file] [plan_file] [state_file]
+```
+
+No prompt — the user can clean up later if they want.
 
 ### Step 13.1: Display Summary
 

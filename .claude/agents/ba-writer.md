@@ -79,11 +79,10 @@ Before finishing any document:
 ## Context Awareness
 
 This project uses:
-- Spring Boot 3.5.3 backend (Java 21)
-- CIAM microservice (Kotlin)
-- Angular 21 frontend (standalone components)
-- H2 file-based databases
+- Node.js 20.19+ / TypeScript 5.8 backend (Express 4.21)
+- better-sqlite3 9.6 with Drizzle ORM 0.41 (file-based SQLite at `backend/data/crmdb.sqlite`)
+- Session-based auth via `express-session` with hardcoded users in `backend/src/config/users.ts` (admin/admin123, user/test123, demo/demo1234)
+- Angular 21 frontend (standalone components, Bootstrap 5)
 - German domain model (Firma, Person, Abteilung, Adresse, Gehalt, Aktivitaet, Vertrag, Chance)
-- Maven for backend builds
 
 Write specs that reference these technologies when relevant. Link to existing PRDs in `docs/prds/` when related.

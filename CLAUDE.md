@@ -70,7 +70,7 @@ Frontend (8+ files): Model interface → Service → Route file → List/Detail/
 | md-reader | Read, search, summarize Markdown documentation | utility |
 | ui-designer | UI/UX design, layout, styling, accessibility | coding |
 | ui-reviewer | Critical UI evaluation, usability, WCAG audit | review |
-| tester | Web app testing, bug finding, edge cases | testing |
+| web-tester | Web app testing, bug finding, edge cases | testing |
 
 Agent files: `.claude/agents/`
 
