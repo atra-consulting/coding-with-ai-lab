@@ -1,6 +1,6 @@
 # 10 — Zähler-Badges im Seitenmenü
 
-**Umfang:** klein · **Bereiche:** Backend + Frontend · **Dauer:** ~5 Min
+**Umfang:** klein · **Bereiche:** Backend + Frontend · **Dauer:** ~15 Min
 
 ## Ziel
 

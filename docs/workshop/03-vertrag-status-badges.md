@@ -1,6 +1,6 @@
 # 03 — Status-Badges für Verträge
 
-**Umfang:** klein · **Bereiche:** Frontend · **Dauer:** ~3 Min
+**Umfang:** klein · **Bereiche:** Frontend · **Dauer:** ~15 Min
 
 ## Ziel
 

@@ -1,6 +1,6 @@
 # 06 — CSV-Export für Firmenliste
 
-**Umfang:** mittel · **Bereiche:** Backend + Frontend · **Dauer:** ~6 Min
+**Umfang:** mittel · **Bereiche:** Backend + Frontend · **Dauer:** ~25 Min
 
 ## Ziel
 

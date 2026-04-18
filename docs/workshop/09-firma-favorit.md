@@ -1,6 +1,6 @@
 # 09 — Firmen als Favorit markieren
 
-**Umfang:** mittel · **Bereiche:** Datenbank + Backend + Frontend · **Dauer:** ~8 Min
+**Umfang:** mittel · **Bereiche:** Datenbank + Backend + Frontend · **Dauer:** ~30 Min
 
 ## Ziel
 

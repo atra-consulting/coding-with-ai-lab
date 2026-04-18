@@ -1,6 +1,6 @@
 # 04 — „Neu"-Kennzeichnung für junge Firmen
 
-**Umfang:** klein · **Bereiche:** Backend + Frontend · **Dauer:** ~5 Min
+**Umfang:** klein · **Bereiche:** Backend + Frontend · **Dauer:** ~20 Min
 
 ## Ziel
 

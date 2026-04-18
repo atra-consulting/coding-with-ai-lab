@@ -1,6 +1,6 @@
 # 05 — Notiz-Feld für Personen
 
-**Umfang:** mittel · **Bereiche:** Datenbank + Backend + Frontend · **Dauer:** ~8 Min
+**Umfang:** mittel · **Bereiche:** Datenbank + Backend + Frontend · **Dauer:** ~25 Min
 
 ## Ziel
 

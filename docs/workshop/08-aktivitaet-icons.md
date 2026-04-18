@@ -1,6 +1,6 @@
 # 08 — Icons für Aktivitätstypen
 
-**Umfang:** klein · **Bereiche:** Frontend · **Dauer:** ~3 Min
+**Umfang:** klein · **Bereiche:** Frontend · **Dauer:** ~10 Min
 
 ## Ziel
 

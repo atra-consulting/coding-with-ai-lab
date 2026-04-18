@@ -1,6 +1,6 @@
 # 07 — Dunkelmodus-Umschalter
 
-**Umfang:** klein · **Bereiche:** Frontend · **Dauer:** ~5 Min
+**Umfang:** klein · **Bereiche:** Frontend · **Dauer:** ~20 Min
 
 ## Ziel
 
