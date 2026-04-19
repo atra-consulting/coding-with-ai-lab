@@ -2,7 +2,7 @@
   "version": 1,
   "task_key": "REMOVE-GEHALT-VERTRAG-DASHBOARD",
   "status": "in_progress",
-  "current_step": "3.3",
+  "current_step": "7.5",
   "started": "2026-04-19T00:00:00Z",
   "updated": "2026-04-19T00:00:00Z",
   "config": {
@@ -13,7 +13,7 @@
     "original_branch": "reduce-more-complexity",
     "docs_folder": "docs",
     "is_git_repo": true,
-    "workflow_scope": null,
+    "workflow_scope": "full",
     "spec_file": "docs/superpowers/specs/2026-04-19-remove-gehalt-vertrag-repopulate-dashboard-design.md"
   },
   "discovery": {
@@ -21,12 +21,12 @@
     "writer_agents": ["ba-writer"],
     "coding_agents": ["be-coder", "fe-coder", "db-coder", "ui-designer"],
     "review_agents": ["ba-reviewer", "be-reviewer", "fe-reviewer", "db-reviewer", "ui-reviewer"],
-    "test_command": null
+    "test_command": "cd frontend && npx ng build"
   },
   "artifacts": {
     "prd_skipped": true,
     "prd_file": "docs/superpowers/specs/2026-04-19-remove-gehalt-vertrag-repopulate-dashboard-design.md",
-    "plan_file": null,
+    "plan_file": "docs/plans/PLAN-REMOVE-GEHALT-VERTRAG-DASHBOARD.md",
     "pr_url": null
   },
   "completed_steps": []
