@@ -1,4 +1,4 @@
-<nav class="sidebar d-flex flex-column">
+<nav class="sidebar d-flex flex-column" aria-label="Hauptnavigation">
   @for (section of sections; track $index) {
     @if (section.title && !layoutService.collapsed()) {
       <div class="nav-section-header">{{ section.title }}</div>

@@ -16,44 +16,43 @@ import { DashboardData, RecentAktivitaet } from '../../core/models/dashboard.mod
       @if (loading()) {
         <div class="text-muted" role="status" aria-live="polite">Lade…</div>
       } @else if (error()) {
-        <div class="alert alert-danger">{{ error() }}</div>
+        <div class="alert alert-danger" role="alert">{{ error() }}</div>
       } @else if (data()) {
         <!-- KPI tiles -->
         <div class="row g-3">
           <div class="col-md-6 col-lg-3">
             <div class="card h-100">
-              <div class="card-body overflow-hidden">
-                <div class="text-muted small" id="kpi-firmen-label">Firmen</div>
-                <div class="display-6 text-truncate" aria-labelledby="kpi-firmen-label">{{ data()!.firmenCount }}</div>
-              </div>
+              <dl class="card-body overflow-hidden mb-0">
+                <dt class="text-muted small fw-normal">Firmen</dt>
+                <dd class="display-6 text-truncate mb-0" [title]="data()!.firmenCount.toString()">{{ data()!.firmenCount }}</dd>
+              </dl>
             </div>
           </div>
           <div class="col-md-6 col-lg-3">
             <div class="card h-100">
-              <div class="card-body overflow-hidden">
-                <div class="text-muted small" id="kpi-personen-label">Personen</div>
-                <div class="display-6 text-truncate" aria-labelledby="kpi-personen-label">{{ data()!.personenCount }}</div>
-              </div>
+              <dl class="card-body overflow-hidden mb-0">
+                <dt class="text-muted small fw-normal">Personen</dt>
+                <dd class="display-6 text-truncate mb-0" [title]="data()!.personenCount.toString()">{{ data()!.personenCount }}</dd>
+              </dl>
             </div>
           </div>
           <div class="col-md-6 col-lg-3">
             <div class="card h-100">
-              <div class="card-body overflow-hidden">
-                <div class="text-muted small" id="kpi-offene-label">Offene Chancen</div>
-                <div class="display-6 text-truncate" aria-labelledby="kpi-offene-label">{{ data()!.offeneChancenCount }}</div>
-              </div>
+              <dl class="card-body overflow-hidden mb-0">
+                <dt class="text-muted small fw-normal">Offene Chancen</dt>
+                <dd class="display-6 text-truncate mb-0" [title]="data()!.offeneChancenCount.toString()">{{ data()!.offeneChancenCount }}</dd>
+              </dl>
             </div>
           </div>
           <div class="col-md-6 col-lg-3">
             <div class="card h-100">
-              <div class="card-body overflow-hidden">
-                <div class="text-muted small" id="kpi-gewonnen-label">Gewonnen (€)</div>
-                <div class="display-6 text-truncate"
-                     aria-labelledby="kpi-gewonnen-label"
-                     [title]="(data()!.gewonneneChancenSumme | currency:'EUR':'symbol':'1.0-0':'de-DE') ?? ''">
+              <dl class="card-body overflow-hidden mb-0">
+                <dt class="text-muted small fw-normal">Gewonnene Chancen</dt>
+                <dd class="display-6 text-truncate mb-0"
+                    [title]="(data()!.gewonneneChancenSumme | currency:'EUR':'symbol':'1.0-0':'de-DE') ?? ''">
                   {{ data()!.gewonneneChancenSumme | currency:'EUR':'symbol':'1.0-0':'de-DE' }}
-                </div>
-              </div>
+                </dd>
+              </dl>
             </div>
           </div>
         </div>
@@ -76,7 +75,7 @@ import { DashboardData, RecentAktivitaet } from '../../core/models/dashboard.mod
                             <small class="text-muted">{{ c.firmaName }}</small>
                           </div>
                           @if (c.wert !== null) {
-                            <span class="badge bg-secondary ms-2">
+                            <span class="badge bg-secondary text-white ms-2">
                               {{ c.wert | currency:'EUR':'symbol':'1.0-0':'de-DE' }}
                             </span>
                           }

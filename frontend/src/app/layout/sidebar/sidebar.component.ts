@@ -22,7 +22,7 @@ interface NavItem {
 }
 
 interface NavSection {
-  title: string;
+  title?: string;
   items: NavItem[];
 }
 
@@ -54,7 +54,6 @@ export class SidebarComponent {
       ],
     },
     {
-      title: '',
       items: [
         { label: 'Chancen', route: '/chancen', icon: faChartLine },
         { label: 'Aktivitäten', route: '/aktivitaeten', icon: faCalendarCheck },
