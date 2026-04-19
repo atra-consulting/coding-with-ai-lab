@@ -8,14 +8,6 @@ export const CHANCE_PHASE = [
 ] as const;
 export type ChancePhase = (typeof CHANCE_PHASE)[number];
 
-export const VERTRAG_STATUS = [
-  'ENTWURF',
-  'AKTIV',
-  'ABGELAUFEN',
-  'GEKUENDIGT',
-] as const;
-export type VertragStatus = (typeof VERTRAG_STATUS)[number];
-
 export const AKTIVITAET_TYP = [
   'ANRUF',
   'EMAIL',

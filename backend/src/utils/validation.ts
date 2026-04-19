@@ -2,7 +2,6 @@ import { z } from 'zod';
 import { ValidationError } from './errors.js';
 import {
   CHANCE_PHASE,
-  VERTRAG_STATUS,
   AKTIVITAET_TYP,
 } from '../db/schema/enums.js';
 
@@ -74,20 +73,6 @@ export const ChanceCreateSchema = z.object({
   kontaktPersonId: z.number().int().positive().optional().nullable(),
 });
 export type ChanceCreateDTO = z.infer<typeof ChanceCreateSchema>;
-
-// ─── Vertrag ──────────────────────────────────────────────────────────────────
-export const VertragCreateSchema = z.object({
-  titel: z.string().min(1, 'Titel ist erforderlich').max(255),
-  notes: z.string().optional().nullable(),
-  wert: z.number().optional().nullable(),
-  currency: z.string().max(10).optional(),
-  status: z.enum(VERTRAG_STATUS, { errorMap: () => ({ message: 'Ungültiger Status' }) }).optional(),
-  startDate: z.string().optional().nullable(),
-  endDate: z.string().optional().nullable(),
-  firmaId: z.number().int().positive('Firma ist erforderlich'),
-  kontaktPersonId: z.number().int().positive().optional().nullable(),
-});
-export type VertragCreateDTO = z.infer<typeof VertragCreateSchema>;
 
 // ─── validate() helper ────────────────────────────────────────────────────────
 export function validate<T>(schema: z.ZodSchema<T>, data: unknown): T {
