@@ -148,26 +148,17 @@ const PERSON_STAEDTE = [
 const AKTIVITAET_TYPEN = ['ANRUF','EMAIL','MEETING','AUFGABE','NOTIZ'] as const;
 const AKTIVITAET_SUBJECTS: Record<string, string[]> = {
   ANRUF: ['Erstgespräch geführt','Rückruf vereinbart','Produktpräsentation besprochen','Angebot nachgefasst','Technische Fragen geklärt','Kundenfeedback eingeholt'],
-  EMAIL: ['Angebot versendet','Unterlagen zugesendet','Termin bestätigt','Follow-up E-Mail','Newsletter versandt','Vertragsunterlagen übermittelt'],
-  MEETING: ['Kick-off Meeting','Projektbesprechung','Quartalsreview','Vertragsverhandlung','Produktdemonstration','Statusmeeting','Strategiebesprechung'],
-  AUFGABE: ['Angebot erstellen','Unterlagen zusammenstellen','Präsentation vorbereiten','Kunden kontaktieren','Vertrag prüfen','Rechnung erstellen'],
-  NOTIZ: ['Gesprächsnotiz','Interne Anmerkung','Kundenwunsch vermerkt','Wichtige Information','Vereinbarung festgehalten','Feedback dokumentiert'],
+  EMAIL: ['Angebot versendet','Unterlagen zugesendet','Termin bestätigt','Follow-up E-Mail','Newsletter versandt','Angebotsunterlagen übermittelt'],
+  MEETING: ['Kick-off Meeting','Projektbesprechung','Quartalsreview','Preisverhandlung','Produktdemonstration','Statusmeeting','Strategiebesprechung'],
+  AUFGABE: ['Angebot erstellen','Unterlagen zusammenstellen','Präsentation vorbereiten','Kunden kontaktieren','Angebot prüfen','Rechnung erstellen'],
+  NOTIZ: ['Gesprächsnotiz','Interne Anmerkung','Kundenwunsch vermerkt','Wichtige Information','Vereinbarung notiert','Feedback dokumentiert'],
 };
 const CHANCE_PHASEN = ['NEU','QUALIFIZIERT','ANGEBOT','VERHANDLUNG','GEWONNEN','VERLOREN'] as const;
 const CHANCE_TITEL_PREFIXE = [
   'Digitalisierungsprojekt','Systemumstellung','IT-Infrastruktur','Softwarelösung','Beratungsmandat',
   'Logistikoptimierung','ERP-Einführung','CRM-Implementierung','Cloud-Migration','Sicherheitslösung',
-  'Wartungsvertrag','Liefervertrag',
+  'Wartungspaket','Lieferauftrag',
 ];
-const VERTRAG_TITEL_PREFIXE = [
-  'Wartungsvertrag','Dienstleistungsvertrag','Liefervertrag','Rahmenvertrag','Lizenzvertrag',
-  'Servicevertrag','Beratervertrag','Partnerschaftsvertrag','Mietvertrag','Kooperationsvertrag',
-];
-const VERTRAG_STATI_POOL: string[] = [];
-for (let i = 0; i < 40; i++) VERTRAG_STATI_POOL.push('AKTIV');
-for (let i = 0; i < 20; i++) VERTRAG_STATI_POOL.push('ENTWURF');
-for (let i = 0; i < 25; i++) VERTRAG_STATI_POOL.push('ABGELAUFEN');
-for (let i = 0; i < 15; i++) VERTRAG_STATI_POOL.push('GEKUENDIGT');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function normalise(s: string): string {
@@ -195,18 +186,14 @@ interface FirmaRow { id: number; name: string; industry: string; website: string
 interface AbteilungRow { id: number; name: string; description: string | null; firmaId: number; createdAt: string; updatedAt: string; }
 interface PersonRow { id: number; firstName: string; lastName: string; email: string; phone: string; position: string; notes: string | null; firmaId: number; abteilungId: number | null; createdAt: string; updatedAt: string; }
 interface AdresseRow { id: number; street: string; houseNumber: string; postalCode: string; city: string; country: string; latitude: number | null; longitude: number | null; typ: string | null; firmaId: number | null; personId: number | null; createdAt: string; updatedAt: string; }
-interface GehaltRow { id: number; amount: number; currency: string; typ: string; effectiveDate: string; personId: number; createdAt: string; updatedAt: string; }
 interface AktivitaetRow { id: number; typ: string; subject: string; description: string; datum: string; firmaId: number | null; personId: number | null; createdAt: string; updatedAt: string; }
-interface VertragRow { id: number; titel: string; notes: string; wert: number; currency: string; status: string; startDate: string | null; endDate: string | null; firmaId: number; kontaktPersonId: number | null; createdAt: string; updatedAt: string; }
 interface ChanceRow { id: number; titel: string; beschreibung: string; wert: number; currency: string; phase: string; wahrscheinlichkeit: number; erwartetesDatum: string; firmaId: number; kontaktPersonId: number | null; createdAt: string; updatedAt: string; }
 
 const firma: FirmaRow[] = [];
 const abteilung: AbteilungRow[] = [];
 const person: PersonRow[] = [];
 const adresse: AdresseRow[] = [];
-const gehalt: GehaltRow[] = [];
 const aktivitaet: AktivitaetRow[] = [];
-const vertrag: VertragRow[] = [];
 const chance: ChanceRow[] = [];
 
 const firmaAbteilungenMap = new Map<number, number[]>();
@@ -336,22 +323,7 @@ for (const p of personenSample) {
   });
 }
 
-// ─── 5. Gehalt (100, 1 per person) ────────────────────────────────────────────
-let gehaltCounter = 1;
-for (const p of person) {
-  const r = rng();
-  let typ: string;
-  let amount: number;
-  if (r < 0.55) { typ = 'GRUNDGEHALT'; amount = randInt(2800, 9500); }
-  else if (r < 0.75) { typ = 'BONUS'; amount = randInt(1000, 20000); }
-  else if (r < 0.90) { typ = 'PROVISION'; amount = randInt(500, 15000); }
-  else { typ = 'SONDERZAHLUNG'; amount = randInt(500, 10000); }
-  const effectiveDate = toDate(randDateBetween(daysAgo(3 * 365), NOW));
-  const createdAt = randCreatedAt();
-  gehalt.push({ id: gehaltCounter++, amount, currency: 'EUR', typ, effectiveDate, personId: p.id, createdAt, updatedAt: createdAt });
-}
-
-// ─── 6. Aktivitaet (75) ───────────────────────────────────────────────────────
+// ─── 5. Aktivitaet (75) ───────────────────────────────────────────────────────
 for (let i = 0; i < 75; i++) {
   const typ = pick([...AKTIVITAET_TYPEN]);
   const f = pick(firma);
@@ -372,46 +344,7 @@ for (let i = 0; i < 75; i++) {
   });
 }
 
-// ─── 7. Vertrag (30) ──────────────────────────────────────────────────────────
-for (let i = 0; i < 30; i++) {
-  const f = pick(firma);
-  const persIds = firmaPersonenMap.get(f.id)!;
-  const kontaktPersonId = pick(persIds);
-  const status = pick(VERTRAG_STATI_POOL);
-  const wert = randInt(5000, 500000);
-  const prefix = pick(VERTRAG_TITEL_PREFIXE);
-  let startDate: string | null = null;
-  let endDate: string | null = null;
-  if (status === 'AKTIV') {
-    startDate = toDate(randDateBetween(daysAgo(2 * 365), daysAgo(30)));
-    endDate = toDate(randDateBetween(daysFromNow(30), daysFromNow(2 * 365)));
-  } else if (status === 'ABGELAUFEN') {
-    startDate = toDate(randDateBetween(daysAgo(4 * 365), daysAgo(400)));
-    endDate = toDate(randDateBetween(daysAgo(365), daysAgo(30)));
-  } else if (status === 'GEKUENDIGT') {
-    startDate = toDate(randDateBetween(daysAgo(3 * 365), daysAgo(180)));
-    endDate = toDate(randDateBetween(daysAgo(180), daysAgo(30)));
-  } else {
-    startDate = rng() > 0.5 ? toDate(randDateBetween(daysFromNow(1), daysFromNow(180))) : null;
-  }
-  const createdAt = randCreatedAt();
-  vertrag.push({
-    id: i + 1,
-    titel: `${prefix} ${f.name.split(' ')[0]}`,
-    notes: `Vertrag über ${wert.toLocaleString('de-DE')} EUR`,
-    wert,
-    currency: 'EUR',
-    status,
-    startDate,
-    endDate,
-    firmaId: f.id,
-    kontaktPersonId,
-    createdAt,
-    updatedAt: createdAt,
-  });
-}
-
-// ─── 8. Chance (40) ───────────────────────────────────────────────────────────
+// ─── 6. Chance (40) ───────────────────────────────────────────────────────────
 for (let i = 0; i < 40; i++) {
   const f = pick(firma);
   const persIds = firmaPersonenMap.get(f.id)!;
@@ -439,19 +372,17 @@ for (let i = 0; i < 40; i++) {
 }
 
 // ─── Write ────────────────────────────────────────────────────────────────────
-const fixture = { firma, abteilung, person, adresse, gehalt, aktivitaet, vertrag, chance };
+const fixture = { firma, abteilung, person, adresse, aktivitaet, chance };
 const outPath = join(__dirname, 'fixture.json');
 writeFileSync(outPath, JSON.stringify(fixture, null, 2) + '\n', 'utf8');
 
 const total = firma.length + abteilung.length + person.length + adresse.length
-  + gehalt.length + aktivitaet.length + vertrag.length + chance.length;
+  + aktivitaet.length + chance.length;
 console.log(`Wrote ${outPath}`);
 console.log(`  firma:      ${firma.length}`);
 console.log(`  abteilung:  ${abteilung.length}`);
 console.log(`  person:     ${person.length}`);
 console.log(`  adresse:    ${adresse.length}  (${FIRMA_SEEDS.length} HQ + ${BRANCH_SEEDS.length} Niederlassung, all with lat/lng, + ${adresse.length - FIRMA_SEEDS.length - BRANCH_SEEDS.length} person)`);
-console.log(`  gehalt:     ${gehalt.length}`);
 console.log(`  aktivitaet: ${aktivitaet.length}`);
-console.log(`  vertrag:    ${vertrag.length}`);
 console.log(`  chance:     ${chance.length}`);
 console.log(`  TOTAL:      ${total}`);

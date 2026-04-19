@@ -3508,7 +3508,7 @@
     {
       "id": 3,
       "typ": "EMAIL",
-      "subject": "Vertragsunterlagen übermittelt",
+      "subject": "Angebotsunterlagen übermittelt",
       "description": "Aktivität vom Typ EMAIL",
       "datum": "2024-11-30 15:22:05",
       "firmaId": 4,
@@ -3519,7 +3519,7 @@
     {
       "id": 4,
       "typ": "MEETING",
-      "subject": "Vertragsverhandlung",
+      "subject": "Preisverhandlung",
       "description": "Aktivität vom Typ MEETING",
       "datum": "2025-06-25 06:03:34",
       "firmaId": 20,
@@ -3706,7 +3706,7 @@
     {
       "id": 21,
       "typ": "AUFGABE",
-      "subject": "Vertrag prüfen",
+      "subject": "Angebot prüfen",
       "description": "Aktivität vom Typ AUFGABE",
       "datum": "2025-05-21 13:26:22",
       "firmaId": 20,
@@ -3981,7 +3981,7 @@
     {
       "id": 46,
       "typ": "NOTIZ",
-      "subject": "Vereinbarung festgehalten",
+      "subject": "Vereinbarung notiert",
       "description": "Aktivität vom Typ NOTIZ",
       "datum": "2025-11-07 15:29:18",
       "firmaId": 4,
@@ -4091,7 +4091,7 @@
     {
       "id": 56,
       "typ": "AUFGABE",
-      "subject": "Vertrag prüfen",
+      "subject": "Angebot prüfen",
       "description": "Aktivität vom Typ AUFGABE",
       "datum": "2024-11-04 12:38:59",
       "firmaId": 23,
@@ -4113,7 +4113,7 @@
     {
       "id": 58,
       "typ": "NOTIZ",
-      "subject": "Vereinbarung festgehalten",
+      "subject": "Vereinbarung notiert",
       "description": "Aktivität vom Typ NOTIZ",
       "datum": "2025-05-22 09:26:18",
       "firmaId": 10,
@@ -4179,7 +4179,7 @@
     {
       "id": 64,
       "typ": "NOTIZ",
-      "subject": "Vereinbarung festgehalten",
+      "subject": "Vereinbarung notiert",
       "description": "Aktivität vom Typ NOTIZ",
       "datum": "2024-05-17 10:18:01",
       "firmaId": 2,
@@ -4201,7 +4201,7 @@
     {
       "id": 66,
       "typ": "AUFGABE",
-      "subject": "Vertrag prüfen",
+      "subject": "Angebot prüfen",
       "description": "Aktivität vom Typ AUFGABE",
       "datum": "2025-04-25 07:15:50",
       "firmaId": 7,
@@ -4278,7 +4278,7 @@
     {
       "id": 73,
       "typ": "NOTIZ",
-      "subject": "Vereinbarung festgehalten",
+      "subject": "Vereinbarung notiert",
       "description": "Aktivität vom Typ NOTIZ",
       "datum": "2025-09-08 17:32:36",
       "firmaId": 8,
@@ -4424,7 +4424,7 @@
     },
     {
       "id": 9,
-      "titel": "Liefervertrag Klein",
+      "titel": "Lieferauftrag Klein",
       "beschreibung": "VERHANDLUNG-Phase Chance im Wert von 285.077 EUR",
       "wert": 285077,
       "currency": "EUR",
@@ -4620,7 +4620,7 @@
     },
     {
       "id": 23,
-      "titel": "Wartungsvertrag Schneider",
+      "titel": "Wartungspaket Schneider",
       "beschreibung": "NEU-Phase Chance im Wert von 502.782 EUR",
       "wert": 502782,
       "currency": "EUR",
@@ -4676,7 +4676,7 @@
     },
     {
       "id": 27,
-      "titel": "Liefervertrag Wolf",
+      "titel": "Lieferauftrag Wolf",
       "beschreibung": "ANGEBOT-Phase Chance im Wert von 645.773 EUR",
       "wert": 645773,
       "currency": "EUR",
@@ -4718,7 +4718,7 @@
     },
     {
       "id": 30,
-      "titel": "Liefervertrag Meyer",
+      "titel": "Lieferauftrag Meyer",
       "beschreibung": "GEWONNEN-Phase Chance im Wert von 464.704 EUR",
       "wert": 464704,
       "currency": "EUR",

@@ -4,7 +4,7 @@ export function runMigrations(): void {
   console.log('Running database migrations...');
 
   // Tables created in FK dependency order:
-  // firma -> abteilung -> person -> adresse, aktivitaet, chance (vertrag removed)
+  // firma -> abteilung -> person -> adresse, aktivitaet, chance
 
   sqlite.exec(`
     CREATE TABLE IF NOT EXISTS firma (
