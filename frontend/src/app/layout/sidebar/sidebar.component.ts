@@ -6,7 +6,6 @@ import {
   faBuilding,
   faCalendarCheck,
   faChartLine,
-  faFileContract,
   faMapMarkerAlt,
   faSitemap,
   faTachometerAlt,
@@ -55,11 +54,10 @@ export class SidebarComponent {
       ],
     },
     {
-      title: 'Vertrieb',
+      title: '',
       items: [
         { label: 'Chancen', route: '/chancen', icon: faChartLine },
         { label: 'Aktivitäten', route: '/aktivitaeten', icon: faCalendarCheck },
-        { label: 'Verträge', route: '/vertraege', icon: faFileContract },
       ],
     },
   ];

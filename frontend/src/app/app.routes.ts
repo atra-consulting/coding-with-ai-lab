@@ -61,11 +61,6 @@ export const routes: Routes = [
           import('./features/aktivitaet/aktivitaet.routes').then((m) => m.AKTIVITAET_ROUTES),
       },
       {
-        path: 'vertraege',
-        loadChildren: () =>
-          import('./features/vertrag/vertrag.routes').then((m) => m.VERTRAG_ROUTES),
-      },
-      {
         path: 'chancen',
         loadChildren: () => import('./features/chance/chance.routes').then((m) => m.CHANCE_ROUTES),
       },
