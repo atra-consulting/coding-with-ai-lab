@@ -96,6 +96,8 @@ export function runMigrations(): void {
     CREATE INDEX IF NOT EXISTS idx_aktivitaet_datum ON aktivitaet(datum DESC);
     CREATE INDEX IF NOT EXISTS idx_chance_firmaId ON chance(firmaId);
     CREATE INDEX IF NOT EXISTS idx_chance_phase ON chance(phase);
+    CREATE INDEX IF NOT EXISTS idx_chance_createdAt ON chance(createdAt DESC);
+    CREATE INDEX IF NOT EXISTS idx_aktivitaet_createdAt ON aktivitaet(createdAt DESC);
     CREATE INDEX IF NOT EXISTS idx_adresse_firmaId ON adresse(firmaId);
     CREATE INDEX IF NOT EXISTS idx_adresse_personId ON adresse(personId);
   `);

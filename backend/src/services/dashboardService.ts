@@ -39,7 +39,7 @@ interface CountRow {
 }
 
 interface SumRow {
-  total: number | null;
+  total: number;
 }
 
 interface RecentChanceRow {
@@ -62,60 +62,61 @@ interface RecentAktivitaetRow {
   createdAt: string;
 }
 
+// ─── Prepared statements (module-level for performance) ───────────────────────
+
+const stmtFirmenCount = sqlite.prepare<[], CountRow>('SELECT COUNT(*) AS cnt FROM firma');
+const stmtPersonenCount = sqlite.prepare<[], CountRow>('SELECT COUNT(*) AS cnt FROM person');
+const stmtOffeneChancen = sqlite.prepare<[], CountRow>(
+  "SELECT COUNT(*) AS cnt FROM chance WHERE phase NOT IN ('GEWONNEN','VERLOREN')"
+);
+const stmtGewonnenSumme = sqlite.prepare<[], SumRow>(
+  "SELECT COALESCE(SUM(wert), 0) AS total FROM chance WHERE phase = 'GEWONNEN'"
+);
+const stmtRecentChancen = sqlite.prepare<[], RecentChanceRow>(`
+  SELECT c.id, c.titel, c.wert, c.currency, c.phase, f.name AS firmaName, c.createdAt
+  FROM chance c
+  JOIN firma f ON f.id = c.firmaId
+  ORDER BY c.createdAt DESC
+  LIMIT 5
+`);
+const stmtRecentAktivitaeten = sqlite.prepare<[], RecentAktivitaetRow>(`
+  SELECT a.id, a.typ, a.subject, a.datum,
+         f.name AS firmaName,
+         (p.firstName || ' ' || p.lastName) AS personName,
+         a.createdAt
+  FROM aktivitaet a
+  LEFT JOIN firma f ON f.id = a.firmaId
+  LEFT JOIN person p ON p.id = a.personId
+  ORDER BY a.createdAt DESC
+  LIMIT 5
+`);
+
 // ─── Service ──────────────────────────────────────────────────────────────────
 
 export function getDashboard(): DashboardData {
   // Query 1: total Firmen
-  const firmenRow = sqlite
-    .prepare('SELECT COUNT(*) AS cnt FROM firma')
-    .get() as CountRow;
+  const firmenRow = stmtFirmenCount.get() as CountRow;
 
   // Query 2: total Personen
-  const personenRow = sqlite
-    .prepare('SELECT COUNT(*) AS cnt FROM person')
-    .get() as CountRow;
+  const personenRow = stmtPersonenCount.get() as CountRow;
 
   // Query 3: open Chancen (not GEWONNEN or VERLOREN)
-  const offeneRow = sqlite
-    .prepare("SELECT COUNT(*) AS cnt FROM chance WHERE phase NOT IN ('GEWONNEN', 'VERLOREN')")
-    .get() as CountRow;
+  const offeneRow = stmtOffeneChancen.get() as CountRow;
 
   // Query 4: sum of won Chancen (NOTE: sums across all currencies as EUR — acceptable for training project)
-  const sumRow = sqlite
-    .prepare("SELECT COALESCE(SUM(wert), 0) AS total FROM chance WHERE phase = 'GEWONNEN'")
-    .get() as SumRow;
+  const sumRow = stmtGewonnenSumme.get() as SumRow;
 
   // Query 5: 5 most recent Chancen with firma name
-  const recentChancenRows = sqlite
-    .prepare(`
-      SELECT c.id, c.titel, c.wert, c.currency, c.phase, f.name AS firmaName, c.createdAt
-      FROM chance c
-      JOIN firma f ON f.id = c.firmaId
-      ORDER BY c.createdAt DESC
-      LIMIT 5
-    `)
-    .all() as RecentChanceRow[];
+  const recentChancenRows = stmtRecentChancen.all() as RecentChanceRow[];
 
   // Query 6: 5 most recent Aktivitaeten with firma and person names
-  const recentAktivitaetenRows = sqlite
-    .prepare(`
-      SELECT a.id, a.typ, a.subject, a.datum,
-             f.name AS firmaName,
-             (p.firstName || ' ' || p.lastName) AS personName,
-             a.createdAt
-      FROM aktivitaet a
-      LEFT JOIN firma f ON f.id = a.firmaId
-      LEFT JOIN person p ON p.id = a.personId
-      ORDER BY a.createdAt DESC
-      LIMIT 5
-    `)
-    .all() as RecentAktivitaetRow[];
+  const recentAktivitaetenRows = stmtRecentAktivitaeten.all() as RecentAktivitaetRow[];
 
   return {
     firmenCount: Number(firmenRow.cnt),
     personenCount: Number(personenRow.cnt),
     offeneChancenCount: Number(offeneRow.cnt),
-    gewonneneChancenSumme: Number(sumRow.total ?? 0),
+    gewonneneChancenSumme: sumRow.total,
     recentChancen: recentChancenRows.map((row) => ({
       id: row.id,
       titel: row.titel,

@@ -6,7 +6,7 @@ const router = Router();
 
 router.use(requireAuth);
 
-router.get('/', (req, res, next) => {
+router.get('/', (_req, res, next) => {
   try {
     res.json(getDashboard());
   } catch (e) {
