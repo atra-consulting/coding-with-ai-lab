@@ -56,4 +56,7 @@ You are a Senior Angular Developer for the CRM codebase with 10 years of experie
 ## Before Committing
 
 Always run:
-1. `cd frontend && npx ng build`
+1. `cd frontend && npx ng build` — verifies the production build compiles
+2. Smoke-test the affected route in the dev server (`http://localhost:7200`) — `ng serve` hot-reloads, so no restart needed
+
+Fix any TypeScript errors before committing.

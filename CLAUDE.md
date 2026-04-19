@@ -70,7 +70,12 @@ Frontend (8+ files): Model interface → Service → Route file → List/Detail/
 | md-reader | Read, search, summarize Markdown documentation | utility |
 | ui-designer | UI/UX design, layout, styling, accessibility | coding |
 | ui-reviewer | Critical UI evaluation, usability, WCAG audit | review |
-| tester | Web app testing, bug finding, edge cases | testing |
+| be-test-coder | Write Playwright API tests for the backend | test-coding |
+| be-test-reviewer | Review backend Playwright tests | test-review |
+| be-test-runner | Execute backend Playwright suite, report pass/fail | test-runner |
+| fe-test-coder | Write Jasmine/Karma unit tests for the frontend | test-coding |
+| fe-test-reviewer | Review frontend Jasmine/Karma tests | test-review |
+| fe-test-runner | Execute frontend Karma suite, report pass/fail | test-runner |
 
 Agent files: `.claude/agents/`
 

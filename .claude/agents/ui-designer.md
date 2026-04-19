@@ -1,7 +1,7 @@
 ---
 name: ui-designer
-description: Design and improve UI/UX. Use for layout decisions, styling, accessibility, responsive design, and user experience improvements.
-tools: Read, Grep, Glob, WebSearch
+description: Design and improve UI/UX. Use for layout decisions, styling, accessibility, responsive design, and user experience improvements. Edits SCSS and component templates directly.
+tools: Read, Write, Edit, Bash, Grep, Glob, WebSearch
 model: sonnet
 ---
 
