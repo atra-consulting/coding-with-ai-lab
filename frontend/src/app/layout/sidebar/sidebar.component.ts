@@ -8,7 +8,6 @@ import {
   faChartLine,
   faFileContract,
   faMapMarkerAlt,
-  faMoneyBillWave,
   faSitemap,
   faTachometerAlt,
   faUsers,
@@ -61,12 +60,6 @@ export class SidebarComponent {
         { label: 'Chancen', route: '/chancen', icon: faChartLine },
         { label: 'Aktivitäten', route: '/aktivitaeten', icon: faCalendarCheck },
         { label: 'Verträge', route: '/vertraege', icon: faFileContract },
-      ],
-    },
-    {
-      title: 'Personal',
-      items: [
-        { label: 'Gehälter', route: '/gehaelter', icon: faMoneyBillWave },
       ],
     },
   ];
