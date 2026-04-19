@@ -4,7 +4,6 @@ import {
   CHANCE_PHASE,
   VERTRAG_STATUS,
   AKTIVITAET_TYP,
-  GEHALT_TYP,
 } from '../db/schema/enums.js';
 
 // ─── Firma ────────────────────────────────────────────────────────────────────
@@ -89,16 +88,6 @@ export const VertragCreateSchema = z.object({
   kontaktPersonId: z.number().int().positive().optional().nullable(),
 });
 export type VertragCreateDTO = z.infer<typeof VertragCreateSchema>;
-
-// ─── Gehalt ───────────────────────────────────────────────────────────────────
-export const GehaltCreateSchema = z.object({
-  amount: z.number().positive('Betrag muss positiv sein'),
-  currency: z.string().max(10).optional(),
-  typ: z.enum(GEHALT_TYP, { errorMap: () => ({ message: 'Ungültiger Typ' }) }).optional(),
-  effectiveDate: z.string().min(1, 'Datum ist erforderlich'),
-  personId: z.number().int().positive('Person ist erforderlich'),
-});
-export type GehaltCreateDTO = z.infer<typeof GehaltCreateSchema>;
 
 // ─── validate() helper ────────────────────────────────────────────────────────
 export function validate<T>(schema: z.ZodSchema<T>, data: unknown): T {

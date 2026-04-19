@@ -4,7 +4,7 @@ export function runMigrations(): void {
   console.log('Running database migrations...');
 
   // Tables created in FK dependency order:
-  // firma -> abteilung -> person -> adresse, aktivitaet, chance, vertrag, gehalt
+  // firma -> abteilung -> person -> adresse, aktivitaet, chance
 
   sqlite.exec(`
     CREATE TABLE IF NOT EXISTS firma (
@@ -100,17 +100,6 @@ export function runMigrations(): void {
       updatedAt       TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
-    CREATE TABLE IF NOT EXISTS gehalt (
-      id            INTEGER PRIMARY KEY AUTOINCREMENT,
-      amount        REAL NOT NULL,
-      currency      TEXT NOT NULL DEFAULT 'EUR',
-      typ           TEXT NOT NULL DEFAULT 'GRUNDGEHALT',
-      effectiveDate TEXT NOT NULL,
-      personId      INTEGER NOT NULL REFERENCES person(id) ON DELETE CASCADE,
-      createdAt     TEXT NOT NULL DEFAULT (datetime('now')),
-      updatedAt     TEXT NOT NULL DEFAULT (datetime('now'))
-    );
-
   `);
 
   sqlite.exec(`
@@ -124,7 +113,6 @@ export function runMigrations(): void {
     CREATE INDEX IF NOT EXISTS idx_chance_phase ON chance(phase);
     CREATE INDEX IF NOT EXISTS idx_vertrag_firmaId ON vertrag(firmaId);
     CREATE INDEX IF NOT EXISTS idx_vertrag_status ON vertrag(status);
-    CREATE INDEX IF NOT EXISTS idx_gehalt_personId ON gehalt(personId);
     CREATE INDEX IF NOT EXISTS idx_adresse_firmaId ON adresse(firmaId);
     CREATE INDEX IF NOT EXISTS idx_adresse_personId ON adresse(personId);
   `);

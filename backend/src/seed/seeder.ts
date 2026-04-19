@@ -10,14 +10,13 @@ interface Fixture {
   abteilung: Record<string, unknown>[];
   person: Record<string, unknown>[];
   adresse: Record<string, unknown>[];
-  gehalt: Record<string, unknown>[];
   aktivitaet: Record<string, unknown>[];
   vertrag: Record<string, unknown>[];
   chance: Record<string, unknown>[];
 }
 
 // Insert order must respect FK dependencies:
-// firma -> abteilung -> person -> adresse, gehalt, aktivitaet, vertrag, chance
+// firma -> abteilung -> person -> adresse, aktivitaet, vertrag, chance
 const INSERT_SQL: Record<keyof Fixture, string> = {
   firma: `INSERT INTO firma (id, name, industry, website, phone, email, notes, createdAt, updatedAt)
           VALUES (@id, @name, @industry, @website, @phone, @email, @notes, @createdAt, @updatedAt)`,
@@ -27,8 +26,6 @@ const INSERT_SQL: Record<keyof Fixture, string> = {
            VALUES (@id, @firstName, @lastName, @email, @phone, @position, @notes, @firmaId, @abteilungId, @createdAt, @updatedAt)`,
   adresse: `INSERT INTO adresse (id, street, houseNumber, postalCode, city, country, latitude, longitude, typ, firmaId, personId, createdAt, updatedAt)
             VALUES (@id, @street, @houseNumber, @postalCode, @city, @country, @latitude, @longitude, @typ, @firmaId, @personId, @createdAt, @updatedAt)`,
-  gehalt: `INSERT INTO gehalt (id, amount, currency, typ, effectiveDate, personId, createdAt, updatedAt)
-           VALUES (@id, @amount, @currency, @typ, @effectiveDate, @personId, @createdAt, @updatedAt)`,
   aktivitaet: `INSERT INTO aktivitaet (id, typ, subject, description, datum, firmaId, personId, createdAt, updatedAt)
                VALUES (@id, @typ, @subject, @description, @datum, @firmaId, @personId, @createdAt, @updatedAt)`,
   vertrag: `INSERT INTO vertrag (id, titel, notes, wert, currency, status, startDate, endDate, firmaId, kontaktPersonId, createdAt, updatedAt)
@@ -38,7 +35,7 @@ const INSERT_SQL: Record<keyof Fixture, string> = {
 };
 
 const INSERT_ORDER: (keyof Fixture)[] = [
-  'firma', 'abteilung', 'person', 'adresse', 'gehalt', 'aktivitaet', 'vertrag', 'chance',
+  'firma', 'abteilung', 'person', 'adresse', 'aktivitaet', 'vertrag', 'chance',
 ];
 
 export function runSeeder(): void {
@@ -65,7 +62,7 @@ export function runSeeder(): void {
   console.log(
     `=== Seeder: ${fixture.firma.length} Firmen, ${fixture.abteilung.length} Abteilungen, ` +
     `${fixture.person.length} Personen, ${fixture.adresse.length} Adressen, ` +
-    `${fixture.gehalt.length} Gehaelter, ${fixture.aktivitaet.length} Aktivitaeten, ` +
+    `${fixture.aktivitaet.length} Aktivitaeten, ` +
     `${fixture.vertrag.length} Vertraege, ${fixture.chance.length} Chancen aus Fixture geladen ===`
   );
 }

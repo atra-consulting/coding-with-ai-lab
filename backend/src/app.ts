@@ -10,7 +10,6 @@ import adressenRouter from './routes/adressen.js';
 import aktivitaetenRouter from './routes/aktivitaeten.js';
 import chancenRouter from './routes/chancen.js';
 import vertraegeRouter from './routes/vertraege.js';
-import gehaelterRouter from './routes/gehaelter.js';
 
 const app = express();
 
@@ -34,7 +33,6 @@ app.use('/api/adressen', adressenRouter);
 app.use('/api/aktivitaeten', aktivitaetenRouter);
 app.use('/api/chancen', chancenRouter);
 app.use('/api/vertraege', vertraegeRouter);
-app.use('/api/gehaelter', gehaelterRouter);
 
 // Error handler MUST be last
 app.use(errorHandler);
