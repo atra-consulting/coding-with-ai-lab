@@ -65,22 +65,6 @@ const ALLOWED_SORT_FIELDS: Record<string, Record<string, string>> = {
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
   },
-  vertrag: {
-    titel: 'titel',
-    wert: 'wert',
-    status: 'status',
-    startDate: 'startDate',
-    endDate: 'endDate',
-    createdAt: 'createdAt',
-    updatedAt: 'updatedAt',
-  },
-  gehalt: {
-    amount: 'amount',
-    effectiveDate: 'effectiveDate',
-    typ: 'typ',
-    createdAt: 'createdAt',
-    updatedAt: 'updatedAt',
-  },
 };
 
 export function parsePaginationParams(query: Record<string, unknown>): PaginationParams {

@@ -103,37 +103,5 @@ export const chance = sqliteTable('chance', {
   updatedAt: text('updatedAt').notNull().default(sql`(datetime('now'))`),
 });
 
-// ─── vertrag ──────────────────────────────────────────────────────────────────
-export const vertrag = sqliteTable('vertrag', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  titel: text('titel').notNull(),
-  notes: text('notes'),
-  wert: real('wert'),
-  currency: text('currency').notNull().default('EUR'),
-  status: text('status').notNull().default('ENTWURF'),
-  startDate: text('startDate'),
-  endDate: text('endDate'),
-  firmaId: integer('firmaId')
-    .notNull()
-    .references(() => firma.id, { onDelete: 'cascade' }),
-  kontaktPersonId: integer('kontaktPersonId').references(() => person.id, {
-    onDelete: 'set null',
-  }),
-  createdAt: text('createdAt').notNull().default(sql`(datetime('now'))`),
-  updatedAt: text('updatedAt').notNull().default(sql`(datetime('now'))`),
-});
 
-// ─── gehalt ───────────────────────────────────────────────────────────────────
-export const gehalt = sqliteTable('gehalt', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  amount: real('amount').notNull(),
-  currency: text('currency').notNull().default('EUR'),
-  typ: text('typ').notNull().default('GRUNDGEHALT'),
-  effectiveDate: text('effectiveDate').notNull(),
-  personId: integer('personId')
-    .notNull()
-    .references(() => person.id, { onDelete: 'cascade' }),
-  createdAt: text('createdAt').notNull().default(sql`(datetime('now'))`),
-  updatedAt: text('updatedAt').notNull().default(sql`(datetime('now'))`),
-});
 

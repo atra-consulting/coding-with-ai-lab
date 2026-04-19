@@ -6,9 +6,7 @@ import {
   faBuilding,
   faCalendarCheck,
   faChartLine,
-  faFileContract,
   faMapMarkerAlt,
-  faMoneyBillWave,
   faSitemap,
   faTachometerAlt,
   faUsers,
@@ -24,7 +22,7 @@ interface NavItem {
 }
 
 interface NavSection {
-  title: string;
+  title?: string;
   items: NavItem[];
 }
 
@@ -56,17 +54,9 @@ export class SidebarComponent {
       ],
     },
     {
-      title: 'Vertrieb',
       items: [
         { label: 'Chancen', route: '/chancen', icon: faChartLine },
         { label: 'Aktivitäten', route: '/aktivitaeten', icon: faCalendarCheck },
-        { label: 'Verträge', route: '/vertraege', icon: faFileContract },
-      ],
-    },
-    {
-      title: 'Personal',
-      items: [
-        { label: 'Gehälter', route: '/gehaelter', icon: faMoneyBillWave },
       ],
     },
   ];
