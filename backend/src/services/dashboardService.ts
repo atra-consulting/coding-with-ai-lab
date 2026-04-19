@@ -62,55 +62,66 @@ interface RecentAktivitaetRow {
   createdAt: string;
 }
 
-// ─── Prepared statements (module-level for performance) ───────────────────────
+// ─── Prepared statements (lazy to avoid preparing before migrations run) ──────
 
-const stmtFirmenCount = sqlite.prepare<[], CountRow>('SELECT COUNT(*) AS cnt FROM firma');
-const stmtPersonenCount = sqlite.prepare<[], CountRow>('SELECT COUNT(*) AS cnt FROM person');
-const stmtOffeneChancen = sqlite.prepare<[], CountRow>(
-  "SELECT COUNT(*) AS cnt FROM chance WHERE phase NOT IN ('GEWONNEN','VERLOREN')"
-);
-const stmtGewonnenSumme = sqlite.prepare<[], SumRow>(
-  "SELECT COALESCE(SUM(wert), 0) AS total FROM chance WHERE phase = 'GEWONNEN'"
-);
-const stmtRecentChancen = sqlite.prepare<[], RecentChanceRow>(`
-  SELECT c.id, c.titel, c.wert, c.currency, c.phase, f.name AS firmaName, c.createdAt
-  FROM chance c
-  JOIN firma f ON f.id = c.firmaId
-  ORDER BY c.createdAt DESC
-  LIMIT 5
-`);
-const stmtRecentAktivitaeten = sqlite.prepare<[], RecentAktivitaetRow>(`
-  SELECT a.id, a.typ, a.subject, a.datum,
-         f.name AS firmaName,
-         (p.firstName || ' ' || p.lastName) AS personName,
-         a.createdAt
-  FROM aktivitaet a
-  LEFT JOIN firma f ON f.id = a.firmaId
-  LEFT JOIN person p ON p.id = a.personId
-  ORDER BY a.createdAt DESC
-  LIMIT 5
-`);
+// Module-level prepare() fails because routes import this module before
+// runMigrations() executes in index.ts. Lazy init keeps the per-request
+// overhead at zero on subsequent calls while respecting startup order.
+interface Statements {
+  firmenCount: ReturnType<typeof sqlite.prepare<[], CountRow>>;
+  personenCount: ReturnType<typeof sqlite.prepare<[], CountRow>>;
+  offeneChancen: ReturnType<typeof sqlite.prepare<[], CountRow>>;
+  gewonnenSumme: ReturnType<typeof sqlite.prepare<[], SumRow>>;
+  recentChancen: ReturnType<typeof sqlite.prepare<[], RecentChanceRow>>;
+  recentAktivitaeten: ReturnType<typeof sqlite.prepare<[], RecentAktivitaetRow>>;
+}
+
+let stmts: Statements | null = null;
+
+function getStatements(): Statements {
+  if (stmts) return stmts;
+  stmts = {
+    firmenCount: sqlite.prepare<[], CountRow>('SELECT COUNT(*) AS cnt FROM firma'),
+    personenCount: sqlite.prepare<[], CountRow>('SELECT COUNT(*) AS cnt FROM person'),
+    offeneChancen: sqlite.prepare<[], CountRow>(
+      "SELECT COUNT(*) AS cnt FROM chance WHERE phase NOT IN ('GEWONNEN','VERLOREN')"
+    ),
+    gewonnenSumme: sqlite.prepare<[], SumRow>(
+      "SELECT COALESCE(SUM(wert), 0) AS total FROM chance WHERE phase = 'GEWONNEN'"
+    ),
+    recentChancen: sqlite.prepare<[], RecentChanceRow>(`
+      SELECT c.id, c.titel, c.wert, c.currency, c.phase, f.name AS firmaName, c.createdAt
+      FROM chance c
+      JOIN firma f ON f.id = c.firmaId
+      ORDER BY c.createdAt DESC
+      LIMIT 5
+    `),
+    recentAktivitaeten: sqlite.prepare<[], RecentAktivitaetRow>(`
+      SELECT a.id, a.typ, a.subject, a.datum,
+             f.name AS firmaName,
+             (p.firstName || ' ' || p.lastName) AS personName,
+             a.createdAt
+      FROM aktivitaet a
+      LEFT JOIN firma f ON f.id = a.firmaId
+      LEFT JOIN person p ON p.id = a.personId
+      ORDER BY a.createdAt DESC
+      LIMIT 5
+    `),
+  };
+  return stmts;
+}
 
 // ─── Service ──────────────────────────────────────────────────────────────────
 
 export function getDashboard(): DashboardData {
-  // Query 1: total Firmen
-  const firmenRow = stmtFirmenCount.get() as CountRow;
+  const s = getStatements();
 
-  // Query 2: total Personen
-  const personenRow = stmtPersonenCount.get() as CountRow;
-
-  // Query 3: open Chancen (not GEWONNEN or VERLOREN)
-  const offeneRow = stmtOffeneChancen.get() as CountRow;
-
-  // Query 4: sum of won Chancen (NOTE: sums across all currencies as EUR — acceptable for training project)
-  const sumRow = stmtGewonnenSumme.get() as SumRow;
-
-  // Query 5: 5 most recent Chancen with firma name
-  const recentChancenRows = stmtRecentChancen.all() as RecentChanceRow[];
-
-  // Query 6: 5 most recent Aktivitaeten with firma and person names
-  const recentAktivitaetenRows = stmtRecentAktivitaeten.all() as RecentAktivitaetRow[];
+  const firmenRow = s.firmenCount.get() as CountRow;
+  const personenRow = s.personenCount.get() as CountRow;
+  const offeneRow = s.offeneChancen.get() as CountRow;
+  const sumRow = s.gewonnenSumme.get() as SumRow;
+  const recentChancenRows = s.recentChancen.all() as RecentChanceRow[];
+  const recentAktivitaetenRows = s.recentAktivitaeten.all() as RecentAktivitaetRow[];
 
   return {
     firmenCount: Number(firmenRow.cnt),
