@@ -1,17 +1,137 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { CurrencyPipe, DatePipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import { DashboardService } from '../../core/services/dashboard.service';
+import { DashboardData, RecentAktivitaet } from '../../core/models/dashboard.model';
 
 @Component({
   selector: 'app-dashboard',
+  imports: [CurrencyPipe, DatePipe, RouterLink],
   template: `
     <div class="page-header">
       <h2>Dashboard</h2>
     </div>
-    <div class="card">
-      <div class="card-body">
-        <h5 class="card-title">Willkommen im CRM</h5>
-        <p class="card-text">Nutzen Sie die Navigation links, um auf die verschiedenen Bereiche zuzugreifen.</p>
+
+    @if (loading()) {
+      <div class="text-muted">Lade…</div>
+    } @else if (error()) {
+      <div class="alert alert-danger">{{ error() }}</div>
+    } @else if (data()) {
+      <!-- KPI tiles -->
+      <div class="row g-3">
+        <div class="col-md-6 col-lg-3">
+          <div class="card h-100">
+            <div class="card-body">
+              <div class="text-muted small">Firmen</div>
+              <div class="display-6">{{ data()!.firmenCount }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <div class="card h-100">
+            <div class="card-body">
+              <div class="text-muted small">Personen</div>
+              <div class="display-6">{{ data()!.personenCount }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <div class="card h-100">
+            <div class="card-body">
+              <div class="text-muted small">Offene Chancen</div>
+              <div class="display-6">{{ data()!.offeneChancenCount }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <div class="card h-100">
+            <div class="card-body">
+              <div class="text-muted small">Gewonnen (€)</div>
+              <div class="display-6">{{ data()!.gewonneneChancenSumme | currency:'EUR':'symbol':'1.0-0':'de-DE' }}</div>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+
+      <!-- Recent lists -->
+      <div class="row g-3 mt-1">
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-header fw-semibold">Letzte Chancen</div>
+            @if (data()!.recentChancen.length === 0) {
+              <div class="card-body text-muted">Noch keine Chancen</div>
+            } @else {
+              <ul class="list-group list-group-flush">
+                @for (c of data()!.recentChancen; track c.id) {
+                  <a class="list-group-item list-group-item-action" [routerLink]="['/chancen', c.id]">
+                    <div class="d-flex justify-content-between align-items-start">
+                      <div>
+                        <div class="fw-medium">{{ c.titel }}</div>
+                        <small class="text-muted">{{ c.firmaName }}</small>
+                      </div>
+                      @if (c.wert !== null) {
+                        <span class="badge bg-secondary ms-2">
+                          {{ c.wert | currency:'EUR':'symbol':'1.0-0':'de-DE' }}
+                        </span>
+                      }
+                    </div>
+                  </a>
+                }
+              </ul>
+            }
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-header fw-semibold">Letzte Aktivitäten</div>
+            @if (data()!.recentAktivitaeten.length === 0) {
+              <div class="card-body text-muted">Noch keine Aktivitäten</div>
+            } @else {
+              <ul class="list-group list-group-flush">
+                @for (a of data()!.recentAktivitaeten; track a.id) {
+                  <a class="list-group-item list-group-item-action" [routerLink]="['/aktivitaeten', a.id]">
+                    <div class="d-flex justify-content-between align-items-start">
+                      <div>
+                        <div class="fw-medium">{{ a.subject }}</div>
+                        <small class="text-muted">
+                          {{ a.datum | date:'dd.MM.yyyy' }}{{ aktivitaetContext(a) }}
+                        </small>
+                      </div>
+                      <span class="badge bg-light text-dark ms-2">{{ a.typ }}</span>
+                    </div>
+                  </a>
+                }
+              </ul>
+            }
+          </div>
+        </div>
+      </div>
+    }
   `,
 })
-export class DashboardComponent {}
+export class DashboardComponent implements OnInit {
+  private dashboardService = inject(DashboardService);
+
+  loading = signal(true);
+  data = signal<DashboardData | null>(null);
+  error = signal<string | null>(null);
+
+  ngOnInit(): void {
+    this.dashboardService.getDashboard().subscribe({
+      next: (result) => {
+        this.data.set(result);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.error.set('Dashboard konnte nicht geladen werden.');
+        this.loading.set(false);
+      },
+    });
+  }
+
+  aktivitaetContext(a: RecentAktivitaet): string {
+    const parts = [a.firmaName, a.personName].filter(Boolean);
+    return parts.length > 0 ? ` — ${parts.join(', ')}` : '';
+  }
+}
