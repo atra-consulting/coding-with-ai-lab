@@ -9,6 +9,7 @@ import abteilungenRouter from './routes/abteilungen.js';
 import adressenRouter from './routes/adressen.js';
 import aktivitaetenRouter from './routes/aktivitaeten.js';
 import chancenRouter from './routes/chancen.js';
+import dashboardRouter from './routes/dashboard.js';
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.use('/api/abteilungen', abteilungenRouter);
 app.use('/api/adressen', adressenRouter);
 app.use('/api/aktivitaeten', aktivitaetenRouter);
 app.use('/api/chancen', chancenRouter);
+app.use('/api/dashboard', dashboardRouter);
 
 // Error handler MUST be last
 app.use(errorHandler);
