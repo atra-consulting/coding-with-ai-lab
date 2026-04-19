@@ -1,9 +1,9 @@
 <nav class="sidebar d-flex flex-column">
-  @for (section of sections; track section.title) {
+  @for (section of sections; track $index) {
     @if (section.title && !layoutService.collapsed()) {
-      <div class="nav-section-header" [class.mt-3]="!$first">{{ section.title }}</div>
+      <div class="nav-section-header">{{ section.title }}</div>
     }
-    <ul class="nav flex-column">
+    <ul class="nav flex-column" [class.mt-3]="!$first">
       @for (item of section.items; track item.route) {
         <li class="nav-item">
           <a class="nav-link" [routerLink]="item.route" routerLinkActive="active" [title]="layoutService.collapsed() ? item.label : ''">
