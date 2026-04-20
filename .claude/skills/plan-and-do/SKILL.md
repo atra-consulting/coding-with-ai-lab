@@ -69,7 +69,7 @@ Plan and implement any work from freeform description
 **CRITICAL — MANDATORY WORKFLOW. NO SHORTCUTS.**
 You MUST execute every numbered step (1–13) in strict order. No skipping. No combining. No "just doing it" because the task looks simple. Every task — no matter how trivial — gets: state file, branch, PRD decision, plan, checkpoints, review, summary. The user relies on checkpoints to stay in control. Skipping steps breaks the skill. Do NOT write any implementation code before Step 8. If you feel tempted to skip ahead, STOP and follow the next step instead.
 
-**CHECKPOINT RULE: NEVER auto-continue past a Standard Checkpoint.** You MUST use AskUserQuestion and WAIT for the user's response at every Standard Checkpoint. The user must explicitly choose "Continue" before you proceed. No exceptions.
+**CHECKPOINT RULE: NEVER auto-continue past a Standard Checkpoint.** You MUST call the `AskUserQuestion` tool and WAIT for the user's response at every Standard Checkpoint. The user must explicitly choose "Continue" before you proceed. No exceptions.
 
 **A step prompts the user ONLY if its body explicitly calls AskUserQuestion.** Steps labeled with phrases like "Auto-Advance", "Advance to …", or marked "NOT a user checkpoint" are pure transitions — never call AskUserQuestion on them. When a step body says "Do NOT prompt", that wins over any word in the heading.
 
@@ -236,7 +236,7 @@ Read `plan-and-do-modes.md` and execute matching section. STOP.
         N - Start new task
 
       ```
-      Call AskUserQuestion with this list. Wait for response.
+      Call the `AskUserQuestion` tool with this list. Wait for response.
 
       - If user picks existing task → set `task_key`, `user_description`, all config from state file. Set `branch_prefix` = lowercase task_key, `input_mode` = "freeform". Jump to step 1.2 (state file check).
       - If user picks "Start new task" → call the `AskUserQuestion` tool with: "What would you like to implement?" Then follow Path A.
@@ -247,7 +247,7 @@ Read `plan-and-do-modes.md` and execute matching section. STOP.
 
 2. Check for state file in `doc/state/` or `docs/state/`.
 
-3. **If state file exists with status=PAUSED:** Show progress. Call AskUserQuestion: 1-Resume, 2-Start fresh, 3-Quit. Wait for response — do not proceed until the user answers.
+3. **If state file exists with status=PAUSED:** Show progress. Call the `AskUserQuestion` tool with: 1-Resume, 2-Start fresh, 3-Quit. Wait for response — do not proceed until the user answers.
 
    **If COMPLETED or IN_PROGRESS:** Continue.
 
@@ -437,7 +437,7 @@ Write to `[prd_dir]/PRD-[task_key].md`. Store as `prd_file`.
 
 Update state: `current_step` = "6.4", set `artifacts.prd_file`.
 
-Display PRD content and full absolute file path. Call AskUserQuestion: 1-Continue, 2-Edit, 3-Quit. Wait for response — do not proceed until the user answers.
+Display PRD content and full absolute file path. Call the `AskUserQuestion` tool with: 1-Continue, 2-Edit, 3-Quit. Wait for response — do not proceed until the user answers.
 
 ### Step 6.5: Commit PRD
 
@@ -464,7 +464,7 @@ EOF
 
 Check in order:
 1. **CLAUDE.md** — if found, use directly (no confirmation needed)
-2. **README.md / README.adoc** — if found, call the `AskUserQuestion` tool to confirm the command with the user
+2. **README.md / README.adoc** — if found, call the `AskUserQuestion` tool with the prompt `"Found test command: [command]. Use this one?"` (1-Yes / 2-Let me type a different one). Do not run tests until the user confirms.
 3. **Not found** — call the `AskUserQuestion` tool with: "How do you run tests? Type your test command:"
 
 Store as `test_command`. Do not continue until confirmed.
