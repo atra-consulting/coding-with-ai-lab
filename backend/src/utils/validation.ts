@@ -46,6 +46,8 @@ export const AdresseCreateSchema = z.object({
   country: z.string().max(100).optional().nullable(),
   firmaId: z.number().int().positive().optional().nullable(),
   personId: z.number().int().positive().optional().nullable(),
+  latitude: z.number().min(-90).max(90).optional().nullable(),
+  longitude: z.number().min(-180).max(180).optional().nullable(),
 });
 export type AdresseCreateDTO = z.infer<typeof AdresseCreateSchema>;
 
