@@ -43,9 +43,8 @@ test.describe('POST /api/auth/login — success', () => {
       rollen: string[];
     };
 
-    await test.step('body has benutzername', () => {
-      expect(typeof body.benutzername).toBe('string');
-      expect(body.benutzername.length).toBeGreaterThan(0);
+    await test.step('body has benutzername matching the login', () => {
+      expect(body.benutzername).toBe('admin');
     });
 
     await test.step('body has vorname', () => {

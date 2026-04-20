@@ -24,7 +24,9 @@ let adminCtx: APIRequestContext;
 let anonCtx: APIRequestContext;
 
 // Tracks the firma created in 6.3 so later tests (6.4–6.6) can reference it.
-let createdFirmaId: number;
+// Left undefined until 6.3 succeeds — later tests skip themselves if it is
+// missing, so a failure in 6.3 reports as one failure, not four.
+let createdFirmaId: number | undefined;
 
 // ---------------------------------------------------------------------------
 // Setup / teardown
@@ -105,6 +107,7 @@ test('POST /api/firmen returns 201 with id and createdAt', async () => {
   const body = await resp.json() as {
     id: number;
     name: string;
+    industry: string | null;
     createdAt: string;
   };
 
@@ -122,7 +125,10 @@ test('POST /api/firmen returns 201 with id and createdAt', async () => {
     expect(body.name).toBe(uniqueName);
   });
 
-  // Store for subsequent tests
+  await test.step('body has the submitted industry', () => {
+    expect(body.industry).toBe('IT');
+  });
+
   createdFirmaId = body.id;
 });
 
@@ -130,6 +136,7 @@ test('POST /api/firmen returns 201 with id and createdAt', async () => {
 // 6.4  Read
 // ---------------------------------------------------------------------------
 test('GET /api/firmen/:id returns 200 for the created firma', async () => {
+  test.skip(createdFirmaId === undefined, 'POST in 6.3 did not produce an id');
   const resp = await adminCtx.get(`/api/firmen/${createdFirmaId}`);
 
   await test.step('status 200', () => {
@@ -147,9 +154,10 @@ test('GET /api/firmen/:id returns 200 for the created firma', async () => {
 // 6.5  Update
 // ---------------------------------------------------------------------------
 test('PUT /api/firmen/:id returns 200 and change is reflected by GET', async () => {
+  test.skip(createdFirmaId === undefined, 'POST in 6.3 did not produce an id');
   const updatedName = `Updated AG ${Date.now()}`;
   const putResp = await adminCtx.put(`/api/firmen/${createdFirmaId}`, {
-    data: { name: updatedName },
+    data: { name: updatedName, industry: 'IT' },
   });
 
   await test.step('PUT returns 200', () => {
@@ -173,6 +181,7 @@ test('PUT /api/firmen/:id returns 200 and change is reflected by GET', async () 
 // 6.6  Delete
 // ---------------------------------------------------------------------------
 test('DELETE /api/firmen/:id returns 204; subsequent GET returns 404', async () => {
+  test.skip(createdFirmaId === undefined, 'POST in 6.3 did not produce an id');
   const deleteResp = await adminCtx.delete(`/api/firmen/${createdFirmaId}`);
 
   await test.step('DELETE returns 204', () => {
