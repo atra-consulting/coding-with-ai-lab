@@ -7,7 +7,7 @@
  * All stub control is done via an HTTP control API exposed by the stub server.
  * The control URL is written to process.env.STUB_CONTROL_URL by globalSetup.
  */
-import type { APIRequestContext } from '@playwright/test';
+import { request as playwrightRequest, type APIRequestContext } from '@playwright/test';
 import { sqlite } from '../config/db.js';
 import { runDataMigration } from '../seed/dataMigration.js';
 import type { StubBehavior } from './globalSetup.js';
@@ -45,6 +45,27 @@ export async function login(
       `Login failed for ${benutzername}: ${resp.status()} ${await resp.text()}`
     );
   }
+}
+
+/**
+ * Create a fresh APIRequestContext, log in with the given credentials, and
+ * return the context with the session cookie already stored in its cookie jar.
+ * Throws with status + body text on login failure.
+ * Callers are responsible for calling ctx.dispose() in afterAll.
+ */
+export async function loginCtx(
+  benutzername: string,
+  passwort: string
+): Promise<APIRequestContext> {
+  const ctx = await playwrightRequest.newContext({ baseURL: 'http://localhost:7070' });
+  const resp = await ctx.post('/api/auth/login', { data: { benutzername, passwort } });
+  if (!resp.ok()) {
+    await ctx.dispose();
+    throw new Error(
+      `loginCtx failed for ${benutzername}: ${resp.status()} ${await resp.text()}`
+    );
+  }
+  return ctx;
 }
 
 // ---------------------------------------------------------------------------
