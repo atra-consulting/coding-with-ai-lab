@@ -1,14 +1,14 @@
 import app from './app.js';
 import { runMigrations } from './config/migrate.js';
-import { runSeeder } from './seed/seeder.js';
+import { runDataMigration } from './seed/dataMigration.js';
 
 const PORT = parseInt(process.env['PORT'] ?? '7070', 10);
 
 // Run migrations before starting the server
 runMigrations();
 
-// Seed with demo data if the database is empty
-runSeeder();
+// Load fixture data if the database is empty
+runDataMigration();
 
 app.listen(PORT, () => {
   console.log(`CRM backend running on http://localhost:${PORT}`);
