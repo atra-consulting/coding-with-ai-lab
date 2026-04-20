@@ -1,8 +1,8 @@
 {
   "version": 1,
   "task_key": "FIX-REVIEW-PROMPT",
-  "status": "in_progress",
-  "current_step": "3.3",
+  "status": "completed",
+  "current_step": "13.2",
   "started": "2026-04-20T00:00:00Z",
   "updated": "2026-04-20T00:00:00Z",
   "config": {
@@ -13,7 +13,7 @@
     "original_branch": "main",
     "docs_folder": "docs",
     "is_git_repo": true,
-    "workflow_scope": null
+    "workflow_scope": "full"
   },
   "discovery": {
     "agents_available": true,
@@ -26,9 +26,9 @@
     "test_command": null
   },
   "artifacts": {
-    "prd_skipped": null,
+    "prd_skipped": true,
     "prd_file": null,
-    "plan_file": null,
+    "plan_file": "docs/plans/PLAN-FIX-REVIEW-PROMPT.md",
     "pr_url": null
   },
   "completed_steps": []
