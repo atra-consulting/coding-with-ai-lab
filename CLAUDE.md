@@ -16,6 +16,8 @@ cd frontend && npx ng build                        # Frontend build check
 
 **Prerequisites:** Node.js 20.19+ (checked by `start.sh`).
 
+**Startup flow:** `runMigrations()` (DDL) → `runDataMigration()` (loads `backend/src/seed/fixture.json` when DB empty, skipped if rows exist) → server listens on port 7070.
+
 **Hot reload during development:**
 - **Backend:** `tsx --watch` restarts on file changes automatically.
 - **Frontend:** Angular `ng serve` watches for file changes and reloads the browser automatically.
