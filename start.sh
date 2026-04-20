@@ -25,7 +25,7 @@ done
 if ! command -v node &> /dev/null; then
   echo "ERROR: Node.js is not installed."
   echo "This project requires Node.js 20.19+ (Angular 21 requirement)."
-  echo "Install via: brew install node@22  OR  nvm install 22"
+  echo "Install via: brew install node@24  OR  nvm install 24"
   exit 1
 fi
 
@@ -35,7 +35,7 @@ NODE_MAJOR=$(echo "$NODE_VERSION" | cut -d. -f1)
 NODE_MINOR=$(echo "$NODE_VERSION" | cut -d. -f2)
 if [ "$NODE_MAJOR" -lt 20 ] 2>/dev/null || { [ "$NODE_MAJOR" -eq 20 ] && [ "$NODE_MINOR" -lt 19 ]; }; then
   echo "ERROR: Node.js 20.19 or later is required. Found: Node ${NODE_VERSION}."
-  echo "Install via: brew install node@22  OR  nvm install 22"
+  echo "Install via: brew install node@24  OR  nvm install 24"
   exit 1
 fi
 echo "Node.js ${NODE_VERSION} detected."
@@ -43,7 +43,7 @@ echo "Node.js ${NODE_VERSION} detected."
 # Check npm is available (bundled with Node.js)
 if ! command -v npm &> /dev/null; then
   echo "ERROR: npm is not installed (should be bundled with Node.js)."
-  echo "Reinstall Node.js: brew install node@22  OR  nvm install 22"
+  echo "Reinstall Node.js: brew install node@24  OR  nvm install 24"
   exit 1
 fi
 

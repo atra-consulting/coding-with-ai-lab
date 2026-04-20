@@ -19,11 +19,11 @@ Diese Anleitung beschreibt, wie du deine Arbeitsumgebung für das **AI Coding La
 
 ```bash
 # Option 1: Homebrew (empfohlen)
-brew install node@22
+brew install node@24
 
 # Option 2: nvm (Node Version Manager)
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
-nvm install 22
+nvm install 24
 ```
 
 #### Windows
@@ -41,8 +41,8 @@ nvm install 22
 winget install OpenJS.NodeJS.LTS
 
 # Option 3: nvm-windows (https://github.com/coreybutler/nvm-windows)
-nvm install 22
-nvm use 22
+nvm install 24
+nvm use 24
 ```
 
 > **Wichtig bei der Installation über den offiziellen Installer:**
@@ -59,24 +59,24 @@ nvm use 22
 
 ```bash
 # Option 1: NodeSource-Repository (empfohlen)
-curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
 sudo apt-get install -y nodejs
 
 # Option 2: nvm (Node Version Manager)
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
-nvm install 22
+nvm install 24
 ```
 
 #### Linux (Fedora/RHEL)
 
 ```bash
 # Option 1: NodeSource-Repository
-curl -fsSL https://rpm.nodesource.com/setup_22.x | sudo bash -
+curl -fsSL https://rpm.nodesource.com/setup_24.x | sudo bash -
 sudo dnf install -y nodejs
 
 # Option 2: nvm
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
-nvm install 22
+nvm install 24
 ```
 
 ### Version prüfen
