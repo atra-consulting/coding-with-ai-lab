@@ -88,7 +88,7 @@ npm --version    # Wird mit Node.js mitgeliefert
 
 ## Claude Code
 
-[Claude Code](https://www.claude.com/product/claude-code) ist Anthropics offizielles CLI für AI-gestütztes Programmieren. Im AI Coding Lab nutzen wir Claude Code, um Features zu planen, zu implementieren und zu reviewen.
+[Claude Code](https://docs.claude.com/en/docs/claude-code/overview) ist Anthropics offizielles CLI für AI-gestütztes Programmieren. Im AI Coding Lab nutzen wir Claude Code, um Features zu planen, zu implementieren und zu reviewen.
 
 ### Installation
 
@@ -98,7 +98,7 @@ Claude Code wird plattformübergreifend via npm installiert (Node.js muss bereit
 npm install -g @anthropic-ai/claude-code
 ```
 
-Unter Windows ist zusätzlich **Git for Windows** erforderlich (siehe [Windows-Abschnitt](#windows) oben).
+Unter Windows ist zusätzlich **Git for Windows** erforderlich (siehe Windows-Abschnitt unter [Node.js installieren](#node-js-installieren)).
 
 ### Erste Schritte
 
@@ -125,7 +125,7 @@ Kostenlos, plattformübergreifend, mit guter TypeScript- und Angular-Unterstütz
 brew install --cask visual-studio-code
 
 # Windows
-winget install Microsoft.VisualStudioCode
+winget install --id Microsoft.VisualStudioCode -e
 
 # Linux
 # Paketmanager (snap, apt, dnf) oder Download von https://code.visualstudio.com/
@@ -162,7 +162,7 @@ Alternativ: Download von https://macdown.app/.
 [MarkText](https://www.marktext.cc/) ist ein kostenloser, quelloffener Markdown-Editor mit WYSIWYG-Vorschau.
 
 ```powershell
-winget install marktext.marktext
+winget install --id marktext.marktext -e
 ```
 
 Alternativ: Installer von https://www.marktext.cc/.
