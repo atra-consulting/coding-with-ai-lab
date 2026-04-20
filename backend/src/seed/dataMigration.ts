@@ -35,15 +35,14 @@ const INSERT_ORDER: (keyof Fixture)[] = [
   'firma', 'abteilung', 'person', 'adresse', 'aktivitaet', 'chance',
 ];
 
-export function runSeeder(): void {
+export function runDataMigration(): void {
   const count = (sqlite.prepare('SELECT COUNT(*) as cnt FROM firma').get() as { cnt: number }).cnt;
   if (count > 0) {
     console.log(`=== Seeder: Datenbank enthält bereits ${count} Firmen, übersprungen ===`);
     return;
   }
 
-  const fixturePath = join(__dirname, 'fixture.json');
-  const fixture = JSON.parse(readFileSync(fixturePath, 'utf8')) as Fixture;
+  const fixture = JSON.parse(readFileSync(join(__dirname, 'fixture.json'), 'utf8')) as Fixture;
 
   const loadAll = sqlite.transaction(() => {
     for (const table of INSERT_ORDER) {

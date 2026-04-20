@@ -21,7 +21,7 @@ Database file: `backend/data/crmdb.sqlite`. Created on first startup.
 ## Startup Sequence
 
 1. `runMigrations()` — creates tables if missing.
-2. `runSeeder()` — seeds demo data if database is empty.
+2. `runDataMigration()` — loads fixture data from `backend/src/seed/fixture.json` if the database is empty; skipped when `firma` already has rows.
 3. `app.listen(7070)` — starts the Express server.
 
 ## Entities
@@ -363,7 +363,9 @@ src/
     pagination.ts   — parsePaginationParams, parseSort, buildPage
     validation.ts   — Zod schemas and validate() helper
   seed/
-    seeder.ts       — demo data seeder
+    dataMigration.ts — loads fixture.json into the DB when empty
+    fixture.json     — fixed seed data (25 Firmen, 50 Abteilungen, 100 Personen, 100 Adressen, 75 Aktivitaeten, 40 Chancen)
+    build-fixture.ts — dev tool to regenerate fixture.json after schema changes (not called at runtime)
 ```
 
 Middleware order in `app.ts`: CORS → JSON body parser → session → routes → error handler.

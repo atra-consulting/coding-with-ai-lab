@@ -1,7 +1,13 @@
-// One-shot script that generates backend/src/seed/fixture.json.
+// DEV TOOL — not called at runtime.
+// Regenerates backend/src/seed/fixture.json after schema changes.
 // Run with: cd backend && npx tsx src/seed/build-fixture.ts
 // The 25 firma addresses are real, geocoded via Nominatim (OpenStreetMap).
 // All other data is deterministically generated via mulberry32(seed=42).
+//
+// When adding a new column or entity: update the Drizzle schema and
+// config/migrate.ts, extend this generator to emit the new column,
+// regenerate fixture.json, and add the column to INSERT_SQL in
+// seed/dataMigration.ts.
 
 import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
