@@ -2,6 +2,8 @@
 
 Reference file for plan-and-do skill. Read and execute the matching section when help or doctor mode is detected, or when resuming from a specific step.
 
+**All user prompts in this file MUST call the `AskUserQuestion` tool** — no prose prompts, no stdin reads, no "soft" wait-for-next-message. See SKILL.md → "HOW TO ASK THE USER FOR DECISIONS" for the full rule.
+
 ---
 
 ## HELP MODE
@@ -305,7 +307,7 @@ git status --porcelain
 
 Combined prompt — `gh pr create` cannot succeed without a push, so collapse the two decisions into one.
 
-Call AskUserQuestion:
+Call the `AskUserQuestion` tool with:
 1. Push and create pull request (recommended)
 2. Push only (no PR)
 3. Skip — keep commits local
@@ -342,7 +344,7 @@ Wait for response — do not push or create a PR without user confirmation.
 
 ### PC.4: Merge Pull Request
 
-Call AskUserQuestion: 1-Merge PR, 2-Skip merge (done). Wait for response — merging is destructive, never merge without explicit user confirmation.
+Call the `AskUserQuestion` tool with: 1-Merge PR, 2-Skip merge (done). Wait for response — merging is destructive, never merge without explicit user confirmation.
 
 - Merge:
   ```bash
@@ -367,7 +369,7 @@ Display: "Switched to `[original_branch]` and pulled latest changes."
 
 Check if currently on a feature branch different from `original_branch`. If so:
 
-Call AskUserQuestion: 1-Switch back to `[original_branch]`, 2-Stay on `[branch_name]`. Wait for response.
+Call the `AskUserQuestion` tool with: 1-Switch back to `[original_branch]`, 2-Stay on `[branch_name]`. Wait for response.
 
 - Switch back:
   ```bash

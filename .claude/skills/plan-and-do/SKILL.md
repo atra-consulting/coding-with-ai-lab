@@ -2,8 +2,8 @@
 name: "project:plan-and-do"
 description: "End-to-end implementation workflow from idea to code review. Use for building features, implementing tasks, fixing complex bugs, or any substantial coding work. Handles planning, implementation, testing, and review automatically."
 argument-hint: ["description"] [special-instructions|resume:<step>]
-version: 1.8.0
-last-modified: 2026-04-18
+version: 1.9.0
+last-modified: 2026-04-20
 allowed-tools:
   - Read
   - Write
@@ -56,7 +56,7 @@ If NOT in plan mode → continue.
 ## SKILL HEADER
 
 ```
-Plan and Do (v1.8.0, 2026-04-18)
+Plan and Do (v1.9.0, 2026-04-20)
 ************************************
 
 Plan and implement any work from freeform description
@@ -69,7 +69,7 @@ Plan and implement any work from freeform description
 **CRITICAL — MANDATORY WORKFLOW. NO SHORTCUTS.**
 You MUST execute every numbered step (1–13) in strict order. No skipping. No combining. No "just doing it" because the task looks simple. Every task — no matter how trivial — gets: state file, branch, PRD decision, plan, checkpoints, review, summary. The user relies on checkpoints to stay in control. Skipping steps breaks the skill. Do NOT write any implementation code before Step 8. If you feel tempted to skip ahead, STOP and follow the next step instead.
 
-**CHECKPOINT RULE: NEVER auto-continue past a Standard Checkpoint.** You MUST use AskUserQuestion and WAIT for the user's response at every Standard Checkpoint. The user must explicitly choose "Continue" before you proceed. No exceptions.
+**CHECKPOINT RULE: NEVER auto-continue past a Standard Checkpoint.** You MUST call the `AskUserQuestion` tool and WAIT for the user's response at every Standard Checkpoint. The user must explicitly choose "Continue" before you proceed. No exceptions.
 
 **A step prompts the user ONLY if its body explicitly calls AskUserQuestion.** Steps labeled with phrases like "Auto-Advance", "Advance to …", or marked "NOT a user checkpoint" are pure transitions — never call AskUserQuestion on them. When a step body says "Do NOT prompt", that wins over any word in the heading.
 
@@ -100,11 +100,25 @@ When displaying any file path to the user, ALWAYS use the full absolute path. Ge
 
 ## HOW TO ASK THE USER FOR DECISIONS
 
-Use the AskUserQuestion tool for all user prompts.
+**CRITICAL — ALWAYS call the `AskUserQuestion` tool for every user prompt.** Every decision, confirmation, and choice in this skill is an `AskUserQuestion` tool invocation — never prose, never a shell prompt, never a wait-for-next-message.
 
-**Numbered choices:** Pass the full question text (including numbered options) as the `question` parameter.
+This rule overrides any past guidance. Previous advice to use a home-made terminal input mechanism (because of a long-skill bug) is **revoked**. The bug is no longer a concern. Call `AskUserQuestion`.
 
-**Freeform input:** Pass the question as the `question` parameter.
+If tempted to "just print the question and wait" for the user's next message, **STOP** and call `AskUserQuestion` instead.
+
+**Numbered choices:** Pass the question text as the `question` parameter of `AskUserQuestion`, with the numbered options in `options`.
+
+**Freeform input:** Pass the question as the `question` parameter of `AskUserQuestion`; the user can pick "Other" to type a freeform answer.
+
+### Forbidden Input Patterns
+
+Never do any of these — each is a bug:
+
+- Printing a question as text and waiting for the user's next message. → Call `AskUserQuestion` instead.
+- `Bash` with `read -p`, piped `echo`, or any interactive stdin pattern. → Call `AskUserQuestion` instead.
+- Soft phrasing like "let me know", "what do you think?", or "please confirm" without a tool call. → Call `AskUserQuestion` instead.
+- Treating a mid-turn user correction as an implicit answer to an unasked question. → Call `AskUserQuestion` with an explicit question instead.
+- Assuming the user's silence means approval. → Call `AskUserQuestion` and wait.
 
 ---
 
@@ -124,9 +138,9 @@ When user chooses "quit" at any checkpoint:
 
 Before presenting choices, display artifact paths per the ARTIFACT PATH DISPLAY RULE above.
 
-At each checkpoint, use AskUserQuestion with three choices:
+At each checkpoint, **call the `AskUserQuestion` tool** with three choices:
 - Continue → proceed to next step
-- Edit → use AskUserQuestion to ask what changes needed, apply, return to checkpoint
+- Edit → call the `AskUserQuestion` tool again to ask what changes are needed, apply them, return to this checkpoint
 - Quit → execute Quit Pattern above
 
 When asking for approval, also display the full absolute path of every file that was created or changed since the last checkpoint.
@@ -222,18 +236,18 @@ Read `plan-and-do-modes.md` and execute matching section. STOP.
         N - Start new task
 
       ```
-      Call AskUserQuestion with this list. Wait for response.
+      Call the `AskUserQuestion` tool with this list. Wait for response.
 
       - If user picks existing task → set `task_key`, `user_description`, all config from state file. Set `branch_prefix` = lowercase task_key, `input_mode` = "freeform". Jump to step 1.2 (state file check).
-      - If user picks "Start new task" → use AskUserQuestion: "What would you like to implement?" Then follow Path A.
+      - If user picks "Start new task" → call the `AskUserQuestion` tool with: "What would you like to implement?" Then follow Path A.
 
       **If no resumable files (all completed):** Fall through.
 
-   3. **No state files or all completed:** Use AskUserQuestion: "What would you like to implement?" Then follow Path A.
+   3. **No state files or all completed:** Call the `AskUserQuestion` tool with: "What would you like to implement?" Then follow Path A.
 
 2. Check for state file in `doc/state/` or `docs/state/`.
 
-3. **If state file exists with status=PAUSED:** Show progress. Call AskUserQuestion: 1-Resume, 2-Start fresh, 3-Quit. Wait for response — do not proceed until the user answers.
+3. **If state file exists with status=PAUSED:** Show progress. Call the `AskUserQuestion` tool with: 1-Resume, 2-Start fresh, 3-Quit. Wait for response — do not proceed until the user answers.
 
    **If COMPLETED or IN_PROGRESS:** Continue.
 
@@ -385,7 +399,7 @@ Evaluate the task based on user_description and codebase analysis:
 
 **If small/limited scope:** Display: "Task is small. Skipping specifications (PRD)." Set `prd_skipped = true`, `prd_file = null`, update state: `current_step` = "5.1", `artifacts.prd_skipped = true` → STEP 7.
 
-**If complex:** Use AskUserQuestion: 1-Create specifications (PRD) first (recommended for complex features), 2-Skip to detailed plan.
+**If complex:** Call the `AskUserQuestion` tool with: 1-Create specifications (PRD) first (recommended for complex features), 2-Skip to detailed plan.
 
 - "1" → `prd_skipped = false`, continue to STEP 6
 - "2" → `prd_skipped = true`, `prd_file = null`, update state: `current_step` = "5.1", `artifacts.prd_skipped = true` → STEP 7
@@ -423,7 +437,7 @@ Write to `[prd_dir]/PRD-[task_key].md`. Store as `prd_file`.
 
 Update state: `current_step` = "6.4", set `artifacts.prd_file`.
 
-Display PRD content and full absolute file path. Call AskUserQuestion: 1-Continue, 2-Edit, 3-Quit. Wait for response — do not proceed until the user answers.
+Display PRD content and full absolute file path. Call the `AskUserQuestion` tool with: 1-Continue, 2-Edit, 3-Quit. Wait for response — do not proceed until the user answers.
 
 ### Step 6.5: Commit PRD
 
@@ -450,8 +464,8 @@ EOF
 
 Check in order:
 1. **CLAUDE.md** — if found, use directly (no confirmation needed)
-2. **README.md / README.adoc** — if found, confirm with user
-3. **Not found** — use AskUserQuestion: "How do you run tests? Type your test command:"
+2. **README.md / README.adoc** — if found, call the `AskUserQuestion` tool with the prompt `"Found test command: [command]. Use this one?"` (1-Yes / 2-Let me type a different one). Do not run tests until the user confirms.
+3. **Not found** — call the `AskUserQuestion` tool with: "How do you run tests? Type your test command:"
 
 Store as `test_command`. Do not continue until confirmed.
 
@@ -505,7 +519,7 @@ Update state: `current_step` = "7.5", set `artifacts.plan_file`, `discovery.test
 
 Display plan content. Display artifact paths per the ARTIFACT PATH DISPLAY RULE.
 
-**Plan Approval Checkpoint — NOT a Standard Checkpoint.** Use AskUserQuestion with these choices. Always in this order. Add "(Recommended)" after the one you recommend based on task complexity:
+**Plan Approval Checkpoint — NOT a Standard Checkpoint.** Call the `AskUserQuestion` tool with these choices. Always in this order. Add "(Recommended)" after the one you recommend based on task complexity:
 
 1. **Approve and implement** — Run implementation and tests (Steps 8-9). Stop after testing. Best for small, low-risk changes.
 2. **Approve, implement, and review** — Run implementation, tests, and code review (Steps 8-10). Stop after review. Good for medium changes.
@@ -591,7 +605,7 @@ For each task in PLAN:
 
 ### Step 8.2: Interactive Assistance
 
-If questions arise: explain issue, use AskUserQuestion with numbered alternatives.
+If questions arise: explain the issue, then call the `AskUserQuestion` tool with numbered alternatives.
 
 ---
 
@@ -616,7 +630,7 @@ Apply the **DISPATCH NARRATION RULE**. Collect each runner's pass/fail report.
 1. Show failures, attempt automatic fix (no prompt)
 2. Commit fixes: `fix: Fix test failures. [task_key]`
 3. Re-run tests
-4. If still failing: show details, use AskUserQuestion: "What should I try next?" Apply guidance. Retry.
+4. If still failing: show details, call the `AskUserQuestion` tool with: "What should I try next?" Apply guidance. Retry.
 
 ### Step 9.3: Implementation Complete — Auto-Advance
 
@@ -664,7 +678,7 @@ Display artifact paths per the ARTIFACT PATH DISPLAY RULE.
 
 **If issues found:**
 - `workflow_scope == "full"` AND this is the first review round → Auto-fix, commit `fix: Address code review findings. [task_key]` (with `PRD:` footer if applicable), re-run `/review`, return to 10.2. No prompt.
-- Second review round, OR `workflow_scope == "implement-review"`, OR the same finding survives → Use AskUserQuestion: 1-Fix findings, 2-Skip to summary, 3-Quit.
+- Second review round, OR `workflow_scope == "implement-review"`, OR the same finding survives → Call the `AskUserQuestion` tool with: 1-Fix findings, 2-Skip to summary, 3-Quit.
   - Fix → fix issues, commit, re-run `/review`, return to 10.2
   - Skip → continue
 
@@ -681,7 +695,7 @@ Code review may have changed implementation or test code. Re-run the relevant ru
 **If `test_runner_agents` is non-empty:** Launch the same runners as Step 9.1 (match by scope) in parallel via Task tool. Apply the **DISPATCH NARRATION RULE**.
 
 - All pass → continue to STEP 12
-- Any fail → auto-fix the smallest case, commit `fix: Restore green tests after review. [task_key]`, re-run once. If still failing, surface the report and use AskUserQuestion: 1-Investigate (returns to STEP 8), 2-Skip to summary, 3-Quit.
+- Any fail → auto-fix the smallest case, commit `fix: Restore green tests after review. [task_key]`, re-run once. If still failing, surface the report and call the `AskUserQuestion` tool with: 1-Investigate (returns to STEP 8), 2-Skip to summary, 3-Quit.
 
 **Otherwise (no agents):** Re-run `[test_command]` directly. Same fail-handling as above.
 
@@ -706,7 +720,7 @@ Check CLAUDE.md, docs/specs/, docs/prds/ for needed updates based on implementat
 
 **If updates needed:**
 - `workflow_scope == "full"` → Apply automatically. Display "Applying documentation updates: [list]." Commit: `docs: Update project documentation. [task_key]` (with `PRD:` footer if applicable). No prompt.
-- Other scopes → Use AskUserQuestion: 1-Apply, 2-Skip, 3-Quit.
+- Other scopes → Call the `AskUserQuestion` tool with: 1-Apply, 2-Skip, 3-Quit.
   - Apply → edit files, commit as above.
 
 **No updates needed:** Display "No documentation updates needed." Continue.
