@@ -47,6 +47,31 @@ if ! command -v npm &> /dev/null; then
   exit 1
 fi
 
+# Check lsof is available (used for port cleanup)
+if ! command -v lsof &> /dev/null; then
+  echo "ERROR: lsof is not installed; required for port cleanup."
+  exit 1
+fi
+
+BACKEND_PORT=7070
+FRONTEND_PORT=7200
+
+# Pre-flight: refuse to start if the ports are already in use. Otherwise the
+# health check below would talk to a leftover backend from a previous run and
+# the new backend would crash with EADDRINUSE.
+check_port_free() {
+  local port="$1"
+  local label="$2"
+  if lsof -ti ":${port}" > /dev/null 2>&1; then
+    echo "ERROR: ${label} port ${port} is already in use."
+    echo "Run ./end.sh to stop the leftover process, then try again."
+    exit 1
+  fi
+}
+
+check_port_free "${BACKEND_PORT}"  "Backend"
+check_port_free "${FRONTEND_PORT}" "Frontend"
+
 # Optionally reset database
 if [ "$RESET_DB" = true ]; then
   if [ -d "$CRM_DB_DIR" ]; then
@@ -56,24 +81,74 @@ if [ "$RESET_DB" = true ]; then
   echo "Database deleted. Will be recreated on startup."
 fi
 
-BACKEND_PID=""
-FRONTEND_PID=""
-
-cleanup() {
-  echo ""
-  echo "Shutting down..."
-  if [ -n "${FRONTEND_PID}" ]; then
-    kill "${FRONTEND_PID}" 2>/dev/null || true
-    echo "Frontend stopped"
-  fi
-  if [ -n "${BACKEND_PID}" ]; then
-    kill "${BACKEND_PID}" 2>/dev/null || true
-    echo "Backend stopped"
-  fi
-  exit 0
+# Recursively kill a process and all its descendants. Parent is killed
+# first so file watchers (tsx --watch, ng serve) stop supervising — without
+# this they respawn the node/webpack child we just killed and the port
+# stays bound.
+kill_tree() {
+  local pid="${1:-}"
+  [ -z "$pid" ] && return 0
+  # Capture children before killing the parent — once the parent dies the
+  # children are reparented to init and pgrep -P can no longer find them
+  # through this ancestor.
+  local children
+  children=$(pgrep -P "$pid" 2>/dev/null || true)
+  kill -TERM "$pid" 2>/dev/null || true
+  local child
+  for child in $children; do
+    kill_tree "$child"
+  done
 }
 
-trap cleanup SIGINT SIGTERM
+# Kill every process still listening on the given port. Used as a safety
+# net after kill_tree, in case a grandchild was missed or tsx had just
+# spawned a replacement.
+stop_port() {
+  local port="$1"
+
+  local pids
+  pids=$(lsof -ti ":${port}" 2>/dev/null || true)
+  if [ -z "$pids" ]; then
+    return 0
+  fi
+
+  echo "$pids" | xargs kill 2>/dev/null || true
+  sleep 1
+  pids=$(lsof -ti ":${port}" 2>/dev/null || true)
+  if [ -n "$pids" ]; then
+    echo "$pids" | xargs kill -9 2>/dev/null || true
+  fi
+}
+
+cleaned_up=false
+cleanup() {
+  if [ "$cleaned_up" = true ]; then
+    return
+  fi
+  cleaned_up=true
+  # No-op if we never started anything. Otherwise a pre-flight exit (ports
+  # already in use) would kill the leftover process we just asked the user
+  # to stop themselves via ./end.sh.
+  if [ -z "${BACKEND_PID:-}" ] && [ -z "${FRONTEND_PID:-}" ]; then
+    return
+  fi
+  echo ""
+  echo "Shutting down..."
+  # Kill the npx-rooted trees first so the watchers stop respawning, then
+  # sweep the ports as a safety net.
+  if [ -n "${FRONTEND_PID:-}" ]; then
+    kill_tree "${FRONTEND_PID}"
+    stop_port "${FRONTEND_PORT}"
+    echo "Frontend stopped"
+  fi
+  if [ -n "${BACKEND_PID:-}" ]; then
+    kill_tree "${BACKEND_PID}"
+    stop_port "${BACKEND_PORT}"
+    echo "Backend stopped"
+  fi
+}
+
+trap cleanup SIGINT SIGTERM EXIT
 
 # --- Backend ---
 
@@ -102,13 +177,13 @@ cd "${ROOT_DIR}"
 # Wait for backend to be ready
 echo "Waiting for backend to start..."
 for i in $(seq 1 60); do
-  if curl -s "http://localhost:7070/api/health" -o /dev/null -w '%{http_code}' 2>/dev/null | grep -q '200'; then
+  if curl -s "http://localhost:${BACKEND_PORT}/api/health" -o /dev/null -w '%{http_code}' 2>/dev/null | grep -q '200'; then
     echo "Backend is ready!"
     break
   fi
   if [ "${i}" -eq 60 ]; then
     echo "ERROR: Backend failed to start within 60 seconds"
-    cleanup
+    exit 1
   fi
   sleep 1
 done
@@ -131,15 +206,15 @@ if ! npx ng version > /dev/null 2>&1; then
   npm install
 fi
 
-npx ng serve --port 7200 --proxy-config proxy.conf.json &
+npx ng serve --port "${FRONTEND_PORT}" --proxy-config proxy.conf.json &
 FRONTEND_PID=$!
 cd "${ROOT_DIR}"
 
 echo ""
 echo "=== CRM Application Started ==="
-echo "Backend:   http://localhost:7070"
+echo "Backend:   http://localhost:${BACKEND_PORT}"
 echo ""
-echo "  >>>  http://localhost:7200  <<<"
+echo "  >>>  http://localhost:${FRONTEND_PORT}  <<<"
 echo ""
 echo "Press Ctrl+C to stop"
 

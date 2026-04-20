@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "task_key": "FIX-STARTSH-CLEANUP",
+  "status": "completed",
+  "current_step": "13",
+  "started": "2026-04-20T00:00:00Z",
+  "updated": "2026-04-20T00:00:00Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Fix start.sh so Ctrl+C properly stops the backend. Currently EADDRINUSE error on port 7070 indicates the backend process survives Ctrl+C.",
+    "special_instructions": null,
+    "branch_name": "fix-startsh-cleanup",
+    "original_branch": "main",
+    "docs_folder": "docs",
+    "is_git_repo": true,
+    "workflow_scope": "full"
+  },
+  "discovery": {
+    "agents_available": true,
+    "writer_agents": ["ba-writer"],
+    "coding_agents": ["be-coder", "db-coder", "fe-coder", "ui-designer"],
+    "review_agents": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer"],
+    "test_coding_agents": ["be-test-coder", "fe-test-coder"],
+    "test_review_agents": ["be-test-reviewer", "fe-test-reviewer"],
+    "test_runner_agents": ["be-test-runner", "fe-test-runner"],
+    "test_command": "manual: ./start.sh, Ctrl+C, lsof -i:7070 -i:7200 must be empty"
+  },
+  "artifacts": {
+    "prd_skipped": null,
+    "prd_file": null,
+    "plan_file": "docs/plans/PLAN-FIX-STARTSH-CLEANUP.md",
+    "pr_url": "https://github.com/atra-consulting/coding-with-ai-lab/pull/48"
+  },
+  "completed_steps": ["1", "2", "3.1", "3.2", "3.3"]
+}
