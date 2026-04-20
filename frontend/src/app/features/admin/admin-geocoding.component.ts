@@ -60,6 +60,6 @@ export class AdminGeocodingComponent {
   }
 
   private restoreFocus(): void {
-    queueMicrotask(() => this.triggerButton()?.nativeElement.focus());
+    setTimeout(() => this.triggerButton()?.nativeElement.focus(), 0);
   }
 }

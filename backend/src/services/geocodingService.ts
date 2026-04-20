@@ -35,7 +35,8 @@ interface GeocodeCandidate {
 
 /**
  * Geocode a single address via the Nominatim search API.
- * Returns { latitude, longitude } on success, null when not found.
+ * Returns { latitude, longitude } on success, null when Nominatim returned an empty result
+ * (address not found). Batch callers count null as a failed lookup per REQ-007.
  * Throws on HTTP errors, JSON parse errors, or NaN coordinates.
  */
 export async function geocodeAdresse(
