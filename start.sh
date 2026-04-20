@@ -126,16 +126,26 @@ cleanup() {
     return
   fi
   cleaned_up=true
+  # No-op if we never started anything. Otherwise a pre-flight exit (ports
+  # already in use) would kill the leftover process we just asked the user
+  # to stop themselves via ./end.sh.
+  if [ -z "${BACKEND_PID:-}" ] && [ -z "${FRONTEND_PID:-}" ]; then
+    return
+  fi
   echo ""
   echo "Shutting down..."
   # Kill the npx-rooted trees first so the watchers stop respawning, then
   # sweep the ports as a safety net.
-  kill_tree "${FRONTEND_PID:-}"
-  kill_tree "${BACKEND_PID:-}"
-  stop_port "${FRONTEND_PORT}"
-  echo "Frontend stopped"
-  stop_port "${BACKEND_PORT}"
-  echo "Backend stopped"
+  if [ -n "${FRONTEND_PID:-}" ]; then
+    kill_tree "${FRONTEND_PID}"
+    stop_port "${FRONTEND_PORT}"
+    echo "Frontend stopped"
+  fi
+  if [ -n "${BACKEND_PID:-}" ]; then
+    kill_tree "${BACKEND_PID}"
+    stop_port "${BACKEND_PORT}"
+    echo "Backend stopped"
+  fi
 }
 
 trap cleanup SIGINT SIGTERM EXIT

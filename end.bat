@@ -10,7 +10,7 @@ set "FRONTEND_PORT=7200"
 :: enough: tsx respawns the node child it supervises as soon as we kill
 :: it, leaving port %BACKEND_PORT% bound. Match by command line via
 :: PowerShell (Get-CimInstance) to find the watcher processes themselves.
-powershell -NoProfile -Command "Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like '*tsx --watch src/index.ts*' -or $_.CommandLine -like '*ng serve*%FRONTEND_PORT%*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }" >nul 2>&1
+powershell -NoProfile -Command "Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like '*tsx --watch src/index.ts*' -or $_.CommandLine -like '*ng serve --port %FRONTEND_PORT%*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }" >nul 2>&1
 
 call :stop_port %FRONTEND_PORT% Frontend
 call :stop_port %BACKEND_PORT% Backend
