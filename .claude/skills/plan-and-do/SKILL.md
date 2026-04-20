@@ -69,7 +69,9 @@ Plan and implement any work from freeform description
 **CRITICAL — MANDATORY WORKFLOW. NO SHORTCUTS.**
 You MUST execute every numbered step (1–13) in strict order. No skipping. No combining. No "just doing it" because the task looks simple. Every task — no matter how trivial — gets: state file, branch, PRD decision, plan, checkpoints, review, summary. The user relies on checkpoints to stay in control. Skipping steps breaks the skill. Do NOT write any implementation code before Step 8. If you feel tempted to skip ahead, STOP and follow the next step instead.
 
-**CHECKPOINT RULE: NEVER auto-continue past a Standard Checkpoint.** You MUST use AskUserQuestion and WAIT for the user's response at every checkpoint. The user must explicitly choose "Continue" before you proceed. No exceptions.
+**CHECKPOINT RULE: NEVER auto-continue past a Standard Checkpoint.** You MUST use AskUserQuestion and WAIT for the user's response at every Standard Checkpoint. The user must explicitly choose "Continue" before you proceed. No exceptions.
+
+**A step is a Standard Checkpoint ONLY if its body explicitly calls AskUserQuestion.** Steps labeled with phrases like "Auto-Advance", "Advance to …", or marked "NOT a user checkpoint" are pure transitions — never call AskUserQuestion on them. When a step body says "Do NOT prompt", that wins over any word in the heading.
 
 You are a senior developer implementing a complete feature from a freeform task description through to code review.
 
@@ -616,7 +618,9 @@ Apply the **DISPATCH NARRATION RULE**. Collect each runner's pass/fail report.
 3. Re-run tests
 4. If still failing: show details, use AskUserQuestion: "What should I try next?" Apply guidance. Retry.
 
-### Step 9.3: Checkpoint 9 — Implementation Complete
+### Step 9.3: Implementation Complete — Auto-Advance
+
+**This is NOT a user checkpoint. Never call AskUserQuestion here. Auto-advance per workflow_scope.**
 
 Update state: `current_step` = "9.3".
 
@@ -626,7 +630,7 @@ Output: "All tests pass."
 
 The user already chose `workflow_scope` at Step 7.5 — honor it without re-asking:
 
-- `workflow_scope == "implement"` → Skip to STEP 13 (summary).
+- `workflow_scope == "implement"` → Skip to STEP 13 (summary). Do NOT prompt.
 - `workflow_scope == "implement-review"` or `"full"` → Announce "Continuing to code review." and proceed to STEP 10. Do NOT prompt.
 
 To make changes instead, the user can interrupt and run `/plan-and-do <key> resume:8`.
@@ -681,7 +685,9 @@ Code review may have changed implementation or test code. Re-run the relevant ru
 
 **Otherwise (no agents):** Re-run `[test_command]` directly. Same fail-handling as above.
 
-### Step 11.2: Checkpoint 11
+### Step 11.2: Advance to Documentation
+
+**This is NOT a user checkpoint. Never call AskUserQuestion here.**
 
 Update state: `current_step` = "11.2". → STEP 12.
 
@@ -705,7 +711,9 @@ Check CLAUDE.md, docs/specs/, docs/prds/ for needed updates based on implementat
 
 **No updates needed:** Display "No documentation updates needed." Continue.
 
-### Step 12.3: Checkpoint 12
+### Step 12.3: Advance to Summary
+
+**This is NOT a user checkpoint. Never call AskUserQuestion here.**
 
 Update state: `current_step` = "12.3". → STEP 13.
 
