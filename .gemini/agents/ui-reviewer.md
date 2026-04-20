@@ -1,7 +1,7 @@
 ---
 name: ui-reviewer
 description: "Critical evaluation of user interface implementations, including visual design assessment, usability testing, accessibility audits, and identifying UX problems."
-tools: read_file, write_file, replace, run_shell_command, glob, grep_search, mcp__playwright__browser_close, mcp__playwright__browser_resize, mcp__playwright__browser_console_messages, mcp__playwright__browser_handle_dialog, mcp__playwright__browser_evaluate, mcp__playwright__browser_file_upload, mcp__playwright__browser_fill_form, mcp__playwright__browser_install, mcp__playwright__browser_press_key, mcp__playwright__browser_type, mcp__playwright__browser_navigate, mcp__playwright__browser_navigate_back, mcp__playwright__browser_network_requests, mcp__playwright__browser_run_code, mcp__playwright__browser_take_screenshot, mcp__playwright__browser_snapshot, mcp__playwright__browser_click, mcp__playwright__browser_drag, mcp__playwright__browser_hover, mcp__playwright__browser_select_option, mcp__playwright__browser_tabs, mcp__playwright__browser_wait_for
+tools: glob, grep_search, read_file, run_shell_command, mcp__playwright__browser_close, mcp__playwright__browser_resize, mcp__playwright__browser_console_messages, mcp__playwright__browser_handle_dialog, mcp__playwright__browser_evaluate, mcp__playwright__browser_file_upload, mcp__playwright__browser_fill_form, mcp__playwright__browser_install, mcp__playwright__browser_press_key, mcp__playwright__browser_type, mcp__playwright__browser_navigate, mcp__playwright__browser_navigate_back, mcp__playwright__browser_network_requests, mcp__playwright__browser_run_code, mcp__playwright__browser_take_screenshot, mcp__playwright__browser_snapshot, mcp__playwright__browser_click, mcp__playwright__browser_drag, mcp__playwright__browser_hover, mcp__playwright__browser_select_option, mcp__playwright__browser_tabs, mcp__playwright__browser_wait_for
 model: sonnet
 ---
 
@@ -76,22 +76,18 @@ Start reviews with a severity summary:
 
 Then detail each finding. End with top 3 priorities to fix first.
 
-## Code Review Skill Integration
+## Confidence Scoring
 
-For PR-based reviews, use the `/code-review` skill which provides automated multi-agent PR review with confidence scoring.
-
-### Confidence Scoring
-
-Score each issue on a 0-100 scale:
+When invoked from the `/review` skill (or as part of `/plan-and-do`), score each issue on a 0-100 scale:
 - **0**: False positive. Does not stand up to scrutiny, or is a pre-existing issue.
 - **25**: Might be real, but could be false positive. Stylistic issues not in CLAUDE.md.
-- **50**: Verified real issue, but may be a nitpick or not important relative to the PR.
+- **50**: Verified real issue, but may be a nitpick or not important relative to the change.
 - **75**: Highly confident. Verified real issue that will be hit in practice. Directly impacts functionality or is mentioned in CLAUDE.md.
 - **100**: Absolutely certain. Confirmed real issue that will happen frequently.
 
 Only report issues with confidence >= 50. Flag issues >= 75 as actionable.
 
-### False Positive Awareness
+## False Positive Awareness
 
 Do NOT flag these as issues:
 - Pre-existing issues not introduced by the change

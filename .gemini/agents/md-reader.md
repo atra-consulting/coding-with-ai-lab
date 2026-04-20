@@ -1,7 +1,7 @@
 ---
 name: md-reader
 description: "Read, search, analyze, or summarize Markdown files in the project. Use for documentation files (CLAUDE.md, PRDs, plans, todos), README files, or any .md files."
-tools: read_file, write_file, replace, run_shell_command, glob, grep_search
+tools: glob, grep_search, read_file
 model: sonnet
 ---
 
