@@ -2,7 +2,7 @@
   "version": 1,
   "task_key": "FIX-GEMINI-ASKUSER",
   "status": "in_progress",
-  "current_step": "4.5",
+  "current_step": "7.5",
   "started": "2026-04-20T17:55:00Z",
   "updated": "2026-04-20T17:55:00Z",
   "config": {
@@ -14,24 +14,24 @@
     "branch_name": "fix-gemini-askuser",
     "original_branch": "main",
     "docs_folder": "docs",
-    "workflow_scope": null,
-    "keep_files": null
+    "workflow_scope": "full",
+    "keep_files": false
   },
   "discovery": {
     "agents_available": true,
     "writer_agents": ["ba-writer"],
     "coding_agents": ["be-coder", "db-coder", "fe-coder", "ui-designer"],
     "review_agents": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer"],
-    "test_command": null,
+    "test_command": "bash -lc 'set -e; cd /Users/karsten/workspaces/fh/repos/coding-with-ai-lab; c=$(grep -c ask_user .gemini/skills/plan-and-do/SKILL.md); [ \"$c\" -ge 18 ] || { echo \"SKILL.md ask_user count=$c < 18\"; exit 1; }; c=$(grep -c ask_user .gemini/skills/plan-and-do/plan-and-do-modes.md); [ \"$c\" -ge 4 ] || { echo \"modes ask_user count=$c < 4\"; exit 1; }; ! grep -iE \"read -p|home.?made terminal\" .gemini/skills/plan-and-do/*.md || { echo \"forbidden pattern found\"; exit 1; }; echo OK'",
     "youtrack_available": false,
     "youtrack_mcp": null,
     "youtrack_on_start": null,
     "youtrack_on_resolve": null
   },
   "artifacts": {
-    "prd_skipped": null,
+    "prd_skipped": true,
     "prd_file": null,
-    "plan_file": null,
+    "plan_file": "docs/plans/PLAN-FIX-GEMINI-ASKUSER.md",
     "pr_url": null
   },
   "completed_steps": []
