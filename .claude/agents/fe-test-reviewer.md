@@ -1,7 +1,7 @@
 ---
 name: fe-test-reviewer
 description: Review Jasmine/Karma unit tests for the Angular 21 frontend. Verify coverage, assertion quality, DI setup, and that tests actually exercise the component under test.
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, mcp__playwright__browser_close, mcp__playwright__browser_resize, mcp__playwright__browser_console_messages, mcp__playwright__browser_handle_dialog, mcp__playwright__browser_evaluate, mcp__playwright__browser_file_upload, mcp__playwright__browser_fill_form, mcp__playwright__browser_install, mcp__playwright__browser_press_key, mcp__playwright__browser_type, mcp__playwright__browser_navigate, mcp__playwright__browser_navigate_back, mcp__playwright__browser_network_requests, mcp__playwright__browser_run_code, mcp__playwright__browser_take_screenshot, mcp__playwright__browser_snapshot, mcp__playwright__browser_click, mcp__playwright__browser_drag, mcp__playwright__browser_hover, mcp__playwright__browser_select_option, mcp__playwright__browser_tabs, mcp__playwright__browser_wait_for
 model: sonnet
 ---
 
@@ -76,3 +76,9 @@ Do NOT flag these as issues:
 - Issues a typechecker would catch
 - Pedantic nitpicks a senior engineer wouldn't call out
 - Test style preferences unless explicitly in CLAUDE.md
+
+## Playwright MCP (Optional)
+
+You MAY use Playwright MCP (`mcp__playwright__*`) to cross-check that a spec's DOM assertions match the real UI at `http://localhost:7200` — for example, when a test asserts against a selector that looks wrong or outdated. Use it to confirm the spec tests the actual rendered structure, not a phantom one.
+
+The dev server must already be running. Close the browser (`browser_close`) when done. Do NOT run the Karma suite yourself — that is the `fe-test-runner`'s job.

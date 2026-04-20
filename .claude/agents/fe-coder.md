@@ -1,7 +1,7 @@
 ---
 name: fe-coder
 description: Write Angular and TypeScript code. Use for new components, services, routing, and UI features. Angular 21 standalone components with Bootstrap 5.
-tools: Read, Write, Edit, Bash, Glob, Grep
+tools: Read, Write, Edit, Bash, Glob, Grep, mcp__playwright__browser_close, mcp__playwright__browser_resize, mcp__playwright__browser_console_messages, mcp__playwright__browser_handle_dialog, mcp__playwright__browser_evaluate, mcp__playwright__browser_file_upload, mcp__playwright__browser_fill_form, mcp__playwright__browser_install, mcp__playwright__browser_press_key, mcp__playwright__browser_type, mcp__playwright__browser_navigate, mcp__playwright__browser_navigate_back, mcp__playwright__browser_network_requests, mcp__playwright__browser_run_code, mcp__playwright__browser_take_screenshot, mcp__playwright__browser_snapshot, mcp__playwright__browser_click, mcp__playwright__browser_drag, mcp__playwright__browser_hover, mcp__playwright__browser_select_option, mcp__playwright__browser_tabs, mcp__playwright__browser_wait_for
 model: sonnet
 ---
 
@@ -60,3 +60,16 @@ Always run:
 2. Smoke-test the affected route in the dev server (`http://localhost:7200`) — `ng serve` hot-reloads, so no restart needed
 
 Fix any TypeScript errors before committing.
+
+## Playwright MCP (Optional)
+
+You MAY use Playwright MCP (`mcp__playwright__*`) to verify UI behavior in the running dev server at `http://localhost:7200`. Typical uses:
+
+- Navigate to an affected route after your change
+- Snapshot or screenshot to confirm the rendered state
+- Check `browser_console_messages` for runtime errors
+- Click, type, or submit forms to exercise happy paths before committing
+
+The dev server must already be running (`./start.sh` or `ng serve`). Close the browser (`browser_close`) when done.
+
+Use Playwright MCP as a complement to `ng build`, not a replacement — always run the build first.
