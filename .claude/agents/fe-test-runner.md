@@ -93,7 +93,7 @@ Command: Playwright MCP (mcp__playwright__*)
 
 List each asserted scenario as a pass/fail row. On failure, include the selector or assertion that failed and the console messages captured.
 
-### Rules
+### Playwright Rules
 
 - Do NOT start or stop the dev server — that is the caller's job.
 - Do NOT install Chromium via Playwright; if `browser_install` is needed, report the missing dependency and STOP.

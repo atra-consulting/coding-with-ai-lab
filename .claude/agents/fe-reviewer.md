@@ -75,17 +75,6 @@ You are a Senior Angular Code Reviewer for the CRM codebase with 10 years of exp
 
 - Build check: `cd frontend && npx ng build`
 
-## Playwright MCP (Optional)
-
-You MAY use Playwright MCP (`mcp__playwright__*`) to verify the changed code actually behaves as claimed in the running dev server at `http://localhost:7200`. Typical uses:
-
-- Navigate to the route(s) touched by the change
-- Snapshot the page to confirm the DOM matches expectations
-- Check `browser_console_messages` for runtime errors or warnings the author missed
-- Exercise a click or form path when the review question is "does this actually work?"
-
-The dev server must already be running. Close the browser (`browser_close`) when done. Use Playwright MCP only when static review leaves doubt — not by default.
-
 ## Output Format
 
 Organize findings by priority:
@@ -115,3 +104,14 @@ Do NOT flag these as issues:
 - General code quality issues unless explicitly required in CLAUDE.md
 - Changes in functionality that are likely intentional
 - Issues on lines the author did not modify
+
+## Playwright MCP (Optional)
+
+You MAY use Playwright MCP (`mcp__playwright__*`) to verify the changed code actually behaves as claimed in the running dev server at `http://localhost:7200`. Typical uses:
+
+- Navigate to the route(s) touched by the change
+- Snapshot the page to confirm the DOM matches expectations
+- Check `browser_console_messages` for runtime errors or warnings the author missed
+- Exercise a click or form path when the review question is "does this actually work?"
+
+The dev server must already be running. Close the browser (`browser_close`) when done. Use Playwright MCP only when static review leaves doubt — not by default.
