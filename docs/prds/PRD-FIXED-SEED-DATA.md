@@ -164,4 +164,7 @@ None. All previous open questions (module placement, log format) are now closed 
 
 ## 10. Implementierung
 
-*To be filled in after implementation commits and PRs are created.*
+- `5b6d084` — feat: Replace runtime seeder with runDataMigration.
+- `f212ac7` — refactor: Remove seeder.ts, clarify build-fixture as dev tool.
+- Branch: `fixed-seed-data`.
+- PR: (to be filled in after PR creation).

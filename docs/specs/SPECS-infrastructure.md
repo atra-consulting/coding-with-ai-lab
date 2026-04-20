@@ -26,7 +26,9 @@ coding-with-ai-lab/
 │       │   ├── errorHandler.ts # Global error handler
 │       │   └── session.ts      # express-session configuration
 │       ├── seed/
-│       │   └── seeder.ts       # Demo data seeder (runs if DB is empty)
+│       │   ├── dataMigration.ts # Loads fixture.json into the DB when empty
+│       │   ├── fixture.json     # Fixed seed data (390 rows total)
+│       │   └── build-fixture.ts # Dev tool: regenerates fixture.json after schema changes
 │       └── utils/
 │           ├── errors.ts       # Error types
 │           ├── pagination.ts   # Spring Data page format helper
@@ -158,7 +160,7 @@ cd frontend && npx ng build
 ### Startup Sequence (index.ts)
 
 1. `runMigrations()` — creates tables if they do not exist
-2. `runSeeder()` — inserts demo data if database is empty
+2. `runDataMigration()` — inserts fixture data from `backend/src/seed/fixture.json` if database is empty
 3. `app.listen(7070)` — starts the HTTP server
 
 ## Configuration
