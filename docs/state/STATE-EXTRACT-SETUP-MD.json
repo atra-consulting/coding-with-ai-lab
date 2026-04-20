@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "task_key": "EXTRACT-SETUP-MD",
+  "status": "completed",
+  "current_step": "13",
+  "started": "2026-04-20T15:32:34Z",
+  "updated": "2026-04-20T15:32:34Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Extract software installation instructions into separate SETUP.md. Move the Nodejs stuff from README.MD there. Add instructions for installing Claude Code. Add 'Git for Windows for Claude Code' requirement in Windows section.",
+    "special_instructions": null,
+    "branch_name": "extract-setup-md",
+    "original_branch": "main",
+    "docs_folder": "docs",
+    "is_git_repo": true,
+    "workflow_scope": "full"
+  },
+  "discovery": {
+    "agents_available": true,
+    "writer_agents": ["ba-writer"],
+    "coding_agents": ["be-coder", "db-coder", "fe-coder", "ui-designer"],
+    "review_agents": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer"],
+    "test_coding_agents": ["be-test-coder", "fe-test-coder"],
+    "test_review_agents": ["be-test-reviewer", "fe-test-reviewer"],
+    "test_runner_agents": ["be-test-runner", "fe-test-runner"],
+    "test_command": "N/A (docs-only change)"
+  },
+  "artifacts": {
+    "prd_skipped": true,
+    "prd_file": null,
+    "plan_file": "docs/plans/PLAN-EXTRACT-SETUP-MD.md",
+    "pr_url": "https://github.com/atra-consulting/coding-with-ai-lab/pull/51"
+  },
+  "completed_steps": []
+}
