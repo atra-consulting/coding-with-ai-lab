@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "task_key": "FIXED-SEED-DATA",
+  "status": "in_progress",
+  "current_step": "3.3",
+  "started": "2026-04-20T00:00:00Z",
+  "updated": "2026-04-20T00:00:00Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "The application is filled with random data upon first start-up. Change this to fixed data, loaded in via DB migrations. Use the currently available data here as the basis for that.",
+    "special_instructions": null,
+    "branch_name": "fixed-seed-data",
+    "original_branch": "main",
+    "docs_folder": "docs",
+    "is_git_repo": true,
+    "workflow_scope": null
+  },
+  "discovery": {
+    "agents_available": false,
+    "writer_agents": [],
+    "coding_agents": [],
+    "review_agents": [],
+    "test_command": null
+  },
+  "artifacts": {
+    "prd_skipped": null,
+    "prd_file": null,
+    "plan_file": null,
+    "pr_url": null
+  },
+  "completed_steps": []
+}
