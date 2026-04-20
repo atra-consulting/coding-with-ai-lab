@@ -142,14 +142,62 @@ const POSITIONEN = [
   'Sachbearbeiter','Consultant','Vertriebsleiter','Key Account Manager','Entwickler',
   'Buchhalter','Controller','HR Business Partner','Einkäufer',
 ];
-const STRASSEN_PERSON = [
-  'Hauptstraße','Bahnhofstraße','Gartenstraße','Schulstraße','Kirchstraße','Ringstraße',
-  'Bergstraße','Waldstraße','Lindenstraße','Mozartstraße','Goethestraße','Schillerstraße',
-  'Marktstraße','Parkstraße','Rosenstraße',
-];
-const PERSON_STAEDTE = [
-  'Berlin','Hamburg','München','Köln','Frankfurt am Main','Stuttgart','Düsseldorf','Leipzig',
-  'Dortmund','Essen','Bremen','Dresden','Hannover','Nürnberg','Bonn','Münster','Bielefeld',
+// Curated real residential/commercial streets in German cities with correct
+// postal codes. Each tuple carries pre-computed lat/long (approximate street
+// centroid) so fixture generation is fully offline — no Nominatim call at
+// build time or at load time. Person addresses inherit these coordinates;
+// the admin geocoding action can refresh them on demand via ?force=true.
+interface PersonAddressSeed {
+  street: string;
+  postalCode: string;
+  city: string;
+  latitude: number;
+  longitude: number;
+}
+const PERSON_ADDRESS_POOL: PersonAddressSeed[] = [
+  // Berlin
+  { street: 'Kastanienallee',         postalCode: '10435', city: 'Berlin',             latitude: 52.5378, longitude: 13.4099 },
+  { street: 'Schönhauser Allee',      postalCode: '10435', city: 'Berlin',             latitude: 52.5432, longitude: 13.4118 },
+  { street: 'Bergmannstraße',         postalCode: '10961', city: 'Berlin',             latitude: 52.4897, longitude: 13.3944 },
+  { street: 'Oranienstraße',          postalCode: '10999', city: 'Berlin',             latitude: 52.5016, longitude: 13.4225 },
+  { street: 'Warschauer Straße',      postalCode: '10243', city: 'Berlin',             latitude: 52.5095, longitude: 13.4495 },
+  { street: 'Torstraße',              postalCode: '10119', city: 'Berlin',             latitude: 52.5289, longitude: 13.4076 },
+  // Hamburg
+  { street: 'Schanzenstraße',         postalCode: '20357', city: 'Hamburg',            latitude: 53.5615, longitude:  9.9633 },
+  { street: 'Lange Reihe',            postalCode: '20099', city: 'Hamburg',            latitude: 53.5555, longitude: 10.0118 },
+  { street: 'Eppendorfer Landstraße', postalCode: '20249', city: 'Hamburg',            latitude: 53.5895, longitude:  9.9857 },
+  { street: 'Grindelallee',           postalCode: '20146', city: 'Hamburg',            latitude: 53.5705, longitude:  9.9864 },
+  // München
+  { street: 'Schellingstraße',        postalCode: '80799', city: 'München',            latitude: 48.1536, longitude: 11.5776 },
+  { street: 'Türkenstraße',           postalCode: '80799', city: 'München',            latitude: 48.1516, longitude: 11.5772 },
+  { street: 'Lindwurmstraße',         postalCode: '80337', city: 'München',            latitude: 48.1299, longitude: 11.5543 },
+  { street: 'Hohenzollernstraße',     postalCode: '80801', city: 'München',            latitude: 48.1619, longitude: 11.5796 },
+  // Köln
+  { street: 'Ehrenstraße',            postalCode: '50672', city: 'Köln',               latitude: 50.9394, longitude:  6.9430 },
+  { street: 'Zülpicher Straße',       postalCode: '50674', city: 'Köln',               latitude: 50.9298, longitude:  6.9354 },
+  { street: 'Venloer Straße',         postalCode: '50823', city: 'Köln',               latitude: 50.9502, longitude:  6.9264 },
+  // Frankfurt
+  { street: 'Berger Straße',          postalCode: '60316', city: 'Frankfurt am Main',  latitude: 50.1270, longitude:  8.7018 },
+  { street: 'Schweizer Straße',       postalCode: '60594', city: 'Frankfurt am Main',  latitude: 50.1015, longitude:  8.6799 },
+  // Stuttgart
+  { street: 'Theodor-Heuss-Straße',   postalCode: '70174', city: 'Stuttgart',          latitude: 48.7783, longitude:  9.1737 },
+  { street: 'Rotebühlstraße',         postalCode: '70178', city: 'Stuttgart',          latitude: 48.7706, longitude:  9.1677 },
+  // Düsseldorf
+  { street: 'Bilker Allee',           postalCode: '40219', city: 'Düsseldorf',         latitude: 51.2167, longitude:  6.7706 },
+  { street: 'Immermannstraße',        postalCode: '40210', city: 'Düsseldorf',         latitude: 51.2247, longitude:  6.7886 },
+  // Hannover
+  { street: 'Lister Meile',           postalCode: '30161', city: 'Hannover',           latitude: 52.3823, longitude:  9.7454 },
+  // Dresden
+  { street: 'Hauptstraße',            postalCode: '01097', city: 'Dresden',            latitude: 51.0587, longitude: 13.7415 },
+  { street: 'Rothenburger Straße',    postalCode: '01099', city: 'Dresden',            latitude: 51.0647, longitude: 13.7474 },
+  // Leipzig
+  { street: 'Karl-Liebknecht-Straße', postalCode: '04275', city: 'Leipzig',            latitude: 51.3246, longitude: 12.3755 },
+  // Nürnberg
+  { street: 'Fürther Straße',         postalCode: '90429', city: 'Nürnberg',           latitude: 49.4569, longitude: 11.0537 },
+  // Bremen
+  { street: 'Ostertorsteinweg',       postalCode: '28203', city: 'Bremen',             latitude: 53.0772, longitude:  8.8206 },
+  // Bonn
+  { street: 'Poppelsdorfer Allee',    postalCode: '53115', city: 'Bonn',               latitude: 50.7243, longitude:  7.0852 },
 ];
 const AKTIVITAET_TYPEN = ['ANRUF','EMAIL','MEETING','AUFGABE','NOTIZ'] as const;
 const AKTIVITAET_SUBJECTS: Record<string, string[]> = {
@@ -174,7 +222,6 @@ function normalise(s: string): string {
     .replace(/ß/g, 'ss').replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 }
 const randPhone = () => `0${randInt(30, 99)} ${randInt(1000000, 9999999)}`;
-const randPlz = () => `${randInt(10, 99)}${String(randInt(100, 999))}`;
 function wahrscheinlichkeitForPhase(p: string): number {
   switch (p) {
     case 'NEU': return randInt(10, 20);
@@ -308,19 +355,22 @@ BRANCH_SEEDS.forEach((branch, idx) => {
     updatedAt: createdAt,
   });
 });
-// Person addresses (no typ, no coords)
+// Person addresses: pick from curated real-street pool with pre-computed
+// coordinates. Fully offline — no geocoding required at load time. Admin
+// action can still refresh these via ?force=true.
 const personenSample = pickN(person, 50);
 for (const p of personenSample) {
   const createdAt = randCreatedAt();
+  const addr = pick(PERSON_ADDRESS_POOL);
   adresse.push({
     id: adresseCounter++,
-    street: pick(STRASSEN_PERSON),
-    houseNumber: String(randInt(1, 99)),
-    postalCode: randPlz(),
-    city: pick(PERSON_STAEDTE),
+    street: addr.street,
+    houseNumber: String(randInt(1, 30)),
+    postalCode: addr.postalCode,
+    city: addr.city,
     country: 'Deutschland',
-    latitude: null,
-    longitude: null,
+    latitude: addr.latitude,
+    longitude: addr.longitude,
     typ: null,
     firmaId: null,
     personId: p.id,

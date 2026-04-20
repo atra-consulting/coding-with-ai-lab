@@ -9,6 +9,8 @@ export interface Adresse {
   firmaName: string | null;
   personId: number | null;
   personName: string | null;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 export interface AdresseCreate {
@@ -19,4 +21,6 @@ export interface AdresseCreate {
   country?: string;
   firmaId?: number | null;
   personId?: number | null;
+  latitude?: number | null;
+  longitude?: number | null;
 }

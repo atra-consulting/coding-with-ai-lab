@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "task_key": "ADDRESS-GEOCODING",
+  "status": "completed",
+  "current_step": "10.3",
+  "status_note": "implement-review scope completed",
+  "started": "2026-04-20T00:00:00Z",
+  "updated": "2026-04-20T00:00:00Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Extend the address table to have the latitude/longitude of the location, so it can be added to a map in the application. Look up lat/long in a geocoding service and store it in the DB.",
+    "special_instructions": null,
+    "branch_name": "address-geocoding",
+    "original_branch": "main",
+    "docs_folder": "docs",
+    "is_git_repo": true,
+    "workflow_scope": "implement-review"
+  },
+  "discovery": {
+    "agents_available": true,
+    "writer_agents": ["ba-writer"],
+    "coding_agents": ["be-coder", "db-coder", "fe-coder", "ui-designer"],
+    "review_agents": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer"],
+    "test_coding_agents": ["be-test-coder", "fe-test-coder"],
+    "test_review_agents": ["be-test-reviewer", "fe-test-reviewer"],
+    "test_runner_agents": ["be-test-runner", "fe-test-runner"],
+    "test_command": "cd backend && npx playwright test; cd ../frontend && npx ng test --watch=false --browsers=ChromeHeadless"
+  },
+  "artifacts": {
+    "prd_skipped": false,
+    "prd_file": "docs/prds/PRD-ADDRESS-GEOCODING.md",
+    "plan_file": "docs/plans/PLAN-ADDRESS-GEOCODING.md",
+    "pr_url": null
+  },
+  "completed_steps": []
+}

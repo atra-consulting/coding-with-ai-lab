@@ -19,7 +19,7 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
     </div>
     <div class="modal-footer">
       <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Abbrechen</button>
-      <button type="button" class="btn btn-danger" (click)="modal.close(true)">
+      <button type="button" [class]="confirmButtonClass" (click)="modal.close(true)">
         {{ confirmText }}
       </button>
     </div>
@@ -30,4 +30,5 @@ export class ConfirmDialogComponent {
   title = 'Bestätigung';
   message = 'Sind Sie sicher?';
   confirmText = 'Löschen';
+  confirmButtonClass = 'btn btn-danger';
 }

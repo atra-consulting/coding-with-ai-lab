@@ -14,6 +14,8 @@ export interface AdresseDTO {
   firmaName: string | null;
   personId: number | null;
   personName: string | null;
+  latitude: number | null;
+  longitude: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -30,6 +32,8 @@ interface AdresseRow {
   personId: number | null;
   personFirstName: string | null;
   personLastName: string | null;
+  latitude: number | null;
+  longitude: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -51,6 +55,8 @@ function toDTO(row: AdresseRow): AdresseDTO {
     firmaName: row.firmaName,
     personId: row.personId,
     personName,
+    latitude: row.latitude,
+    longitude: row.longitude,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };
@@ -60,6 +66,7 @@ const BASE_QUERY = `
   SELECT a.id, a.street, a.houseNumber, a.postalCode, a.city, a.country,
          a.firmaId, f.name AS firmaName,
          a.personId, p.firstName AS personFirstName, p.lastName AS personLastName,
+         a.latitude, a.longitude,
          a.createdAt, a.updatedAt
   FROM adresse a
   LEFT JOIN firma f ON a.firmaId = f.id
@@ -101,8 +108,8 @@ export const adresseService = {
     const now = new Date().toISOString();
     const result = sqlite
       .prepare(
-        `INSERT INTO adresse (street, houseNumber, postalCode, city, country, firmaId, personId, createdAt, updatedAt)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        `INSERT INTO adresse (street, houseNumber, postalCode, city, country, firmaId, personId, latitude, longitude, createdAt, updatedAt)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
       .run(
         dto.street ?? null,
@@ -112,6 +119,8 @@ export const adresseService = {
         dto.country ?? null,
         dto.firmaId ?? null,
         dto.personId ?? null,
+        dto.latitude ?? null,
+        dto.longitude ?? null,
         now,
         now
       );
@@ -119,11 +128,11 @@ export const adresseService = {
   },
 
   update(id: number, dto: AdresseCreateDTO): AdresseDTO {
-    this.findById(id);
+    const current = this.findById(id);
     const now = new Date().toISOString();
     sqlite
       .prepare(
-        `UPDATE adresse SET street=?, houseNumber=?, postalCode=?, city=?, country=?, firmaId=?, personId=?, updatedAt=? WHERE id=?`
+        `UPDATE adresse SET street=?, houseNumber=?, postalCode=?, city=?, country=?, firmaId=?, personId=?, latitude=?, longitude=?, updatedAt=? WHERE id=?`
       )
       .run(
         dto.street ?? null,
@@ -133,6 +142,8 @@ export const adresseService = {
         dto.country ?? null,
         dto.firmaId ?? null,
         dto.personId ?? null,
+        dto.latitude === undefined ? current.latitude : dto.latitude,
+        dto.longitude === undefined ? current.longitude : dto.longitude,
         now,
         id
       );
