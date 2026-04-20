@@ -19,7 +19,9 @@ Current `AskUserQuestion` count: SKILL.md = 22, plan-and-do-modes.md = 3.
 
 ## Test Command
 
-`bash -lc 'set -e; cd /Users/karsten/workspaces/fh/repos/coding-with-ai-lab; c=$(grep -c AskUserQuestion .claude/skills/plan-and-do/SKILL.md); [ "$c" -ge 26 ] || { echo "SKILL.md AskUserQuestion count=$c < 26"; exit 1; }; c=$(grep -c AskUserQuestion .claude/skills/plan-and-do/plan-and-do-modes.md); [ "$c" -ge 4 ] || { echo "modes AskUserQuestion count=$c < 4"; exit 1; }; grep -q "CRITICAL" .claude/skills/plan-and-do/SKILL.md || { echo "CRITICAL banner missing"; exit 1; }; ! grep -iE "home.?made terminal|stdin prompt|just print the question" .claude/skills/plan-and-do/*.md || { echo "forbidden pattern found"; exit 1; }; echo OK'`
+`bash -lc 'set -e; cd /Users/karsten/workspaces/fh/repos/coding-with-ai-lab; c=$(grep -c AskUserQuestion .claude/skills/plan-and-do/SKILL.md); [ "$c" -ge 26 ] || { echo "SKILL.md AskUserQuestion count=$c < 26"; exit 1; }; c=$(grep -c AskUserQuestion .claude/skills/plan-and-do/plan-and-do-modes.md); [ "$c" -ge 4 ] || { echo "modes AskUserQuestion count=$c < 4"; exit 1; }; grep -q "CRITICAL" .claude/skills/plan-and-do/SKILL.md || { echo "CRITICAL banner missing"; exit 1; }; grep -q "Forbidden Input Patterns" .claude/skills/plan-and-do/SKILL.md || { echo "Forbidden Input Patterns section missing"; exit 1; }; grep -q "revoked" .claude/skills/plan-and-do/SKILL.md || { echo "revocation language missing"; exit 1; }; echo OK'`
+
+Rationale for no "forbidden pattern" regex: the new CRITICAL block *describes* the forbidden patterns ("home-made terminal", "just print the question") as part of the revocation text. A naive grep would falsely flag the instructional content. The presence of `CRITICAL`, `Forbidden Input Patterns`, and `revoked` is what proves the rule is installed.
 
 ## Tasks
 
