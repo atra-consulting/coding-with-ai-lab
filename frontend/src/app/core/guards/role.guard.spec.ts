@@ -14,7 +14,7 @@ describe('roleGuard', () => {
     vorname: 'Admin',
     nachname: 'User',
     email: 'admin@test.de',
-    rollen: ['ADMIN', 'USER'],
+    rollen: ['ROLE_ADMIN', 'ROLE_USER'],
     permissions: [],
   };
 
@@ -24,7 +24,7 @@ describe('roleGuard', () => {
     vorname: 'Regular',
     nachname: 'User',
     email: 'user@test.de',
-    rollen: ['USER'],
+    rollen: ['ROLE_USER'],
     permissions: [],
   };
 
@@ -59,28 +59,28 @@ describe('roleGuard', () => {
 
   it('returns true when currentUser has the required role', () => {
     mockAuthService.currentUser.set(adminUser);
-    const result = runGuard('ADMIN');
+    const result = runGuard('ROLE_ADMIN');
     expect(result).toBeTrue();
     expect(router.navigate).not.toHaveBeenCalled();
   });
 
   it('returns false and navigates to /dashboard when user lacks the required role', () => {
     mockAuthService.currentUser.set(regularUser);
-    const result = runGuard('ADMIN');
+    const result = runGuard('ROLE_ADMIN');
     expect(result).toBeFalse();
     expect(router.navigate).toHaveBeenCalledWith(['/dashboard']);
   });
 
   it('returns false and navigates to /dashboard when currentUser is null', () => {
     mockAuthService.currentUser.set(null);
-    const result = runGuard('ADMIN');
+    const result = runGuard('ROLE_ADMIN');
     expect(result).toBeFalse();
     expect(router.navigate).toHaveBeenCalledWith(['/dashboard']);
   });
 
   it('returns true when currentUser has ANY of multiple required roles', () => {
     mockAuthService.currentUser.set(regularUser);
-    const result = runGuard('ADMIN', 'USER');
+    const result = runGuard('ROLE_ADMIN', 'ROLE_USER');
     expect(result).toBeTrue();
     expect(router.navigate).not.toHaveBeenCalled();
   });

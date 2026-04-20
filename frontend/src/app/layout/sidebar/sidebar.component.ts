@@ -70,7 +70,7 @@ export class SidebarComponent {
           label: 'Adressen geokodieren',
           route: '/admin/geocoding',
           icon: faUserShield,
-          requiredRole: 'ADMIN',
+          requiredRole: 'ROLE_ADMIN',
         },
       ],
     },

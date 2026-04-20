@@ -14,7 +14,7 @@ describe('SidebarComponent', () => {
     vorname: 'Admin',
     nachname: 'User',
     email: 'admin@test.de',
-    rollen: ['ADMIN', 'USER'],
+    rollen: ['ROLE_ADMIN', 'ROLE_USER'],
     permissions: [],
   };
 
@@ -24,7 +24,7 @@ describe('SidebarComponent', () => {
     vorname: 'Regular',
     nachname: 'User',
     email: 'user@test.de',
-    rollen: ['USER'],
+    rollen: ['ROLE_USER'],
     permissions: [],
   };
 
