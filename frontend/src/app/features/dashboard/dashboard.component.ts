@@ -21,31 +21,31 @@ import { DashboardData, RecentAktivitaet } from '../../core/models/dashboard.mod
         <!-- KPI tiles -->
         <div class="row g-3">
           <div class="col-md-6 col-lg-3">
-            <div class="card h-100">
+            <a class="card h-100 text-decoration-none text-reset kpi-tile" routerLink="/firmen">
               <dl class="card-body overflow-hidden mb-0">
                 <dt class="text-muted small fw-normal">Firmen</dt>
                 <dd class="display-6 text-truncate mb-0">{{ data()!.firmenCount }}</dd>
               </dl>
-            </div>
+            </a>
           </div>
           <div class="col-md-6 col-lg-3">
-            <div class="card h-100">
+            <a class="card h-100 text-decoration-none text-reset kpi-tile" routerLink="/personen">
               <dl class="card-body overflow-hidden mb-0">
                 <dt class="text-muted small fw-normal">Personen</dt>
                 <dd class="display-6 text-truncate mb-0">{{ data()!.personenCount }}</dd>
               </dl>
-            </div>
+            </a>
           </div>
           <div class="col-md-6 col-lg-3">
-            <div class="card h-100">
+            <a class="card h-100 text-decoration-none text-reset kpi-tile" routerLink="/chancen">
               <dl class="card-body overflow-hidden mb-0">
                 <dt class="text-muted small fw-normal">Offene Chancen</dt>
                 <dd class="display-6 text-truncate mb-0">{{ data()!.offeneChancenCount }}</dd>
               </dl>
-            </div>
+            </a>
           </div>
           <div class="col-md-6 col-lg-3">
-            <div class="card h-100">
+            <a class="card h-100 text-decoration-none text-reset kpi-tile" routerLink="/chancen">
               <dl class="card-body overflow-hidden mb-0">
                 <dt class="text-muted small fw-normal">Gewonnener Umsatz</dt>
                 <dd class="display-6 text-truncate mb-0"
@@ -53,7 +53,7 @@ import { DashboardData, RecentAktivitaet } from '../../core/models/dashboard.mod
                   {{ data()!.gewonneneChancenSumme | currency:'EUR':'symbol':'1.0-0':'de-DE' }}
                 </dd>
               </dl>
-            </div>
+            </a>
           </div>
         </div>
 
@@ -118,6 +118,18 @@ import { DashboardData, RecentAktivitaet } from '../../core/models/dashboard.mod
       }
     </main>
   `,
+  styles: [
+    `
+      .kpi-tile {
+        transition: box-shadow 0.15s ease, transform 0.15s ease;
+      }
+      .kpi-tile:hover,
+      .kpi-tile:focus-visible {
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+        transform: translateY(-1px);
+      }
+    `,
+  ],
 })
 export class DashboardComponent implements OnInit {
   private dashboardService = inject(DashboardService);

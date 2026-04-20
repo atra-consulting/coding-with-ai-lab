@@ -22,8 +22,16 @@
   }
 
   <div class="mt-auto sidebar-toggle-container d-flex justify-content-center p-2">
-    <button class="btn btn-link toggle-btn" (click)="layoutService.toggleSidebar()">
+    <button
+      class="btn btn-link toggle-btn"
+      (click)="layoutService.toggleSidebar()"
+      [title]="layoutService.collapsed() ? 'Expand' : 'Collapse'"
+      [attr.aria-label]="layoutService.collapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
+    >
       <fa-icon [icon]="layoutService.collapsed() ? faAngleDoubleRight : faAngleDoubleLeft"></fa-icon>
+      @if (!layoutService.collapsed()) {
+        <span class="ms-2">Collapse</span>
+      }
     </button>
   </div>
 
