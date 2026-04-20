@@ -1,6 +1,6 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction, RequestHandler } from 'express';
 import { findById, CrmUser } from '../config/users.js';
-import { UnauthorizedError } from '../utils/errors.js';
+import { UnauthorizedError, ForbiddenError } from '../utils/errors.js';
 
 // Augment express-session SessionData to include userId
 declare module 'express-session' {
@@ -14,6 +14,20 @@ declare module 'express' {
   interface Request {
     currentUser?: CrmUser;
   }
+}
+
+export function requireRole(...roles: string[]): RequestHandler {
+  return (req: Request, _res: Response, next: NextFunction): void => {
+    if (!req.currentUser) {
+      next(new ForbiddenError('Zugriff verweigert'));
+      return;
+    }
+    if (!roles.some(r => req.currentUser!.roles.includes(r))) {
+      next(new ForbiddenError('Zugriff verweigert'));
+      return;
+    }
+    next();
+  };
 }
 
 export function requireAuth(req: Request, _res: Response, next: NextFunction): void {
