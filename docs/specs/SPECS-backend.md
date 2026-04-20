@@ -394,7 +394,7 @@ All error responses use this shape:
 
 `ValidationError` populates `fieldErrors` as `{ "fieldName": "error message" }`. All other errors return an empty `fieldErrors` object.
 
-Timestamp strips the trailing `Z` for compatibility with the original Java `LocalDateTime` format.
+Timestamp is millisecond-precision ISO-8601 with no timezone suffix (no trailing `Z`).
 
 ## Code Pattern
 

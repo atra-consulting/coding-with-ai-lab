@@ -60,7 +60,7 @@ Frontend (8+ files): Model interface → Service → Route file → List/Detail/
 
 | Agent | Purpose | Type |
 |-------|---------|------|
-| admin | Local dev environment, SQLite databases, process management | ops |
+| admin | Local dev environment, SQLite database, process management | ops |
 | ba-reviewer | Review PRDs, specs, plans for gaps and issues | review |
 | ba-writer | Create business specs, requirements, plans | writing |
 | be-coder | Node.js / TypeScript backend code | coding |
