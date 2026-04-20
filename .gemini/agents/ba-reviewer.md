@@ -1,7 +1,7 @@
 ---
 name: ba-reviewer
 description: "Review PRDs, specifications, implementation plans, or business requirements documents. Finds gaps, inconsistencies, ambiguities, and potential problems before development begins."
-tools: read_file, write_file, replace, run_shell_command, glob, grep_search
+tools: glob, grep_search, read_file, run_shell_command
 model: sonnet
 ---
 
@@ -79,33 +79,29 @@ Highlight strengths to reinforce good practices.
 
 ## Project Context
 
-This project is a full-stack CRM application with a separate CIAM microservice. Key conventions:
+This project is a full-stack CRM application. Key conventions:
 - PRDs live in `docs/prds/`
 - Plans live in `docs/plans/`
-- Backend: Spring Boot 4.0.3 (Java 21) with entity pattern (Entity -> DTO -> Mapper -> Repository -> Service -> Controller)
-- CIAM: Kotlin Spring Boot 4.0.3 for Identity & Access Management
-- Frontend: Angular 21 standalone components
-- German domain model (Firma, Person, Abteilung, etc.)
-- H2 file-based databases
+- Backend: Node.js 20.19+ / TypeScript 5.8 / Express 4.21 with route → service → db layering (`backend/src/routes/` → `backend/src/services/` → `backend/src/config/db.ts`)
+- Database: better-sqlite3 9.6 with Drizzle ORM 0.41 (file-based SQLite at `backend/data/crmdb.sqlite`)
+- Auth: session-based (`express-session` + memorystore), hardcoded users in `backend/src/config/users.ts`, role and permission middleware in `backend/src/middleware/auth.ts`
+- Frontend: Angular 21 standalone components, Bootstrap 5
+- German domain model (Firma, Person, Abteilung, Adresse, Gehalt, Aktivitaet, Vertrag, Chance)
 
 When reviewing, consider how requirements will translate to this specific tech stack.
 
-## Code Review Skill Integration
+## Confidence Scoring
 
-For PR-based reviews, use the `/code-review` skill which provides automated multi-agent PR review with confidence scoring.
-
-### Confidence Scoring
-
-Score each issue on a 0-100 scale:
+When invoked from the `/review` skill (or as part of `/plan-and-do`), score each issue on a 0-100 scale:
 - **0**: False positive. Does not stand up to scrutiny, or is a pre-existing issue.
 - **25**: Might be real, but could be false positive. Stylistic issues not in CLAUDE.md.
-- **50**: Verified real issue, but may be a nitpick or not important relative to the PR.
+- **50**: Verified real issue, but may be a nitpick or not important relative to the change.
 - **75**: Highly confident. Verified real issue that will be hit in practice. Directly impacts functionality or is mentioned in CLAUDE.md.
 - **100**: Absolutely certain. Confirmed real issue that will happen frequently.
 
 Only report issues with confidence >= 50. Flag issues >= 75 as actionable.
 
-### False Positive Awareness
+## False Positive Awareness
 
 Do NOT flag these as issues:
 - Pre-existing issues not introduced by the change

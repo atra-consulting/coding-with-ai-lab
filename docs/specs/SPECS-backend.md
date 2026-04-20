@@ -205,7 +205,7 @@ Login response:
 | GET | `/api/firmen/all` | Full list, no pagination |
 | GET | `/api/firmen/:id` | Single record |
 | GET | `/api/firmen/:id/personen` | Paginated persons for this Firma |
-| GET | `/api/firmen/:id/abteilungen` | Paginated Abteilungen for this Firma |
+| GET | `/api/firmen/:id/abteilungen` | Paginated Abteilungen for this Firma (per-firma listing) |
 | POST | `/api/firmen` | Create → 201 |
 | PUT | `/api/firmen/:id` | Full update |
 | DELETE | `/api/firmen/:id` | Delete → 204 |
@@ -231,7 +231,6 @@ Allowed sort fields: `firstName`, `lastName`, `email`, `position`, `createdAt`, 
 |--------|------|-------------|
 | GET | `/api/abteilungen` | Paginated list. Params: `page`, `size`, `sort`. Default: `name,ASC` |
 | GET | `/api/abteilungen/all` | Full list, no pagination |
-| GET | `/api/abteilungen/firma/:firmaId` | All Abteilungen for one Firma (no pagination) |
 | GET | `/api/abteilungen/:id` | Single record |
 | GET | `/api/abteilungen/:id/personen` | Paginated persons for this Abteilung |
 | POST | `/api/abteilungen` | Create → 201 |
@@ -395,7 +394,7 @@ All error responses use this shape:
 
 `ValidationError` populates `fieldErrors` as `{ "fieldName": "error message" }`. All other errors return an empty `fieldErrors` object.
 
-Timestamp strips the trailing `Z` for compatibility with the original Java `LocalDateTime` format.
+Timestamp is millisecond-precision ISO-8601 with no timezone suffix (no trailing `Z`).
 
 ## Code Pattern
 

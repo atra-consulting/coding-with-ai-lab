@@ -31,7 +31,7 @@ coding-with-ai-lab/
 │       │   └── build-fixture.ts # Dev tool: regenerates fixture.json after schema changes
 │       └── utils/
 │           ├── errors.ts       # Error types
-│           ├── pagination.ts   # Spring Data page format helper
+│           ├── pagination.ts   # Spring-Data-style page format helper (naming only; backend is Node)
 │           └── validation.ts   # Zod validation helpers
 ├── frontend/                   # Angular 21 SPA
 │   ├── package.json

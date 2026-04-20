@@ -32,7 +32,7 @@ cd frontend && npx ng build                        # Frontend build check
 - **Sort parsing**: Sort arrives as query param `field,direction` (e.g., `name,asc`). Validated against per-entity field whitelists to prevent SQL injection.
 - **Authorization**: Every route file uses `requireRole(...)` or `requirePermission(...)` middleware from `middleware/auth.ts`.
 - **Error responses**: `{ status, message, timestamp, fieldErrors }` via global error handler in `middleware/errorHandler.ts`.
-- **Pagination**: Response shape mimics Spring Data Page: `{ content, totalElements, totalPages, size, number, first, last }`. `number` is 0-indexed.
+- **Pagination**: Response shape mimics the Spring Data Page format (name only — backend is Node): `{ content, totalElements, totalPages, size, number, first, last }`. `number` is 0-indexed.
 - **Testing**: Backend uses Playwright (`@playwright/test`) for end-to-end API tests under `backend/src/test/`.
 
 ### Frontend
@@ -60,7 +60,7 @@ Frontend (8+ files): Model interface → Service → Route file → List/Detail/
 
 | Agent | Purpose | Type |
 |-------|---------|------|
-| admin | Local dev environment, SQLite databases, process management | ops |
+| admin | Local dev environment, SQLite database, process management | ops |
 | ba-reviewer | Review PRDs, specs, plans for gaps and issues | review |
 | ba-writer | Create business specs, requirements, plans | writing |
 | be-coder | Node.js / TypeScript backend code | coding |

@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "branch": "update-docs-node-tests",
+  "main_branch": "main",
+  "docs_folder": "docs",
+  "special_instructions": null,
+  "review_agents_available": true,
+  "fix_agents_available": true,
+  "all_reviewers": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer", "be-test-reviewer", "fe-test-reviewer"],
+  "all_coders": ["be-coder", "db-coder", "fe-coder"],
+  "all_designers": ["ui-designer"],
+  "dry_run_mode": false,
+  "started": "2026-04-20T00:00:00Z"
+}
