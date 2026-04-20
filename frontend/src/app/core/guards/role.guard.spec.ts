@@ -50,8 +50,8 @@ describe('roleGuard', () => {
     spyOn(router, 'navigate');
   });
 
-  function runGuard(requiredRole: string): boolean | Promise<boolean> {
-    const guardFn = roleGuard(requiredRole);
+  function runGuard(...requiredRoles: string[]): boolean | Promise<boolean> {
+    const guardFn = roleGuard(...requiredRoles);
     return TestBed.runInInjectionContext(() =>
       guardFn(null as any, null as any),
     ) as boolean | Promise<boolean>;
@@ -76,5 +76,12 @@ describe('roleGuard', () => {
     const result = runGuard('ADMIN');
     expect(result).toBeFalse();
     expect(router.navigate).toHaveBeenCalledWith(['/dashboard']);
+  });
+
+  it('returns true when currentUser has ANY of multiple required roles', () => {
+    mockAuthService.currentUser.set(regularUser);
+    const result = runGuard('ADMIN', 'USER');
+    expect(result).toBeTrue();
+    expect(router.navigate).not.toHaveBeenCalled();
   });
 });

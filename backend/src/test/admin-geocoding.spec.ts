@@ -150,10 +150,12 @@ test.describe('Concurrency', () => {
       ids.push(insertAdresseWithoutCoords({ city: 'Berlin', postalCode: '10115' }));
     }
 
+    const adminCtx2 = await loginCtx('admin', 'admin123');
     const [resp1, resp2] = await Promise.all([
       adminCtx.post('/api/admin/geocode-addresses'),
-      adminCtx.post('/api/admin/geocode-addresses'),
+      adminCtx2.post('/api/admin/geocode-addresses'),
     ]);
+    await adminCtx2.dispose();
 
     for (const id of ids) {
       sqlite.prepare('DELETE FROM adresse WHERE id = ?').run(id);

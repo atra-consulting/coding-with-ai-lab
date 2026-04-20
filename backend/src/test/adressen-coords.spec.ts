@@ -106,15 +106,19 @@ test.describe('GET /api/adressen', () => {
       expect(body.content.length).toBeGreaterThan(0);
     });
 
-    await test.step('every item has latitude key', () => {
+    await test.step('every item has numeric or null latitude', () => {
       for (const item of body.content) {
         expect('latitude' in item).toBe(true);
+        const lat = item['latitude'];
+        expect(lat === null || typeof lat === 'number').toBe(true);
       }
     });
 
-    await test.step('every item has longitude key', () => {
+    await test.step('every item has numeric or null longitude', () => {
       for (const item of body.content) {
         expect('longitude' in item).toBe(true);
+        const lng = item['longitude'];
+        expect(lng === null || typeof lng === 'number').toBe(true);
       }
     });
   });
