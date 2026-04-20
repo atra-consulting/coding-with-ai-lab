@@ -47,6 +47,31 @@ if ! command -v npm &> /dev/null; then
   exit 1
 fi
 
+# Check lsof is available (used for port cleanup)
+if ! command -v lsof &> /dev/null; then
+  echo "ERROR: lsof is not installed; required for port cleanup."
+  exit 1
+fi
+
+BACKEND_PORT=7070
+FRONTEND_PORT=7200
+
+# Pre-flight: refuse to start if the ports are already in use. Otherwise the
+# health check below would talk to a leftover backend from a previous run and
+# the new backend would crash with EADDRINUSE.
+check_port_free() {
+  local port="$1"
+  local label="$2"
+  if lsof -ti ":${port}" > /dev/null 2>&1; then
+    echo "ERROR: ${label} port ${port} is already in use."
+    echo "Run ./end.sh to stop the leftover process, then try again."
+    exit 1
+  fi
+}
+
+check_port_free "${BACKEND_PORT}"  "Backend"
+check_port_free "${FRONTEND_PORT}" "Frontend"
+
 # Optionally reset database
 if [ "$RESET_DB" = true ]; then
   if [ -d "$CRM_DB_DIR" ]; then
@@ -56,24 +81,41 @@ if [ "$RESET_DB" = true ]; then
   echo "Database deleted. Will be recreated on startup."
 fi
 
-BACKEND_PID=""
-FRONTEND_PID=""
+# Kill every process listening on the given port. Must kill by port, not by the
+# PIDs we captured: `npx tsx --watch` / `npx ng serve` spawn child node
+# processes, and killing npx leaves those children (which hold the port) alive.
+stop_port() {
+  local port="$1"
+  local label="$2"
 
-cleanup() {
-  echo ""
-  echo "Shutting down..."
-  if [ -n "${FRONTEND_PID}" ]; then
-    kill "${FRONTEND_PID}" 2>/dev/null || true
-    echo "Frontend stopped"
+  local pids
+  pids=$(lsof -ti ":${port}" 2>/dev/null || true)
+  if [ -z "$pids" ]; then
+    return 0
   fi
-  if [ -n "${BACKEND_PID}" ]; then
-    kill "${BACKEND_PID}" 2>/dev/null || true
-    echo "Backend stopped"
+
+  echo "$pids" | xargs kill 2>/dev/null || true
+  sleep 1
+  pids=$(lsof -ti ":${port}" 2>/dev/null || true)
+  if [ -n "$pids" ]; then
+    echo "$pids" | xargs kill -9 2>/dev/null || true
   fi
-  exit 0
+  echo "${label} stopped"
 }
 
-trap cleanup SIGINT SIGTERM
+cleaned_up=false
+cleanup() {
+  if [ "$cleaned_up" = true ]; then
+    return
+  fi
+  cleaned_up=true
+  echo ""
+  echo "Shutting down..."
+  stop_port "${FRONTEND_PORT}" "Frontend"
+  stop_port "${BACKEND_PORT}"  "Backend"
+}
+
+trap cleanup SIGINT SIGTERM EXIT
 
 # --- Backend ---
 
@@ -96,19 +138,18 @@ if ! node -e "require('better-sqlite3')" > /dev/null 2>&1; then
 fi
 
 npx tsx --watch src/index.ts &
-BACKEND_PID=$!
 cd "${ROOT_DIR}"
 
 # Wait for backend to be ready
 echo "Waiting for backend to start..."
 for i in $(seq 1 60); do
-  if curl -s "http://localhost:7070/api/health" -o /dev/null -w '%{http_code}' 2>/dev/null | grep -q '200'; then
+  if curl -s "http://localhost:${BACKEND_PORT}/api/health" -o /dev/null -w '%{http_code}' 2>/dev/null | grep -q '200'; then
     echo "Backend is ready!"
     break
   fi
   if [ "${i}" -eq 60 ]; then
     echo "ERROR: Backend failed to start within 60 seconds"
-    cleanup
+    exit 1
   fi
   sleep 1
 done
@@ -131,15 +172,14 @@ if ! npx ng version > /dev/null 2>&1; then
   npm install
 fi
 
-npx ng serve --port 7200 --proxy-config proxy.conf.json &
-FRONTEND_PID=$!
+npx ng serve --port "${FRONTEND_PORT}" --proxy-config proxy.conf.json &
 cd "${ROOT_DIR}"
 
 echo ""
 echo "=== CRM Application Started ==="
-echo "Backend:   http://localhost:7070"
+echo "Backend:   http://localhost:${BACKEND_PORT}"
 echo ""
-echo "  >>>  http://localhost:7200  <<<"
+echo "  >>>  http://localhost:${FRONTEND_PORT}  <<<"
 echo ""
 echo "Press Ctrl+C to stop"
 
