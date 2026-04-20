@@ -3,6 +3,8 @@
 > Ein Testprojekt des [atra.consulting](https://atra.consulting/) **AI Coding Lab**.
 > Ziel ist es, anhand einer realistischen Full-Stack-Anwendung zu zeigen, wie AI-gestütztes Coding in der Praxis funktioniert.
 
+> **Erstmal hier starten:** Vor dem ersten Start bitte **[SETUP.md](SETUP.md)** lesen — dort steht die komplette Installationsanleitung (Node.js, Claude Code, IDE, Markdown-Viewer).
+
 ## Tech-Stack
 
 | Schicht | Technologie |
@@ -36,74 +38,7 @@ Detaillierte Architektur-Dokumentation: [docs/architecture.md](docs/architecture
 
 ## Voraussetzungen
 
-**Node.js 20.19 oder neuer** (Voraussetzung für Angular 21). npm wird mit Node.js mitgeliefert.
-
-### Node.js installieren
-
-#### macOS
-
-```bash
-# Option 1: Homebrew (empfohlen)
-brew install node@22
-
-# Option 2: nvm (Node Version Manager)
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
-nvm install 22
-```
-
-#### Windows
-
-```powershell
-# Option 1: Offizielle Installer von https://nodejs.org/ herunterladen und ausführen
-
-# Option 2: winget
-winget install OpenJS.NodeJS.LTS
-
-# Option 3: nvm-windows (https://github.com/coreybutler/nvm-windows)
-nvm install 22
-nvm use 22
-```
-
-> **Wichtig bei der Installation über den offiziellen Installer:**
-> Im Installationsdialog die Checkbox **"Automatically install the necessary tools. [...]"** aktivieren. Damit werden Build-Tools (Python, Visual Studio Build Tools) mitinstalliert, die für native Module wie `better-sqlite3` benötigt werden.
->
-> <!-- TODO: Screenshot des Installer-Dialogs einfügen (z.B. docs/images/node-installer-tools-checkbox.png) -->
->
-> **Bei Berechtigungsproblemen** (z.B. wenn Skripte nicht ausgeführt werden dürfen) in PowerShell folgenden Befehl ausführen:
-> ```powershell
-> Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-> ```
-
-#### Linux (Ubuntu/Debian)
-
-```bash
-# Option 1: NodeSource-Repository (empfohlen)
-curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
-sudo apt-get install -y nodejs
-
-# Option 2: nvm (Node Version Manager)
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
-nvm install 22
-```
-
-#### Linux (Fedora/RHEL)
-
-```bash
-# Option 1: NodeSource-Repository
-curl -fsSL https://rpm.nodesource.com/setup_22.x | sudo bash -
-sudo dnf install -y nodejs
-
-# Option 2: nvm
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
-nvm install 22
-```
-
-### Version prüfen
-
-```bash
-node --version   # Muss v20.19.0 oder neuer sein
-npm --version    # Wird mit Node.js mitgeliefert
-```
+Dieses Projekt benötigt **Node.js 20.19 oder neuer**, optional **Claude Code** für AI-gestützte Entwicklung sowie eine IDE und einen Markdown-Viewer. Eine vollständige Installationsanleitung für alle unterstützten Betriebssysteme findet sich in **[SETUP.md](SETUP.md)**.
 
 ## Schnellstart
 
