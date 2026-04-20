@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "task_key": "ADAPT-WORKSHOP-TASKS",
+  "status": "in_progress",
+  "current_step": "3.3",
+  "started": "2026-04-20T18:33:37Z",
+  "updated": "2026-04-20T18:33:37Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Analyze the tasks in docs/workshop/. They are for workshop participants. Adapt them to the recent changes on this branch - simplification, removal of entities. Then move them to /Users/karsten/workspaces/fh/repos/coding-with-ai-training-materials/tasks/new",
+    "special_instructions": null,
+    "branch_name": null,
+    "original_branch": null,
+    "docs_folder": "docs",
+    "is_git_repo": true,
+    "workflow_scope": null
+  },
+  "discovery": {
+    "agents_available": false,
+    "writer_agents": [],
+    "coding_agents": [],
+    "review_agents": [],
+    "test_command": null
+  },
+  "artifacts": {
+    "prd_skipped": null,
+    "prd_file": null,
+    "plan_file": null,
+    "pr_url": null
+  },
+  "completed_steps": []
+}
