@@ -167,4 +167,4 @@ None. All previous open questions (module placement, log format) are now closed 
 - `5b6d084` — feat: Replace runtime seeder with runDataMigration.
 - `f212ac7` — refactor: Remove seeder.ts, clarify build-fixture as dev tool.
 - Branch: `fixed-seed-data`.
-- PR: (to be filled in after PR creation).
+- PR: https://github.com/atra-consulting/coding-with-ai-lab/pull/49
