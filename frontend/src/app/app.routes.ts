@@ -64,6 +64,11 @@ export const routes: Routes = [
         path: 'chancen',
         loadChildren: () => import('./features/chance/chance.routes').then((m) => m.CHANCE_ROUTES),
       },
+      {
+        path: 'admin',
+        loadChildren: () =>
+          import('./features/admin/admin.routes').then((m) => m.ADMIN_ROUTES),
+      },
     ],
   },
   { path: '**', redirectTo: 'welcome' },

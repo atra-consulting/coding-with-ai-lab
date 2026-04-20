@@ -12,13 +12,16 @@ import {
   faUsers,
   faAngleDoubleLeft,
   faAngleDoubleRight,
+  faUserShield,
 } from '@fortawesome/free-solid-svg-icons';
 import { LayoutService } from '../../core/services/layout.service';
+import { AuthService } from '../../core/services/auth.service';
 
 interface NavItem {
   label: string;
   route: string;
   icon: IconDefinition;
+  requiredRole?: string;
 }
 
 interface NavSection {
@@ -33,6 +36,7 @@ interface NavSection {
 })
 export class SidebarComponent {
   layoutService = inject(LayoutService);
+  private authService = inject(AuthService);
 
   faAngleDoubleLeft = faAngleDoubleLeft;
   faAngleDoubleRight = faAngleDoubleRight;
@@ -59,5 +63,24 @@ export class SidebarComponent {
         { label: 'Aktivitäten', route: '/aktivitaeten', icon: faCalendarCheck },
       ],
     },
+    {
+      title: 'Administration',
+      items: [
+        {
+          label: 'Adressen geokodieren',
+          route: '/admin/geocoding',
+          icon: faUserShield,
+          requiredRole: 'ADMIN',
+        },
+      ],
+    },
   ];
+
+  hasRole(role: string): boolean {
+    return this.authService.currentUser()?.rollen.includes(role) ?? false;
+  }
+
+  visibleItems(items: NavItem[]): NavItem[] {
+    return items.filter((i) => !i.requiredRole || this.hasRole(i.requiredRole));
+  }
 }

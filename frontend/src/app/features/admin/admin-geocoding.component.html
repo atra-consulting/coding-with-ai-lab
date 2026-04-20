@@ -1,0 +1,43 @@
+<div class="card">
+  <div class="card-header">
+    <h5 class="mb-0">Adressen geokodieren</h5>
+  </div>
+  <div class="card-body">
+    <p>
+      Ermittelt geografische Koordinaten (Breitengrad und Längengrad) für alle Adressen ohne
+      Koordinaten. Die Koordinaten werden über den Nominatim-Dienst von OpenStreetMap abgerufen.
+    </p>
+
+    <button class="btn btn-primary" [disabled]="running" (click)="startGeocode()">
+      Koordinaten ermitteln
+    </button>
+
+    @if (running) {
+      <span class="spinner-border spinner-border-sm ms-2" role="status">
+        <span class="visually-hidden">Läuft…</span>
+      </span>
+      <span class="ms-2" aria-hidden="true">Läuft…</span>
+    }
+
+    @if (result) {
+      <div class="alert alert-success mt-3" role="alert">
+        <strong>Geokodierung abgeschlossen</strong>
+        <ul class="mb-0 mt-2">
+          <li>Gesamt: {{ result.total }}</li>
+          <li>Erfolgreich: {{ result.succeeded }}</li>
+          <li>Fehlgeschlagen: {{ result.failed }}</li>
+          <li>Übersprungen: {{ result.skippedInsufficientData }}</li>
+        </ul>
+      </div>
+    }
+
+    @if (errorMessage) {
+      <div class="alert alert-danger mt-3" role="alert">
+        @if (errorStatus) {
+          <strong>Fehler {{ errorStatus }}:</strong>
+        }
+        {{ errorMessage }}
+      </div>
+    }
+  </div>
+</div>
