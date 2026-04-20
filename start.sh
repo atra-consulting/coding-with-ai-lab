@@ -81,12 +81,30 @@ if [ "$RESET_DB" = true ]; then
   echo "Database deleted. Will be recreated on startup."
 fi
 
-# Kill every process listening on the given port. Must kill by port, not by the
-# PIDs we captured: `npx tsx --watch` / `npx ng serve` spawn child node
-# processes, and killing npx leaves those children (which hold the port) alive.
+# Recursively kill a process and all its descendants. Parent is killed
+# first so file watchers (tsx --watch, ng serve) stop supervising — without
+# this they respawn the node/webpack child we just killed and the port
+# stays bound.
+kill_tree() {
+  local pid="${1:-}"
+  [ -z "$pid" ] && return 0
+  # Capture children before killing the parent — once the parent dies the
+  # children are reparented to init and pgrep -P can no longer find them
+  # through this ancestor.
+  local children
+  children=$(pgrep -P "$pid" 2>/dev/null || true)
+  kill -TERM "$pid" 2>/dev/null || true
+  local child
+  for child in $children; do
+    kill_tree "$child"
+  done
+}
+
+# Kill every process still listening on the given port. Used as a safety
+# net after kill_tree, in case a grandchild was missed or tsx had just
+# spawned a replacement.
 stop_port() {
   local port="$1"
-  local label="$2"
 
   local pids
   pids=$(lsof -ti ":${port}" 2>/dev/null || true)
@@ -100,7 +118,6 @@ stop_port() {
   if [ -n "$pids" ]; then
     echo "$pids" | xargs kill -9 2>/dev/null || true
   fi
-  echo "${label} stopped"
 }
 
 cleaned_up=false
@@ -111,8 +128,14 @@ cleanup() {
   cleaned_up=true
   echo ""
   echo "Shutting down..."
-  stop_port "${FRONTEND_PORT}" "Frontend"
-  stop_port "${BACKEND_PORT}"  "Backend"
+  # Kill the npx-rooted trees first so the watchers stop respawning, then
+  # sweep the ports as a safety net.
+  kill_tree "${FRONTEND_PID:-}"
+  kill_tree "${BACKEND_PID:-}"
+  stop_port "${FRONTEND_PORT}"
+  echo "Frontend stopped"
+  stop_port "${BACKEND_PORT}"
+  echo "Backend stopped"
 }
 
 trap cleanup SIGINT SIGTERM EXIT
@@ -138,6 +161,7 @@ if ! node -e "require('better-sqlite3')" > /dev/null 2>&1; then
 fi
 
 npx tsx --watch src/index.ts &
+BACKEND_PID=$!
 cd "${ROOT_DIR}"
 
 # Wait for backend to be ready
@@ -173,6 +197,7 @@ if ! npx ng version > /dev/null 2>&1; then
 fi
 
 npx ng serve --port "${FRONTEND_PORT}" --proxy-config proxy.conf.json &
+FRONTEND_PID=$!
 cd "${ROOT_DIR}"
 
 echo ""

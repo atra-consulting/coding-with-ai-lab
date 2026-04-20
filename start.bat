@@ -53,6 +53,25 @@ if errorlevel 1 (
     exit /b 1
 )
 
+set "BACKEND_PORT=7070"
+set "FRONTEND_PORT=7200"
+
+:: Pre-flight: refuse to start if the ports are already in use. Otherwise
+:: the health check below would talk to a leftover backend from a previous
+:: run and the new backend would crash with EADDRINUSE.
+netstat -ano | findstr /c:":%BACKEND_PORT% " | findstr "LISTENING" >nul 2>&1
+if not errorlevel 1 (
+    echo ERROR: Backend port %BACKEND_PORT% is already in use.
+    echo Run end.bat to stop the leftover process, then try again.
+    exit /b 1
+)
+netstat -ano | findstr /c:":%FRONTEND_PORT% " | findstr "LISTENING" >nul 2>&1
+if not errorlevel 1 (
+    echo ERROR: Frontend port %FRONTEND_PORT% is already in use.
+    echo Run end.bat to stop the leftover process, then try again.
+    exit /b 1
+)
+
 :: Optionally reset database
 if "%RESET_DB%"=="true" (
     if exist "%CRM_DB_DIR%" (
@@ -91,7 +110,7 @@ echo Waiting for backend to start...
 set "BACKEND_READY=false"
 for /l %%i in (1,1,60) do (
     if "!BACKEND_READY!"=="false" (
-        curl -s -o nul -w "%%{http_code}" "http://localhost:7070/api/health" 2>nul | findstr "200" >nul 2>&1
+        curl -s -o nul -w "%%{http_code}" "http://localhost:%BACKEND_PORT%/api/health" 2>nul | findstr "200" >nul 2>&1
         if not errorlevel 1 (
             echo Backend is ready!
             set "BACKEND_READY=true"
@@ -126,7 +145,7 @@ if errorlevel 1 (
     call npm install
 )
 
-start "CRM-Frontend" /b cmd /c "npx ng serve --port 7200 --proxy-config proxy.conf.json"
+start "CRM-Frontend" /b cmd /c "npx ng serve --port %FRONTEND_PORT% --proxy-config proxy.conf.json"
 cd /d "%ROOT_DIR%"
 
 :: Wait for frontend to bind (ng serve initial compile can take 30-60s)
@@ -134,7 +153,7 @@ echo Waiting for frontend to be ready...
 set "FRONTEND_READY=false"
 for /l %%i in (1,1,120) do (
     if "!FRONTEND_READY!"=="false" (
-        netstat -ano | findstr /c:":7200 " | findstr "LISTENING" >nul 2>&1
+        netstat -ano | findstr /c:":%FRONTEND_PORT% " | findstr "LISTENING" >nul 2>&1
         if not errorlevel 1 (
             echo Frontend is ready!
             set "FRONTEND_READY=true"
@@ -151,9 +170,9 @@ if "%FRONTEND_READY%"=="false" (
 
 echo.
 echo === CRM Application Started ===
-echo Backend:   http://localhost:7070
+echo Backend:   http://localhost:%BACKEND_PORT%
 echo.
-echo   ^^^>^^^>^^^>  http://localhost:7200  ^^^<^^^<^^^<
+echo   ^^^>^^^>^^^>  http://localhost:%FRONTEND_PORT%  ^^^<^^^<^^^<
 echo.
 echo Press Ctrl+C to stop
 
@@ -162,28 +181,34 @@ echo Press Ctrl+C to stop
 :: the tsx/ng child processes, which terminate themselves.)
 :monitor_loop
 timeout /t 5 /nobreak >nul
-netstat -ano | findstr /c:":7070 " | findstr "LISTENING" >nul 2>&1
+netstat -ano | findstr /c:":%BACKEND_PORT% " | findstr "LISTENING" >nul 2>&1
 if errorlevel 1 (
     echo.
-    echo Backend ^(port 7070^) has stopped.
+    echo Backend ^(port %BACKEND_PORT%^) has stopped.
     goto :cleanup
 )
-netstat -ano | findstr /c:":7200 " | findstr "LISTENING" >nul 2>&1
+netstat -ano | findstr /c:":%FRONTEND_PORT% " | findstr "LISTENING" >nul 2>&1
 if errorlevel 1 (
     echo.
-    echo Frontend ^(port 7200^) has stopped.
+    echo Frontend ^(port %FRONTEND_PORT%^) has stopped.
     goto :cleanup
 )
 goto :monitor_loop
 
 :cleanup
 echo Shutting down...
-for /f "tokens=5" %%a in ('netstat -ano ^| findstr /c:":7200 " ^| findstr "LISTENING" 2^>nul') do (
-    taskkill /f /pid %%a >nul 2>&1
+:: Kill the watchers (tsx --watch, ng serve) first. Port-only kill is not
+:: enough on its own: tsx respawns the node child it supervises as soon as
+:: we kill it, leaving port %BACKEND_PORT% bound. Match by command line via
+:: PowerShell (Get-CimInstance) to find the watcher processes themselves.
+powershell -NoProfile -Command "Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like '*tsx --watch src/index.ts*' -or $_.CommandLine -like '*ng serve*%FRONTEND_PORT%*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }" >nul 2>&1
+:: Safety net: kill anything still bound to our ports (tree-kill with /T).
+for /f "tokens=5" %%a in ('netstat -ano ^| findstr /c:":%FRONTEND_PORT% " ^| findstr "LISTENING" 2^>nul') do (
+    taskkill /t /f /pid %%a >nul 2>&1
 )
 echo Frontend stopped.
-for /f "tokens=5" %%a in ('netstat -ano ^| findstr /c:":7070 " ^| findstr "LISTENING" 2^>nul') do (
-    taskkill /f /pid %%a >nul 2>&1
+for /f "tokens=5" %%a in ('netstat -ano ^| findstr /c:":%BACKEND_PORT% " ^| findstr "LISTENING" 2^>nul') do (
+    taskkill /t /f /pid %%a >nul 2>&1
 )
 echo Backend stopped.
 exit /b 0
