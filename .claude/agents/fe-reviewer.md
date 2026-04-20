@@ -6,6 +6,28 @@ tools:
   - Grep
   - Glob
   - Bash
+  - mcp__playwright__browser_close
+  - mcp__playwright__browser_resize
+  - mcp__playwright__browser_console_messages
+  - mcp__playwright__browser_handle_dialog
+  - mcp__playwright__browser_evaluate
+  - mcp__playwright__browser_file_upload
+  - mcp__playwright__browser_fill_form
+  - mcp__playwright__browser_install
+  - mcp__playwright__browser_press_key
+  - mcp__playwright__browser_type
+  - mcp__playwright__browser_navigate
+  - mcp__playwright__browser_navigate_back
+  - mcp__playwright__browser_network_requests
+  - mcp__playwright__browser_run_code
+  - mcp__playwright__browser_take_screenshot
+  - mcp__playwright__browser_snapshot
+  - mcp__playwright__browser_click
+  - mcp__playwright__browser_drag
+  - mcp__playwright__browser_hover
+  - mcp__playwright__browser_select_option
+  - mcp__playwright__browser_tabs
+  - mcp__playwright__browser_wait_for
 model: sonnet
 ---
 
@@ -82,3 +104,14 @@ Do NOT flag these as issues:
 - General code quality issues unless explicitly required in CLAUDE.md
 - Changes in functionality that are likely intentional
 - Issues on lines the author did not modify
+
+## Playwright MCP (Optional)
+
+You MAY use Playwright MCP (`mcp__playwright__*`) to verify the changed code actually behaves as claimed in the running dev server at `http://localhost:7200`. Typical uses:
+
+- Navigate to the route(s) touched by the change
+- Snapshot the page to confirm the DOM matches expectations
+- Check `browser_console_messages` for runtime errors or warnings the author missed
+- Exercise a click or form path when the review question is "does this actually work?"
+
+The dev server must already be running. Close the browser (`browser_close`) when done. Use Playwright MCP only when static review leaves doubt — not by default.

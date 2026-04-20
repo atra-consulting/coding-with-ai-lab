@@ -1,7 +1,7 @@
 ---
 name: fe-test-coder
 description: Write Jasmine/Karma unit tests for the Angular 21 frontend. Use to author component, service, and guard tests after frontend code changes.
-tools: Read, Write, Edit, Bash, Glob, Grep
+tools: Read, Write, Edit, Bash, Glob, Grep, mcp__playwright__browser_close, mcp__playwright__browser_resize, mcp__playwright__browser_console_messages, mcp__playwright__browser_handle_dialog, mcp__playwright__browser_evaluate, mcp__playwright__browser_file_upload, mcp__playwright__browser_fill_form, mcp__playwright__browser_install, mcp__playwright__browser_press_key, mcp__playwright__browser_type, mcp__playwright__browser_navigate, mcp__playwright__browser_navigate_back, mcp__playwright__browser_network_requests, mcp__playwright__browser_run_code, mcp__playwright__browser_take_screenshot, mcp__playwright__browser_snapshot, mcp__playwright__browser_click, mcp__playwright__browser_drag, mcp__playwright__browser_hover, mcp__playwright__browser_select_option, mcp__playwright__browser_tabs, mcp__playwright__browser_wait_for
 model: sonnet
 ---
 
@@ -73,3 +73,9 @@ Run a build to make sure nothing broke:
 cd frontend && npx ng build
 ```
 Do NOT execute the test suite — the `fe-test-runner` agent runs it. Hand off the new spec files and note which components/services they cover.
+
+## Playwright MCP (Optional)
+
+You MAY use Playwright MCP (`mcp__playwright__*`) to look at the live UI at `http://localhost:7200` when designing a test — for example, to confirm the DOM structure you are asserting against, capture selectors, or reproduce a user flow before encoding it as a spec. Use this as research, not as a test runner. The actual Jasmine/Karma specs you write must still run in Karma via `ng test`.
+
+The dev server must already be running. Close the browser (`browser_close`) when done.
