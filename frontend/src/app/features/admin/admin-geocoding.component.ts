@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, ElementRef, inject, viewChild } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { AdminService } from './admin.service';
@@ -14,6 +14,7 @@ import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/c
 export class AdminGeocodingComponent {
   private modal = inject(NgbModal);
   private adminService = inject(AdminService);
+  private triggerButton = viewChild<ElementRef<HTMLButtonElement>>('triggerButton');
 
   running = false;
   result: GeocodeResult | null = null;
@@ -31,6 +32,7 @@ export class AdminGeocodingComponent {
     try {
       await modalRef.result;
     } catch {
+      this.restoreFocus();
       return;
     }
 
@@ -48,10 +50,16 @@ export class AdminGeocodingComponent {
         this.errorMessage =
           err.error?.message ?? 'Vorgang fehlgeschlagen. Bitte später erneut versuchen.';
         this.running = false;
+        this.restoreFocus();
       },
       complete: () => {
         this.running = false;
+        this.restoreFocus();
       },
     });
+  }
+
+  private restoreFocus(): void {
+    queueMicrotask(() => this.triggerButton()?.nativeElement.focus());
   }
 }
