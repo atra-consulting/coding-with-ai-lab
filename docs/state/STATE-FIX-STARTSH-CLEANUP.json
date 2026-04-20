@@ -29,7 +29,7 @@
     "prd_skipped": null,
     "prd_file": null,
     "plan_file": "docs/plans/PLAN-FIX-STARTSH-CLEANUP.md",
-    "pr_url": null
+    "pr_url": "https://github.com/atra-consulting/coding-with-ai-lab/pull/48"
   },
   "completed_steps": ["1", "2", "3.1", "3.2", "3.3"]
 }
