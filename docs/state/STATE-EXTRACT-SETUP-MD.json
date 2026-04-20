@@ -2,7 +2,7 @@
   "version": 1,
   "task_key": "EXTRACT-SETUP-MD",
   "status": "in_progress",
-  "current_step": "3.3",
+  "current_step": "7.5",
   "started": "2026-04-20T15:32:34Z",
   "updated": "2026-04-20T15:32:34Z",
   "config": {
@@ -13,7 +13,7 @@
     "original_branch": "main",
     "docs_folder": "docs",
     "is_git_repo": true,
-    "workflow_scope": null
+    "workflow_scope": "full"
   },
   "discovery": {
     "agents_available": true,
@@ -23,12 +23,12 @@
     "test_coding_agents": ["be-test-coder", "fe-test-coder"],
     "test_review_agents": ["be-test-reviewer", "fe-test-reviewer"],
     "test_runner_agents": ["be-test-runner", "fe-test-runner"],
-    "test_command": null
+    "test_command": "N/A (docs-only change)"
   },
   "artifacts": {
-    "prd_skipped": null,
+    "prd_skipped": true,
     "prd_file": null,
-    "plan_file": null,
+    "plan_file": "docs/plans/PLAN-EXTRACT-SETUP-MD.md",
     "pr_url": null
   },
   "completed_steps": []
