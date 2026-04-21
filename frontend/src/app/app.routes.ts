@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+import { permissionGuard } from './core/guards/permission.guard';
 
 export const routes: Routes = [
   {
@@ -36,6 +37,11 @@ export const routes: Routes = [
         path: 'dashboard',
         loadChildren: () =>
           import('./features/dashboard/dashboard.routes').then((m) => m.DASHBOARD_ROUTES),
+      },
+      {
+        path: 'karte',
+        canActivate: [permissionGuard('MAP_VIEW')],
+        loadChildren: () => import('./features/karte/karte.routes').then((m) => m.KARTE_ROUTES),
       },
       {
         path: 'firmen',

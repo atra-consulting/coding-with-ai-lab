@@ -30,6 +30,20 @@ export function requireRole(...roles: string[]): RequestHandler {
   };
 }
 
+export function requirePermission(...permissions: string[]): RequestHandler {
+  return (req: Request, _res: Response, next: NextFunction): void => {
+    if (!req.currentUser) {
+      next(new UnauthorizedError('Nicht authentifiziert'));
+      return;
+    }
+    if (!permissions.some(p => req.currentUser!.permissions.includes(p))) {
+      next(new ForbiddenError('Zugriff verweigert'));
+      return;
+    }
+    next();
+  };
+}
+
 export function requireAuth(req: Request, _res: Response, next: NextFunction): void {
   const userId = req.session.userId;
   if (!userId) {

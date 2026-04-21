@@ -3,6 +3,30 @@ import { NotFoundError } from '../utils/errors.js';
 import { buildPage, type PageResult, type SortParams } from '../utils/pagination.js';
 import type { AdresseCreateDTO } from '../utils/validation.js';
 
+export interface MapMarkerDTO {
+  id: number;
+  street: string | null;
+  houseNumber: string | null;
+  postalCode: string | null;
+  city: string | null;
+  latitude: number;
+  longitude: number;
+  firmaId: number | null;
+  firmaName: string | null;
+}
+
+interface MapMarkerRow {
+  id: number;
+  street: string | null;
+  houseNumber: string | null;
+  postalCode: string | null;
+  city: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  firmaId: number | null;
+  firmaName: string | null;
+}
+
 export interface AdresseDTO {
   id: number;
   street: string | null;
@@ -94,6 +118,34 @@ export const adresseService = {
       .prepare(`${BASE_QUERY} ORDER BY a.city ASC`)
       .all() as AdresseRow[];
     return rows.map(toDTO);
+  },
+
+  listMapMarkers(): MapMarkerDTO[] {
+    const rows = sqlite
+      .prepare(
+        `SELECT a.id, a.street, a.houseNumber, a.postalCode, a.city,
+                a.latitude, a.longitude, a.firmaId, f.name AS firmaName
+         FROM adresse a
+         LEFT JOIN firma f ON a.firmaId = f.id
+         WHERE a.latitude IS NOT NULL AND a.longitude IS NOT NULL
+         ORDER BY a.id ASC`
+      )
+      .all() as MapMarkerRow[];
+    return rows
+      .filter((r): r is MapMarkerRow & { latitude: number; longitude: number } =>
+        r.latitude !== null && r.longitude !== null
+      )
+      .map((r) => ({
+        id: r.id,
+        street: r.street,
+        houseNumber: r.houseNumber,
+        postalCode: r.postalCode,
+        city: r.city,
+        latitude: r.latitude,
+        longitude: r.longitude,
+        firmaId: r.firmaId,
+        firmaName: r.firmaName,
+      }));
   },
 
   findById(id: number): AdresseDTO {

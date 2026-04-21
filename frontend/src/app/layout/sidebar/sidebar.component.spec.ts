@@ -97,4 +97,30 @@ describe('SidebarComponent', () => {
     const text = fixture.nativeElement.textContent as string;
     expect(text).toContain('Administration');
   });
+
+  describe('requiredPermission filter (Karte item)', () => {
+    const userWithMapView: BenutzerInfo = {
+      ...regularUser,
+      permissions: ['MAP_VIEW'],
+    };
+
+    const userWithoutMapView: BenutzerInfo = {
+      ...regularUser,
+      permissions: ['FIRMEN'],
+    };
+
+    it('shows Karte entry when user has MAP_VIEW permission', () => {
+      mockAuthService.currentUser.set(userWithMapView);
+      fixture.detectChanges();
+      const text = fixture.nativeElement.textContent as string;
+      expect(text).toContain('Karte');
+    });
+
+    it('hides Karte entry when user lacks MAP_VIEW permission', () => {
+      mockAuthService.currentUser.set(userWithoutMapView);
+      fixture.detectChanges();
+      const text = fixture.nativeElement.textContent as string;
+      expect(text).not.toContain('Karte');
+    });
+  });
 });

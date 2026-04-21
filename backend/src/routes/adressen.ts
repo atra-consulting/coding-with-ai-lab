@@ -1,5 +1,5 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { requireAuth } from '../middleware/auth.js';
+import { requireAuth, requirePermission } from '../middleware/auth.js';
 import { adresseService } from '../services/adresseService.js';
 import { parsePaginationParams, parseSort } from '../utils/pagination.js';
 import { validate, AdresseCreateSchema } from '../utils/validation.js';
@@ -13,6 +13,20 @@ router.get(
   (_req: Request, res: Response, next: NextFunction): void => {
     try {
       res.json(adresseService.listAll());
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+// GET /api/adressen/map-markers — must come before /:id so Express doesn't match the path param
+router.get(
+  '/map-markers',
+  requireAuth,
+  requirePermission('MAP_VIEW'),
+  (_req: Request, res: Response, next: NextFunction): void => {
+    try {
+      res.json(adresseService.listMapMarkers());
     } catch (err) {
       next(err);
     }
