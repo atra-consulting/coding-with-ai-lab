@@ -1,11 +1,9 @@
 import { Injectable } from '@angular/core';
 import * as L from 'leaflet';
 
-L.Icon.Default.mergeOptions({
-  iconUrl: 'leaflet/marker-icon.png',
-  iconRetinaUrl: 'leaflet/marker-icon-2x.png',
-  shadowUrl: 'leaflet/marker-shadow.png',
-});
+// Override Leaflet's image-path auto-detection which resolves to /media/ when
+// Leaflet's CSS is bundled through Angular's build, breaking marker image URLs.
+(L.Icon.Default as unknown as { imagePath: string }).imagePath = '/leaflet/';
 
 @Injectable({ providedIn: 'root' })
 export class LeafletMapFactory {
