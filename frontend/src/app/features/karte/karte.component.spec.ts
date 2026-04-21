@@ -38,14 +38,12 @@ describe('KarteComponent', () => {
     mockMapFactory.createMap.and.returnValue(fakeMap as never);
     mockMapFactory.addTileLayer.and.returnValue({} as never);
     mockMapFactory.createFeatureGroup.and.returnValue(fakeGroup as never);
-    mockMapFactory.createMarker.and.callFake(
-      () =>
-        ({
-          addTo: jasmine.createSpy('addTo').and.callFake(function () {
-            return this;
-          }),
-        }) as never
-    );
+    mockMapFactory.createMarker.and.callFake(() => {
+      const marker: { addTo: jasmine.Spy } = {
+        addTo: jasmine.createSpy('addTo').and.callFake(() => marker),
+      };
+      return marker as never;
+    });
 
     TestBed.configureTestingModule({
       imports: [KarteComponent],
