@@ -2,13 +2,17 @@ import {
   AfterViewInit,
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   ElementRef,
+  Injector,
   OnDestroy,
   ViewChild,
+  afterNextRender,
   computed,
   inject,
   signal,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import type { FeatureGroup, Map as LeafletMap } from 'leaflet';
 import { KarteService } from '../../core/services/karte.service';
 import { LeafletMapFactory } from '../../core/services/leaflet-map.factory';
@@ -61,6 +65,8 @@ export function buildPopupHtml(marker: MapMarker): string {
 export class KarteComponent implements AfterViewInit, OnDestroy {
   private karteService = inject(KarteService);
   private mapFactory = inject(LeafletMapFactory);
+  private destroyRef = inject(DestroyRef);
+  private injector = inject(Injector);
 
   @ViewChild('mapContainer', { static: false }) mapContainer?: ElementRef<HTMLDivElement>;
 
@@ -72,19 +78,22 @@ export class KarteComponent implements AfterViewInit, OnDestroy {
   private map?: LeafletMap;
 
   ngAfterViewInit(): void {
-    this.karteService.getMarkers().subscribe({
-      next: (markers) => {
-        this.markers.set(markers);
-        this.loaded.set(true);
-        // Wait a tick for the template to render the map container in the successful state.
-        queueMicrotask(() => this.initMap(markers));
-      },
-      error: (err) => {
-        console.error('Failed to load map markers', err);
-        this.errored.set(true);
-        this.loaded.set(true);
-      },
-    });
+    this.karteService
+      .getMarkers()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (markers) => {
+          this.markers.set(markers);
+          this.loaded.set(true);
+          // Wait until Angular has rendered the map-container div in the success branch.
+          afterNextRender(() => this.initMap(markers), { injector: this.injector });
+        },
+        error: (err) => {
+          console.error('Failed to load map markers', err);
+          this.errored.set(true);
+          this.loaded.set(true);
+        },
+      });
   }
 
   ngOnDestroy(): void {

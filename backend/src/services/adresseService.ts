@@ -21,8 +21,8 @@ interface MapMarkerRow {
   houseNumber: string | null;
   postalCode: string | null;
   city: string | null;
-  latitude: number;
-  longitude: number;
+  latitude: number | null;
+  longitude: number | null;
   firmaId: number | null;
   firmaName: string | null;
 }
@@ -131,17 +131,21 @@ export const adresseService = {
          ORDER BY a.id ASC`
       )
       .all() as MapMarkerRow[];
-    return rows.map((r) => ({
-      id: r.id,
-      street: r.street,
-      houseNumber: r.houseNumber,
-      postalCode: r.postalCode,
-      city: r.city,
-      latitude: Number(r.latitude),
-      longitude: Number(r.longitude),
-      firmaId: r.firmaId,
-      firmaName: r.firmaName,
-    }));
+    return rows
+      .filter((r): r is MapMarkerRow & { latitude: number; longitude: number } =>
+        r.latitude !== null && r.longitude !== null
+      )
+      .map((r) => ({
+        id: r.id,
+        street: r.street,
+        houseNumber: r.houseNumber,
+        postalCode: r.postalCode,
+        city: r.city,
+        latitude: r.latitude,
+        longitude: r.longitude,
+        firmaId: r.firmaId,
+        firmaName: r.firmaName,
+      }));
   },
 
   findById(id: number): AdresseDTO {

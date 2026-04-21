@@ -33,7 +33,7 @@ export function requireRole(...roles: string[]): RequestHandler {
 export function requirePermission(...permissions: string[]): RequestHandler {
   return (req: Request, _res: Response, next: NextFunction): void => {
     if (!req.currentUser) {
-      next(new ForbiddenError('Zugriff verweigert'));
+      next(new UnauthorizedError('Nicht authentifiziert'));
       return;
     }
     if (!permissions.some(p => req.currentUser!.permissions.includes(p))) {
