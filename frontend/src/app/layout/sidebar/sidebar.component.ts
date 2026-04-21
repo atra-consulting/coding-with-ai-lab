@@ -6,6 +6,7 @@ import {
   faBuilding,
   faCalendarCheck,
   faChartLine,
+  faMapLocationDot,
   faMapMarkerAlt,
   faSitemap,
   faTachometerAlt,
@@ -22,6 +23,7 @@ interface NavItem {
   route: string;
   icon: IconDefinition;
   requiredRole?: string;
+  requiredPermission?: string;
 }
 
 interface NavSection {
@@ -46,6 +48,12 @@ export class SidebarComponent {
       title: 'Übersicht',
       items: [
         { label: 'Dashboard', route: '/dashboard', icon: faTachometerAlt },
+        {
+          label: 'Karte',
+          route: '/karte',
+          icon: faMapLocationDot,
+          requiredPermission: 'MAP_VIEW',
+        },
       ],
     },
     {
@@ -80,7 +88,15 @@ export class SidebarComponent {
     return this.authService.currentUser()?.rollen.includes(role) ?? false;
   }
 
+  hasPermission(permission: string): boolean {
+    return this.authService.currentUser()?.permissions.includes(permission) ?? false;
+  }
+
   visibleItems(items: NavItem[]): NavItem[] {
-    return items.filter((i) => !i.requiredRole || this.hasRole(i.requiredRole));
+    return items.filter(
+      (i) =>
+        (!i.requiredRole || this.hasRole(i.requiredRole)) &&
+        (!i.requiredPermission || this.hasPermission(i.requiredPermission))
+    );
   }
 }

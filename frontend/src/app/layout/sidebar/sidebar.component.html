@@ -6,7 +6,10 @@
       }
       <ul class="nav flex-column" [class.mt-3]="!$first">
         @for (item of section.items; track item.route) {
-          @if (!item.requiredRole || hasRole(item.requiredRole)) {
+          @if (
+            (!item.requiredRole || hasRole(item.requiredRole)) &&
+            (!item.requiredPermission || hasPermission(item.requiredPermission))
+          ) {
             <li class="nav-item">
               <a class="nav-link" [routerLink]="item.route" routerLinkActive="active" [title]="layoutService.collapsed() ? item.label : ''">
                 <fa-icon [icon]="item.icon"></fa-icon>
