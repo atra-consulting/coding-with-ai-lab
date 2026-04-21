@@ -1,0 +1,23 @@
+<div class="karte-page">
+  <div class="d-flex align-items-center mb-3">
+    <h1 class="h3 mb-0 me-2">Karte</h1>
+    @if (loaded() && !errored()) {
+      <span class="badge bg-secondary" data-testid="marker-count">
+        {{ markerCount() }} Adressen
+      </span>
+    }
+  </div>
+
+  @if (errored()) {
+    <div class="alert alert-danger" role="alert" data-testid="error-alert">
+      Karte konnte nicht geladen werden. Bitte später erneut versuchen.
+    </div>
+  } @else {
+    @if (loaded() && markerCount() === 0) {
+      <div class="alert alert-light border" role="status" data-testid="empty-state">
+        Keine Adressen mit Koordinaten vorhanden.
+      </div>
+    }
+    <div #mapContainer class="map-container" data-testid="map-container"></div>
+  }
+</div>

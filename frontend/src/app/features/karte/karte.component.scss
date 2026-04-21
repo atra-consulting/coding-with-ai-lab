@@ -1,0 +1,13 @@
+.karte-page {
+  display: flex;
+  flex-direction: column;
+}
+
+.map-container {
+  width: 100%;
+  height: calc(100vh - 200px);
+  min-height: 480px;
+  border-radius: 0.375rem;
+  overflow: hidden;
+  border: 1px solid #dee2e6;
+}
