@@ -24,6 +24,7 @@ const ALL_PERMISSIONS = [
   'AKTIVITAETEN',
   'CHANCEN',
   'BENUTZERVERWALTUNG',
+  'MAP_VIEW',
 ];
 
 const USERS: CrmUser[] = [
