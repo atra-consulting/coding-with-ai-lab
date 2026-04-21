@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "task_key": "ADDRESS-MAP-VIEW",
+  "status": "in_progress",
+  "current_step": "3.3",
+  "started": "2026-04-21T00:00:00Z",
+  "updated": "2026-04-21T00:00:00Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Build a map view for the CRM that displays all addresses with coordinates on an interactive Leaflet map. New route /karte, new permission MAP_VIEW, backend markers endpoint, frontend component with confirmation popups.",
+    "special_instructions": "User authorized bypassing all interactive confirmations. Proceed end-to-end without prompts. Document assumptions in the PRD.",
+    "branch_name": "address-map-view",
+    "original_branch": "main",
+    "docs_folder": "docs",
+    "is_git_repo": true,
+    "workflow_scope": "full"
+  },
+  "discovery": {
+    "agents_available": true,
+    "writer_agents": ["ba-writer"],
+    "coding_agents": ["be-coder", "db-coder", "fe-coder", "ui-designer"],
+    "review_agents": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer"],
+    "test_coding_agents": ["be-test-coder", "fe-test-coder"],
+    "test_review_agents": ["be-test-reviewer", "fe-test-reviewer"],
+    "test_runner_agents": ["be-test-runner", "fe-test-runner"],
+    "test_command": "Backend: cd backend && npx playwright test. Frontend: cd frontend && npx ng test --watch=false --browsers=ChromeHeadless"
+  },
+  "artifacts": {
+    "prd_skipped": false,
+    "prd_file": "docs/prds/PRD-ADDRESS-MAP-VIEW.md",
+    "plan_file": "docs/plans/PLAN-ADDRESS-MAP-VIEW.md",
+    "pr_url": null
+  },
+  "completed_steps": ["1", "2", "3"]
+}
