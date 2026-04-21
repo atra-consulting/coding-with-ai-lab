@@ -285,4 +285,15 @@ New file `adressen-map-markers.spec.ts`:
 
 ## Implementation
 
-_To be filled in after development. Add commit hashes and PR links here._
+Implemented on branch `address-map-view`:
+
+- `dc8f871` — Backend: `MAP_VIEW` permission, `requirePermission` middleware, `listMapMarkers()` service, `GET /api/adressen/map-markers` route (before `/:id`).
+- `589c09a` — Frontend: install Leaflet 1.9.x + `@types/leaflet`; import Leaflet CSS; copy marker image assets into `public/leaflet/`.
+- `c535b27` — Frontend: `KarteService`, `LeafletMapFactory`, `MapMarker` model.
+- `951a92e` — Frontend: `KarteComponent` (template/style), `permissionGuard`, `/karte` route.
+- `31de1d2` — Frontend: sidebar `Karte` entry with `requiredPermission: 'MAP_VIEW'`; `NavItem` extended with `requiredPermission`; `visibleItems()` filter updated.
+- `7a8b55b` — Tests: backend Playwright spec for `/map-markers`; frontend Jasmine specs for `KarteComponent`, `KarteService`, `permissionGuard`, sidebar permission filter.
+- `41f2121` — Test fixups: skip cross-process 403 test with justification; fix component-spec closure typing.
+- `1dafe2f` — Review fixes: `requirePermission` returns 401 (not 403) when session missing; `MapMarkerRow` coords typed nullable with narrowing filter; `KarteComponent` uses `takeUntilDestroyed` + `afterNextRender` instead of bare `subscribe` + `queueMicrotask` to prevent leaks and fix timing against `OnPush`.
+
+Deviations from PRD: the 403-on-missing-permission integration test is ship-skipped (REQ-002 acceptance). Reason: the Playwright harness spawns the backend in a child process, so mutating `USERS.permissions` in the test worker does not reach the server. The 401 test still exercises the middleware chain. A full 403 test would require either a test-only admin endpoint that toggles permissions, or restarting the backend with modified users — both out of scope.
