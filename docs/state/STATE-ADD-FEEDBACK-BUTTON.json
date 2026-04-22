@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "task_key": "ADD-FEEDBACK-BUTTON",
+  "status": "in_progress",
+  "current_step": "3.3",
+  "started": "2026-04-22T00:00:00Z",
+  "updated": "2026-04-22T00:00:00Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "There is a user-rating endpoint at \"/feedback\". Add it as a button to bottom of the sidebar.",
+    "special_instructions": null,
+    "branch_name": "add-feedback-button-sidebar",
+    "original_branch": "main",
+    "docs_folder": "/Users/karsten/workspaces/fh/repos/coding-with-ai-lab/docs",
+    "is_git_repo": true,
+    "workflow_scope": null
+  },
+  "discovery": {
+    "agents_available": true,
+    "writer_agents": ["ba-writer"],
+    "coding_agents": ["be-coder", "db-coder", "fe-coder", "ui-designer"],
+    "review_agents": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer"],
+    "test_coding_agents": ["be-test-coder", "fe-test-coder"],
+    "test_review_agents": ["be-test-reviewer", "fe-test-reviewer"],
+    "test_runner_agents": ["be-test-runner", "fe-test-runner"],
+    "test_command": null
+  },
+  "artifacts": {
+    "prd_skipped": null,
+    "prd_file": null,
+    "plan_file": null,
+    "pr_url": null
+  },
+  "completed_steps": []
+}
