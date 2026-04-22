@@ -172,6 +172,8 @@ Sections with permission-filtered items:
 
 Empty sections are hidden. Uses FontAwesome icons and RouterLinkActive.
 
+**Bottom-anchored items**: A `bottomItems` array in `SidebarComponent` renders below the main sections, pushed to the bottom via `mt-auto`. Currently holds a single **Feedback** link to `/feedback` (public route, no permission required). A top border separates it from the main nav; the collapse toggle and footer sit below it.
+
 **Collapsible State**: The sidebar can be collapsed to a mini-view (60px) showing only icons. State is managed by `LayoutService` and persisted in `localStorage` (`sidebar_collapsed`).
 
 ### Navbar
