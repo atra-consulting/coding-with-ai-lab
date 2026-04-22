@@ -24,6 +24,11 @@ body {
   overflow-x: hidden;
   transition: width var(--sidebar-transition);
 
+  ul.nav.mt-auto {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 0.5rem;
+  }
+
   .sidebar-toggle-container {
     border-top: 1px solid rgba(255, 255, 255, 0.1);
 
