@@ -97,4 +97,20 @@ describe('SidebarComponent', () => {
     const text = fixture.nativeElement.textContent as string;
     expect(text).toContain('Administration');
   });
+
+  it('renders a Feedback link pointing to /feedback', () => {
+    mockAuthService.currentUser.set(regularUser);
+    fixture.detectChanges();
+    const anchor = fixture.nativeElement.querySelector('a[href="/feedback"]');
+    expect(anchor).toBeTruthy();
+    expect((anchor.textContent as string)).toContain('Feedback');
+  });
+
+  it('keeps the Feedback link rendered when the sidebar is collapsed', () => {
+    mockAuthService.currentUser.set(regularUser);
+    mockLayoutService.collapsed.set(true);
+    fixture.detectChanges();
+    const anchor = fixture.nativeElement.querySelector('a[href="/feedback"]');
+    expect(anchor).toBeTruthy();
+  });
 });
