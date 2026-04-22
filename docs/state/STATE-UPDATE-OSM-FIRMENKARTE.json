@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "task_key": "UPDATE-OSM-FIRMENKARTE",
+  "status": "completed",
+  "current_step": "13.2",
+  "started": "2026-04-21T00:00:00Z",
+  "updated": "2026-04-21T00:00:00Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Update tasks/01-openstreetmap-firmenkarte.md in coding-with-ai-training-materials: no geocoding necessary anymore — companies and persons have lat/lng in DB (via their adresse rows; 100% coverage in seed fixture).",
+    "special_instructions": null,
+    "branch_name": "update-osm-firmenkarte-remove-geocoding",
+    "original_branch": "main",
+    "docs_folder": "/Users/karsten/workspaces/fh/repos/coding-with-ai-lab/docs",
+    "is_git_repo": true,
+    "workflow_scope": "full",
+    "target_repo": "/Users/karsten/workspaces/fh/repos/coding-with-ai-training-materials",
+    "target_file": "tasks/01-openstreetmap-firmenkarte.md"
+  },
+  "discovery": {
+    "agents_available": false,
+    "writer_agents": [],
+    "coding_agents": [],
+    "review_agents": [],
+    "test_command": null
+  },
+  "artifacts": {
+    "prd_skipped": true,
+    "prd_file": null,
+    "plan_file": "/Users/karsten/workspaces/fh/repos/coding-with-ai-lab/docs/plans/PLAN-UPDATE-OSM-FIRMENKARTE.md",
+    "pr_url": "https://github.com/atra-consulting/coding-with-ai-training-materials/pull/17"
+  },
+  "completed_steps": []
+}
