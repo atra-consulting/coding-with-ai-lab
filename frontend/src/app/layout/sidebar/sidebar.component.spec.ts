@@ -1,7 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { ComponentFixture } from '@angular/core/testing';
 import { signal } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { By } from '@angular/platform-browser';
+import { provideRouter, RouterLink } from '@angular/router';
 import { SidebarComponent } from './sidebar.component';
 import { AuthService } from '../../core/services/auth.service';
 import { LayoutService } from '../../core/services/layout.service';
@@ -98,19 +99,26 @@ describe('SidebarComponent', () => {
     expect(text).toContain('Administration');
   });
 
-  it('renders a Feedback link pointing to /feedback', () => {
+  it('renders a Feedback link pointing to /feedback in the bottom nav', () => {
     mockAuthService.currentUser.set(regularUser);
     fixture.detectChanges();
-    const anchor = fixture.nativeElement.querySelector('a[href="/feedback"]');
-    expect(anchor).toBeTruthy();
-    expect((anchor.textContent as string)).toContain('Feedback');
+    const bottomUl = fixture.debugElement.query(By.css('ul.nav.mt-auto'));
+    expect(bottomUl).toBeTruthy();
+    const linkDebugEl = bottomUl.query(By.directive(RouterLink));
+    expect(linkDebugEl).toBeTruthy();
+    expect(linkDebugEl.injector.get(RouterLink).routerLink).toBe('/feedback');
+    expect((linkDebugEl.nativeElement.textContent as string)).toContain('Feedback');
   });
 
-  it('keeps the Feedback link rendered when the sidebar is collapsed', () => {
+  it('hides the Feedback label but keeps the link clickable when collapsed', () => {
     mockAuthService.currentUser.set(regularUser);
     mockLayoutService.collapsed.set(true);
     fixture.detectChanges();
-    const anchor = fixture.nativeElement.querySelector('a[href="/feedback"]');
-    expect(anchor).toBeTruthy();
+    const bottomUl = fixture.debugElement.query(By.css('ul.nav.mt-auto'));
+    expect(bottomUl).toBeTruthy();
+    const linkDebugEl = bottomUl.query(By.directive(RouterLink));
+    expect(linkDebugEl).toBeTruthy();
+    expect(linkDebugEl.injector.get(RouterLink).routerLink).toBe('/feedback');
+    expect((linkDebugEl.nativeElement.textContent as string).trim()).not.toContain('Feedback');
   });
 });
