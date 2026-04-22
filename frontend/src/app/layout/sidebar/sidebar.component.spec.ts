@@ -106,8 +106,9 @@ describe('SidebarComponent', () => {
     expect(bottomUl).toBeTruthy();
     const linkDebugEl = bottomUl.query(By.directive(RouterLink));
     expect(linkDebugEl).toBeTruthy();
-    expect(linkDebugEl.injector.get(RouterLink).routerLink).toBe('/feedback');
-    expect((linkDebugEl.nativeElement.textContent as string)).toContain('Feedback');
+    const anchor = linkDebugEl.nativeElement as HTMLAnchorElement;
+    expect(anchor.getAttribute('href')).toBe('/feedback');
+    expect((anchor.textContent as string)).toContain('Feedback');
   });
 
   it('hides the Feedback label but keeps the link clickable when collapsed', () => {
@@ -118,7 +119,8 @@ describe('SidebarComponent', () => {
     expect(bottomUl).toBeTruthy();
     const linkDebugEl = bottomUl.query(By.directive(RouterLink));
     expect(linkDebugEl).toBeTruthy();
-    expect(linkDebugEl.injector.get(RouterLink).routerLink).toBe('/feedback');
-    expect((linkDebugEl.nativeElement.textContent as string).trim()).not.toContain('Feedback');
+    const anchor = linkDebugEl.nativeElement as HTMLAnchorElement;
+    expect(anchor.getAttribute('href')).toBe('/feedback');
+    expect((anchor.textContent as string).trim()).not.toContain('Feedback');
   });
 });
