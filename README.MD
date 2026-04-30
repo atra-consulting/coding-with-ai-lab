@@ -1,18 +1,39 @@
-# AI Coding Lab — CRM Demo
+<p align="center">
+  <a href="https://atra.consulting/">
+    <img src="docs/assets/atra-logo.svg" alt="atra.consulting" width="320">
+  </a>
+</p>
 
-> Ein Testprojekt des [atra.consulting](https://atra.consulting/) **AI Coding Lab**.
-> Ziel ist es, anhand einer realistischen Full-Stack-Anwendung zu zeigen, wie AI-gestütztes Coding in der Praxis funktioniert.
+<h1 align="center">AI Coding Lab — CRM Demo</h1>
+
+<p align="center">
+  <em>Eine produktionsnahe Full-Stack-Anwendung des <a href="https://atra.consulting/">atra.consulting</a> <strong>AI Coding Lab</strong> —<br>
+  entstanden, um zu zeigen, wie AI-gestützte Softwareentwicklung in der Praxis funktioniert.</em>
+</p>
+
+<p align="center">
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-blue.svg"></a>
+  <img alt="Node.js" src="https://img.shields.io/badge/Node.js-20.19%2B-339933.svg">
+  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-Express-3178c6.svg">
+  <img alt="Angular 21" src="https://img.shields.io/badge/Angular-21-dd0031.svg">
+  <img alt="SQLite" src="https://img.shields.io/badge/SQLite-Drizzle%20ORM-003b57.svg">
+</p>
 
 > **Erstmal hier starten:** Vor dem ersten Start bitte **[SETUP.md](SETUP.md)** lesen — dort steht die komplette Installationsanleitung (Node.js, Claude Code, IDE, Markdown-Viewer).
 
-## Tech-Stack
+---
 
-| Schicht | Technologie |
-|---------|-------------|
-| Backend | Node.js · TypeScript · Express · Drizzle ORM |
-| Frontend | Angular 21 · Bootstrap 5 · SCSS |
-| Datenbank | SQLite (file-based, via better-sqlite3) |
-| Auth | Session-basiert (bcrypt + express-session) |
+## Inhalt
+
+- [Architektur](#architektur)
+- [Schnellstart](#schnellstart)
+- [Demo-Login](#demo-login)
+- [Features](#features)
+- [Tech-Stack](#tech-stack)
+- [Weiterführende Dokumentation](#weiterführende-dokumentation)
+- [Lizenz](#lizenz)
+
+---
 
 ## Architektur
 
@@ -34,13 +55,13 @@ graph TB
     API --> DB
 ```
 
-Detaillierte Architektur-Dokumentation: [docs/architecture.md](docs/architecture.md)
+Detaillierte Architektur-Dokumentation: **[docs/architecture.md](docs/architecture.md)**
 
-## Voraussetzungen
-
-Dieses Projekt benötigt **Node.js 20.19 oder neuer**, optional **Claude Code** für AI-gestützte Entwicklung sowie eine IDE und einen Markdown-Viewer. Eine vollständige Installationsanleitung für alle unterstützten Betriebssysteme findet sich in **[SETUP.md](SETUP.md)**.
+---
 
 ## Schnellstart
+
+> **Voraussetzungen:** Node.js 20.19+ — vollständige Anleitung in **[SETUP.md](SETUP.md)**
 
 ```bash
 ./start.sh           # macOS / Linux
@@ -51,18 +72,8 @@ Das Skript installiert bei Bedarf die npm-Abhängigkeiten, startet Backend und F
 
 | URL | Beschreibung |
 |-----|-------------|
-| http://localhost:7200 | Frontend |
-| http://localhost:7070 | Backend API |
-
-### Demo-Login
-
-Drei vorkonfigurierte Benutzer stehen zur Verfügung:
-
-| Benutzername | Passwort | Rolle |
-|--------------|----------|-------|
-| `admin` | `admin123` | ADMIN |
-| `user` | `test123` | USER |
-| `demo` | `demo1234` | ADMIN |
+| <http://localhost:7200> | Frontend |
+| <http://localhost:7070> | Backend API |
 
 ### Startskript-Flags
 
@@ -70,84 +81,88 @@ Drei vorkonfigurierte Benutzer stehen zur Verfügung:
 |------|-------------|
 | `--reset-db` | SQLite-Datenbank löschen (wird beim nächsten Start neu aufgebaut) |
 
-```bash
-./start.sh              # Standardstart
-./start.sh --reset-db   # Datenbank zurücksetzen
-```
-
 ### Einzeln starten
 
 ```bash
-# Backend (Port 7070, Hot Reload via tsx --watch)
-cd backend && npx tsx --watch src/index.ts
-
-# Frontend (Port 7200, Proxy leitet /api/* an Backend weiter)
+cd backend  && npx tsx --watch src/index.ts                         # Port 7070, Hot Reload
 cd frontend && npx ng serve --port 7200 --proxy-config proxy.conf.json
 ```
 
-## Projektstruktur
+---
 
-```
-├── backend/            Node.js/TypeScript Backend (Express + Drizzle ORM)
-│   ├── src/
-│   │   ├── config/     Datenbank, Migration, Benutzer
-│   │   ├── db/         Drizzle-Schema
-│   │   ├── middleware/  Auth, Error Handler
-│   │   ├── routes/     REST-Endpunkte
-│   │   ├── seed/       Testdaten
-│   │   └── services/   Business-Logik
-│   └── data/           SQLite-Datenbankdatei (gitignored)
-├── frontend/           Angular 21 SPA
-│   └── src/app/
-│       ├── core/       Guards, Interceptors, Services
-│       ├── features/   Feature-Komponenten
-│       ├── layout/     Sidebar, Header
-│       └── shared/     Gemeinsame Komponenten
-├── docs/
-│   ├── specs/          Systemspezifikationen
-│   ├── prds/           Product Requirement Documents
-│   ├── adr/            Architecture Decision Records
-│   └── uxdr/           UX Design Records
-├── start.sh            Startskript (macOS/Linux)
-├── start.bat           Startskript (Windows)
-└── CLAUDE.md           Anweisungen für AI-Coding-Assistenten
-```
+## Demo-Login
+
+Drei vorkonfigurierte Benutzer stehen zur Verfügung:
+
+| Benutzername | Passwort | Rolle | Zweck |
+|--------------|----------|-------|-------|
+| `admin` | `admin123` | ADMIN | Voller Zugriff inkl. Admin-Bereich |
+| `user` | `test123` | USER | Standard-CRM-Nutzer |
+| `demo` | `demo1234` | ADMIN | Schnellstart-Login für Demos |
+
+---
+
+## Features
+
+- **CRM-Stammdaten** — Firmen, Personen, Abteilungen, Adressen mit AG-Grid-Tabellen
+- **Chancen & Aktivitäten** — Vertriebspipeline und Aktivitäten-Tracking
+- **Dashboard** — KPI-Tiles und Übersicht der jüngsten Datensätze
+- **Adress-Geocoding** — Admin-Tool für Nominatim-basiertes Geocoding mit Karten-Ansicht
+- **Feedback** — Nutzerfeedback per QR-Code mit Thank-You-Page
+- **Session-Authentifizierung** — bcrypt-Passwörter mit rollenbasierter Zugriffskontrolle
+
+---
+
+## Tech-Stack
+
+| Schicht | Technologie |
+|---------|-------------|
+| **Backend** | Node.js · TypeScript · Express · Drizzle ORM |
+| **Frontend** | Angular 21 · Bootstrap 5 · AG Grid · Chart.js |
+| **Datenbank** | SQLite (file-based, via `better-sqlite3`) |
+| **Auth** | Session-basiert (bcrypt + `express-session`) |
+
+Konventionen, Patterns und Beispiele für AI-gestützte Entwicklung: **[CLAUDE.md](CLAUDE.md)**
+
+---
 
 ## Domänenmodell
 
 Die Anwendung bildet ein deutschsprachiges CRM ab:
 
 **Stammdaten** — Firma, Person, Abteilung, Adresse
-**Finanzen & Vertrieb** — Gehalt, Aktivitaet, Vertrag, Chance
+**Vertrieb** — Aktivitaet, Chance
 
-## Features
+---
 
-- **Chancen-Pipeline** — Kanban-Board mit Drag & Drop und paginierte Listen-Ansicht
-- **Dashboard** — Konfigurierbares Dashboard mit Widgets
-- **Auswertungen** — Pipeline-Dashboard und Report Builder mit dynamischen Abfragen
-- **Feedback** — Nutzerfeedback per QR-Code
-- **Session-Authentifizierung** — bcrypt-Passwörter mit rollenbasierter Zugriffskontrolle
+## Weiterführende Dokumentation
 
-## Backend-Patterns
+| Dokument | Inhalt |
+|----------|--------|
+| [SETUP.md](SETUP.md) | Vollständige Installationsanleitung (Node.js, Claude Code, IDE) |
+| [docs/architecture.md](docs/architecture.md) | Systemarchitektur mit Mermaid-Diagrammen |
+| [docs/specs/SPECS.md](docs/specs/SPECS.md) | Detaillierte Spezifikationen pro Bereich |
+| [docs/adr/](docs/adr/) | Architecture Decision Records |
+| [docs/prds/](docs/prds/) | Product Requirement Documents |
+| [docs/uxdr/](docs/uxdr/) | UX Design Records |
+| [CLAUDE.md](CLAUDE.md) | Anweisungen und Konventionen für AI-Coding-Assistenten |
 
-Jede CRM-Entität folgt dem gleichen Muster:
+### Projektstruktur
 
 ```
-Drizzle Schema → Service → Express Route (mit Auth-Middleware)
+├── backend/          Node.js/TypeScript Backend (Express + Drizzle ORM)
+│   ├── src/          config · db · middleware · routes · seed · services
+│   └── data/         SQLite-Datenbankdatei (gitignored)
+├── frontend/         Angular 21 SPA (core · features · layout · shared)
+├── docs/             Architektur, Specs, ADRs, PRDs, UXDRs
+├── start.sh          Startskript (macOS/Linux)
+├── start.bat         Startskript (Windows)
+├── SETUP.md          Installationsanleitung
+└── CLAUDE.md         Anweisungen für AI-Coding-Assistenten
 ```
 
-REST-Endpunkte unter `/api/<plural>` mit Pagination (`page`, `size`, `sort`).
-
-## Frontend-Patterns
-
-Angular 21 Standalone-Komponenten mit:
-- Lazy-loaded Feature-Routen
-- Reactive Forms
-- NgbPagination (1-indexed → 0-indexed Konvertierung)
-- CDK Drag & Drop für das Kanban-Board
-- AG Grid für Datentabellen
-- Chart.js für Diagramme
+---
 
 ## Lizenz
 
-Internes Schulungsprojekt von [atra.consulting](https://atra.consulting/).
+Veröffentlicht unter der **[MIT-Lizenz](LICENSE)** © 2026 [atra.consulting](https://atra.consulting/).
