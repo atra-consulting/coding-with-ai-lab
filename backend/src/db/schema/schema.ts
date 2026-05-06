@@ -93,6 +93,7 @@ export const chance = sqliteTable('chance', {
   phase: text('phase').notNull().default('NEU'),
   wahrscheinlichkeit: integer('wahrscheinlichkeit'),
   erwartetesDatum: text('erwartetesDatum'),
+  notiz: text('notiz'),
   firmaId: integer('firmaId')
     .notNull()
     .references(() => firma.id, { onDelete: 'cascade' }),

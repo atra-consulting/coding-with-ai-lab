@@ -40,6 +40,10 @@
       @if (chance.beschreibung) {
         <p><strong>Beschreibung:</strong> {{ chance.beschreibung }}</p>
       }
+      @if (chance.notiz) {
+        <p><strong>Notiz:</strong></p>
+        <p style="white-space: pre-line">{{ chance.notiz }}</p>
+      }
     </div>
   </div>
 }

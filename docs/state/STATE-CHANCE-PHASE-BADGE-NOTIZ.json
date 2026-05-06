@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "task_key": "CHANCE-PHASE-BADGE-NOTIZ",
+  "status": "completed",
+  "current_step": "13",
+  "started": "2026-05-06T00:00:00.000Z",
+  "updated": "2026-05-06T00:00:02.000Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Zwei Erweiterungen für Chance: Teil 1: Phase als farbigen Badge in Liste und Detailseite. Teil 2: Neues optionales Notiz-Feld (bis 2000 Zeichen, mehrzeilig) im Formular als Textarea, auf Detailseite mit Zeilenumbrüchen, in Liste nicht sichtbar.",
+    "special_instructions": "Erstelle eine PRD. Verzichte ausnahmsweise auf die Erstellung von Tests und die Aktualisierung der Agents & Specs.",
+    "branch_name": "chance-phase-badge-notiz",
+    "original_branch": "claude/elegant-chandrasekhar-672aef",
+    "docs_folder": "docs",
+    "is_git_repo": true,
+    "workflow_scope": "implement-review"
+  },
+  "discovery": {
+    "agents_available": true,
+    "writer_agents": ["ba-writer"],
+    "coding_agents": ["be-coder", "db-coder", "fe-coder", "ui-designer"],
+    "review_agents": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer"],
+    "test_coding_agents": ["be-test-coder", "fe-test-coder"],
+    "test_review_agents": ["be-test-reviewer", "fe-test-reviewer"],
+    "test_runner_agents": ["be-test-runner", "fe-test-runner"],
+    "test_command": "cd frontend && npx ng build"
+  },
+  "artifacts": {
+    "prd_skipped": false,
+    "prd_file": "docs/prds/PRD-CHANCE-PHASE-BADGE-NOTIZ.md",
+    "plan_file": "docs/plans/PLAN-CHANCE-PHASE-BADGE-NOTIZ.md",
+    "pr_url": null
+  },
+  "completed_steps": ["1","2","3.1","3.2","3.3","4.1","4.2","4.3","4.4","4.5","5.1","6.1","6.2","6.3","6.4","6.5","7.1","7.2","7.3","7.4","7.5","7.6","8.1","9.1","9.2","9.3","10.1","10.2","10.3","11.1","11.2","12.1","12.2","12.3","13"]
+}

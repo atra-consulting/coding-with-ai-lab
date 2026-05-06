@@ -17,6 +17,7 @@ export interface ChanceDTO {
   firmaName: string | null;
   kontaktPersonId: number | null;
   kontaktPersonName: string | null;
+  notiz: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -35,6 +36,7 @@ interface ChanceRow {
   kontaktPersonId: number | null;
   kontaktPersonFirstName: string | null;
   kontaktPersonLastName: string | null;
+  notiz: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -58,6 +60,7 @@ function toDTO(row: ChanceRow): ChanceDTO {
     firmaName: row.firmaName,
     kontaktPersonId: row.kontaktPersonId,
     kontaktPersonName,
+    notiz: row.notiz,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };
@@ -67,7 +70,7 @@ const BASE_QUERY = `
   SELECT c.id, c.titel, c.beschreibung, c.wert, c.currency, c.phase, c.wahrscheinlichkeit, c.erwartetesDatum,
          c.firmaId, f.name AS firmaName,
          c.kontaktPersonId, p.firstName AS kontaktPersonFirstName, p.lastName AS kontaktPersonLastName,
-         c.createdAt, c.updatedAt
+         c.createdAt, c.updatedAt, c.notiz
   FROM chance c
   LEFT JOIN firma f ON c.firmaId = f.id
   LEFT JOIN person p ON c.kontaktPersonId = p.id
@@ -108,8 +111,8 @@ export const chanceService = {
     const now = new Date().toISOString();
     const result = sqlite
       .prepare(
-        `INSERT INTO chance (titel, beschreibung, wert, currency, phase, wahrscheinlichkeit, erwartetesDatum, firmaId, kontaktPersonId, createdAt, updatedAt)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        `INSERT INTO chance (titel, beschreibung, wert, currency, phase, wahrscheinlichkeit, erwartetesDatum, firmaId, kontaktPersonId, notiz, createdAt, updatedAt)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
       .run(
         dto.titel,
@@ -121,6 +124,7 @@ export const chanceService = {
         dto.erwartetesDatum ?? null,
         dto.firmaId,
         dto.kontaktPersonId ?? null,
+        dto.notiz ?? null,
         now,
         now
       );
@@ -132,7 +136,7 @@ export const chanceService = {
     const now = new Date().toISOString();
     sqlite
       .prepare(
-        `UPDATE chance SET titel=?, beschreibung=?, wert=?, currency=?, phase=?, wahrscheinlichkeit=?, erwartetesDatum=?, firmaId=?, kontaktPersonId=?, updatedAt=? WHERE id=?`
+        `UPDATE chance SET titel=?, beschreibung=?, wert=?, currency=?, phase=?, wahrscheinlichkeit=?, erwartetesDatum=?, firmaId=?, kontaktPersonId=?, notiz=?, updatedAt=? WHERE id=?`
       )
       .run(
         dto.titel,
@@ -144,6 +148,7 @@ export const chanceService = {
         dto.erwartetesDatum ?? null,
         dto.firmaId,
         dto.kontaktPersonId ?? null,
+        dto.notiz ?? null,
         now,
         id
       );

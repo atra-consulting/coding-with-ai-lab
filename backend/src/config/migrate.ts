@@ -79,6 +79,7 @@ export function runMigrations(): void {
       phase             TEXT NOT NULL DEFAULT 'NEU',
       wahrscheinlichkeit INTEGER,
       erwartetesDatum   TEXT,
+      notiz             TEXT,
       firmaId           INTEGER NOT NULL REFERENCES firma(id) ON DELETE CASCADE,
       kontaktPersonId   INTEGER REFERENCES person(id) ON DELETE SET NULL,
       createdAt         TEXT NOT NULL DEFAULT (datetime('now')),
@@ -86,6 +87,12 @@ export function runMigrations(): void {
     );
 
   `);
+
+  // Add notiz column to chance table if it doesn't exist yet
+  const chanceColumns = sqlite.prepare('PRAGMA table_info(chance)').all() as { name: string }[];
+  if (!chanceColumns.some(col => col.name === 'notiz')) {
+    sqlite.prepare('ALTER TABLE chance ADD COLUMN notiz TEXT').run();
+  }
 
   sqlite.exec(`
     CREATE INDEX IF NOT EXISTS idx_person_firmaId ON person(firmaId);

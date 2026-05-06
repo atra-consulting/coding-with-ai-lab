@@ -21,6 +21,7 @@ export interface Chance {
   firmaName: string;
   kontaktPersonId: number | null;
   kontaktPersonName: string | null;
+  notiz?: string | null;
 }
 
 export interface ChanceCreate {
@@ -33,5 +34,6 @@ export interface ChanceCreate {
   erwartetesDatum?: string;
   firmaId: number;
   kontaktPersonId?: number | null;
+  notiz?: string | null;
 }
 
