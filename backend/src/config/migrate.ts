@@ -79,6 +79,7 @@ export function runMigrations(): void {
       phase             TEXT NOT NULL DEFAULT 'NEU',
       wahrscheinlichkeit INTEGER,
       erwartetesDatum   TEXT,
+      notiz             TEXT,
       firmaId           INTEGER NOT NULL REFERENCES firma(id) ON DELETE CASCADE,
       kontaktPersonId   INTEGER REFERENCES person(id) ON DELETE SET NULL,
       createdAt         TEXT NOT NULL DEFAULT (datetime('now')),
