@@ -125,4 +125,12 @@ Manual smoke tests only (no automated test authoring):
 
 ## Implementierung
 
-_Wird nach der Implementierung ergänzt. Links zu Commits und PRs kommen hier hin._
+Branch: `chance-phase-badge-notiz`
+
+| Commit | Beschreibung |
+|--------|-------------|
+| `04881ad` | feat: Add notiz column to chance table schema and migration |
+| `a70303b` | feat: Add notiz field to Chance service and validation |
+| `5db07e2` | feat: Add Phase badge to list and Notiz field to Chance frontend |
+| `5efbd13` | fix: Add notiz TEXT to CREATE TABLE chance DDL for accuracy |
+| `5d0d42e` | fix: Address code review findings in chance list and form |
