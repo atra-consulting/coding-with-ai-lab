@@ -51,7 +51,8 @@ export class ChanceListComponent implements OnInit {
           VERLOREN: 'bg-danger',
         };
         const cls = classMap[params.value] ?? 'bg-secondary';
-        return `<span class="badge ${cls}">${params.value}</span>`;
+        const displayValue = (params.value in classMap) ? params.value : '?';
+        return `<span class="badge ${cls}">${displayValue}</span>`;
       },
     },
     {
