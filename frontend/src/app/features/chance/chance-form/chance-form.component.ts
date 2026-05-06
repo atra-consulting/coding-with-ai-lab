@@ -45,6 +45,7 @@ export class ChanceFormComponent implements OnInit {
       erwartetesDatum: [''],
       firmaId: [null, Validators.required],
       kontaktPersonId: [null],
+      notiz: [null],
     });
 
     this.firmaService.getAll(0, 1000, 'name,asc').subscribe({
