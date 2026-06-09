@@ -21,12 +21,18 @@ You are executing the **review** skill, which provides local code review with a 
 
 ## RESULTS DISPLAY GUARANTEE
 
-**The skill MUST ALWAYS surface its review results. It never finishes silently.** This holds in every mode — **embedded** (called from `plan-and-do`) or **stand-alone**, dry-run or normal. On every run, at least one of these MUST happen:
+**The skill MUST ALWAYS surface its review results. It never finishes silently.** This holds in every mode — **embedded** (called from `plan-and-do`) or **stand-alone**, dry-run or normal.
 
-1. **Markdown file** — the review is written to `[docs_folder]/reviews/REVIEW-<branch>.md` (PHASE 6, normal mode), or
-2. **On screen** — the full review content is displayed in the conversation (PHASE 6, dry-run mode).
+Every run MUST produce the full review content. One of these two carries it:
 
-In addition, the PHASE 7 summary is **always** printed to screen — including in embedded mode — so the caller and the user both see the outcome. Embedded mode skips only the header, plan-mode check, and task-understanding confirmation (PHASE 0); it still writes the review file and prints the summary. If a run reaches the end without producing either the Markdown file or the on-screen content, that is a bug — produce the on-screen content before stopping.
+1. **Markdown file** — normal mode. The review is written to `[docs_folder]/reviews/REVIEW-<branch>.md` (PHASE 6).
+2. **On screen** — dry-run mode. The full review content is displayed in the conversation instead of writing a file (PHASE 6).
+
+On top of that, the PHASE 7 summary is **always** printed to screen. In every mode. Including embedded. So the caller and the user both see the outcome.
+
+Embedded mode skips only PHASE 0 (plan-mode check and header) and PHASE 1.3 (task-understanding confirmation). It still runs PHASE 6 and PHASE 7. So it still writes the review file and prints the summary.
+
+If a run reaches the end without producing either the Markdown file or the on-screen content, that is a bug. Produce the on-screen content before stopping.
 
 ## Writing Style
 
@@ -719,6 +725,8 @@ Reviewer agents: <list of reviewer agents used, or "None (built-in checklist)">
 Fix agents: <list of coder/designer agents used, or "None">
 
 Findings written to: <FULL_PATH>
+<In dry-run mode, no file is written — replace the line above with:>
+[DRY-RUN] Review displayed above (no file written)
 
 Round summary:
 <For each round 1 through max_rounds:>
