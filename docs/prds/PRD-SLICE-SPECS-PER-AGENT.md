@@ -72,44 +72,46 @@ These rules settle every ambiguous section the reviewers flagged:
 
 ---
 
-### REQ-002: Agent → single-spec mapping
+### REQ-002: Agent → spec reading list
 
 **Priority:** High
-**Reason:** Every agent must know which spec to read.
+**Reason:** Every agent must know which spec is its main one, and which others to reach for when it needs cross-domain context.
 
-| Agent | Loads spec |
-|-------|-----------|
-| admin | SPECS-infrastructure.md |
-| ba-reviewer | SPECS.md |
-| ba-writer | SPECS.md |
-| be-coder | SPECS-backend.md |
-| be-reviewer | SPECS-backend.md |
-| db-coder | SPECS-database.md |
-| db-reviewer | SPECS-database.md |
-| fe-coder | SPECS-frontend.md |
-| fe-reviewer | SPECS-frontend.md |
-| md-reader | SPECS.md |
-| ui-designer | SPECS-ui.md |
-| ui-reviewer | SPECS-ui.md |
-| be-test-coder | SPECS-testing.md |
-| be-test-reviewer | SPECS-testing.md |
-| be-test-runner | SPECS-testing.md |
-| fe-test-coder | SPECS-testing.md |
-| fe-test-reviewer | SPECS-testing.md |
-| fe-test-runner | SPECS-testing.md |
+Each agent gets a **reading list**: ONE primary spec (its main file — the "ideally one file" the agent reads first and most) plus a short, prioritized list of secondary specs to read only when the task needs them. The primary keeps the single-file intent; the secondaries replace blind cross-reference hunting with an explicit, ordered list.
 
-**Acceptance:** Every agent file contains a `## Specifications` section. The section names exactly one spec file from the table above. The named file exists.
+| Agent | Primary spec | Secondary specs (read when needed) |
+|-------|-------------|------------------------------------|
+| admin | SPECS-infrastructure.md | SPECS.md |
+| ba-reviewer | SPECS.md | any domain spec relevant to the doc under review |
+| ba-writer | SPECS.md | any domain spec relevant to the doc being written |
+| be-coder | SPECS-backend.md | SPECS-database.md, SPECS-testing.md |
+| be-reviewer | SPECS-backend.md | SPECS-database.md, SPECS-testing.md |
+| db-coder | SPECS-database.md | SPECS-backend.md |
+| db-reviewer | SPECS-database.md | SPECS-backend.md |
+| fe-coder | SPECS-frontend.md | SPECS-ui.md, SPECS-testing.md |
+| fe-reviewer | SPECS-frontend.md | SPECS-ui.md, SPECS-testing.md |
+| md-reader | SPECS.md | any spec the request points to |
+| ui-designer | SPECS-ui.md | SPECS-frontend.md |
+| ui-reviewer | SPECS-ui.md | SPECS-frontend.md |
+| be-test-coder | SPECS-testing.md | SPECS-backend.md, SPECS-database.md |
+| be-test-reviewer | SPECS-testing.md | SPECS-backend.md |
+| be-test-runner | SPECS-testing.md | SPECS-infrastructure.md |
+| fe-test-coder | SPECS-testing.md | SPECS-frontend.md, SPECS-ui.md |
+| fe-test-reviewer | SPECS-testing.md | SPECS-frontend.md |
+| fe-test-runner | SPECS-testing.md | SPECS-infrastructure.md |
+
+**Acceptance:** Every agent file contains a `## Specifications` section with exactly one primary spec and its prioritized secondary list. Every named file (primary and secondary) exists on disk.
 
 ---
 
-### REQ-003: Per-agent `## Specifications` section
+### REQ-003: Per-agent `## Specifications` reading list
 
 **Priority:** High
-**Reason:** Agents need an explicit instruction to read their spec.
+**Reason:** Agents need an explicit reading list — what to read first, and what to reach for next.
 
-Each of the 18 agent files in `.claude/agents/` gets a new `## Specifications` section. The section tells the agent to read its one authoritative spec file before starting work. It names the file path. It may add a cross-reference link when the agent occasionally needs a second spec (e.g., `SPECS-testing.md` cross-references `SPECS-backend.md` for endpoint details). Cross-references do not change the primary single-file rule.
+Each of the 18 agent files in `.claude/agents/` gets a new `## Specifications` section holding its reading list from REQ-002: a **Primary** line (read first, before starting work) and a **Secondary** list (read only when the task needs that context). The primary is the agent's "ideally one file." The format is identical across all 18 files for consistency.
 
-**Acceptance:** All 18 agent files contain `## Specifications`. Each names exactly one primary spec. Any cross-references point to existing files.
+**Acceptance:** All 18 agent files contain `## Specifications` with a marked Primary spec and a Secondary list. Every referenced file exists.
 
 ---
 
