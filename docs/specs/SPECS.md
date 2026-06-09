@@ -44,13 +44,11 @@ Full-Stack-CRM-Anwendung. Node.js/TypeScript-Backend mit Angular-Frontend.
 
 | Entity | Übersetzung | Wichtige Beziehungen |
 |--------|------------|----------------------|
-| Firma | Unternehmen | hat viele: Person, Abteilung, Adresse, Aktivitaet, Vertrag, Chance |
-| Person | Kontaktperson | gehört zu Firma, optional Abteilung; hat viele: Adresse, Gehalt, Aktivitaet |
+| Firma | Unternehmen | hat viele: Person, Abteilung, Adresse, Aktivitaet, Chance |
+| Person | Kontaktperson | gehört zu Firma, optional Abteilung; hat viele: Adresse, Aktivitaet |
 | Abteilung | Abteilung | gehört zu Firma; hat viele Person |
-| Adresse | Adresse | gehört zu Firma oder Person |
-| Gehalt | Gehalt | gehört zu Person |
+| Adresse | Adresse | gehört zu Firma oder Person; mit Geokodierung (latitude, longitude) |
 | Aktivitaet | Aktivität | optional Firma und/oder Person |
-| Vertrag | Vertrag | gehört zu Firma, optional kontaktPerson |
 | Chance | Verkaufschance | gehört zu Firma, optional kontaktPerson; hat Kanban-Phasen |
 | Benutzer | Benutzer | hardcodiert in `config/users.ts`; Rollen: ADMIN, USER |
 
@@ -58,9 +56,12 @@ Full-Stack-CRM-Anwendung. Node.js/TypeScript-Backend mit Angular-Frontend.
 
 | Dokument | Inhalt |
 |----------|--------|
-| [SPECS-backend.md](SPECS-backend.md) | CRM-Backend: Entities, API-Endpunkte, Services |
-| [SPECS-frontend.md](SPECS-frontend.md) | Angular-Frontend: Komponenten, Routing, Services |
-| [SPECS-infrastructure.md](SPECS-infrastructure.md) | Build, Konfiguration, Datenbank, Projektstruktur |
+| [SPECS-backend.md](SPECS-backend.md) | CRM-Backend-API: Routen, Services, Auth, Fehlerbehandlung, Pagination, Code-Muster |
+| [SPECS-database.md](SPECS-database.md) | Datenbank: Entities, Schema, Spalten, Enums, Foreign Keys, Migrationen |
+| [SPECS-frontend.md](SPECS-frontend.md) | Angular-Frontend: Architektur, Routing, Auth, Guards, Models, Services, Komponenten |
+| [SPECS-ui.md](SPECS-ui.md) | UI & Design-System: Styling, Farben, AG Grid, Layout-Komponenten, Shared Components |
+| [SPECS-testing.md](SPECS-testing.md) | Tests: Playwright-Backend-API-Tests, Jasmine/Karma-Frontend-Unit-Tests, Testmuster |
+| [SPECS-infrastructure.md](SPECS-infrastructure.md) | Build, Konfiguration, Datenbank-Engine, Startup, Projektstruktur |
 
 ## Seed-Daten
 
@@ -68,4 +69,4 @@ Full-Stack-CRM-Anwendung. Node.js/TypeScript-Backend mit Angular-Frontend.
   - `admin` / `admin123` — Rolle: ADMIN
   - `user` / `test123` — Rolle: USER
   - `demo` / `demo1234` — Rolle: ADMIN
-- **Backend**: 100 Firmen, ~250 Abteilungen, ~600 Personen, 500 Adressen, ~600 Gehaelter, 1000 Aktivitaeten, 200 Vertraege, 300 Chancen
+- **Backend** (aus `backend/src/seed/fixture.json`): 25 Firmen, 50 Abteilungen, 100 Personen, 100 Adressen, 75 Aktivitaeten, 40 Chancen. Keine Gehalt- oder Vertrag-Seed-Daten.

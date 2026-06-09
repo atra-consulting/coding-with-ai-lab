@@ -20,153 +20,19 @@ Database file: `backend/data/crmdb.sqlite`. Created on first startup.
 
 ## Startup Sequence
 
-1. `runMigrations()` — creates tables if missing.
-2. `runDataMigration()` — loads fixture data from `backend/src/seed/fixture.json` if the database is empty; skipped when `firma` already has rows.
-3. `app.listen(7070)` — starts the Express server.
+Startup runs: `runMigrations()` → `runDataMigration()` → `app.listen(7070)`. Full detail: see [SPECS-infrastructure.md](SPECS-infrastructure.md).
 
 ## Entities
 
-All tables use `integer` PKs with autoincrement. All timestamps are `text` columns storing ISO-8601 strings. Monetary values use `real` (SQLite REAL). Foreign keys enforce referential integrity. `PRAGMA foreign_keys = ON` is set on every connection.
+Table definitions and column specs: see [SPECS-database.md](SPECS-database.md).
 
-### Firma
+Computed DTO fields (not stored in DB):
 
-| Column | SQLite Type | Constraints |
-|--------|-------------|-------------|
-| id | integer | PK, autoIncrement |
-| name | text | NOT NULL |
-| industry | text | nullable |
-| website | text | nullable |
-| phone | text | nullable |
-| email | text | nullable |
-| notes | text | nullable |
-| createdAt | text | NOT NULL, default `datetime('now')` |
-| updatedAt | text | NOT NULL, default `datetime('now')` |
-
-Cascade deletes to: Person, Abteilung, Adresse, Aktivitaet, Vertrag, Chance.
-
-DTO adds computed fields: `personenCount`, `abteilungenCount` (subquery counts).
-
-### Person
-
-| Column | SQLite Type | Constraints |
-|--------|-------------|-------------|
-| id | integer | PK, autoIncrement |
-| firstName | text | NOT NULL |
-| lastName | text | NOT NULL |
-| email | text | nullable |
-| phone | text | nullable |
-| position | text | nullable |
-| notes | text | nullable |
-| firmaId | integer | NOT NULL, FK → firma(id) CASCADE DELETE |
-| abteilungId | integer | nullable, FK → abteilung(id) SET NULL |
-| createdAt | text | NOT NULL |
-| updatedAt | text | NOT NULL |
-
-Cascade deletes to: Adresse, Gehalt.
-
-### Abteilung
-
-| Column | SQLite Type | Constraints |
-|--------|-------------|-------------|
-| id | integer | PK, autoIncrement |
-| name | text | NOT NULL |
-| description | text | nullable |
-| firmaId | integer | NOT NULL, FK → firma(id) CASCADE DELETE |
-| createdAt | text | NOT NULL |
-| updatedAt | text | NOT NULL |
-
-### Adresse
-
-| Column | SQLite Type | Constraints |
-|--------|-------------|-------------|
-| id | integer | PK, autoIncrement |
-| street | text | nullable |
-| houseNumber | text | nullable |
-| postalCode | text | nullable |
-| city | text | nullable |
-| country | text | nullable |
-| firmaId | integer | nullable, FK → firma(id) CASCADE DELETE |
-| personId | integer | nullable, FK → person(id) CASCADE DELETE |
-| createdAt | text | NOT NULL |
-| updatedAt | text | NOT NULL |
-
-### Gehalt
-
-| Column | SQLite Type | Constraints |
-|--------|-------------|-------------|
-| id | integer | PK, autoIncrement |
-| amount | real | NOT NULL |
-| currency | text | NOT NULL, default `EUR` |
-| typ | text | NOT NULL, default `GRUNDGEHALT` |
-| effectiveDate | text | NOT NULL |
-| personId | integer | NOT NULL, FK → person(id) CASCADE DELETE |
-| createdAt | text | NOT NULL |
-| updatedAt | text | NOT NULL |
-
-### Aktivitaet
-
-| Column | SQLite Type | Constraints |
-|--------|-------------|-------------|
-| id | integer | PK, autoIncrement |
-| typ | text | NOT NULL |
-| subject | text | NOT NULL |
-| description | text | nullable |
-| datum | text | NOT NULL |
-| firmaId | integer | nullable, FK → firma(id) CASCADE DELETE |
-| personId | integer | nullable, FK → person(id) CASCADE DELETE |
-| createdAt | text | NOT NULL |
-| updatedAt | text | NOT NULL |
-
-### Vertrag
-
-| Column | SQLite Type | Constraints |
-|--------|-------------|-------------|
-| id | integer | PK, autoIncrement |
-| titel | text | NOT NULL |
-| notes | text | nullable |
-| wert | real | nullable |
-| currency | text | NOT NULL, default `EUR` |
-| status | text | NOT NULL, default `ENTWURF` |
-| startDate | text | nullable |
-| endDate | text | nullable |
-| firmaId | integer | NOT NULL, FK → firma(id) CASCADE DELETE |
-| kontaktPersonId | integer | nullable, FK → person(id) SET NULL |
-| createdAt | text | NOT NULL |
-| updatedAt | text | NOT NULL |
-
-### Chance
-
-| Column | SQLite Type | Constraints |
-|--------|-------------|-------------|
-| id | integer | PK, autoIncrement |
-| titel | text | NOT NULL |
-| beschreibung | text | nullable |
-| wert | real | nullable |
-| currency | text | NOT NULL, default `EUR` |
-| phase | text | NOT NULL, default `NEU` |
-| wahrscheinlichkeit | integer | nullable, 0–100 |
-| erwartetesDatum | text | nullable |
-| firmaId | integer | NOT NULL, FK → firma(id) CASCADE DELETE |
-| kontaktPersonId | integer | nullable, FK → person(id) SET NULL |
-| createdAt | text | NOT NULL |
-| updatedAt | text | NOT NULL |
-
-### Enums
-
-Stored as plain `text` in SQLite. Validated by Zod on write. Defined in `src/db/schema/enums.ts`.
-
-| Enum | Values |
-|------|--------|
-| ChancePhase | NEU, QUALIFIZIERT, ANGEBOT, VERHANDLUNG, GEWONNEN, VERLOREN |
-| VertragStatus | ENTWURF, AKTIV, ABGELAUFEN, GEKUENDIGT |
-| AktivitaetTyp | ANRUF, EMAIL, MEETING, NOTIZ, AUFGABE |
-| GehaltTyp | GRUNDGEHALT, BONUS, PROVISION, SONDERZAHLUNG |
+- **Firma** DTO adds `personenCount`, `abteilungenCount` (subquery counts).
 
 ## API Endpoints
 
-All routes require authentication. `requireAuth` middleware checks `req.session.userId`. Unauthenticated requests get `401`.
-
-The current stack has no per-route role or permission guards. All authenticated users share the same access level.
+All routes require authentication. `requireAuth` middleware checks `req.session.userId`. Unauthenticated requests get `401`. See the [Auth middleware](#auth-middleware) section for the full authorization note.
 
 Base URL: `http://localhost:7070/api`
 
@@ -251,13 +117,11 @@ Standard CRUD. Default sort: `datum,DESC`. Allowed sort fields: `datum`, `typ`, 
 
 Standard CRUD. Default sort: `createdAt,DESC`. Allowed sort fields: `titel`, `wert`, `phase`, `wahrscheinlichkeit`, `erwartetesDatum`, `createdAt`, `updatedAt`.
 
-### Vertraege (`/api/vertraege`)
+### Admin / Geocoding (`/api/admin`)
 
-Standard CRUD. Default sort: `createdAt,DESC`. Allowed sort fields: `titel`, `wert`, `status`, `startDate`, `endDate`, `createdAt`, `updatedAt`.
-
-### Gehaelter (`/api/gehaelter`)
-
-Standard CRUD. Default sort: `effectiveDate,DESC`. Allowed sort fields: `amount`, `effectiveDate`, `typ`, `createdAt`, `updatedAt`.
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| POST | `/api/admin/geocode-addresses` | requireAuth + requireRole('ADMIN') | Geocodes `adresse` rows lacking coordinates via Nominatim. Pass `?force=true` to re-geocode rows that already have coordinates. Returns `{ total, succeeded, failed, skippedInsufficientData }`. |
 
 ### Standard CRUD pattern
 
@@ -271,6 +135,21 @@ Every standard CRUD resource exposes:
 | POST | `/api/{resource}` | Create → 201 |
 | PUT | `/api/{resource}/:id` | Full update or 404 |
 | DELETE | `/api/{resource}/:id` | Delete → 204 or 404 |
+
+## Services
+
+### geocodingService.ts
+
+`services/geocodingService.ts` exports two functions:
+
+- `geocodeAdresse(adresse)` — calls the Nominatim search API for a single address; returns `{ latitude, longitude }` on success or `null` when Nominatim finds nothing. Throws on HTTP errors or malformed responses.
+- `runGeocodingBatch({ force })` — iterates the `adresse` table (rows without coordinates, or all rows when `force=true`); calls `geocodeAdresse()` per row; updates matching DB rows; returns `{ total, succeeded, failed, skippedInsufficientData }`.
+
+Configuration:
+- `NOMINATIM_BASE_URL` env var — base URL for Nominatim requests; defaults to `https://nominatim.openstreetmap.org`.
+- `GEOCODING_SLEEP_MS` env var — sleep between requests; defaults to 3000 ms. In production the minimum is clamped to 1000 ms to honour the Nominatim usage policy.
+- Sets a `User-Agent` header on all Nominatim requests as required by the usage policy.
+- A module-level guard prevents concurrent batch runs (throws `ConflictError` if a batch is already in progress).
 
 ## Pagination
 
@@ -318,7 +197,7 @@ Hardcoded in `src/config/users.ts`. No database table. No user management API.
 
 Passwords stored as bcrypt hashes (cost factor 10). Generated once at build time.
 
-All 3 users currently hold all 9 permissions: `FIRMEN`, `PERSONEN`, `ABTEILUNGEN`, `ADRESSEN`, `AKTIVITAETEN`, `GEHAELTER`, `VERTRAEGE`, `CHANCEN`, `BENUTZERVERWALTUNG`.
+All 3 users currently hold all 7 permissions: `FIRMEN`, `PERSONEN`, `ABTEILUNGEN`, `ADRESSEN`, `AKTIVITAETEN`, `CHANCEN`, `BENUTZERVERWALTUNG`.
 
 `CrmUser` interface fields: `id`, `benutzername`, `vorname`, `nachname`, `passwordHash`, `roles[]`, `permissions[]`.
 
@@ -331,13 +210,15 @@ All 3 users currently hold all 9 permissions: `FIRMEN`, `PERSONEN`, `ABTEILUNGEN
 3. Sets `req.currentUser` on the request.
 4. Calls `next(new UnauthorizedError())` if session is missing or user not found.
 
-There is no `requireRole()` or `requirePermission()` middleware on routes yet. All authenticated users access all routes equally.
+`requireRole('ADMIN')` is applied on `routes/admin.ts`. `requirePermission` exists in `src/middleware/auth.ts` but is not yet applied to entity routes. All authenticated entity routes currently share one access level.
 
 ### CORS
 
 Configured in `src/middleware/cors.ts`. Allowed origins from env var `CORS_ORIGINS`. Default: `http://localhost:7200`. Credentials allowed. Methods: GET, POST, PUT, DELETE, OPTIONS.
 
 ## Architecture
+
+Table definitions and column specs: see [SPECS-database.md](SPECS-database.md).
 
 ```
 src/
@@ -351,12 +232,12 @@ src/
     schema.ts       — Drizzle table definitions
     enums.ts        — TypeScript enum arrays and types
   middleware/
-    auth.ts         — requireAuth
+    auth.ts         — requireAuth, requireRole, requirePermission
     cors.ts         — CORS config
     errorHandler.ts — global error handler (last middleware)
     session.ts      — express-session config
-  routes/           — one file per entity (Express Router)
-  services/         — one file per entity (plain objects, raw SQL via better-sqlite3)
+  routes/           — one file per entity (Express Router); also admin.ts (geocoding)
+  services/         — one file per entity (plain objects, raw SQL via better-sqlite3); also geocodingService.ts
   utils/
     errors.ts       — typed error classes
     pagination.ts   — parsePaginationParams, parseSort, buildPage
@@ -368,6 +249,8 @@ src/
 ```
 
 Middleware order in `app.ts`: CORS → JSON body parser → session → routes → error handler.
+
+Mounted routers (9): `/api/auth`, `/api/firmen`, `/api/personen`, `/api/abteilungen`, `/api/adressen`, `/api/aktivitaeten`, `/api/chancen`, `/api/dashboard`, `/api/admin`. Plus `/api/health` (inline, public).
 
 ## Exception Handling
 
@@ -451,6 +334,17 @@ res.status(201).json(firmaService.create(dto));
 ```
 
 `validate()` throws `ValidationError` (→ 400) with `fieldErrors` populated from Zod issues.
+
+Enum values used in Zod schemas:
+
+<!-- mirror: keep in sync with SPECS-database.md (canonical) -->
+
+| Enum | Values |
+|------|--------|
+| ChancePhase | NEU, QUALIFIZIERT, ANGEBOT, VERHANDLUNG, GEWONNEN, VERLOREN |
+| AktivitaetTyp | ANRUF, EMAIL, MEETING, NOTIZ, AUFGABE |
+
+Canonical enum definition: see [SPECS-database.md](SPECS-database.md).
 
 ### Adding a new entity
 

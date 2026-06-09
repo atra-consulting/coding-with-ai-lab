@@ -83,4 +83,14 @@ Agent files: `.claude/agents/`
 
 ## Specifications
 
-Full system specs: [`docs/specs/SPECS.md`](docs/specs/SPECS.md) — root document linking to per-area specs (backend, frontend, infrastructure).
+Full system specs: [`docs/specs/SPECS.md`](docs/specs/SPECS.md) — root index plus six per-area specs (7 files total). Each subagent in `.claude/agents/` has a `## Specifications` reading list naming its primary spec plus secondary specs.
+
+| Spec | Scope | Primary for |
+|------|-------|-------------|
+| [`SPECS.md`](docs/specs/SPECS.md) | Root index, architecture, tech stack, domain model, seed data | ba-writer, ba-reviewer, md-reader |
+| [`SPECS-backend.md`](docs/specs/SPECS-backend.md) | Backend API: routes, services, auth, errors, pagination, code patterns | be-coder, be-reviewer |
+| [`SPECS-database.md`](docs/specs/SPECS-database.md) | Entities, schema, columns, enums, foreign keys, migrations | db-coder, db-reviewer |
+| [`SPECS-frontend.md`](docs/specs/SPECS-frontend.md) | Angular architecture, routing, auth, guards, models, services, components | fe-coder, fe-reviewer |
+| [`SPECS-ui.md`](docs/specs/SPECS-ui.md) | Styling, design system, AG Grid, layout & shared components | ui-designer, ui-reviewer |
+| [`SPECS-testing.md`](docs/specs/SPECS-testing.md) | Playwright backend API tests, Jasmine/Karma frontend unit tests | be-test-*, fe-test-* |
+| [`SPECS-infrastructure.md`](docs/specs/SPECS-infrastructure.md) | Build, config, DB engine, startup, project structure | admin |

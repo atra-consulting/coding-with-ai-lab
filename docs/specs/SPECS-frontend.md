@@ -2,13 +2,15 @@
 
 Angular 21.2.1 standalone components. Bootstrap 5.3.8 + ng-bootstrap 20.0.0. TypeScript 5.9.2.
 
+Visual design, colors, layout measurements, and AG Grid theming: `docs/specs/SPECS-ui.md`.
+
 ## Architectural Rules
 
-- **Standalone Components**: Uses Angular 21 standalone components exclusively.
+- **Standalone Components**: Uses Angular 21 standalone components exclusively. No NgModules, no `standalone: true` (default in Angular 21).
 - **Dependency Injection**: Prefers `inject(Service)` over constructor injection.
-- **Control Flow**: Uses modern `@if`, `@for`, and `@switch` syntax.
+- **Control Flow**: Uses modern `@if`, `@for`, and `@switch` syntax only. Never `*ngIf`/`*ngFor`. `@for` requires `track`.
 - **Forms**: Reactive forms with `FormBuilder`.
-- **Permissions**: Routes must be protected with `canActivate: [permissionGuard('PERMISSION')]`.
+- **Permissions**: Routes must be protected with `canActivate: [permissionGuard('PERMISSION')]` or `canActivate: [roleGuard('ROLE_ADMIN')]` for admin routes.
 
 ## Routing
 
@@ -24,10 +26,9 @@ Angular 21.2.1 standalone components. Bootstrap 5.3.8 + ng-bootstrap 20.0.0. Typ
   /personen                     → Person CRUD
   /abteilungen                  → Abteilung CRUD
   /adressen                     → Adresse CRUD (no detail)
-  /gehaelter                    → permissionGuard('GEHAELTER') → Gehalt CRUD (no detail)
   /aktivitaeten                 → Aktivitaet CRUD (no detail)
-  /vertraege                    → permissionGuard('VERTRAEGE') → Vertrag CRUD
   /chancen                      → permissionGuard('CHANCEN') → Chance CRUD + /board
+  /admin/geocoding              → roleGuard('ROLE_ADMIN') → AdminGeocodingComponent
   **                            → redirect /welcome
 ```
 
@@ -68,15 +69,12 @@ Each entity has a response interface and a `*Create` input interface.
 | person.model.ts | Person, PersonCreate |
 | abteilung.model.ts | Abteilung, AbteilungCreate |
 | adresse.model.ts | Adresse, AdresseCreate |
-| gehalt.model.ts | GehaltTyp, Gehalt, GehaltCreate |
 | aktivitaet.model.ts | AktivitaetTyp, Aktivitaet, AktivitaetCreate |
-| vertrag.model.ts | VertragStatus, Vertrag, VertragCreate |
 | chance.model.ts | ChancePhase, Chance, ChanceCreate, BoardSummary |
-| dashboard.model.ts | DashboardStats, TopFirma, DepartmentSalary |
+| dashboard.model.ts | DashboardData, RecentChance, RecentAktivitaet (re-exports ChancePhase, AktivitaetTyp) |
 | auth.model.ts | LoginRequest, LoginResponse, BenutzerInfo |
 | page.model.ts | Page\<T\> (content, totalElements, totalPages, size, number, first, last) |
-| report.model.ts | ReportDimension, ReportMetrik, ReportFilter, ReportQuery, ReportZeile, ReportResult, SavedReport, SavedReportCreate |
-| auswertung.model.ts | PipelineKpis, PhaseAggregate, TopFirma |
+| geocode-result.model.ts | GeocodeResult — used by the admin geocoding feature |
 
 `auth.model.ts` contains three interfaces. `LoginRequest` has `benutzername` and `passwort`. `LoginResponse` has `benutzername`, `vorname`, `nachname`, `rollen`. `BenutzerInfo` has `id`, `benutzername`, `vorname`, `nachname`, `email`, `rollen`, `permissions`. No `RefreshResponse`.
 
@@ -93,11 +91,7 @@ Additional methods:
 | FirmaService | `getPersonen(id, page, size)`, `getAbteilungen(id, page, size)` |
 | AbteilungService | `getAllByFirmaId(firmaId)` |
 | ChanceService | `getByPhase(phase, page, size, sort)`, `getBoardSummary()`, `updatePhase(id, phase)` |
-| DashboardService | `getStats()`, `getRecentActivities()`, `getSalaryStatistics()`, `getTopCompanies()` |
-| AuswertungService | `getPipelineKpis()`, `getPhaseAggregates()`, `getTopFirmen(limit?)` |
-| ReportService | `executeReport(query)` |
-| SavedReportService | `getAll()`, `create(dto)`, `update(id, dto)`, `delete(id)` |
-| DashboardConfigService | `getConfig()`, `saveConfig(config)` |
+| DashboardService | `getDashboard()` → `DashboardData` (single GET `/api/dashboard`) |
 | NotificationService | `success(msg)`, `error(msg)`, `info(msg)`, `warning(msg)` |
 | LayoutService | `collapsed` (signal), `toggleSidebar()` |
 
@@ -126,12 +120,12 @@ Three public components. No auth required. No backend calls — data posts direc
 
 ### Dashboard
 
-- Stats overview (firmenCount, personenCount, aktivitaetenCount, offeneChancenCount, gesamtVertragswert, durchschnittsGehalt)
-- Widget sub-components: recent activities, top companies, salary statistics
+- Single GET `/api/dashboard` returns `DashboardData`: firmenCount, personenCount, offeneChancenCount, gewonneneChancenSumme
+- Widget sub-components: recent Chancen (`recentChancen`) and recent Aktivitaeten (`recentAktivitaeten`)
 
-### Entity CRUD (Firma, Person, Abteilung, Adresse, Gehalt, Aktivitaet, Vertrag, Chance)
+### Entity CRUD (Firma, Person, Abteilung, Adresse, Aktivitaet, Chance)
 
-**List pattern**: Pagination (NgbPagination, 1-indexed → 0-indexed), search input, delete with ConfirmDialogComponent modal, loading spinner.
+**List pattern**: Entity list views use **AG Grid** (`ag-grid-angular`, `themeQuartz` theme). AG Grid provides built-in column filtering, sorting, and resizing. `NgbPagination` is used only in detail views with child-list tabs (e.g. Firma detail shows paginated Personen and Abteilungen tabs) — not as the primary list mechanism. AG Grid theming details: `docs/specs/SPECS-ui.md`.
 
 **Form pattern**: ReactiveFormsModule + FormBuilder. Edit mode detected via route param `:id`. Loads existing data with `patchValue()`. Navigates to detail/list on submit.
 
@@ -145,61 +139,65 @@ Three public components. No auth required. No backend calls — data posts direc
 - "Mehr laden" pagination per column
 - BoardSummary (count, totalWert) per phase header
 - Toggle between list and board view via btn-group
+- Phase badge color map: `docs/specs/SPECS-ui.md`
 
-### Auswertungen (Pipeline Dashboard)
+### Admin Geocoding
 
-- Configurable widget layout (drag-drop reorder)
-- Widget types: KPI tiles, bar chart (phase value), doughnut chart (distribution), top companies, pivot table
-- Chart.js integration (bar, doughnut, horizontal bar)
-- Dashboard config persisted per user
-- Report builder slide-over for custom reports
-- Saved reports as custom widgets
+- Route: `/admin/geocoding`, guarded by `roleGuard('ROLE_ADMIN')`.
+- Triggers a backend batch geocode via `POST /api/admin/geocode-addresses` (optionally with `?force=true` to re-geocode addresses that already have coordinates).
+- Geocoding is performed by the backend using the Nominatim API for addresses that lack coordinates.
+- Displays progress and results (geocoded count, skipped count, errors) returned in a `GeocodeResult` response.
+- Admin-only; not visible to non-admin users.
 
 ## Layout Components
 
 ### Sidebar
 
-Sections with permission-filtered items:
+Sections with role-filtered items. Items with a `requiredRole` are hidden when the current user does not have that role; items without `requiredRole` are always visible to authenticated users.
 
-| Section | Items (Permission) |
-|---------|-------------------|
-| Ubersicht | Dashboard (DASHBOARD) |
-| Kunden & Kontakte | Firmen (FIRMEN), Personen (PERSONEN), Abteilungen (ABTEILUNGEN), Adressen (ADRESSEN) |
-| Vertrieb | Chancen (CHANCEN), Aktivitaten (AKTIVITAETEN), Vertrage (VERTRAEGE) |
-| Auswertungen | Pipeline (AUSWERTUNGEN) |
-| Personal | Gehalter (GEHAELTER) |
-| Administration | Benutzer (BENUTZERVERWALTUNG) |
+| Section | Items (requiredRole) |
+|---------|---------------------|
+| Übersicht | Dashboard (none) |
+| Kunden & Kontakte | Firmen (none), Personen (none), Abteilungen (none), Adressen (none) |
+| *(no title)* | Chancen (none), Aktivitäten (none) |
+| Administration | Adressen geokodieren → `/admin/geocoding` (ROLE_ADMIN) |
 
-Empty sections are hidden. Uses FontAwesome icons and RouterLinkActive.
+Empty sections are hidden. Uses FontAwesome icons (`fa-icon`) and `RouterLinkActive`.
 
 **Bottom-anchored items**: A `bottomItems` array in `SidebarComponent` renders below the main sections, pushed to the bottom via `mt-auto`. Currently holds a single **Feedback** link to `/feedback` (public route, no permission required). A top border separates it from the main nav; the collapse toggle and footer sit below it.
 
-**Collapsible State**: The sidebar can be collapsed to a mini-view (60px) showing only icons. State is managed by `LayoutService` and persisted in `localStorage` (`sidebar_collapsed`).
+**Collapsible State**: The sidebar can be collapsed to a mini-view. State is managed by `LayoutService` (`collapsed` signal). Persisted in `localStorage` under the key `sidebar_collapsed`. Items are filtered by role via `visibleItems()` in the sidebar component — role-filter logic, not permission-string logic.
+
+Visual facts (widths, icon spacing, section-header colors, nav-link colors, active style): `docs/specs/SPECS-ui.md`.
 
 ### Navbar
 
 - Current user name display
 - Logout button
 
-### Shared Components
+## Shared Components
 
-- **NotificationComponent**: Fixed top-right Bootstrap alerts, auto-hide 5s
-- **ConfirmDialogComponent**: NgbModal for delete confirmations
-- **LoadingSpinnerComponent**: Bootstrap spinner
-- **EurCurrencyPipe**: Formats as EUR (de-DE locale, 2 decimals)
+Appearance and Bootstrap variant details: `docs/specs/SPECS-ui.md`.
 
-## Styling
+### NotificationComponent
 
-- Bootstrap 5 + SCSS with custom variables
-- Primary: `#264892`, Secondary: `#777777`, Danger: `#dc421e`
-- Body background: `#f5f6f8`
-- Font: "Helvetica Neue", Helvetica, Arial, sans-serif
-- Phase badge colors: bg-primary (NEU), bg-info (QUALIFIZIERT), bg-warning (ANGEBOT), bg-secondary (VERHANDLUNG), bg-success (GEWONNEN), bg-danger (VERLOREN)
+- Inject `NotificationService`. Call `success(msg)`, `error(msg)`, `info(msg)`, or `warning(msg)`.
+- Component subscribes to the service's observable and renders the alert.
+
+### ConfirmDialogComponent
+
+- Open via `NgbModal.open(ConfirmDialogComponent)`. Pass message via `componentInstance.message`.
+- Returns a promise that resolves on confirm, rejects on dismiss.
+
+### LoadingSpinnerComponent
+
+- Add `<app-loading-spinner>` in template. Show/hide with `@if(loading)`.
+
+### EurCurrencyPipe
+
+- Apply as `{{ value | eurCurrency }}` in templates.
+- Pipe is standalone; import `EurCurrencyPipe` in the component's `imports` array.
 
 ## Proxy Configuration
 
-```
-/api  →  http://localhost:7070  (Backend)
-```
-
-Single rule. All `/api/*` calls proxy to the backend on port 7070. No CIAM service. No split routing.
+See `docs/specs/SPECS-infrastructure.md` for proxy config (`/api` → `http://localhost:7070`).

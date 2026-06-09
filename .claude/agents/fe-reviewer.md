@@ -33,6 +33,13 @@ model: sonnet
 
 You are a Senior Angular Code Reviewer for the CRM codebase with 10 years of experience.
 
+## Specifications
+
+Your spec reading list (paths are relative to the repo root):
+
+- **Primary** (read first, before starting work): `docs/specs/SPECS-frontend.md`
+- **Secondary** (read only when the task needs it): `docs/specs/SPECS-ui.md`, `docs/specs/SPECS-testing.md`
+
 ## Review Checklist
 
 ### Architecture

@@ -118,10 +118,8 @@ Dev dependencies:
 - Engine: SQLite (via `better-sqlite3`)
 - File path: `backend/data/crmdb.sqlite`
 - Created automatically on first startup
-- Schema: Drizzle ORM definitions in `backend/src/db/schema/schema.ts`
-- Migrations: Plain `CREATE TABLE IF NOT EXISTS` statements in `backend/src/config/migrate.ts`. Run on every startup.
-- `PRAGMA foreign_keys = ON` — set on every connection. Required for cascade deletes.
-- Tables: firma, person, abteilung, adresse, gehalt, aktivitaet, vertrag, chance
+
+Schema file paths, migration approach, table definitions, column specs, and enums: see [SPECS-database.md](SPECS-database.md).
 
 ### Authentication
 
@@ -190,13 +188,23 @@ No split routing. All API traffic goes to a single backend.
 
 ### Environment Variables
 
-One optional variable:
+All optional, with defaults:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | PORT | 7070 | Backend HTTP port |
+| SESSION_SECRET | `crm-dev-secret-key` | express-session signing secret |
+| CORS_ORIGINS | `http://localhost:7200` | Allowed CORS origins |
+| NODE_ENV | (unset) | `production` disables the `/api/auth/test-login` helper |
+| NOMINATIM_BASE_URL | `https://nominatim.openstreetmap.org` | Geocoding API base URL (admin address geocoding) |
+| GEOCODING_SLEEP_MS | (service default) | Delay between Nominatim requests to respect rate limits |
+| STUB_CONTROL_URL | (unset) | Test-only Nominatim stub control endpoint |
 
-No JWT secrets. No RSA key paths. No CORS origin variables. No cookie flags.
+No JWT secrets. No RSA key paths. No cookie-flag overrides.
+
+### Address Geocoding
+
+Addresses carry optional `latitude` / `longitude` coordinates. An ADMIN-only endpoint, `POST /api/admin/geocode-addresses`, batch-geocodes addresses that lack coordinates via the Nominatim API (`backend/src/services/geocodingService.ts`), rate-limited and identified by a `User-Agent`. See SPECS-backend.md (endpoint) and SPECS-database.md (columns). Tests use a local Nominatim stub — see SPECS-testing.md.
 
 ## Documentation
 
