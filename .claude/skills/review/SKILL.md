@@ -2,8 +2,8 @@
 name: "project:review"
 description: "Local code review with multi-round review & fix cycle. Use for reviewing code, checking changes, getting feedback on a branch, or before creating a PR."
 argument-hint: (optional special instructions)
-version: 1.6.0
-last-modified: 2026-04-07
+version: 1.7.0
+last-modified: 2026-06-09
 allowed-tools:
   - Read
   - Edit
@@ -18,6 +18,15 @@ allowed-tools:
 # Review Skill
 
 You are executing the **review** skill, which provides local code review with a multi-round review & fix cycle on a feature branch vs main.
+
+## RESULTS DISPLAY GUARANTEE
+
+**The skill MUST ALWAYS surface its review results. It never finishes silently.** This holds in every mode — **embedded** (called from `plan-and-do`) or **stand-alone**, dry-run or normal. On every run, at least one of these MUST happen:
+
+1. **Markdown file** — the review is written to `[docs_folder]/reviews/REVIEW-<branch>.md` (PHASE 6, normal mode), or
+2. **On screen** — the full review content is displayed in the conversation (PHASE 6, dry-run mode).
+
+In addition, the PHASE 7 summary is **always** printed to screen — including in embedded mode — so the caller and the user both see the outcome. Embedded mode skips only the header, plan-mode check, and task-understanding confirmation (PHASE 0); it still writes the review file and prints the summary. If a run reaches the end without producing either the Markdown file or the on-screen content, that is a bug — produce the on-screen content before stopping.
 
 ## Writing Style
 
@@ -73,7 +82,7 @@ Then STOP immediately.
 If NOT in plan mode, display header:
 
 ```
-Code Review (v1.6.0, 2026-04-07)
+Code Review (v1.7.0, 2026-06-09)
 ****************************************
 
 Local code review - multi-round review & fix cycle
@@ -676,10 +685,12 @@ Clean pass. No issues found.
 - Create PR when ready
 
 ---
-Generated with Claude Code - review v1.6.0
+Generated with Claude Code - review v1.7.0
 ```
 
 ### Step 6.3: Write Review File
+
+Per the **RESULTS DISPLAY GUARANTEE**, exactly one of the two branches below always runs — normal mode writes the Markdown file, dry-run displays the content on screen. This step never gets skipped, in embedded or stand-alone mode.
 
 **If dry_run_mode = true:**
 - Display: `[DRY-RUN] Would write review to: [full_path]`
@@ -694,6 +705,8 @@ Generated with Claude Code - review v1.6.0
 ---
 
 ## PHASE 7: SUMMARY
+
+Per the **RESULTS DISPLAY GUARANTEE**, this summary is **always** printed to screen — in every mode, including embedded. Never skip it.
 
 Output final summary:
 ```
