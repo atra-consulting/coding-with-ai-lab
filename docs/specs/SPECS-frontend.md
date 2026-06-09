@@ -2,11 +2,13 @@
 
 Angular 21.2.1 standalone components. Bootstrap 5.3.8 + ng-bootstrap 20.0.0. TypeScript 5.9.2.
 
+Visual design, colors, layout measurements, and AG Grid theming: `docs/specs/SPECS-ui.md`.
+
 ## Architectural Rules
 
-- **Standalone Components**: Uses Angular 21 standalone components exclusively.
+- **Standalone Components**: Uses Angular 21 standalone components exclusively. No NgModules, no `standalone: true` (default in Angular 21).
 - **Dependency Injection**: Prefers `inject(Service)` over constructor injection.
-- **Control Flow**: Uses modern `@if`, `@for`, and `@switch` syntax.
+- **Control Flow**: Uses modern `@if`, `@for`, and `@switch` syntax only. Never `*ngIf`/`*ngFor`. `@for` requires `track`.
 - **Forms**: Reactive forms with `FormBuilder`.
 - **Permissions**: Routes must be protected with `canActivate: [permissionGuard('PERMISSION')]`.
 
@@ -75,8 +77,7 @@ Each entity has a response interface and a `*Create` input interface.
 | dashboard.model.ts | DashboardStats, TopFirma, DepartmentSalary |
 | auth.model.ts | LoginRequest, LoginResponse, BenutzerInfo |
 | page.model.ts | Page\<T\> (content, totalElements, totalPages, size, number, first, last) |
-| report.model.ts | ReportDimension, ReportMetrik, ReportFilter, ReportQuery, ReportZeile, ReportResult, SavedReport, SavedReportCreate |
-| auswertung.model.ts | PipelineKpis, PhaseAggregate, TopFirma |
+| geocode-result.model.ts | GeocodeResult |
 
 `auth.model.ts` contains three interfaces. `LoginRequest` has `benutzername` and `passwort`. `LoginResponse` has `benutzername`, `vorname`, `nachname`, `rollen`. `BenutzerInfo` has `id`, `benutzername`, `vorname`, `nachname`, `email`, `rollen`, `permissions`. No `RefreshResponse`.
 
@@ -94,10 +95,6 @@ Additional methods:
 | AbteilungService | `getAllByFirmaId(firmaId)` |
 | ChanceService | `getByPhase(phase, page, size, sort)`, `getBoardSummary()`, `updatePhase(id, phase)` |
 | DashboardService | `getStats()`, `getRecentActivities()`, `getSalaryStatistics()`, `getTopCompanies()` |
-| AuswertungService | `getPipelineKpis()`, `getPhaseAggregates()`, `getTopFirmen(limit?)` |
-| ReportService | `executeReport(query)` |
-| SavedReportService | `getAll()`, `create(dto)`, `update(id, dto)`, `delete(id)` |
-| DashboardConfigService | `getConfig()`, `saveConfig(config)` |
 | NotificationService | `success(msg)`, `error(msg)`, `info(msg)`, `warning(msg)` |
 | LayoutService | `collapsed` (signal), `toggleSidebar()` |
 
@@ -131,7 +128,7 @@ Three public components. No auth required. No backend calls — data posts direc
 
 ### Entity CRUD (Firma, Person, Abteilung, Adresse, Gehalt, Aktivitaet, Vertrag, Chance)
 
-**List pattern**: Pagination (NgbPagination, 1-indexed → 0-indexed), search input, delete with ConfirmDialogComponent modal, loading spinner.
+**List pattern**: Entity list views use **AG Grid** (`ag-grid-angular`, `themeQuartz` theme). AG Grid provides built-in column filtering, sorting, and resizing. `NgbPagination` is used only in detail views with child-list tabs (e.g. Firma detail shows paginated Personen and Abteilungen tabs) — not as the primary list mechanism. AG Grid theming details: `docs/specs/SPECS-ui.md`.
 
 **Form pattern**: ReactiveFormsModule + FormBuilder. Edit mode detected via route param `:id`. Loads existing data with `patchValue()`. Navigates to detail/list on submit.
 
@@ -145,15 +142,7 @@ Three public components. No auth required. No backend calls — data posts direc
 - "Mehr laden" pagination per column
 - BoardSummary (count, totalWert) per phase header
 - Toggle between list and board view via btn-group
-
-### Auswertungen (Pipeline Dashboard)
-
-- Configurable widget layout (drag-drop reorder)
-- Widget types: KPI tiles, bar chart (phase value), doughnut chart (distribution), top companies, pivot table
-- Chart.js integration (bar, doughnut, horizontal bar)
-- Dashboard config persisted per user
-- Report builder slide-over for custom reports
-- Saved reports as custom widgets
+- Phase badge color map: `docs/specs/SPECS-ui.md`
 
 ## Layout Components
 
@@ -166,38 +155,43 @@ Sections with permission-filtered items:
 | Ubersicht | Dashboard (DASHBOARD) |
 | Kunden & Kontakte | Firmen (FIRMEN), Personen (PERSONEN), Abteilungen (ABTEILUNGEN), Adressen (ADRESSEN) |
 | Vertrieb | Chancen (CHANCEN), Aktivitaten (AKTIVITAETEN), Vertrage (VERTRAEGE) |
-| Auswertungen | Pipeline (AUSWERTUNGEN) |
 | Personal | Gehalter (GEHAELTER) |
 | Administration | Benutzer (BENUTZERVERWALTUNG) |
 
-Empty sections are hidden. Uses FontAwesome icons and RouterLinkActive.
+Empty sections are hidden. Uses FontAwesome icons (`fa-icon`) and `RouterLinkActive`.
 
-**Collapsible State**: The sidebar can be collapsed to a mini-view (60px) showing only icons. State is managed by `LayoutService` and persisted in `localStorage` (`sidebar_collapsed`).
+**Collapsible State**: The sidebar can be collapsed to a mini-view. State is managed by `LayoutService` (`collapsed` signal). Persisted in `localStorage` under the key `sidebar_collapsed`. Sidebar items with no matching permission are hidden (permission-filter logic in sidebar component).
+
+Visual facts (widths, icon spacing, section-header colors, nav-link colors, active style): `docs/specs/SPECS-ui.md`.
 
 ### Navbar
 
 - Current user name display
 - Logout button
 
-### Shared Components
+## Shared Components
 
-- **NotificationComponent**: Fixed top-right Bootstrap alerts, auto-hide 5s
-- **ConfirmDialogComponent**: NgbModal for delete confirmations
-- **LoadingSpinnerComponent**: Bootstrap spinner
-- **EurCurrencyPipe**: Formats as EUR (de-DE locale, 2 decimals)
+Appearance and Bootstrap variant details: `docs/specs/SPECS-ui.md`.
 
-## Styling
+### NotificationComponent
 
-- Bootstrap 5 + SCSS with custom variables
-- Primary: `#264892`, Secondary: `#777777`, Danger: `#dc421e`
-- Body background: `#f5f6f8`
-- Font: "Helvetica Neue", Helvetica, Arial, sans-serif
-- Phase badge colors: bg-primary (NEU), bg-info (QUALIFIZIERT), bg-warning (ANGEBOT), bg-secondary (VERHANDLUNG), bg-success (GEWONNEN), bg-danger (VERLOREN)
+- Inject `NotificationService`. Call `success(msg)`, `error(msg)`, `info(msg)`, or `warning(msg)`.
+- Component subscribes to the service's observable and renders the alert.
+
+### ConfirmDialogComponent
+
+- Open via `NgbModal.open(ConfirmDialogComponent)`. Pass message via `componentInstance.message`.
+- Returns a promise that resolves on confirm, rejects on dismiss.
+
+### LoadingSpinnerComponent
+
+- Add `<app-loading-spinner>` in template. Show/hide with `@if(loading)`.
+
+### EurCurrencyPipe
+
+- Apply as `{{ value | eurCurrency }}` in templates.
+- Pipe is standalone; import `EurCurrencyPipe` in the component's `imports` array.
 
 ## Proxy Configuration
 
-```
-/api  →  http://localhost:7070  (Backend)
-```
-
-Single rule. All `/api/*` calls proxy to the backend on port 7070. No CIAM service. No split routing.
+See `docs/specs/SPECS-infrastructure.md` for proxy config (`/api` → `http://localhost:7070`).

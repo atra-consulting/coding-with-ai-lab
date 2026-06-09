@@ -118,10 +118,8 @@ Dev dependencies:
 - Engine: SQLite (via `better-sqlite3`)
 - File path: `backend/data/crmdb.sqlite`
 - Created automatically on first startup
-- Schema: Drizzle ORM definitions in `backend/src/db/schema/schema.ts`
-- Migrations: Plain `CREATE TABLE IF NOT EXISTS` statements in `backend/src/config/migrate.ts`. Run on every startup.
-- `PRAGMA foreign_keys = ON` — set on every connection. Required for cascade deletes.
-- Tables: firma, person, abteilung, adresse, gehalt, aktivitaet, vertrag, chance
+
+Schema file paths, migration approach, table definitions, column specs, and enums: see [SPECS-database.md](SPECS-database.md).
 
 ### Authentication
 

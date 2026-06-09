@@ -58,9 +58,12 @@ Full-Stack-CRM-Anwendung. Node.js/TypeScript-Backend mit Angular-Frontend.
 
 | Dokument | Inhalt |
 |----------|--------|
-| [SPECS-backend.md](SPECS-backend.md) | CRM-Backend: Entities, API-Endpunkte, Services |
-| [SPECS-frontend.md](SPECS-frontend.md) | Angular-Frontend: Komponenten, Routing, Services |
-| [SPECS-infrastructure.md](SPECS-infrastructure.md) | Build, Konfiguration, Datenbank, Projektstruktur |
+| [SPECS-backend.md](SPECS-backend.md) | CRM-Backend-API: Routen, Services, Auth, Fehlerbehandlung, Pagination, Code-Muster |
+| [SPECS-database.md](SPECS-database.md) | Datenbank: Entities, Schema, Spalten, Enums, Foreign Keys, Migrationen |
+| [SPECS-frontend.md](SPECS-frontend.md) | Angular-Frontend: Architektur, Routing, Auth, Guards, Models, Services, Komponenten |
+| [SPECS-ui.md](SPECS-ui.md) | UI & Design-System: Styling, Farben, AG Grid, Layout-Komponenten, Shared Components |
+| [SPECS-testing.md](SPECS-testing.md) | Tests: Playwright-Backend-API-Tests, Jasmine/Karma-Frontend-Unit-Tests, Testmuster |
+| [SPECS-infrastructure.md](SPECS-infrastructure.md) | Build, Konfiguration, Datenbank-Engine, Startup, Projektstruktur |
 
 ## Seed-Daten
 
@@ -68,4 +71,4 @@ Full-Stack-CRM-Anwendung. Node.js/TypeScript-Backend mit Angular-Frontend.
   - `admin` / `admin123` — Rolle: ADMIN
   - `user` / `test123` — Rolle: USER
   - `demo` / `demo1234` — Rolle: ADMIN
-- **Backend**: 100 Firmen, ~250 Abteilungen, ~600 Personen, 500 Adressen, ~600 Gehaelter, 1000 Aktivitaeten, 200 Vertraege, 300 Chancen
+- **Backend** (aus `backend/src/seed/fixture.json`): 25 Firmen, 50 Abteilungen, 100 Personen, 100 Adressen, 75 Aktivitaeten, 40 Chancen. Keine Gehalt- oder Vertrag-Seed-Daten.
