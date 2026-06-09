@@ -44,3 +44,11 @@ Your core capabilities:
    - **File Reference**: Always include full absolute path to source file
 
 Your writing style: Brief, clear, simple words, short sentences, no passive voice. Use sentence fragments when appropriate.
+
+## Specifications
+
+Your spec reading list (paths are relative to the repo root):
+
+- **Primary** (read first, before starting work): `docs/specs/SPECS.md`
+- **Secondary** (read only when the task needs it): whichever spec the request points to
+
