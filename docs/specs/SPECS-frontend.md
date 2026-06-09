@@ -10,7 +10,7 @@ Visual design, colors, layout measurements, and AG Grid theming: `docs/specs/SPE
 - **Dependency Injection**: Prefers `inject(Service)` over constructor injection.
 - **Control Flow**: Uses modern `@if`, `@for`, and `@switch` syntax only. Never `*ngIf`/`*ngFor`. `@for` requires `track`.
 - **Forms**: Reactive forms with `FormBuilder`.
-- **Permissions**: Routes must be protected with `canActivate: [permissionGuard('PERMISSION')]`.
+- **Permissions**: Routes must be protected with `canActivate: [permissionGuard('PERMISSION')]` or `canActivate: [roleGuard('ROLE_ADMIN')]` for admin routes.
 
 ## Routing
 
@@ -26,10 +26,9 @@ Visual design, colors, layout measurements, and AG Grid theming: `docs/specs/SPE
   /personen                     → Person CRUD
   /abteilungen                  → Abteilung CRUD
   /adressen                     → Adresse CRUD (no detail)
-  /gehaelter                    → permissionGuard('GEHAELTER') → Gehalt CRUD (no detail)
   /aktivitaeten                 → Aktivitaet CRUD (no detail)
-  /vertraege                    → permissionGuard('VERTRAEGE') → Vertrag CRUD
   /chancen                      → permissionGuard('CHANCEN') → Chance CRUD + /board
+  /admin/geocoding              → roleGuard('ROLE_ADMIN') → AdminGeocodingComponent
   **                            → redirect /welcome
 ```
 
@@ -70,14 +69,12 @@ Each entity has a response interface and a `*Create` input interface.
 | person.model.ts | Person, PersonCreate |
 | abteilung.model.ts | Abteilung, AbteilungCreate |
 | adresse.model.ts | Adresse, AdresseCreate |
-| gehalt.model.ts | GehaltTyp, Gehalt, GehaltCreate |
 | aktivitaet.model.ts | AktivitaetTyp, Aktivitaet, AktivitaetCreate |
-| vertrag.model.ts | VertragStatus, Vertrag, VertragCreate |
 | chance.model.ts | ChancePhase, Chance, ChanceCreate, BoardSummary |
-| dashboard.model.ts | DashboardStats, TopFirma, DepartmentSalary |
+| dashboard.model.ts | DashboardData, RecentChance, RecentAktivitaet (re-exports ChancePhase, AktivitaetTyp) |
 | auth.model.ts | LoginRequest, LoginResponse, BenutzerInfo |
 | page.model.ts | Page\<T\> (content, totalElements, totalPages, size, number, first, last) |
-| geocode-result.model.ts | GeocodeResult |
+| geocode-result.model.ts | GeocodeResult — used by the admin geocoding feature |
 
 `auth.model.ts` contains three interfaces. `LoginRequest` has `benutzername` and `passwort`. `LoginResponse` has `benutzername`, `vorname`, `nachname`, `rollen`. `BenutzerInfo` has `id`, `benutzername`, `vorname`, `nachname`, `email`, `rollen`, `permissions`. No `RefreshResponse`.
 
@@ -94,7 +91,7 @@ Additional methods:
 | FirmaService | `getPersonen(id, page, size)`, `getAbteilungen(id, page, size)` |
 | AbteilungService | `getAllByFirmaId(firmaId)` |
 | ChanceService | `getByPhase(phase, page, size, sort)`, `getBoardSummary()`, `updatePhase(id, phase)` |
-| DashboardService | `getStats()`, `getRecentActivities()`, `getSalaryStatistics()`, `getTopCompanies()` |
+| DashboardService | `getDashboard()` → `DashboardData` (single GET `/api/dashboard`) |
 | NotificationService | `success(msg)`, `error(msg)`, `info(msg)`, `warning(msg)` |
 | LayoutService | `collapsed` (signal), `toggleSidebar()` |
 
@@ -123,10 +120,10 @@ Three public components. No auth required. No backend calls — data posts direc
 
 ### Dashboard
 
-- Stats overview (firmenCount, personenCount, aktivitaetenCount, offeneChancenCount, gesamtVertragswert, durchschnittsGehalt)
-- Widget sub-components: recent activities, top companies, salary statistics
+- Single GET `/api/dashboard` returns `DashboardData`: firmenCount, personenCount, offeneChancenCount, gewonneneChancenSumme
+- Widget sub-components: recent Chancen (`recentChancen`) and recent Aktivitaeten (`recentAktivitaeten`)
 
-### Entity CRUD (Firma, Person, Abteilung, Adresse, Gehalt, Aktivitaet, Vertrag, Chance)
+### Entity CRUD (Firma, Person, Abteilung, Adresse, Aktivitaet, Chance)
 
 **List pattern**: Entity list views use **AG Grid** (`ag-grid-angular`, `themeQuartz` theme). AG Grid provides built-in column filtering, sorting, and resizing. `NgbPagination` is used only in detail views with child-list tabs (e.g. Firma detail shows paginated Personen and Abteilungen tabs) — not as the primary list mechanism. AG Grid theming details: `docs/specs/SPECS-ui.md`.
 
@@ -144,23 +141,30 @@ Three public components. No auth required. No backend calls — data posts direc
 - Toggle between list and board view via btn-group
 - Phase badge color map: `docs/specs/SPECS-ui.md`
 
+### Admin Geocoding
+
+- Route: `/admin/geocoding`, guarded by `roleGuard('ROLE_ADMIN')`.
+- Triggers a backend batch geocode via `POST /api/admin/geocode-addresses` (optionally with `?force=true` to re-geocode addresses that already have coordinates).
+- Geocoding is performed by the backend using the Nominatim API for addresses that lack coordinates.
+- Displays progress and results (geocoded count, skipped count, errors) returned in a `GeocodeResult` response.
+- Admin-only; not visible to non-admin users.
+
 ## Layout Components
 
 ### Sidebar
 
-Sections with permission-filtered items:
+Sections with role-filtered items. Items with a `requiredRole` are hidden when the current user does not have that role; items without `requiredRole` are always visible to authenticated users.
 
-| Section | Items (Permission) |
-|---------|-------------------|
-| Ubersicht | Dashboard (DASHBOARD) |
-| Kunden & Kontakte | Firmen (FIRMEN), Personen (PERSONEN), Abteilungen (ABTEILUNGEN), Adressen (ADRESSEN) |
-| Vertrieb | Chancen (CHANCEN), Aktivitaten (AKTIVITAETEN), Vertrage (VERTRAEGE) |
-| Personal | Gehalter (GEHAELTER) |
-| Administration | Benutzer (BENUTZERVERWALTUNG) |
+| Section | Items (requiredRole) |
+|---------|---------------------|
+| Übersicht | Dashboard (none) |
+| Kunden & Kontakte | Firmen (none), Personen (none), Abteilungen (none), Adressen (none) |
+| *(no title)* | Chancen (none), Aktivitäten (none) |
+| Administration | Adressen geokodieren → `/admin/geocoding` (ROLE_ADMIN) |
 
 Empty sections are hidden. Uses FontAwesome icons (`fa-icon`) and `RouterLinkActive`.
 
-**Collapsible State**: The sidebar can be collapsed to a mini-view. State is managed by `LayoutService` (`collapsed` signal). Persisted in `localStorage` under the key `sidebar_collapsed`. Sidebar items with no matching permission are hidden (permission-filter logic in sidebar component).
+**Collapsible State**: The sidebar can be collapsed to a mini-view. State is managed by `LayoutService` (`collapsed` signal). Persisted in `localStorage` under the key `sidebar_collapsed`. Items are filtered by role via `visibleItems()` in the sidebar component — role-filter logic, not permission-string logic.
 
 Visual facts (widths, icon spacing, section-header colors, nav-link colors, active style): `docs/specs/SPECS-ui.md`.
 

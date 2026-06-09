@@ -27,7 +27,7 @@ Migration approach: plain `CREATE TABLE IF NOT EXISTS` statements. Run on every 
 
 ## Tables
 
-The database contains 8 tables: `firma`, `person`, `abteilung`, `adresse`, `gehalt`, `aktivitaet`, `vertrag`, `chance`.
+The database contains 6 tables: `firma`, `abteilung`, `person`, `adresse`, `aktivitaet`, `chance`.
 
 ## Storage Rules
 
@@ -53,7 +53,7 @@ The database contains 8 tables: `firma`, `person`, `abteilung`, `adresse`, `geha
 | createdAt | text | NOT NULL, default `datetime('now')` |
 | updatedAt | text | NOT NULL, default `datetime('now')` |
 
-Cascade deletes to: Person, Abteilung, Adresse, Aktivitaet, Vertrag, Chance.
+Cascade deletes to: Person, Abteilung, Adresse, Aktivitaet, Chance.
 
 ### Person
 
@@ -68,10 +68,10 @@ Cascade deletes to: Person, Abteilung, Adresse, Aktivitaet, Vertrag, Chance.
 | notes | text | nullable |
 | firmaId | integer | NOT NULL, FK → firma(id) CASCADE DELETE |
 | abteilungId | integer | nullable, FK → abteilung(id) SET NULL |
-| createdAt | text | NOT NULL |
-| updatedAt | text | NOT NULL |
+| createdAt | text | NOT NULL, default `datetime('now')` |
+| updatedAt | text | NOT NULL, default `datetime('now')` |
 
-Cascade deletes to: Adresse, Gehalt.
+Cascade deletes to: Adresse.
 
 ### Abteilung
 
@@ -81,8 +81,8 @@ Cascade deletes to: Adresse, Gehalt.
 | name | text | NOT NULL |
 | description | text | nullable |
 | firmaId | integer | NOT NULL, FK → firma(id) CASCADE DELETE |
-| createdAt | text | NOT NULL |
-| updatedAt | text | NOT NULL |
+| createdAt | text | NOT NULL, default `datetime('now')` |
+| updatedAt | text | NOT NULL, default `datetime('now')` |
 
 ### Adresse
 
@@ -94,23 +94,13 @@ Cascade deletes to: Adresse, Gehalt.
 | postalCode | text | nullable |
 | city | text | nullable |
 | country | text | nullable |
+| latitude | real | nullable |
+| longitude | real | nullable |
+| typ | text | nullable |
 | firmaId | integer | nullable, FK → firma(id) CASCADE DELETE |
 | personId | integer | nullable, FK → person(id) CASCADE DELETE |
-| createdAt | text | NOT NULL |
-| updatedAt | text | NOT NULL |
-
-### Gehalt
-
-| Column | SQLite Type | Constraints |
-|--------|-------------|-------------|
-| id | integer | PK, autoIncrement |
-| amount | real | NOT NULL |
-| currency | text | NOT NULL, default `EUR` |
-| typ | text | NOT NULL, default `GRUNDGEHALT` |
-| effectiveDate | text | NOT NULL |
-| personId | integer | NOT NULL, FK → person(id) CASCADE DELETE |
-| createdAt | text | NOT NULL |
-| updatedAt | text | NOT NULL |
+| createdAt | text | NOT NULL, default `datetime('now')` |
+| updatedAt | text | NOT NULL, default `datetime('now')` |
 
 ### Aktivitaet
 
@@ -123,25 +113,8 @@ Cascade deletes to: Adresse, Gehalt.
 | datum | text | NOT NULL |
 | firmaId | integer | nullable, FK → firma(id) CASCADE DELETE |
 | personId | integer | nullable, FK → person(id) CASCADE DELETE |
-| createdAt | text | NOT NULL |
-| updatedAt | text | NOT NULL |
-
-### Vertrag
-
-| Column | SQLite Type | Constraints |
-|--------|-------------|-------------|
-| id | integer | PK, autoIncrement |
-| titel | text | NOT NULL |
-| notes | text | nullable |
-| wert | real | nullable |
-| currency | text | NOT NULL, default `EUR` |
-| status | text | NOT NULL, default `ENTWURF` |
-| startDate | text | nullable |
-| endDate | text | nullable |
-| firmaId | integer | NOT NULL, FK → firma(id) CASCADE DELETE |
-| kontaktPersonId | integer | nullable, FK → person(id) SET NULL |
-| createdAt | text | NOT NULL |
-| updatedAt | text | NOT NULL |
+| createdAt | text | NOT NULL, default `datetime('now')` |
+| updatedAt | text | NOT NULL, default `datetime('now')` |
 
 ### Chance
 
@@ -157,18 +130,16 @@ Cascade deletes to: Adresse, Gehalt.
 | erwartetesDatum | text | nullable |
 | firmaId | integer | NOT NULL, FK → firma(id) CASCADE DELETE |
 | kontaktPersonId | integer | nullable, FK → person(id) SET NULL |
-| createdAt | text | NOT NULL |
-| updatedAt | text | NOT NULL |
+| createdAt | text | NOT NULL, default `datetime('now')` |
+| updatedAt | text | NOT NULL, default `datetime('now')` |
 
 ## Enums
 
-<!-- mirror: keep in sync with SPECS-backend.md Validation section -->
+<!-- canonical source — mirrored in SPECS-backend.md Validation section -->
 
 Stored as plain `text` in SQLite. Validated by Zod on write. Defined in `backend/src/db/schema/enums.ts`.
 
 | Enum | Values |
 |------|--------|
 | ChancePhase | NEU, QUALIFIZIERT, ANGEBOT, VERHANDLUNG, GEWONNEN, VERLOREN |
-| VertragStatus | ENTWURF, AKTIV, ABGELAUFEN, GEKUENDIGT |
 | AktivitaetTyp | ANRUF, EMAIL, MEETING, NOTIZ, AUFGABE |
-| GehaltTyp | GRUNDGEHALT, BONUS, PROVISION, SONDERZAHLUNG |

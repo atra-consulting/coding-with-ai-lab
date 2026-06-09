@@ -32,9 +32,7 @@ Computed DTO fields (not stored in DB):
 
 ## API Endpoints
 
-All routes require authentication. `requireAuth` middleware checks `req.session.userId`. Unauthenticated requests get `401`.
-
-`requireRole('ADMIN')` is applied on `routes/admin.ts`. `requirePermission` exists in `src/middleware/auth.ts` but is not yet applied to entity routes. All authenticated entity routes currently share one access level.
+All routes require authentication. `requireAuth` middleware checks `req.session.userId`. Unauthenticated requests get `401`. See the [Auth middleware](#auth-middleware) section for the full authorization note.
 
 Base URL: `http://localhost:7070/api`
 
@@ -119,13 +117,11 @@ Standard CRUD. Default sort: `datum,DESC`. Allowed sort fields: `datum`, `typ`, 
 
 Standard CRUD. Default sort: `createdAt,DESC`. Allowed sort fields: `titel`, `wert`, `phase`, `wahrscheinlichkeit`, `erwartetesDatum`, `createdAt`, `updatedAt`.
 
-### Vertraege (`/api/vertraege`)
+### Admin / Geocoding (`/api/admin`)
 
-Standard CRUD. Default sort: `createdAt,DESC`. Allowed sort fields: `titel`, `wert`, `status`, `startDate`, `endDate`, `createdAt`, `updatedAt`.
-
-### Gehaelter (`/api/gehaelter`)
-
-Standard CRUD. Default sort: `effectiveDate,DESC`. Allowed sort fields: `amount`, `effectiveDate`, `typ`, `createdAt`, `updatedAt`.
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| POST | `/api/admin/geocode-addresses` | requireAuth + requireRole('ADMIN') | Geocodes `adresse` rows lacking coordinates via Nominatim. Pass `?force=true` to re-geocode rows that already have coordinates. Returns `{ total, succeeded, failed, skippedInsufficientData }`. |
 
 ### Standard CRUD pattern
 
@@ -139,6 +135,21 @@ Every standard CRUD resource exposes:
 | POST | `/api/{resource}` | Create → 201 |
 | PUT | `/api/{resource}/:id` | Full update or 404 |
 | DELETE | `/api/{resource}/:id` | Delete → 204 or 404 |
+
+## Services
+
+### geocodingService.ts
+
+`services/geocodingService.ts` exports two functions:
+
+- `geocodeAdresse(adresse)` — calls the Nominatim search API for a single address; returns `{ latitude, longitude }` on success or `null` when Nominatim finds nothing. Throws on HTTP errors or malformed responses.
+- `runGeocodingBatch({ force })` — iterates the `adresse` table (rows without coordinates, or all rows when `force=true`); calls `geocodeAdresse()` per row; updates matching DB rows; returns `{ total, succeeded, failed, skippedInsufficientData }`.
+
+Configuration:
+- `NOMINATIM_BASE_URL` env var — base URL for Nominatim requests; defaults to `https://nominatim.openstreetmap.org`.
+- `GEOCODING_SLEEP_MS` env var — sleep between requests; defaults to 3000 ms. In production the minimum is clamped to 1000 ms to honour the Nominatim usage policy.
+- Sets a `User-Agent` header on all Nominatim requests as required by the usage policy.
+- A module-level guard prevents concurrent batch runs (throws `ConflictError` if a batch is already in progress).
 
 ## Pagination
 
@@ -188,8 +199,6 @@ Passwords stored as bcrypt hashes (cost factor 10). Generated once at build time
 
 All 3 users currently hold all 7 permissions: `FIRMEN`, `PERSONEN`, `ABTEILUNGEN`, `ADRESSEN`, `AKTIVITAETEN`, `CHANCEN`, `BENUTZERVERWALTUNG`.
 
-`GEHAELTER` and `VERTRAEGE` appear as `permissionGuard` names on frontend routes but are **not** present in `ALL_PERMISSIONS` in `config/users.ts` and are not granted to any user.
-
 `CrmUser` interface fields: `id`, `benutzername`, `vorname`, `nachname`, `passwordHash`, `roles[]`, `permissions[]`.
 
 ### Auth middleware
@@ -227,8 +236,8 @@ src/
     cors.ts         — CORS config
     errorHandler.ts — global error handler (last middleware)
     session.ts      — express-session config
-  routes/           — one file per entity (Express Router)
-  services/         — one file per entity (plain objects, raw SQL via better-sqlite3)
+  routes/           — one file per entity (Express Router); also admin.ts (geocoding)
+  services/         — one file per entity (plain objects, raw SQL via better-sqlite3); also geocodingService.ts
   utils/
     errors.ts       — typed error classes
     pagination.ts   — parsePaginationParams, parseSort, buildPage
@@ -240,6 +249,8 @@ src/
 ```
 
 Middleware order in `app.ts`: CORS → JSON body parser → session → routes → error handler.
+
+Mounted routers (9): `/api/auth`, `/api/firmen`, `/api/personen`, `/api/abteilungen`, `/api/adressen`, `/api/aktivitaeten`, `/api/chancen`, `/api/dashboard`, `/api/admin`. Plus `/api/health` (inline, public).
 
 ## Exception Handling
 
@@ -326,14 +337,12 @@ res.status(201).json(firmaService.create(dto));
 
 Enum values used in Zod schemas:
 
-<!-- mirror: keep in sync with SPECS-database.md -->
+<!-- mirror: keep in sync with SPECS-database.md (canonical) -->
 
 | Enum | Values |
 |------|--------|
 | ChancePhase | NEU, QUALIFIZIERT, ANGEBOT, VERHANDLUNG, GEWONNEN, VERLOREN |
-| VertragStatus | ENTWURF, AKTIV, ABGELAUFEN, GEKUENDIGT |
 | AktivitaetTyp | ANRUF, EMAIL, MEETING, NOTIZ, AUFGABE |
-| GehaltTyp | GRUNDGEHALT, BONUS, PROVISION, SONDERZAHLUNG |
 
 Canonical enum definition: see [SPECS-database.md](SPECS-database.md).
 

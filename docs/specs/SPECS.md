@@ -44,13 +44,11 @@ Full-Stack-CRM-Anwendung. Node.js/TypeScript-Backend mit Angular-Frontend.
 
 | Entity | Übersetzung | Wichtige Beziehungen |
 |--------|------------|----------------------|
-| Firma | Unternehmen | hat viele: Person, Abteilung, Adresse, Aktivitaet, Vertrag, Chance |
-| Person | Kontaktperson | gehört zu Firma, optional Abteilung; hat viele: Adresse, Gehalt, Aktivitaet |
+| Firma | Unternehmen | hat viele: Person, Abteilung, Adresse, Aktivitaet, Chance |
+| Person | Kontaktperson | gehört zu Firma, optional Abteilung; hat viele: Adresse, Aktivitaet |
 | Abteilung | Abteilung | gehört zu Firma; hat viele Person |
-| Adresse | Adresse | gehört zu Firma oder Person |
-| Gehalt | Gehalt | gehört zu Person |
+| Adresse | Adresse | gehört zu Firma oder Person; mit Geokodierung (latitude, longitude) |
 | Aktivitaet | Aktivität | optional Firma und/oder Person |
-| Vertrag | Vertrag | gehört zu Firma, optional kontaktPerson |
 | Chance | Verkaufschance | gehört zu Firma, optional kontaktPerson; hat Kanban-Phasen |
 | Benutzer | Benutzer | hardcodiert in `config/users.ts`; Rollen: ADMIN, USER |
 

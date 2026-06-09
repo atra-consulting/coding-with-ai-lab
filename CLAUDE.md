@@ -83,7 +83,7 @@ Agent files: `.claude/agents/`
 
 ## Specifications
 
-Full system specs: [`docs/specs/SPECS.md`](docs/specs/SPECS.md) — root index linking to six per-area specs. Each subagent in `.claude/agents/` has a `## Specifications` reading list naming its primary spec plus secondary specs.
+Full system specs: [`docs/specs/SPECS.md`](docs/specs/SPECS.md) — root index plus six per-area specs (7 files total). Each subagent in `.claude/agents/` has a `## Specifications` reading list naming its primary spec plus secondary specs.
 
 | Spec | Scope | Primary for |
 |------|-------|-------------|

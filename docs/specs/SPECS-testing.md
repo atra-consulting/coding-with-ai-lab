@@ -84,11 +84,13 @@ test.afterAll(async () => {
 
 Three hardcoded users (defined in `backend/src/config/users.ts`):
 
-| Username | Password  | Roles         |
-|----------|-----------|---------------|
-| admin    | admin123  | ADMIN, USER   |
-| user     | test123   | USER          |
-| demo     | demo1234  | USER          |
+| Username | Password  | Roles   |
+|----------|-----------|---------|
+| admin    | admin123  | ADMIN   |
+| user     | test123   | USER    |
+| demo     | demo1234  | ADMIN   |
+
+Roles are stored bare in `users.ts` (`ADMIN` / `USER`); the auth wire format prefixes them (`ROLE_ADMIN`). Only `user` lacks the ADMIN role — use it to test `requireRole('ADMIN')` 403 paths (e.g. `POST /api/admin/geocode-addresses`).
 
 All three currently hold the full 7-permission set (`FIRMEN`, `PERSONEN`, `ABTEILUNGEN`, `ADRESSEN`, `AKTIVITAETEN`, `CHANCEN`, `BENUTZERVERWALTUNG`). When a new permission is added that not all users hold, test the 403 path with the user who lacks it. If no such user exists yet, document the gap in the test file rather than fabricating credentials.
 

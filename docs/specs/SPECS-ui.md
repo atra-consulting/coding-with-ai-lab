@@ -1,6 +1,6 @@
 # UI / Design-System Specification
 
-Visual and styling facts for the CRM frontend. Component behavior and usage contracts live in `SPECS-frontend.md`.
+Visual and styling facts for the CRM frontend. Component behavior and usage contracts live in `docs/specs/SPECS-frontend.md`.
 
 ---
 
@@ -37,16 +37,18 @@ style="width: 100%; height: calc(100vh - 180px)"
 
 Global header overrides in `frontend/src/styles.scss` (applied via CSS class selectors that AG Grid exposes):
 
-| Selector | Property | Value |
-|----------|----------|-------|
-| `.ag-header` | `background-color` | `#f0f4ff` |
-| `.ag-header` | `border-bottom` | `3px solid #0044cc` |
-| `.ag-header-cell-label` | `color` | `#0044cc` |
-| `.ag-header-cell-label` | `font-weight` | `800` |
-| `.ag-header-cell-label` | `text-transform` | `uppercase` |
-| `.ag-header-cell-label` | `font-size` | `0.85rem` |
-| `.ag-header-cell-label` | `letter-spacing` | `0.05em` |
-| `.ag-header-icon` | `color` | `#0044cc` |
+| Selector | Property | Value | `!important` |
+|----------|----------|-------|:---:|
+| `.ag-header` | `background-color` | `#f0f4ff` | yes |
+| `.ag-header` | `border-bottom` | `3px solid #0044cc` | yes |
+| `.ag-header-cell-label` | `color` | `#0044cc` | yes |
+| `.ag-header-cell-label` | `font-weight` | `800` | yes |
+| `.ag-header-cell-label` | `text-transform` | `uppercase` | no |
+| `.ag-header-cell-label` | `font-size` | `0.85rem` | no |
+| `.ag-header-cell-label` | `letter-spacing` | `0.05em` | no |
+| `.ag-header-icon` | `color` | `#0044cc` | yes |
+
+> **Note:** The five rows marked `yes` in the `!important` column carry that flag in the source. These overrides require `!important` to penetrate AG Grid's own theme cascade (themeQuartz applies its styles via high-specificity scoped selectors). Rows without `!important` target properties that AG Grid's theme does not set directly, so the flag is not needed there.
 
 Note: `#0044cc` is a grid-only blue distinct from `$primary` (`#264892`). It is used nowhere else.
 
@@ -89,6 +91,7 @@ color: #264892;           // forced with !important
 border-bottom: 3px solid #264892;
 padding-bottom: 0.25rem;
 font-weight: 700;
+margin-bottom: 0;
 ```
 
 ---
@@ -202,13 +205,26 @@ Canonical home. Cross-referenced from the Chance Board section in `SPECS-fronten
 
 ## Public-Page Card Template
 
-Login, Welcome, FeedbackForm, and FeedbackQrComponent share a common visual pattern:
+### Shared pattern — Login, Welcome, FeedbackQr
 
-- Centered card (e.g. `.login-card`, `.welcome-card`), `width: 480px`, `border-radius: 12px`.
+These three components share the same visual template:
+
+- Centered card (`.login-card` / `.welcome-card` / `.qr-card`), `width: 480px`.
+- `border-radius: 12px` — except `.qr-card` which uses `border-radius: 16px`.
 - Entry animation: `slideUp 0.4s ease-out` (`translateY(20px) → 0`, `opacity 0 → 1`).
 - Header gradient: `linear-gradient(135deg, $primary 0%, color.adjust($primary, $lightness: -8%) 100%)`.
 - Box shadow: `0 10px 40px rgba(38, 72, 146, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06)`.
-- Page wrapper uses `min-height: 100vh`, flexbox centering, and a light diagonal gradient background.
+- Page wrapper uses `min-height: 100vh`, flexbox centering, and a light diagonal gradient background (`135deg, #f5f6f8 → #e8eaf0 → #dde1ea`).
+
+### Deviating component — FeedbackForm
+
+`feedback-form.component.scss` does not follow the shared template above. Its differences:
+
+- Card is responsive: `width: 100%`, `max-width: 580px` (not a fixed `480px`).
+- `border-radius: 20px` (not `12px`).
+- Entry animation: `slideUp 0.5s ease-out` (duration is `0.5s`, not `0.4s`).
+- Header gradient lightness adjustment: `-10%` (not `-8%`).
+- Page background gradient: `linear-gradient(160deg, #f0f2f7 0%, #e2e6f0 50%, #d8dde9 100%)` — different angle (`160deg` vs `135deg`) and different stop colors.
 
 ---
 
