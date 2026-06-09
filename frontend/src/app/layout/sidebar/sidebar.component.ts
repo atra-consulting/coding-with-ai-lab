@@ -6,6 +6,7 @@ import {
   faBuilding,
   faCalendarCheck,
   faChartLine,
+  faCommentDots,
   faMapMarkerAlt,
   faSitemap,
   faTachometerAlt,
@@ -40,6 +41,10 @@ export class SidebarComponent {
 
   faAngleDoubleLeft = faAngleDoubleLeft;
   faAngleDoubleRight = faAngleDoubleRight;
+
+  bottomItems: NavItem[] = [
+    { label: 'Feedback', route: '/feedback', icon: faCommentDots },
+  ];
 
   sections: NavSection[] = [
     {

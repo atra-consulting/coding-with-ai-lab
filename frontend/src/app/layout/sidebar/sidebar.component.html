@@ -21,7 +21,20 @@
     }
   }
 
-  <div class="mt-auto sidebar-toggle-container d-flex justify-content-center p-2">
+  <ul class="nav flex-column mt-auto">
+    @for (item of bottomItems; track item.route) {
+      <li class="nav-item">
+        <a class="nav-link" [routerLink]="item.route" routerLinkActive="active" [title]="layoutService.collapsed() ? item.label : ''">
+          <fa-icon [icon]="item.icon"></fa-icon>
+          @if (!layoutService.collapsed()) {
+            {{ item.label }}
+          }
+        </a>
+      </li>
+    }
+  </ul>
+
+  <div class="sidebar-toggle-container d-flex justify-content-center p-2">
     <button
       class="btn btn-link toggle-btn"
       (click)="layoutService.toggleSidebar()"
