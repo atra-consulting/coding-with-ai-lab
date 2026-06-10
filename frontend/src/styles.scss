@@ -153,6 +153,10 @@ body {
   color: #0044cc !important;
 }
 
+.ag-cell .badge {
+  vertical-align: middle;
+}
+
 .table-container {
   background: #fff;
   border-radius: 0.5rem;
@@ -210,4 +214,8 @@ body {
 
 .cursor-pointer {
   cursor: pointer;
+}
+
+.text-prewrap {
+  white-space: pre-wrap;
 }
