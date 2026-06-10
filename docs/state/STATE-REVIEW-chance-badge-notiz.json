@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "branch": "chance-badge-notiz",
+  "main_branch": "main",
+  "docs_folder": "docs",
+  "special_instructions": null,
+  "review_agents_available": true,
+  "fix_agents_available": true,
+  "all_reviewers": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer"],
+  "all_coders": ["be-coder", "db-coder", "fe-coder"],
+  "all_designers": ["ui-designer"],
+  "changed_files": [
+    "backend/src/config/migrate.ts",
+    "backend/src/db/schema/schema.ts",
+    "backend/src/services/chanceService.ts",
+    "backend/src/utils/validation.ts",
+    "frontend/src/app/core/models/chance.model.ts",
+    "frontend/src/app/features/chance/chance-detail/chance-detail.component.html",
+    "frontend/src/app/features/chance/chance-form/chance-form.component.html",
+    "frontend/src/app/features/chance/chance-form/chance-form.component.ts",
+    "frontend/src/app/features/chance/chance-list/chance-list.component.ts",
+    "frontend/src/styles.scss"
+  ],
+  "dry_run_mode": false,
+  "started": "2026-06-10T10:06:00Z"
+}
