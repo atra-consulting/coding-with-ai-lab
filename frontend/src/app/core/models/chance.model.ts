@@ -10,6 +10,7 @@ export interface Chance {
   id: number;
   titel: string;
   beschreibung: string;
+  notiz?: string;
   wert: number;
   currency: string;
   phase: ChancePhase;
@@ -26,6 +27,7 @@ export interface Chance {
 export interface ChanceCreate {
   titel: string;
   beschreibung?: string;
+  notiz?: string;
   wert?: number;
   currency?: string;
   phase: ChancePhase;

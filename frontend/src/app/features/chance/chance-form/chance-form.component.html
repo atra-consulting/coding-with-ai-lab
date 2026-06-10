@@ -114,6 +114,20 @@
             rows="3"
           ></textarea>
         </div>
+        <div class="mb-3">
+          <label for="notiz" class="form-label">Notiz</label>
+          <textarea
+            id="notiz"
+            rows="3"
+            class="form-control"
+            formControlName="notiz"
+            [class.is-invalid]="form.get('notiz')?.invalid && form.get('notiz')?.touched"
+          ></textarea>
+          @if (form.get('notiz')?.errors?.['maxlength'] && form.get('notiz')?.touched) {
+            <div class="invalid-feedback">Max. 2000 Zeichen</div>
+          }
+          <div class="form-text">Max. 2000 Zeichen</div>
+        </div>
         <div class="d-flex gap-2">
           <button type="submit" class="btn btn-primary" [disabled]="form.invalid">Speichern</button>
           <a routerLink="/chancen" class="btn btn-outline-secondary">Abbrechen</a>

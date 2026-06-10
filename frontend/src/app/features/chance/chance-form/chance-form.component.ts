@@ -38,6 +38,7 @@ export class ChanceFormComponent implements OnInit {
     this.form = this.fb.group({
       titel: ['', Validators.required],
       beschreibung: [''],
+      notiz: ['', Validators.maxLength(2000)],
       wert: [null],
       currency: ['EUR'],
       phase: ['NEU', Validators.required],
