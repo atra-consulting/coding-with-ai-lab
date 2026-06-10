@@ -88,7 +88,9 @@ export function runMigrations(): void {
 
   `);
 
-  // Additive migration: add notiz column to chance if it does not exist yet
+  // Additive migration: add notiz column to chance if it does not exist yet.
+  // Required for databases created before notiz existed. Fresh databases already
+  // get the column from the CREATE TABLE above, so keep both in sync.
   const cols = sqlite.prepare('PRAGMA table_info(chance)').all() as { name: string }[];
   if (!cols.some((c) => c.name === 'notiz')) {
     sqlite.exec('ALTER TABLE chance ADD COLUMN notiz TEXT');
