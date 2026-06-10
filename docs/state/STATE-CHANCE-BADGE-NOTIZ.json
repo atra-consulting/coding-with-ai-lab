@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "task_key": "CHANCE-BADGE-NOTIZ",
+  "status": "in_progress",
+  "current_step": "3.3",
+  "started": "2026-06-10T09:36:37Z",
+  "updated": "2026-06-10T09:36:37Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Zwei Erweiterungen fuer Chance: (1) Phase als farbigen Badge in Liste und Detailseite statt Text. (2) Neues optionales Notiz-Feld (mehrzeilig, bis 2000 Zeichen): 3-zeilige Textarea im Formular, Detailseite zeigt Notiz mit Zeilenumbruechen, Liste zeigt Notiz nicht.",
+    "special_instructions": "PRD ohne Code-Details. Keine Tests schreiben. Specs und Subagents nicht aktualisieren.",
+    "branch_name": "chance-badge-notiz",
+    "original_branch": "main",
+    "docs_folder": "docs",
+    "is_git_repo": true,
+    "workflow_scope": null
+  },
+  "discovery": {
+    "agents_available": false,
+    "writer_agents": [],
+    "coding_agents": [],
+    "review_agents": [],
+    "test_command": null
+  },
+  "artifacts": {
+    "prd_skipped": null,
+    "prd_file": null,
+    "plan_file": null,
+    "pr_url": null
+  },
+  "completed_steps": []
+}
