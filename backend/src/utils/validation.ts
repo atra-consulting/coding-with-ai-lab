@@ -73,6 +73,7 @@ export const ChanceCreateSchema = z.object({
   erwartetesDatum: z.string().optional().nullable(),
   firmaId: z.number().int().positive('Firma ist erforderlich'),
   kontaktPersonId: z.number().int().positive().optional().nullable(),
+  notiz: z.string().max(2000, 'Notiz darf maximal 2000 Zeichen lang sein').optional().nullable(),
 });
 export type ChanceCreateDTO = z.infer<typeof ChanceCreateSchema>;
 
