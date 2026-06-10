@@ -51,7 +51,9 @@ export class ChanceListComponent implements OnInit {
           VERLOREN: 'bg-danger',
         };
         const cls = badgeMap[params.value] ?? 'bg-secondary';
-        return `<span class="badge ${cls}">${params.value}</span>`;
+        // Render the label only from a known enum key — never inject raw cell data into HTML.
+        const label = badgeMap[params.value] ? params.value : 'UNBEKANNT';
+        return `<span class="badge ${cls}">${label}</span>`;
       },
     },
     {
