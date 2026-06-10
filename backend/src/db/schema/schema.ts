@@ -88,6 +88,7 @@ export const chance = sqliteTable('chance', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   titel: text('titel').notNull(),
   beschreibung: text('beschreibung'),
+  notiz: text('notiz'),
   wert: real('wert'),
   currency: text('currency').notNull().default('EUR'),
   phase: text('phase').notNull().default('NEU'),

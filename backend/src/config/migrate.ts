@@ -74,6 +74,7 @@ export function runMigrations(): void {
       id                INTEGER PRIMARY KEY AUTOINCREMENT,
       titel             TEXT NOT NULL,
       beschreibung      TEXT,
+      notiz             TEXT,
       wert              REAL,
       currency          TEXT NOT NULL DEFAULT 'EUR',
       phase             TEXT NOT NULL DEFAULT 'NEU',
@@ -86,6 +87,12 @@ export function runMigrations(): void {
     );
 
   `);
+
+  // Additive migration: add notiz column to chance if it does not exist yet
+  const cols = sqlite.prepare('PRAGMA table_info(chance)').all() as { name: string }[];
+  if (!cols.some((c) => c.name === 'notiz')) {
+    sqlite.exec('ALTER TABLE chance ADD COLUMN notiz TEXT');
+  }
 
   sqlite.exec(`
     CREATE INDEX IF NOT EXISTS idx_person_firmaId ON person(firmaId);
