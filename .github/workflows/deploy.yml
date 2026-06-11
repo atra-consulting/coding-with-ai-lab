@@ -1,0 +1,85 @@
+name: CI/CD
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+
+      # --- Backend ---
+
+      - name: Backend — install dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Backend — type-check backend sources
+        working-directory: backend
+        run: npx tsc --noEmit
+
+      - name: Backend — type-check api/index.ts
+        working-directory: backend
+        run: npx tsc --noEmit -p ../api/tsconfig.json
+
+      - name: Backend — run Playwright API tests
+        working-directory: backend
+        run: npx playwright test
+
+      # --- Frontend ---
+
+      - name: Frontend — install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Frontend — run unit tests (CI)
+        working-directory: frontend
+        run: npm run test:ci
+
+      - name: Frontend — build
+        working-directory: frontend
+        run: npx ng build
+
+  deploy:
+    name: Deploy to Vercel (production)
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Vercel — pull project settings
+        run: npx vercel@latest pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Vercel — build
+        run: npx vercel@latest build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Vercel — deploy prebuilt
+        run: npx vercel@latest deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
