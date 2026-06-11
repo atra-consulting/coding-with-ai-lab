@@ -23,7 +23,14 @@ import { runDataMigration } from '../backend/src/seed/dataMigration.js';
 const initPromise: Promise<void> = (async () => {
   await runMigrations();
   await runDataMigration();
-})();
+})().catch((err: unknown) => {
+  // Surface the root cause clearly: a rejected init promise otherwise shows up
+  // only as opaque 500s on every invocation of this (cold) instance.
+  console.error('[api/index] Cold-start initialization failed:', err);
+  throw new Error(
+    `Cold-start initialization failed (migrations/seed): ${err instanceof Error ? err.message : String(err)}`,
+  );
+});
 
 export default async function handler(
   req: IncomingMessage,

@@ -5,6 +5,20 @@ import { client } from '../config/db.js';
 const DEFAULT_TTL_MS = 24 * 60 * 60 * 1000;
 
 /**
+ * TTL source order matters: cookie.maxAge is a getter computed as
+ * `expires - now`, so it shrinks on every read — using it for renewals would
+ * make rolling sessions expire ever sooner. cookie.originalMaxAge is the
+ * configured value and survives the JSON round-trip through the DB.
+ */
+function sessionTtlMs(session: SessionData): number {
+  const original = session.cookie?.originalMaxAge;
+  if (original != null && original > 0) return original;
+  const remaining = session.cookie?.maxAge;
+  if (remaining != null && remaining > 0) return remaining;
+  return DEFAULT_TTL_MS;
+}
+
+/**
  * LibsqlSessionStore
  *
  * express-session Store backed by the `sessions` table in the libsql/Turso DB.
@@ -20,6 +34,21 @@ const DEFAULT_TTL_MS = 24 * 60 * 60 * 1000;
  * - Expired sessions are treated as missing; the row is opportunistically deleted.
  */
 export class LibsqlSessionStore extends Store {
+  constructor() {
+    super();
+    // Sweep expired rows once per process start (= per serverless cold start).
+    // Fire-and-forget: the table must not block startup, and the per-read
+    // opportunistic cleanup in get() covers anything this misses.
+    client
+      .execute({
+        sql: 'DELETE FROM sessions WHERE expire <= ?',
+        args: [new Date().toISOString()],
+      })
+      .catch(() => {
+        // Ignore errors on background cleanup.
+      });
+  }
+
   // ---------------------------------------------------------------------------
   // get — retrieve session; treat missing OR expired as not-found
   // ---------------------------------------------------------------------------
@@ -72,12 +101,7 @@ export class LibsqlSessionStore extends Store {
   // set — upsert session with computed expiry
   // ---------------------------------------------------------------------------
   set(sid: string, session: SessionData, callback: (err?: unknown) => void): void {
-    const ttlMs =
-      session.cookie?.maxAge != null && session.cookie.maxAge > 0
-        ? session.cookie.maxAge
-        : DEFAULT_TTL_MS;
-
-    const expire = new Date(Date.now() + ttlMs).toISOString();
+    const expire = new Date(Date.now() + sessionTtlMs(session)).toISOString();
     const sess = JSON.stringify(session);
 
     client
@@ -114,12 +138,7 @@ export class LibsqlSessionStore extends Store {
   // touch — extend expiry without modifying session data
   // ---------------------------------------------------------------------------
   touch(sid: string, session: SessionData, callback: (err?: unknown) => void): void {
-    const ttlMs =
-      session.cookie?.maxAge != null && session.cookie.maxAge > 0
-        ? session.cookie.maxAge
-        : DEFAULT_TTL_MS;
-
-    const expire = new Date(Date.now() + ttlMs).toISOString();
+    const expire = new Date(Date.now() + sessionTtlMs(session)).toISOString();
 
     client
       .execute({

@@ -74,12 +74,23 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      # api/index.ts imports backend sources; Vercel's function bundler
+      # resolves their dependencies from backend/node_modules at build time.
+      - name: Backend — install dependencies (for function bundling)
+        working-directory: backend
+        run: npm ci
 
       - name: Vercel — pull project settings
+        working-directory: .
         run: npx vercel@latest pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Vercel — build
+        working-directory: .
         run: npx vercel@latest build --prod --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Vercel — deploy prebuilt
+        working-directory: .
         run: npx vercel@latest deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}

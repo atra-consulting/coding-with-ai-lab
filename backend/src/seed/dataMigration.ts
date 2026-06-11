@@ -19,7 +19,9 @@ interface Fixture {
 // firma -> abteilung -> person -> adresse, aktivitaet, chance
 //
 // Named-parameter SQL (@column) is kept intentionally — libsql accepts a plain
-// object for named args and strips the @ sigil when matching object keys.
+// object for named args: the driver strips a leading @/$/: from OBJECT KEYS if
+// present (plain keys pass through unchanged), and the underlying binder then
+// matches the @column placeholders in the SQL against the bare key names.
 const INSERT_SQL: Record<keyof Fixture, string> = {
   firma: `INSERT INTO firma (id, name, industry, website, phone, email, notes, createdAt, updatedAt)
           VALUES (@id, @name, @industry, @website, @phone, @email, @notes, @createdAt, @updatedAt)`,
