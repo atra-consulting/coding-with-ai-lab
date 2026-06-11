@@ -1,7 +1,5 @@
 import session from 'express-session';
-import MemoryStore from 'memorystore';
-
-const MemoryStoreSession = MemoryStore(session);
+import { LibsqlSessionStore } from './libsqlSessionStore.js';
 
 const SESSION_SECRET = process.env['SESSION_SECRET'] ?? 'crm-dev-secret-key';
 
@@ -10,13 +8,11 @@ export const sessionMiddleware = session({
   name: 'JSESSIONID',
   resave: false,
   saveUninitialized: false,
-  store: new MemoryStoreSession({
-    checkPeriod: 86400000, // prune expired entries every 24h
-  }),
+  store: new LibsqlSessionStore(),
   cookie: {
     httpOnly: true,
     sameSite: 'lax',
-    secure: false,
+    secure: process.env['NODE_ENV'] === 'production',
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
   },
 });
