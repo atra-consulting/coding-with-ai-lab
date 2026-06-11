@@ -1,8 +1,9 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router, Request, Response } from 'express';
 import { requireAuth } from '../middleware/auth.js';
 import { chanceService } from '../services/chanceService.js';
 import { parsePaginationParams, parseSort } from '../utils/pagination.js';
 import { validate, ChanceCreateSchema } from '../utils/validation.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
 
 const router = Router();
 
@@ -10,91 +11,67 @@ const router = Router();
 router.get(
   '/all',
   requireAuth,
-  (_req: Request, res: Response, next: NextFunction): void => {
-    try {
-      res.json(chanceService.listAll());
-    } catch (err) {
-      next(err);
-    }
-  }
+  asyncHandler(async (_req: Request, res: Response) => {
+    res.json(await chanceService.listAll());
+  }),
 );
 
 // GET /api/chancen — paginated
 router.get(
   '/',
   requireAuth,
-  (req: Request, res: Response, next: NextFunction): void => {
-    try {
-      const { page, size } = parsePaginationParams(req.query as Record<string, unknown>);
-      const sort = parseSort(
-        req.query['sort'] as string | string[] | undefined,
-        'createdAt',
-        'DESC',
-        'chance'
-      );
-      res.json(chanceService.findAll(page, size, sort));
-    } catch (err) {
-      next(err);
-    }
-  }
+  asyncHandler(async (req: Request, res: Response) => {
+    const { page, size } = parsePaginationParams(req.query as Record<string, unknown>);
+    const sort = parseSort(
+      req.query['sort'] as string | string[] | undefined,
+      'createdAt',
+      'DESC',
+      'chance',
+    );
+    res.json(await chanceService.findAll(page, size, sort));
+  }),
 );
 
 // GET /api/chancen/:id
 router.get(
   '/:id',
   requireAuth,
-  (req: Request, res: Response, next: NextFunction): void => {
-    try {
-      const id = parseInt(req.params['id'], 10);
-      res.json(chanceService.findById(id));
-    } catch (err) {
-      next(err);
-    }
-  }
+  asyncHandler(async (req: Request, res: Response) => {
+    const id = parseInt(req.params['id'] as string, 10);
+    res.json(await chanceService.findById(id));
+  }),
 );
 
 // POST /api/chancen
 router.post(
   '/',
   requireAuth,
-  (req: Request, res: Response, next: NextFunction): void => {
-    try {
-      const dto = validate(ChanceCreateSchema, req.body);
-      res.status(201).json(chanceService.create(dto));
-    } catch (err) {
-      next(err);
-    }
-  }
+  asyncHandler(async (req: Request, res: Response) => {
+    const dto = validate(ChanceCreateSchema, req.body);
+    res.status(201).json(await chanceService.create(dto));
+  }),
 );
 
 // PUT /api/chancen/:id
 router.put(
   '/:id',
   requireAuth,
-  (req: Request, res: Response, next: NextFunction): void => {
-    try {
-      const id = parseInt(req.params['id'], 10);
-      const dto = validate(ChanceCreateSchema, req.body);
-      res.json(chanceService.update(id, dto));
-    } catch (err) {
-      next(err);
-    }
-  }
+  asyncHandler(async (req: Request, res: Response) => {
+    const id = parseInt(req.params['id'] as string, 10);
+    const dto = validate(ChanceCreateSchema, req.body);
+    res.json(await chanceService.update(id, dto));
+  }),
 );
 
 // DELETE /api/chancen/:id
 router.delete(
   '/:id',
   requireAuth,
-  (req: Request, res: Response, next: NextFunction): void => {
-    try {
-      const id = parseInt(req.params['id'], 10);
-      chanceService.delete(id);
-      res.status(204).send();
-    } catch (err) {
-      next(err);
-    }
-  }
+  asyncHandler(async (req: Request, res: Response) => {
+    const id = parseInt(req.params['id'] as string, 10);
+    await chanceService.delete(id);
+    res.status(204).send();
+  }),
 );
 
 export default router;

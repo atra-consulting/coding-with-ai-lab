@@ -1,6 +1,7 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router, Request, Response } from 'express';
 import { requireAuth, requireRole } from '../middleware/auth.js';
 import { runGeocodingBatch } from '../services/geocodingService.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
 
 const router = Router();
 
@@ -22,15 +23,11 @@ router.post(
   '/geocode-addresses',
   requireAuth,
   requireRole('ADMIN'),
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const force = req.query['force'] === 'true';
-      const result = await runGeocodingBatch({ force });
-      res.json(result);
-    } catch (err) {
-      next(err);
-    }
-  }
+  asyncHandler(async (req: Request, res: Response) => {
+    const force = req.query['force'] === 'true';
+    const result = await runGeocodingBatch({ force });
+    res.json(result);
+  }),
 );
 
 export default router;
