@@ -103,5 +103,15 @@ export const chance = sqliteTable('chance', {
   updatedAt: text('updatedAt').notNull().default(sql`(datetime('now'))`),
 });
 
+// ─── sessions ─────────────────────────────────────────────────────────────────
+// DOCUMENTARY ONLY — the session store (middleware/libsqlSessionStore.ts) reads
+// and writes this table via raw client.execute() calls, not through Drizzle.
+// Keep in sync with the CREATE TABLE in config/migrate.ts.
+export const sessions = sqliteTable('sessions', {
+  sid: text('sid').primaryKey(),
+  sess: text('sess').notNull(),
+  expire: text('expire').notNull(),
+});
+
 
 

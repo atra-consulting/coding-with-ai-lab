@@ -1,12 +1,19 @@
-import { sqlite } from './db.js';
+import { client } from './db.js';
 
-export function runMigrations(): void {
+export async function runMigrations(): Promise<void> {
   console.log('Running database migrations...');
+
+  // PRAGMA foreign_keys MUST be a standalone execute — SQLite ignores pragmas
+  // inside a transaction, and client.batch() wraps statements in BEGIN/COMMIT.
+  await client.execute('PRAGMA foreign_keys = ON');
 
   // Tables created in FK dependency order:
   // firma -> abteilung -> person -> adresse, aktivitaet, chance
-
-  sqlite.exec(`
+  // Sessions table added for Phase 4 DB-backed session store.
+  //
+  // executeMultiple issues each statement non-transactionally (like the old
+  // sqlite.exec), which is safe here because every statement is IF NOT EXISTS.
+  await client.executeMultiple(`
     CREATE TABLE IF NOT EXISTS firma (
       id        INTEGER PRIMARY KEY AUTOINCREMENT,
       name      TEXT NOT NULL,
@@ -85,9 +92,14 @@ export function runMigrations(): void {
       updatedAt         TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
+    CREATE TABLE IF NOT EXISTS sessions (
+      sid    TEXT PRIMARY KEY,
+      sess   TEXT NOT NULL,
+      expire TEXT NOT NULL
+    );
   `);
 
-  sqlite.exec(`
+  await client.executeMultiple(`
     CREATE INDEX IF NOT EXISTS idx_person_firmaId ON person(firmaId);
     CREATE INDEX IF NOT EXISTS idx_person_abteilungId ON person(abteilungId);
     CREATE INDEX IF NOT EXISTS idx_abteilung_firmaId ON abteilung(firmaId);
@@ -100,6 +112,7 @@ export function runMigrations(): void {
     CREATE INDEX IF NOT EXISTS idx_aktivitaet_createdAt ON aktivitaet(createdAt DESC);
     CREATE INDEX IF NOT EXISTS idx_adresse_firmaId ON adresse(firmaId);
     CREATE INDEX IF NOT EXISTS idx_adresse_personId ON adresse(personId);
+    CREATE INDEX IF NOT EXISTS idx_sessions_expire ON sessions(expire);
   `);
 
   console.log('Database migrations complete.');

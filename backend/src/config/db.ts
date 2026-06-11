@@ -1,5 +1,5 @@
-import Database from 'better-sqlite3';
-import { drizzle } from 'drizzle-orm/better-sqlite3';
+import { createClient } from '@libsql/client';
+import { drizzle } from 'drizzle-orm/libsql';
 import { mkdirSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -9,14 +9,17 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Resolve backend/data/ relative to this file (src/config/db.ts → backend/data/)
+// Using __dirname (not cwd) so the path is correct regardless of working directory
+// (e.g. when running from the repo root via api/index.ts on Vercel).
 const dataDir = join(__dirname, '..', '..', 'data');
 mkdirSync(dataDir, { recursive: true });
 
 const dbPath = join(dataDir, 'crmdb.sqlite');
 
-export const sqlite = new Database(dbPath);
+const url = process.env['TURSO_DATABASE_URL'] ?? `file:${dbPath}`;
+const authToken = process.env['TURSO_AUTH_TOKEN'];
 
-// MUST be enabled per-connection — never skip
-sqlite.pragma('foreign_keys = ON');
+// Do NOT set intMode — the default "number" is required by the DTO interfaces.
+export const client = createClient({ url, authToken });
 
-export const db = drizzle(sqlite, { schema });
+export const db = drizzle(client, { schema });

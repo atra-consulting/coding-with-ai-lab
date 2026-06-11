@@ -1,7 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { sqlite } from '../config/db.js';
+import type { InArgs } from '@libsql/client';
+import { client } from '../config/db.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -16,6 +17,9 @@ interface Fixture {
 
 // Insert order must respect FK dependencies:
 // firma -> abteilung -> person -> adresse, aktivitaet, chance
+//
+// Named-parameter SQL (@column) is kept intentionally — libsql accepts a plain
+// object for named args and strips the @ sigil when matching object keys.
 const INSERT_SQL: Record<keyof Fixture, string> = {
   firma: `INSERT INTO firma (id, name, industry, website, phone, email, notes, createdAt, updatedAt)
           VALUES (@id, @name, @industry, @website, @phone, @email, @notes, @createdAt, @updatedAt)`,
@@ -35,8 +39,9 @@ const INSERT_ORDER: (keyof Fixture)[] = [
   'firma', 'abteilung', 'person', 'adresse', 'aktivitaet', 'chance',
 ];
 
-export function runDataMigration(): void {
-  const count = (sqlite.prepare('SELECT COUNT(*) as cnt FROM firma').get() as { cnt: number }).cnt;
+export async function runDataMigration(): Promise<void> {
+  const result = await client.execute('SELECT COUNT(*) as cnt FROM firma');
+  const count = Number(result.rows[0]['cnt']);
   if (count > 0) {
     console.log(`=== Seeder: Datenbank enthält bereits ${count} Firmen, übersprungen ===`);
     return;
@@ -44,16 +49,18 @@ export function runDataMigration(): void {
 
   const fixture = JSON.parse(readFileSync(join(__dirname, 'fixture.json'), 'utf8')) as Fixture;
 
-  const loadAll = sqlite.transaction(() => {
-    for (const table of INSERT_ORDER) {
-      const stmt = sqlite.prepare(INSERT_SQL[table]);
-      for (const row of fixture[table]) {
-        stmt.run(row);
-      }
+  // Build one atomic batch (write mode) respecting INSERT_ORDER FK dependencies.
+  // Using a single batch instead of client.transaction() — see architectural
+  // constraints in PLAN-VERCEL-TURSO-DEPLOYMENT.md: client.transaction() nulls
+  // its connection and the lazily-reopened one has foreign_keys=OFF.
+  const stmts: { sql: string; args: InArgs }[] = [];
+  for (const table of INSERT_ORDER) {
+    for (const row of fixture[table]) {
+      stmts.push({ sql: INSERT_SQL[table], args: row as InArgs });
     }
-  });
+  }
 
-  loadAll();
+  await client.batch(stmts, 'write');
 
   console.log(
     `=== Seeder: ${fixture.firma.length} Firmen, ${fixture.abteilung.length} Abteilungen, ` +
