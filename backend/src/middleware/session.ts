@@ -3,6 +3,13 @@ import { LibsqlSessionStore } from './libsqlSessionStore.js';
 
 const SESSION_SECRET = process.env['SESSION_SECRET'] ?? 'crm-dev-secret-key';
 
+if (process.env['NODE_ENV'] === 'production' && !process.env['SESSION_SECRET']) {
+  // Cookies signed with the public dev default are forgeable.
+  console.warn(
+    '[session] SESSION_SECRET is not set — falling back to the insecure dev default. Set it in the deployment environment.',
+  );
+}
+
 export const sessionMiddleware = session({
   secret: SESSION_SECRET,
   name: 'JSESSIONID',

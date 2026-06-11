@@ -34,11 +34,19 @@ function sessionTtlMs(session: SessionData): number {
  * - Expired sessions are treated as missing; the row is opportunistically deleted.
  */
 export class LibsqlSessionStore extends Store {
-  constructor() {
-    super();
-    // Sweep expired rows once per process start (= per serverless cold start).
-    // Fire-and-forget: the table must not block startup, and the per-read
-    // opportunistic cleanup in get() covers anything this misses.
+  private sweepStarted = false;
+
+  /**
+   * Sweep expired rows once per process lifetime (= once per serverless cold
+   * start). Lazy — triggered by the first get/set, NOT the constructor: the
+   * store is instantiated at module-eval time, before runMigrations() has
+   * created the sessions table on a fresh database. Requests only arrive
+   * after migrations complete, so by first use the table exists.
+   * Fire-and-forget; the per-read cleanup in get() covers anything missed.
+   */
+  private sweepExpiredOnce(): void {
+    if (this.sweepStarted) return;
+    this.sweepStarted = true;
     client
       .execute({
         sql: 'DELETE FROM sessions WHERE expire <= ?',
@@ -56,6 +64,7 @@ export class LibsqlSessionStore extends Store {
     sid: string,
     callback: (err: unknown, session?: SessionData | null) => void,
   ): void {
+    this.sweepExpiredOnce();
     const now = new Date().toISOString();
 
     client
@@ -101,6 +110,7 @@ export class LibsqlSessionStore extends Store {
   // set — upsert session with computed expiry
   // ---------------------------------------------------------------------------
   set(sid: string, session: SessionData, callback: (err?: unknown) => void): void {
+    this.sweepExpiredOnce();
     const expire = new Date(Date.now() + sessionTtlMs(session)).toISOString();
     const sess = JSON.stringify(session);
 
