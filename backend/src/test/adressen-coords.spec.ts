@@ -12,7 +12,7 @@
  * issues when explicit Cookie headers are combined with stored context cookies.
  */
 import { test, expect, request as playwrightRequest, type APIRequestContext } from '@playwright/test';
-import { sqlite } from '../config/db.js';
+import { client } from '../config/db.js';
 import { resetDatabase } from './helpers.js';
 
 const BASE_URL = 'http://localhost:7070';
@@ -34,13 +34,13 @@ async function loginCtx(benutzername: string, passwort: string): Promise<APIRequ
 }
 
 test.beforeAll(async () => {
-  resetDatabase();
+  await resetDatabase();
   adminCtx = await loginCtx('admin', 'admin123');
   anonCtx = await playwrightRequest.newContext({ baseURL: BASE_URL });
 });
 
 test.afterAll(async () => {
-  resetDatabase();
+  await resetDatabase();
   await adminCtx.dispose();
   await anonCtx.dispose();
 });
@@ -135,9 +135,9 @@ test.describe('GET /api/adressen', () => {
 test.describe('POST /api/adressen', () => {
   const createdIds: number[] = [];
 
-  test.afterAll(() => {
+  test.afterAll(async () => {
     for (const id of createdIds) {
-      sqlite.prepare('DELETE FROM adresse WHERE id = ?').run(id);
+      await client.execute({ sql: 'DELETE FROM adresse WHERE id = ?', args: [id] });
     }
     createdIds.length = 0;
   });
@@ -225,23 +225,24 @@ test.describe('POST /api/adressen', () => {
 test.describe('PUT /api/adressen/:id', () => {
   let testId: number;
 
-  function createTestRow(): number {
+  async function createTestRow(): Promise<number> {
     const now = new Date().toISOString();
-    const result = sqlite
-      .prepare(
-        `INSERT INTO adresse (street, houseNumber, postalCode, city, country, latitude, longitude, createdAt, updatedAt)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      )
-      .run('Teststr.', '42', '10115', 'Berlin', 'Deutschland', 52.1234, 13.5678, now, now);
-    return Number(result.lastInsertRowid);
+    const result = await client.execute({
+      sql: `INSERT INTO adresse (street, houseNumber, postalCode, city, country, latitude, longitude, createdAt, updatedAt)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: ['Teststr.', '42', '10115', 'Berlin', 'Deutschland', 52.1234, 13.5678, now, now],
+    });
+    const rowid = result.lastInsertRowid;
+    if (rowid === undefined) throw new Error('createTestRow: lastInsertRowid is undefined');
+    return Number(rowid);
   }
 
-  test.beforeEach(() => {
-    testId = createTestRow();
+  test.beforeEach(async () => {
+    testId = await createTestRow();
   });
 
-  test.afterEach(() => {
-    sqlite.prepare('DELETE FROM adresse WHERE id = ?').run(testId);
+  test.afterEach(async () => {
+    await client.execute({ sql: 'DELETE FROM adresse WHERE id = ?', args: [testId] });
   });
 
   test('omitting latitude/longitude in PUT body preserves stored values', async () => {

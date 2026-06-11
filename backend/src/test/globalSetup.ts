@@ -201,14 +201,25 @@ export default async function globalSetup(): Promise<() => Promise<void>> {
     // Port was not in use — nothing to kill
   }
 
-  const env = {
-    ...process.env,
+  const env: Record<string, string> = {
+    ...Object.fromEntries(
+      Object.entries(process.env).filter(([, v]) => v !== undefined) as [string, string][]
+    ),
     NOMINATIM_BASE_URL: stubUrl,
     GEOCODING_SLEEP_MS: '0',
     NODE_ENV: 'test',
     PORT: '7070',
     STUB_CONTROL_URL: stubUrl,
   };
+
+  // Pass Turso credentials through when running against a remote DB (e.g. CI).
+  // Local/CI default: TURSO_DATABASE_URL unset → db.ts uses the file: fallback.
+  if (process.env['TURSO_DATABASE_URL']) {
+    env['TURSO_DATABASE_URL'] = process.env['TURSO_DATABASE_URL'];
+  }
+  if (process.env['TURSO_AUTH_TOKEN']) {
+    env['TURSO_AUTH_TOKEN'] = process.env['TURSO_AUTH_TOKEN'];
+  }
 
   const tsxBin = join(BACKEND_ROOT, 'backend', 'node_modules', '.bin', 'tsx');
   const indexTs = join(BACKEND_ROOT, 'backend', 'src', 'index.ts');
