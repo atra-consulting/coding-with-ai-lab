@@ -1,5 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "git": {
+    "deploymentEnabled": false
+  },
   "buildCommand": "cd frontend && npm ci && npx ng build",
   "outputDirectory": "frontend/dist/frontend/browser",
   "functions": {
