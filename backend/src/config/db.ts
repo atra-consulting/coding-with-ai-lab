@@ -12,11 +12,18 @@ const __dirname = dirname(__filename);
 // Using __dirname (not cwd) so the path is correct regardless of working directory
 // (e.g. when running from the repo root via api/index.ts on Vercel).
 const dataDir = join(__dirname, '..', '..', 'data');
-mkdirSync(dataDir, { recursive: true });
-
 const dbPath = join(dataDir, 'crmdb.sqlite');
 
-const url = process.env['TURSO_DATABASE_URL'] ?? `file:${dbPath}`;
+const tursoUrl = process.env['TURSO_DATABASE_URL'];
+
+// Only create the local data dir when actually using the file: default —
+// on Vercel (TURSO_DATABASE_URL set) the filesystem is read-only and
+// mkdirSync at import time crashes the whole function.
+if (!tursoUrl) {
+  mkdirSync(dataDir, { recursive: true });
+}
+
+const url = tursoUrl ?? `file:${dbPath}`;
 const authToken = process.env['TURSO_AUTH_TOKEN'];
 
 // Do NOT set intMode — the default "number" is required by the DTO interfaces.
