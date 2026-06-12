@@ -1,4 +1,5 @@
-import { sqlite } from '../config/db.js';
+import { client } from '../config/db.js';
+import type { InValue } from '@libsql/client';
 import { NotFoundError } from '../utils/errors.js';
 import { buildPage, type PageResult, type SortParams } from '../utils/pagination.js';
 import type { PersonCreateDTO } from '../utils/validation.js';
@@ -64,67 +65,75 @@ const BASE_QUERY = `
 `;
 
 export const personService = {
-  findAll(
+  async findAll(
     search: string | undefined,
     page: number,
     size: number,
     sort: SortParams
-  ): PageResult<PersonDTO> {
+  ): Promise<PageResult<PersonDTO>> {
     const where = search
       ? `WHERE LOWER(p.firstName) LIKE LOWER('%' || ? || '%') OR LOWER(p.lastName) LIKE LOWER('%' || ? || '%')`
       : '';
-    const params: unknown[] = search ? [search, search] : [];
+    const params: InValue[] = search ? [search, search] : [];
 
-    const countRow = sqlite
-      .prepare(`SELECT COUNT(*) AS cnt FROM person p ${where}`)
-      .get(...params) as { cnt: number };
+    const countResult = await client.execute({
+      sql: `SELECT COUNT(*) AS cnt FROM person p ${where}`,
+      args: [...params],
+    });
+    const countRow = countResult.rows[0] as unknown as { cnt: number };
     const total = Number(countRow.cnt);
 
-    const rows = sqlite
-      .prepare(
-        `${BASE_QUERY} ${where} ORDER BY p.${sort.field} ${sort.direction} LIMIT ? OFFSET ?`
-      )
-      .all(...params, size, page * size) as PersonRow[];
+    const rowsResult = await client.execute({
+      sql: `${BASE_QUERY} ${where} ORDER BY p.${sort.field} ${sort.direction} LIMIT ? OFFSET ?`,
+      args: [...params, size, page * size],
+    });
+    const rows = rowsResult.rows as unknown as PersonRow[];
 
     return buildPage(rows.map(toDTO), total, page, size);
   },
 
-  listAll(): PersonDTO[] {
-    const rows = sqlite
-      .prepare(`${BASE_QUERY} ORDER BY p.lastName ASC, p.firstName ASC`)
-      .all() as PersonRow[];
+  async listAll(): Promise<PersonDTO[]> {
+    const result = await client.execute({
+      sql: `${BASE_QUERY} ORDER BY p.lastName ASC, p.firstName ASC`,
+      args: [],
+    });
+    const rows = result.rows as unknown as PersonRow[];
     return rows.map(toDTO);
   },
 
-  findById(id: number): PersonDTO {
-    const row = sqlite
-      .prepare(`${BASE_QUERY} WHERE p.id = ?`)
-      .get(id) as PersonRow | undefined;
+  async findById(id: number): Promise<PersonDTO> {
+    const result = await client.execute({
+      sql: `${BASE_QUERY} WHERE p.id = ?`,
+      args: [id],
+    });
+    const row = result.rows[0] as unknown as PersonRow | undefined;
     if (!row) throw new NotFoundError(`Person mit ID ${id} nicht gefunden`);
     return toDTO(row);
   },
 
-  findByFirmaId(firmaId: number, page: number, size: number): PageResult<PersonDTO> {
-    const countRow = sqlite
-      .prepare('SELECT COUNT(*) AS cnt FROM person WHERE firmaId = ?')
-      .get(firmaId) as { cnt: number };
+  async findByFirmaId(firmaId: number, page: number, size: number): Promise<PageResult<PersonDTO>> {
+    const countResult = await client.execute({
+      sql: 'SELECT COUNT(*) AS cnt FROM person WHERE firmaId = ?',
+      args: [firmaId],
+    });
+    const countRow = countResult.rows[0] as unknown as { cnt: number };
     const total = Number(countRow.cnt);
 
-    const rows = sqlite
-      .prepare(`${BASE_QUERY} WHERE p.firmaId = ? ORDER BY p.lastName ASC, p.firstName ASC LIMIT ? OFFSET ?`)
-      .all(firmaId, size, page * size) as PersonRow[];
+    const rowsResult = await client.execute({
+      sql: `${BASE_QUERY} WHERE p.firmaId = ? ORDER BY p.lastName ASC, p.firstName ASC LIMIT ? OFFSET ?`,
+      args: [firmaId, size, page * size],
+    });
+    const rows = rowsResult.rows as unknown as PersonRow[];
 
     return buildPage(rows.map(toDTO), total, page, size);
   },
 
-  create(dto: PersonCreateDTO): PersonDTO {
+  async create(dto: PersonCreateDTO): Promise<PersonDTO> {
     const now = new Date().toISOString();
-    const result = sqlite
-      .prepare(
-        `INSERT INTO person (firstName, lastName, email, phone, position, notes, firmaId, abteilungId, createdAt, updatedAt)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      )
-      .run(
+    const result = await client.execute({
+      sql: `INSERT INTO person (firstName, lastName, email, phone, position, notes, firmaId, abteilungId, createdAt, updatedAt)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [
         dto.firstName,
         dto.lastName,
         dto.email ?? null,
@@ -134,19 +143,21 @@ export const personService = {
         dto.firmaId,
         dto.abteilungId ?? null,
         now,
-        now
-      );
+        now,
+      ],
+    });
+    if (result.lastInsertRowid === undefined) {
+      throw new Error('INSERT person returned no rowid');
+    }
     return this.findById(Number(result.lastInsertRowid));
   },
 
-  update(id: number, dto: PersonCreateDTO): PersonDTO {
-    this.findById(id);
+  async update(id: number, dto: PersonCreateDTO): Promise<PersonDTO> {
+    await this.findById(id);
     const now = new Date().toISOString();
-    sqlite
-      .prepare(
-        `UPDATE person SET firstName=?, lastName=?, email=?, phone=?, position=?, notes=?, firmaId=?, abteilungId=?, updatedAt=? WHERE id=?`
-      )
-      .run(
+    await client.execute({
+      sql: `UPDATE person SET firstName=?, lastName=?, email=?, phone=?, position=?, notes=?, firmaId=?, abteilungId=?, updatedAt=? WHERE id=?`,
+      args: [
         dto.firstName,
         dto.lastName,
         dto.email ?? null,
@@ -156,13 +167,17 @@ export const personService = {
         dto.firmaId,
         dto.abteilungId ?? null,
         now,
-        id
-      );
+        id,
+      ],
+    });
     return this.findById(id);
   },
 
-  delete(id: number): void {
-    this.findById(id);
-    sqlite.prepare('DELETE FROM person WHERE id = ?').run(id);
+  async delete(id: number): Promise<void> {
+    await this.findById(id);
+    await client.execute({
+      sql: 'DELETE FROM person WHERE id = ?',
+      args: [id],
+    });
   },
 };

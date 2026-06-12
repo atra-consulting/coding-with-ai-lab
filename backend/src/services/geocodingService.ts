@@ -1,4 +1,4 @@
-import { sqlite } from '../config/db.js';
+import { client } from '../config/db.js';
 import { ConflictError } from '../utils/errors.js';
 
 // Module-level batch guard
@@ -129,12 +129,11 @@ export async function runGeocodingBatch({
          WHERE latitude IS NULL OR longitude IS NULL
          ORDER BY id ASC`;
 
-    const rows = sqlite.prepare(selectSql).all() as GeocodeCandidate[];
+    const selectResult = await client.execute({ sql: selectSql, args: [] });
+    const rows = selectResult.rows as unknown as GeocodeCandidate[];
 
-    // Prepare the UPDATE statement once — reused for every successful geocode.
-    const updateStmt = sqlite.prepare(
-      'UPDATE adresse SET latitude = ?, longitude = ?, updatedAt = ? WHERE id = ?'
-    );
+    const updateSql =
+      'UPDATE adresse SET latitude = ?, longitude = ?, updatedAt = ? WHERE id = ?';
 
     let succeeded = 0;
     let failed = 0;
@@ -164,7 +163,10 @@ export async function runGeocodingBatch({
         const result = await geocodeAdresse(row);
 
         if (result !== null) {
-          updateStmt.run(result.latitude, result.longitude, new Date().toISOString(), row.id);
+          await client.execute({
+            sql: updateSql,
+            args: [result.latitude, result.longitude, new Date().toISOString(), row.id],
+          });
           succeeded++;
         } else {
           failed++;

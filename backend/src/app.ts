@@ -14,6 +14,11 @@ import adminRouter from './routes/admin.js';
 
 const app = express();
 
+// Trust the first proxy hop (Vercel edge) so that cookie.secure works correctly
+// in production. Without this, Express sees a plain-HTTP upstream connection and
+// suppresses Set-Cookie for secure cookies entirely.
+app.set('trust proxy', 1);
+
 // Middleware order matters: cors -> body parser -> session -> routes -> error handler
 
 app.use(corsMiddleware);

@@ -1,4 +1,4 @@
-import { sqlite } from '../config/db.js';
+import { client } from '../config/db.js';
 import { NotFoundError } from '../utils/errors.js';
 import { buildPage, type PageResult, type SortParams } from '../utils/pagination.js';
 import { type ChancePhase } from '../db/schema/enums.js';
@@ -74,44 +74,48 @@ const BASE_QUERY = `
 `;
 
 export const chanceService = {
-  findAll(page: number, size: number, sort: SortParams): PageResult<ChanceDTO> {
-    const countRow = sqlite
-      .prepare('SELECT COUNT(*) AS cnt FROM chance')
-      .get() as { cnt: number };
+  async findAll(page: number, size: number, sort: SortParams): Promise<PageResult<ChanceDTO>> {
+    const countResult = await client.execute({
+      sql: 'SELECT COUNT(*) AS cnt FROM chance',
+      args: [],
+    });
+    const countRow = countResult.rows[0] as unknown as { cnt: number };
     const total = Number(countRow.cnt);
 
-    const rows = sqlite
-      .prepare(
-        `${BASE_QUERY} ORDER BY c.${sort.field} ${sort.direction} LIMIT ? OFFSET ?`
-      )
-      .all(size, page * size) as ChanceRow[];
+    const rowsResult = await client.execute({
+      sql: `${BASE_QUERY} ORDER BY c.${sort.field} ${sort.direction} LIMIT ? OFFSET ?`,
+      args: [size, page * size],
+    });
+    const rows = rowsResult.rows as unknown as ChanceRow[];
 
     return buildPage(rows.map(toDTO), total, page, size);
   },
 
-  listAll(): ChanceDTO[] {
-    const rows = sqlite
-      .prepare(`${BASE_QUERY} ORDER BY c.createdAt DESC`)
-      .all() as ChanceRow[];
+  async listAll(): Promise<ChanceDTO[]> {
+    const result = await client.execute({
+      sql: `${BASE_QUERY} ORDER BY c.createdAt DESC`,
+      args: [],
+    });
+    const rows = result.rows as unknown as ChanceRow[];
     return rows.map(toDTO);
   },
 
-  findById(id: number): ChanceDTO {
-    const row = sqlite
-      .prepare(`${BASE_QUERY} WHERE c.id = ?`)
-      .get(id) as ChanceRow | undefined;
+  async findById(id: number): Promise<ChanceDTO> {
+    const result = await client.execute({
+      sql: `${BASE_QUERY} WHERE c.id = ?`,
+      args: [id],
+    });
+    const row = result.rows[0] as unknown as ChanceRow | undefined;
     if (!row) throw new NotFoundError(`Chance mit ID ${id} nicht gefunden`);
     return toDTO(row);
   },
 
-  create(dto: ChanceCreateDTO): ChanceDTO {
+  async create(dto: ChanceCreateDTO): Promise<ChanceDTO> {
     const now = new Date().toISOString();
-    const result = sqlite
-      .prepare(
-        `INSERT INTO chance (titel, beschreibung, wert, currency, phase, wahrscheinlichkeit, erwartetesDatum, firmaId, kontaktPersonId, createdAt, updatedAt)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      )
-      .run(
+    const result = await client.execute({
+      sql: `INSERT INTO chance (titel, beschreibung, wert, currency, phase, wahrscheinlichkeit, erwartetesDatum, firmaId, kontaktPersonId, createdAt, updatedAt)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [
         dto.titel,
         dto.beschreibung ?? null,
         dto.wert ?? null,
@@ -122,19 +126,21 @@ export const chanceService = {
         dto.firmaId,
         dto.kontaktPersonId ?? null,
         now,
-        now
-      );
+        now,
+      ],
+    });
+    if (result.lastInsertRowid === undefined) {
+      throw new Error('INSERT chance returned no rowid');
+    }
     return this.findById(Number(result.lastInsertRowid));
   },
 
-  update(id: number, dto: ChanceCreateDTO): ChanceDTO {
-    this.findById(id);
+  async update(id: number, dto: ChanceCreateDTO): Promise<ChanceDTO> {
+    await this.findById(id);
     const now = new Date().toISOString();
-    sqlite
-      .prepare(
-        `UPDATE chance SET titel=?, beschreibung=?, wert=?, currency=?, phase=?, wahrscheinlichkeit=?, erwartetesDatum=?, firmaId=?, kontaktPersonId=?, updatedAt=? WHERE id=?`
-      )
-      .run(
+    await client.execute({
+      sql: `UPDATE chance SET titel=?, beschreibung=?, wert=?, currency=?, phase=?, wahrscheinlichkeit=?, erwartetesDatum=?, firmaId=?, kontaktPersonId=?, updatedAt=? WHERE id=?`,
+      args: [
         dto.titel,
         dto.beschreibung ?? null,
         dto.wert ?? null,
@@ -145,13 +151,17 @@ export const chanceService = {
         dto.firmaId,
         dto.kontaktPersonId ?? null,
         now,
-        id
-      );
+        id,
+      ],
+    });
     return this.findById(id);
   },
 
-  delete(id: number): void {
-    this.findById(id);
-    sqlite.prepare('DELETE FROM chance WHERE id = ?').run(id);
+  async delete(id: number): Promise<void> {
+    await this.findById(id);
+    await client.execute({
+      sql: 'DELETE FROM chance WHERE id = ?',
+      args: [id],
+    });
   },
 };

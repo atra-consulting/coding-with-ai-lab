@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "task_key": "VERCEL-TURSO-DEPLOYMENT",
+  "status": "completed",
+  "current_step": "13",
+  "started": "2026-06-11T14:05:09Z",
+  "updated": "2026-06-11T14:45:00Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Migrate the CRM backend from better-sqlite3 to @libsql/client (Turso-compatible) and prepare the app for Vercel deployment via GitHub Actions: async DB driver swap with file: URL fallback for local/CI, async ripple through services/routes with Express 4 asyncHandler, DB-backed sessions, api/index.ts + vercel.json packaging (Angular static), GitHub Actions workflow with tests on PR and prod deploy from main only. No vercel link/deploy yet (team and Turso DB pending).",
+    "special_instructions": "Local dev (./start.sh, tsx --watch) must keep working unchanged. Backend Playwright + frontend Karma suites must pass. PRD per project convention with ## Implementierung section and PRD: footer in commits.",
+    "branch_name": "vercel-turso-deployment",
+    "original_branch": "main",
+    "docs_folder": "docs",
+    "is_git_repo": true,
+    "workflow_scope": "implement-review"
+  },
+  "discovery": {
+    "agents_available": true,
+    "writer_agents": ["ba-writer"],
+    "coding_agents": ["be-coder", "db-coder", "fe-coder", "ui-designer"],
+    "review_agents": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer"],
+    "test_command": "cd backend && npx playwright test; cd frontend && npx ng test --configuration=ci"
+  },
+  "artifacts": {
+    "prd_skipped": true,
+    "prd_file": null,
+    "plan_file": "docs/plans/PLAN-VERCEL-TURSO-DEPLOYMENT.md",
+    "pr_url": null
+  },
+  "completed_steps": ["1", "2", "3"]
+}

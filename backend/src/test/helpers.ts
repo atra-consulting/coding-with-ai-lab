@@ -8,7 +8,7 @@
  * The control URL is written to process.env.STUB_CONTROL_URL by globalSetup.
  */
 import { request as playwrightRequest, type APIRequestContext } from '@playwright/test';
-import { sqlite } from '../config/db.js';
+import { client } from '../config/db.js';
 import { runDataMigration } from '../seed/dataMigration.js';
 import type { StubBehavior } from './globalSetup.js';
 
@@ -126,45 +126,53 @@ export async function resetStubCallCount(): Promise<void> {
 /**
  * Reset the database to fixture state.
  * Deletes all rows in reverse FK order, then re-runs runDataMigration().
+ *
+ * PRAGMA foreign_keys is toggled via standalone execute calls (never inside a
+ * batch — SQLite ignores the pragma inside a transaction).
  */
-export function resetDatabase(): void {
-  sqlite.pragma('foreign_keys = OFF');
-  sqlite.exec(`
-    DELETE FROM chance;
-    DELETE FROM aktivitaet;
-    DELETE FROM adresse;
-    DELETE FROM person;
-    DELETE FROM abteilung;
-    DELETE FROM firma;
-  `);
-  sqlite.pragma('foreign_keys = ON');
-  runDataMigration();
+export async function resetDatabase(): Promise<void> {
+  await client.execute('PRAGMA foreign_keys = OFF');
+  await client.batch(
+    [
+      { sql: 'DELETE FROM chance', args: [] },
+      { sql: 'DELETE FROM aktivitaet', args: [] },
+      { sql: 'DELETE FROM adresse', args: [] },
+      { sql: 'DELETE FROM person', args: [] },
+      { sql: 'DELETE FROM abteilung', args: [] },
+      { sql: 'DELETE FROM firma', args: [] },
+      { sql: 'DELETE FROM sessions', args: [] },
+    ],
+    'write'
+  );
+  await client.execute('PRAGMA foreign_keys = ON');
+  await runDataMigration();
 }
 
 /**
  * Insert an adresse row with null coordinates.  Returns the new row id.
  */
-export function insertAdresseWithoutCoords(overrides: {
+export async function insertAdresseWithoutCoords(overrides: {
   city?: string | null;
   postalCode?: string | null;
   street?: string | null;
   houseNumber?: string | null;
   country?: string | null;
-} = {}): number {
+} = {}): Promise<number> {
   const now = new Date().toISOString();
-  const result = sqlite
-    .prepare(
-      `INSERT INTO adresse (street, houseNumber, postalCode, city, country, latitude, longitude, createdAt, updatedAt)
-       VALUES (?, ?, ?, ?, ?, NULL, NULL, ?, ?)`
-    )
-    .run(
+  const result = await client.execute({
+    sql: `INSERT INTO adresse (street, houseNumber, postalCode, city, country, latitude, longitude, createdAt, updatedAt)
+       VALUES (?, ?, ?, ?, ?, NULL, NULL, ?, ?)`,
+    args: [
       overrides.street ?? 'Teststraße',
       overrides.houseNumber ?? '1',
       overrides.postalCode !== undefined ? overrides.postalCode : '10115',
       overrides.city !== undefined ? overrides.city : 'Berlin',
       overrides.country ?? 'Deutschland',
       now,
-      now
-    );
-  return Number(result.lastInsertRowid);
+      now,
+    ],
+  });
+  const rowid = result.lastInsertRowid;
+  if (rowid === undefined) throw new Error('insertAdresseWithoutCoords: lastInsertRowid is undefined');
+  return Number(rowid);
 }

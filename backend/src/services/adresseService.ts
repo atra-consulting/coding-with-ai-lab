@@ -1,4 +1,4 @@
-import { sqlite } from '../config/db.js';
+import { client } from '../config/db.js';
 import { NotFoundError } from '../utils/errors.js';
 import { buildPage, type PageResult, type SortParams } from '../utils/pagination.js';
 import type { AdresseCreateDTO } from '../utils/validation.js';
@@ -74,44 +74,48 @@ const BASE_QUERY = `
 `;
 
 export const adresseService = {
-  findAll(page: number, size: number, sort: SortParams): PageResult<AdresseDTO> {
-    const countRow = sqlite
-      .prepare('SELECT COUNT(*) AS cnt FROM adresse')
-      .get() as { cnt: number };
+  async findAll(page: number, size: number, sort: SortParams): Promise<PageResult<AdresseDTO>> {
+    const countResult = await client.execute({
+      sql: 'SELECT COUNT(*) AS cnt FROM adresse',
+      args: [],
+    });
+    const countRow = countResult.rows[0] as unknown as { cnt: number };
     const total = Number(countRow.cnt);
 
-    const rows = sqlite
-      .prepare(
-        `${BASE_QUERY} ORDER BY a.${sort.field} ${sort.direction} LIMIT ? OFFSET ?`
-      )
-      .all(size, page * size) as AdresseRow[];
+    const rowsResult = await client.execute({
+      sql: `${BASE_QUERY} ORDER BY a.${sort.field} ${sort.direction} LIMIT ? OFFSET ?`,
+      args: [size, page * size],
+    });
+    const rows = rowsResult.rows as unknown as AdresseRow[];
 
     return buildPage(rows.map(toDTO), total, page, size);
   },
 
-  listAll(): AdresseDTO[] {
-    const rows = sqlite
-      .prepare(`${BASE_QUERY} ORDER BY a.city ASC`)
-      .all() as AdresseRow[];
+  async listAll(): Promise<AdresseDTO[]> {
+    const result = await client.execute({
+      sql: `${BASE_QUERY} ORDER BY a.city ASC`,
+      args: [],
+    });
+    const rows = result.rows as unknown as AdresseRow[];
     return rows.map(toDTO);
   },
 
-  findById(id: number): AdresseDTO {
-    const row = sqlite
-      .prepare(`${BASE_QUERY} WHERE a.id = ?`)
-      .get(id) as AdresseRow | undefined;
+  async findById(id: number): Promise<AdresseDTO> {
+    const result = await client.execute({
+      sql: `${BASE_QUERY} WHERE a.id = ?`,
+      args: [id],
+    });
+    const row = result.rows[0] as unknown as AdresseRow | undefined;
     if (!row) throw new NotFoundError(`Adresse mit ID ${id} nicht gefunden`);
     return toDTO(row);
   },
 
-  create(dto: AdresseCreateDTO): AdresseDTO {
+  async create(dto: AdresseCreateDTO): Promise<AdresseDTO> {
     const now = new Date().toISOString();
-    const result = sqlite
-      .prepare(
-        `INSERT INTO adresse (street, houseNumber, postalCode, city, country, firmaId, personId, latitude, longitude, createdAt, updatedAt)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      )
-      .run(
+    const result = await client.execute({
+      sql: `INSERT INTO adresse (street, houseNumber, postalCode, city, country, firmaId, personId, latitude, longitude, createdAt, updatedAt)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [
         dto.street ?? null,
         dto.houseNumber ?? null,
         dto.postalCode ?? null,
@@ -122,19 +126,21 @@ export const adresseService = {
         dto.latitude ?? null,
         dto.longitude ?? null,
         now,
-        now
-      );
+        now,
+      ],
+    });
+    if (result.lastInsertRowid === undefined) {
+      throw new Error('INSERT adresse returned no rowid');
+    }
     return this.findById(Number(result.lastInsertRowid));
   },
 
-  update(id: number, dto: AdresseCreateDTO): AdresseDTO {
-    const current = this.findById(id);
+  async update(id: number, dto: AdresseCreateDTO): Promise<AdresseDTO> {
+    const current = await this.findById(id);
     const now = new Date().toISOString();
-    sqlite
-      .prepare(
-        `UPDATE adresse SET street=?, houseNumber=?, postalCode=?, city=?, country=?, firmaId=?, personId=?, latitude=?, longitude=?, updatedAt=? WHERE id=?`
-      )
-      .run(
+    await client.execute({
+      sql: `UPDATE adresse SET street=?, houseNumber=?, postalCode=?, city=?, country=?, firmaId=?, personId=?, latitude=?, longitude=?, updatedAt=? WHERE id=?`,
+      args: [
         dto.street ?? null,
         dto.houseNumber ?? null,
         dto.postalCode ?? null,
@@ -145,13 +151,17 @@ export const adresseService = {
         dto.latitude === undefined ? current.latitude : dto.latitude,
         dto.longitude === undefined ? current.longitude : dto.longitude,
         now,
-        id
-      );
+        id,
+      ],
+    });
     return this.findById(id);
   },
 
-  delete(id: number): void {
-    this.findById(id);
-    sqlite.prepare('DELETE FROM adresse WHERE id = ?').run(id);
+  async delete(id: number): Promise<void> {
+    await this.findById(id);
+    await client.execute({
+      sql: 'DELETE FROM adresse WHERE id = ?',
+      args: [id],
+    });
   },
 };

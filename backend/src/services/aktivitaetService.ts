@@ -1,4 +1,4 @@
-import { sqlite } from '../config/db.js';
+import { client } from '../config/db.js';
 import { NotFoundError } from '../utils/errors.js';
 import { buildPage, type PageResult, type SortParams } from '../utils/pagination.js';
 import type { AktivitaetCreateDTO } from '../utils/validation.js';
@@ -64,44 +64,48 @@ const BASE_QUERY = `
 `;
 
 export const aktivitaetService = {
-  findAll(page: number, size: number, sort: SortParams): PageResult<AktivitaetDTO> {
-    const countRow = sqlite
-      .prepare('SELECT COUNT(*) AS cnt FROM aktivitaet')
-      .get() as { cnt: number };
+  async findAll(page: number, size: number, sort: SortParams): Promise<PageResult<AktivitaetDTO>> {
+    const countResult = await client.execute({
+      sql: 'SELECT COUNT(*) AS cnt FROM aktivitaet',
+      args: [],
+    });
+    const countRow = countResult.rows[0] as unknown as { cnt: number };
     const total = Number(countRow.cnt);
 
-    const rows = sqlite
-      .prepare(
-        `${BASE_QUERY} ORDER BY ak.${sort.field} ${sort.direction} LIMIT ? OFFSET ?`
-      )
-      .all(size, page * size) as AktivitaetRow[];
+    const rowsResult = await client.execute({
+      sql: `${BASE_QUERY} ORDER BY ak.${sort.field} ${sort.direction} LIMIT ? OFFSET ?`,
+      args: [size, page * size],
+    });
+    const rows = rowsResult.rows as unknown as AktivitaetRow[];
 
     return buildPage(rows.map(toDTO), total, page, size);
   },
 
-  listAll(): AktivitaetDTO[] {
-    const rows = sqlite
-      .prepare(`${BASE_QUERY} ORDER BY ak.datum DESC`)
-      .all() as AktivitaetRow[];
+  async listAll(): Promise<AktivitaetDTO[]> {
+    const result = await client.execute({
+      sql: `${BASE_QUERY} ORDER BY ak.datum DESC`,
+      args: [],
+    });
+    const rows = result.rows as unknown as AktivitaetRow[];
     return rows.map(toDTO);
   },
 
-  findById(id: number): AktivitaetDTO {
-    const row = sqlite
-      .prepare(`${BASE_QUERY} WHERE ak.id = ?`)
-      .get(id) as AktivitaetRow | undefined;
+  async findById(id: number): Promise<AktivitaetDTO> {
+    const result = await client.execute({
+      sql: `${BASE_QUERY} WHERE ak.id = ?`,
+      args: [id],
+    });
+    const row = result.rows[0] as unknown as AktivitaetRow | undefined;
     if (!row) throw new NotFoundError(`Aktivität mit ID ${id} nicht gefunden`);
     return toDTO(row);
   },
 
-  create(dto: AktivitaetCreateDTO): AktivitaetDTO {
+  async create(dto: AktivitaetCreateDTO): Promise<AktivitaetDTO> {
     const now = new Date().toISOString();
-    const result = sqlite
-      .prepare(
-        `INSERT INTO aktivitaet (typ, subject, description, datum, firmaId, personId, createdAt, updatedAt)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-      )
-      .run(
+    const result = await client.execute({
+      sql: `INSERT INTO aktivitaet (typ, subject, description, datum, firmaId, personId, createdAt, updatedAt)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [
         dto.typ,
         dto.subject,
         dto.description ?? null,
@@ -109,19 +113,21 @@ export const aktivitaetService = {
         dto.firmaId ?? null,
         dto.personId ?? null,
         now,
-        now
-      );
+        now,
+      ],
+    });
+    if (result.lastInsertRowid === undefined) {
+      throw new Error('INSERT aktivitaet returned no rowid');
+    }
     return this.findById(Number(result.lastInsertRowid));
   },
 
-  update(id: number, dto: AktivitaetCreateDTO): AktivitaetDTO {
-    this.findById(id);
+  async update(id: number, dto: AktivitaetCreateDTO): Promise<AktivitaetDTO> {
+    await this.findById(id);
     const now = new Date().toISOString();
-    sqlite
-      .prepare(
-        `UPDATE aktivitaet SET typ=?, subject=?, description=?, datum=?, firmaId=?, personId=?, updatedAt=? WHERE id=?`
-      )
-      .run(
+    await client.execute({
+      sql: `UPDATE aktivitaet SET typ=?, subject=?, description=?, datum=?, firmaId=?, personId=?, updatedAt=? WHERE id=?`,
+      args: [
         dto.typ,
         dto.subject,
         dto.description ?? null,
@@ -129,13 +135,17 @@ export const aktivitaetService = {
         dto.firmaId ?? null,
         dto.personId ?? null,
         now,
-        id
-      );
+        id,
+      ],
+    });
     return this.findById(id);
   },
 
-  delete(id: number): void {
-    this.findById(id);
-    sqlite.prepare('DELETE FROM aktivitaet WHERE id = ?').run(id);
+  async delete(id: number): Promise<void> {
+    await this.findById(id);
+    await client.execute({
+      sql: 'DELETE FROM aktivitaet WHERE id = ?',
+      args: [id],
+    });
   },
 };

@@ -9,7 +9,7 @@
  * that test workers can communicate with the stub running in the main process.
  */
 import { test, expect, request as playwrightRequest, type APIRequestContext } from '@playwright/test';
-import { sqlite } from '../config/db.js';
+import { client } from '../config/db.js';
 import {
   resetDatabase,
   insertAdresseWithoutCoords,
@@ -39,14 +39,14 @@ async function loginCtx(benutzername: string, passwort: string): Promise<APIRequ
 }
 
 test.beforeAll(async () => {
-  resetDatabase();
+  await resetDatabase();
   adminCtx = await loginCtx('admin', 'admin123');
   userCtx = await loginCtx('user', 'test123');
   anonCtx = await playwrightRequest.newContext({ baseURL: BASE_URL });
 });
 
 test.afterAll(async () => {
-  resetDatabase();
+  await resetDatabase();
   await clearStubOverrides();
   await adminCtx.dispose();
   await userCtx.dispose();
@@ -62,10 +62,10 @@ test.beforeEach(async () => {
 // Helpers to isolate the adresse table to exactly the rows we care about
 // ---------------------------------------------------------------------------
 
-function clearAddresses(): void {
-  sqlite.pragma('foreign_keys = OFF');
-  sqlite.exec('DELETE FROM adresse');
-  sqlite.pragma('foreign_keys = ON');
+async function clearAddresses(): Promise<void> {
+  await client.execute('PRAGMA foreign_keys = OFF');
+  await client.batch([{ sql: 'DELETE FROM adresse', args: [] }], 'write');
+  await client.execute('PRAGMA foreign_keys = ON');
 }
 
 // ---------------------------------------------------------------------------
@@ -104,11 +104,11 @@ test.describe('Authorization', () => {
 // ---------------------------------------------------------------------------
 test.describe('Admin success', () => {
   test('returns 200 with correct counter shape and total invariant', async () => {
-    clearAddresses();
-    const id = insertAdresseWithoutCoords();
+    await clearAddresses();
+    const id = await insertAdresseWithoutCoords();
 
     const resp = await adminCtx.post('/api/admin/geocode-addresses');
-    sqlite.prepare('DELETE FROM adresse WHERE id = ?').run(id);
+    await client.execute({ sql: 'DELETE FROM adresse WHERE id = ?', args: [id] });
 
     await test.step('status 200', () => {
       expect(resp.status()).toBe(200);
@@ -144,10 +144,10 @@ test.describe('Admin success', () => {
 // ---------------------------------------------------------------------------
 test.describe('Concurrency', () => {
   test('two near-simultaneous POSTs yield one 200 and one 409', async () => {
-    clearAddresses();
+    await clearAddresses();
     const ids: number[] = [];
     for (let i = 0; i < 3; i++) {
-      ids.push(insertAdresseWithoutCoords({ city: 'Berlin', postalCode: '10115' }));
+      ids.push(await insertAdresseWithoutCoords({ city: 'Berlin', postalCode: '10115' }));
     }
 
     const adminCtx2 = await loginCtx('admin', 'admin123');
@@ -158,7 +158,7 @@ test.describe('Concurrency', () => {
     await adminCtx2.dispose();
 
     for (const id of ids) {
-      sqlite.prepare('DELETE FROM adresse WHERE id = ?').run(id);
+      await client.execute({ sql: 'DELETE FROM adresse WHERE id = ?', args: [id] });
     }
 
     const statuses = [resp1.status(), resp2.status()].sort();
@@ -178,13 +178,13 @@ test.describe('Concurrency', () => {
 // ---------------------------------------------------------------------------
 test.describe('Stub failure: HTTP 500', () => {
   test('address counted in failed when stub returns 500', async () => {
-    clearAddresses();
-    const id = insertAdresseWithoutCoords();
+    await clearAddresses();
+    const id = await insertAdresseWithoutCoords();
 
     await setStubResponse({ type: 'http-500' });
 
     const resp = await adminCtx.post('/api/admin/geocode-addresses');
-    sqlite.prepare('DELETE FROM adresse WHERE id = ?').run(id);
+    await client.execute({ sql: 'DELETE FROM adresse WHERE id = ?', args: [id] });
 
     expect(resp.status()).toBe(200);
     const body = await resp.json() as {
@@ -204,13 +204,13 @@ test.describe('Stub failure: HTTP 500', () => {
 // ---------------------------------------------------------------------------
 test.describe('Stub failure: empty array', () => {
   test('address counted in failed when stub returns empty array []', async () => {
-    clearAddresses();
-    const id = insertAdresseWithoutCoords();
+    await clearAddresses();
+    const id = await insertAdresseWithoutCoords();
 
     await setStubResponse({ type: 'empty' });
 
     const resp = await adminCtx.post('/api/admin/geocode-addresses');
-    sqlite.prepare('DELETE FROM adresse WHERE id = ?').run(id);
+    await client.execute({ sql: 'DELETE FROM adresse WHERE id = ?', args: [id] });
 
     expect(resp.status()).toBe(200);
     const body = await resp.json() as {
@@ -230,13 +230,13 @@ test.describe('Stub failure: empty array', () => {
 // ---------------------------------------------------------------------------
 test.describe('Stub failure: malformed body', () => {
   test('address counted in failed when stub returns malformed HTML', async () => {
-    clearAddresses();
-    const id = insertAdresseWithoutCoords();
+    await clearAddresses();
+    const id = await insertAdresseWithoutCoords();
 
     await setStubResponse({ type: 'malformed' });
 
     const resp = await adminCtx.post('/api/admin/geocode-addresses');
-    sqlite.prepare('DELETE FROM adresse WHERE id = ?').run(id);
+    await client.execute({ sql: 'DELETE FROM adresse WHERE id = ?', args: [id] });
 
     expect(resp.status()).toBe(200);
     const body = await resp.json() as {
@@ -259,15 +259,15 @@ test.describe('Stub timeout', () => {
   test('address counted in failed when stub never responds', async () => {
     test.setTimeout(35_000);
 
-    clearAddresses();
-    const id = insertAdresseWithoutCoords();
+    await clearAddresses();
+    const id = await insertAdresseWithoutCoords();
 
     await setStubResponse({ type: 'timeout' });
 
     const resp = await adminCtx.post('/api/admin/geocode-addresses', {
       timeout: 30_000,
     });
-    sqlite.prepare('DELETE FROM adresse WHERE id = ?').run(id);
+    await client.execute({ sql: 'DELETE FROM adresse WHERE id = ?', args: [id] });
 
     expect(resp.status()).toBe(200);
     const body = await resp.json() as {
@@ -287,12 +287,12 @@ test.describe('Stub timeout', () => {
 // ---------------------------------------------------------------------------
 test.describe('skippedInsufficientData', () => {
   test('address with null city and null postalCode counted in skippedInsufficientData, stub not called', async () => {
-    clearAddresses();
-    const id = insertAdresseWithoutCoords({ city: null, postalCode: null });
+    await clearAddresses();
+    const id = await insertAdresseWithoutCoords({ city: null, postalCode: null });
     await resetStubCallCount();
 
     const resp = await adminCtx.post('/api/admin/geocode-addresses');
-    sqlite.prepare('DELETE FROM adresse WHERE id = ?').run(id);
+    await client.execute({ sql: 'DELETE FROM adresse WHERE id = ?', args: [id] });
 
     expect(resp.status()).toBe(200);
     const body = await resp.json() as {
@@ -328,16 +328,17 @@ test.describe('skippedInsufficientData', () => {
 test.describe('force=true', () => {
   test('default call skips rows with existing coords; force=true re-geocodes them', async () => {
     // Isolate: one row WITH existing coordinates
-    clearAddresses();
+    await clearAddresses();
 
     const now = new Date().toISOString();
-    const result = sqlite
-      .prepare(
-        `INSERT INTO adresse (street, postalCode, city, country, latitude, longitude, createdAt, updatedAt)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-      )
-      .run('Hauptstr.', '10115', 'Berlin', 'Deutschland', 52.111, 13.111, now, now);
-    const id = Number(result.lastInsertRowid);
+    const insertResult = await client.execute({
+      sql: `INSERT INTO adresse (street, postalCode, city, country, latitude, longitude, createdAt, updatedAt)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: ['Hauptstr.', '10115', 'Berlin', 'Deutschland', 52.111, 13.111, now, now],
+    });
+    const insertRowid = insertResult.lastInsertRowid;
+    if (insertRowid === undefined) throw new Error('force=true test: lastInsertRowid is undefined');
+    const id = Number(insertRowid);
 
     // ---- Default call: no rows without coords → total=0, stub not called ----
     await resetStubCallCount();
@@ -364,7 +365,7 @@ test.describe('force=true', () => {
     await resetStubCallCount();
 
     const forceResp = await adminCtx.post('/api/admin/geocode-addresses?force=true');
-    sqlite.prepare('DELETE FROM adresse WHERE id = ?').run(id);
+    await client.execute({ sql: 'DELETE FROM adresse WHERE id = ?', args: [id] });
 
     await test.step('force call returns 200', () => {
       expect(forceResp.status()).toBe(200);

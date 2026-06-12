@@ -33,7 +33,7 @@ let createdFirmaId: number | undefined;
 // ---------------------------------------------------------------------------
 
 test.beforeAll(async () => {
-  resetDatabase();
+  await resetDatabase();
   adminCtx = await loginCtx('admin', 'admin123');
   anonCtx = await playwrightRequest.newContext({ baseURL: BASE_URL });
 });
