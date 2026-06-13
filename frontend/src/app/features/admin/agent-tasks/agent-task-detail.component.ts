@@ -54,11 +54,11 @@ import { AgentTaskService } from '../../../core/services/agent-task.service';
         </dl>
 
         <h5 class="mt-3">Inhalt</h5>
-        <pre class="bg-light border rounded p-3 small">{{ task.body }}</pre>
+        <pre class="bg-light border rounded p-3 small" style="white-space: pre-wrap; overflow-wrap: anywhere;">{{ task.body }}</pre>
 
         @if (task.metadata) {
           <h5 class="mt-3">Metadaten</h5>
-          <pre class="bg-light border rounded p-3 small font-monospace">{{ prettyMetadata(task.metadata) }}</pre>
+          <pre class="bg-light border rounded p-3 small font-monospace" style="white-space: pre-wrap; overflow-wrap: anywhere;">{{ prettyMetadata(task.metadata) }}</pre>
         }
       </div>
     }
