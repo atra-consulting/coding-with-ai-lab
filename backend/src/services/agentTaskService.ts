@@ -62,11 +62,12 @@ export interface AgentTaskFilters {
 
 export const agentTaskService = {
   async findNext(source: string): Promise<AgentTaskDTO | null> {
+    const now = new Date().toISOString();
     const result = await client.execute({
-      sql: `UPDATE agent_task SET status='IN_PROGRESS', pickedUpAt=datetime('now'), updatedAt=datetime('now')
+      sql: `UPDATE agent_task SET status='IN_PROGRESS', pickedUpAt=?, updatedAt=?
             WHERE id=(SELECT id FROM agent_task WHERE status='OPEN' AND source=? ORDER BY createdAt ASC LIMIT 1)
             RETURNING *`,
-      args: [source],
+      args: [now, now, source],
     });
     const row = result.rows[0] as unknown as AgentTaskRow | undefined;
     return row ? toDTO(row) : null;
@@ -85,8 +86,8 @@ export const agentTaskService = {
   async reject(id: number, comment: string): Promise<AgentTaskDTO> {
     const now = new Date().toISOString();
     const result = await client.execute({
-      sql: `UPDATE agent_task SET status='REJECTED', comment=?, resolvedAt=datetime('now'), updatedAt=? WHERE id=? AND status NOT IN ('DONE','REJECTED')`,
-      args: [comment, now, id],
+      sql: `UPDATE agent_task SET status='REJECTED', comment=?, resolvedAt=?, updatedAt=? WHERE id=? AND status NOT IN ('DONE','REJECTED')`,
+      args: [comment, now, now, id],
     });
     if (result.rowsAffected === 0) {
       // Either not found or already in a terminal status
@@ -101,8 +102,8 @@ export const agentTaskService = {
   async done(id: number, comment?: string): Promise<AgentTaskDTO> {
     const now = new Date().toISOString();
     const result = await client.execute({
-      sql: `UPDATE agent_task SET status='DONE', comment=?, resolvedAt=datetime('now'), updatedAt=? WHERE id=? AND status NOT IN ('DONE','REJECTED')`,
-      args: [comment ?? null, now, id],
+      sql: `UPDATE agent_task SET status='DONE', comment=?, resolvedAt=?, updatedAt=? WHERE id=? AND status NOT IN ('DONE','REJECTED')`,
+      args: [comment ?? null, now, now, id],
     });
     if (result.rowsAffected === 0) {
       // Either not found or already in a terminal status
@@ -151,9 +152,10 @@ export const agentTaskService = {
   },
 
   async resetAll(): Promise<number> {
+    const now = new Date().toISOString();
     const result = await client.execute({
-      sql: `UPDATE agent_task SET status='OPEN', comment=NULL, pickedUpAt=NULL, resolvedAt=NULL, updatedAt=datetime('now')`,
-      args: [],
+      sql: `UPDATE agent_task SET status='OPEN', comment=NULL, pickedUpAt=NULL, resolvedAt=NULL, updatedAt=?`,
+      args: [now],
     });
     return result.rowsAffected;
   },

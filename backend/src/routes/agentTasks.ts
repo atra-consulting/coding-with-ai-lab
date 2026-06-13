@@ -7,7 +7,7 @@ import { parsePaginationParams, parseSort } from '../utils/pagination.js';
 import { validate } from '../utils/validation.js';
 import { ValidationError } from '../utils/errors.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
-import { AGENT_TASK_SOURCE } from '../db/schema/enums.js';
+import { AGENT_TASK_SOURCE, AGENT_TASK_STATUS } from '../db/schema/enums.js';
 
 const router = Router();
 
@@ -109,9 +109,23 @@ router.get(
       'DESC',
       'agentTask',
     );
+    const sourceParam = req.query['source'] as string | undefined;
+    const statusParam = req.query['status'] as string | undefined;
+
+    if (sourceParam !== undefined && !(AGENT_TASK_SOURCE as readonly string[]).includes(sourceParam)) {
+      throw new ValidationError(`Ungültige source: ${sourceParam}`, {
+        source: `Ungültige source: ${sourceParam}`,
+      });
+    }
+    if (statusParam !== undefined && !(AGENT_TASK_STATUS as readonly string[]).includes(statusParam)) {
+      throw new ValidationError(`Ungültiger status: ${statusParam}`, {
+        status: `Ungültiger status: ${statusParam}`,
+      });
+    }
+
     const filters = {
-      source: req.query['source'] as string | undefined,
-      status: req.query['status'] as string | undefined,
+      source: sourceParam,
+      status: statusParam,
     };
     res.json(await agentTaskService.findAll(filters, page, size, sort));
   }),

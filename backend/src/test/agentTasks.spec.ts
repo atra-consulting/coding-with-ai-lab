@@ -539,6 +539,34 @@ test.describe('GET /api/agent-tasks', () => {
     const resp = await agent.get('/api/agent-tasks');
     expect(resp.status()).toBe(401);
   });
+
+  test('invalid source param → 400 with fieldErrors.source', async () => {
+    const resp = await admin.get('/api/agent-tasks?source=NOPE');
+
+    await test.step('status 400', () => {
+      expect(resp.status()).toBe(400);
+    });
+
+    const body = await resp.json() as ErrorBody;
+
+    await test.step('fieldErrors.source is present', () => {
+      expect(typeof body.fieldErrors?.['source']).toBe('string');
+    });
+  });
+
+  test('invalid status param → 400 with fieldErrors.status', async () => {
+    const resp = await admin.get('/api/agent-tasks?status=NOPE');
+
+    await test.step('status 400', () => {
+      expect(resp.status()).toBe(400);
+    });
+
+    const body = await resp.json() as ErrorBody;
+
+    await test.step('fieldErrors.status is present', () => {
+      expect(typeof body.fieldErrors?.['status']).toBe('string');
+    });
+  });
 });
 
 // ---------------------------------------------------------------------------
