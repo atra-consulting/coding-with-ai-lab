@@ -14,7 +14,7 @@ The four data sources (customer emails, GitHub issues, application logs, error r
    AGENT_API_TOKEN=test-secret-123
    ```
 
-   `.env` is gitignored. The agent API returns `401` for every call when this var is unset.
+   `.env` is gitignored. The backend auto-loads `backend/.env` on startup (a real exported env var, e.g. in CI, always wins over the file). The agent API returns `401` for every call when this var is unset.
 
 2. Make sure Claude Code can reach the Anthropic API (for the `claude -p` runs):
 
