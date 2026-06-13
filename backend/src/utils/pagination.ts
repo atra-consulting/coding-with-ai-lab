@@ -65,6 +65,13 @@ const ALLOWED_SORT_FIELDS: Record<string, Record<string, string>> = {
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
   },
+  agentTask: {
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    status: 'status',
+    source: 'source',
+    title: 'title',
+  },
 };
 
 export function parsePaginationParams(query: Record<string, unknown>): PaginationParams {

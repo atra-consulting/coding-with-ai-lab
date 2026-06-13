@@ -4,6 +4,15 @@
 
 Full-stack CRM application. Node.js/TypeScript (Express + Drizzle ORM + SQLite) backend, Angular 21 frontend. German domain model: Firma, Person, Abteilung, Adresse, Aktivitaet, Chance. SQLite file-based database at `backend/data/crmdb.sqlite`. Authentication via hardcoded in-memory users (`backend/src/config/users.ts`) with session-based auth (3 users: admin/admin123, user/test123, demo/demo1234 — all with full permissions).
 
+### Autonomous Task Sources (advanced workshop)
+
+The `agent_task` table holds tasks from four sources (`EMAIL`, `GITHUB_ISSUE`, `APP_LOG`, `ERROR_REPORT`) with lifecycle `OPEN → IN_PROGRESS → DONE | REJECTED`. Claude Code, driven by GitHub Actions, pulls a task, decides solve-or-reject, implements it, and merges. Pieces:
+- **API** `/api/agent-tasks`: `GET /next?source=X` (claims OPEN→IN_PROGRESS), `POST /:id/reject` (mandatory comment), `POST /:id/done`, `POST /reset` (admin), `GET /summary`, `GET /:id`, `GET /`. Agent endpoints use the `requireAgentToken` middleware (shared secret in env `AGENT_API_TOKEN`, SHA-256 + `timingSafeEqual`); admin endpoints use session + `requireRole('ADMIN')`.
+- **Dashboard** (admin only): `/admin/agent-tasks` — summary cards, per-source list, task detail, reset button.
+- **Prompts**: `.claude/prompts/agent-*.md` — one per source; run headless via `claude -p`, pre-authorizing every plan-and-do checkpoint.
+- **CI**: `.github/workflows/agent-task-runner.yml` (reference; needs secrets `AGENT_API_TOKEN`, `APP_BASE_URL`, `ANTHROPIC_API_KEY`).
+- **Workshop guide**: [`docs/WORKSHOP-AUTONOMOUS-TASKS.md`](docs/WORKSHOP-AUTONOMOUS-TASKS.md) — local testing, reset between runs, removing task-solution commits, `scripts/solve-all-agent-tasks.sh`.
+
 ## Build & Run
 
 ```bash

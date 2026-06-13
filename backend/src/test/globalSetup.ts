@@ -28,6 +28,12 @@ import type { AddressInfo } from 'node:net';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const BACKEND_ROOT = resolve(__dirname, '..', '..', '..');
 
+/**
+ * Fixed agent token injected into the backend process during tests.
+ * Import this constant in spec files so the literal stays consistent.
+ */
+export const TEST_AGENT_TOKEN = 'test-agent-token-abc123';
+
 // ---------------------------------------------------------------------------
 // Stub state (lives in the MAIN Playwright process)
 // ---------------------------------------------------------------------------
@@ -210,6 +216,7 @@ export default async function globalSetup(): Promise<() => Promise<void>> {
     NODE_ENV: 'test',
     PORT: '7070',
     STUB_CONTROL_URL: stubUrl,
+    AGENT_API_TOKEN: TEST_AGENT_TOKEN,
   };
 
   // Pass Turso credentials through when running against a remote DB (e.g. CI).

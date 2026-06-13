@@ -1,0 +1,77 @@
+# Autonomous Agent Task Runner — REFERENCE / DEMO workflow.
+#
+# This is a teaching artifact for the "Claude Code for Advanced Users" workshop.
+# It shows how Claude Code, driven by GitHub Actions, can pull a task from the
+# app, decide to solve or reject it, implement it, and merge to main — autonomously.
+#
+# IT DOES NOT RUN until you configure the secrets below. The schedule is left
+# disabled-by-default in practice because the required secrets will be absent in
+# a fresh clone (the steps will fail fast). Treat this as a starting point, not a
+# production-ready auto-merge pipeline.
+#
+# Required repository secrets:
+#   AGENT_API_TOKEN   - shared secret for the /api/agent-tasks/{next,reject,done} API
+#   APP_BASE_URL      - base URL of the DEPLOYED app (e.g. https://your-app.vercel.app)
+#   ANTHROPIC_API_KEY - API key Claude Code uses to call the Anthropic API
+#
+# Choose the source by changing the `source` input (default: email).
+
+name: Agent Task Runner
+
+on:
+  workflow_dispatch:
+    inputs:
+      source:
+        description: Which data source to process
+        required: true
+        default: email
+        type: choice
+        options:
+          - email
+          - github-issue
+          - app-log
+          - error-report
+  schedule:
+    # Daily at 02:00 UTC. Remove or change as needed. Will fail without secrets.
+    - cron: '0 2 * * *'
+
+jobs:
+  run-agent:
+    name: Run autonomous agent
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Backend — install dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Run the per-source agent prompt
+        env:
+          AGENT_API_TOKEN: ${{ secrets.AGENT_API_TOKEN }}
+          APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SOURCE: ${{ github.event.inputs.source || 'email' }}
+        run: |
+          # Map the friendly input to the prompt file.
+          PROMPT=".claude/prompts/agent-${SOURCE}.md"
+          if [ ! -f "$PROMPT" ]; then
+            echo "Prompt not found: $PROMPT"
+            exit 1
+          fi
+          echo "Running $PROMPT against $APP_BASE_URL"
+          # Headless print mode. --dangerously-skip-permissions lets the agent run
+          # the curl + plan-and-do steps without interactive permission prompts.
+          claude -p "$(cat "$PROMPT")" --dangerously-skip-permissions

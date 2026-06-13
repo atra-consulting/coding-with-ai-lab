@@ -7,6 +7,7 @@ import {
   faCalendarCheck,
   faChartLine,
   faCommentDots,
+  faListCheck,
   faMapMarkerAlt,
   faSitemap,
   faTachometerAlt,
@@ -41,6 +42,7 @@ export class SidebarComponent {
 
   faAngleDoubleLeft = faAngleDoubleLeft;
   faAngleDoubleRight = faAngleDoubleRight;
+  faListCheck = faListCheck;
 
   bottomItems: NavItem[] = [
     { label: 'Feedback', route: '/feedback', icon: faCommentDots },
@@ -75,6 +77,12 @@ export class SidebarComponent {
           label: 'Adressen geokodieren',
           route: '/admin/geocoding',
           icon: faUserShield,
+          requiredRole: 'ROLE_ADMIN',
+        },
+        {
+          label: 'Agent-Aufgaben',
+          route: '/admin/agent-tasks',
+          icon: faListCheck,
           requiredRole: 'ROLE_ADMIN',
         },
       ],

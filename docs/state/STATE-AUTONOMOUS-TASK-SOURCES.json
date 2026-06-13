@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "task_key": "AUTONOMOUS-TASK-SOURCES",
+  "status": "completed",
+  "current_step": "13.1",
+  "started": "2026-06-13T00:00:00Z",
+  "updated": "2026-06-13T00:00:00Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Advanced-users workshop: four task data sources (customer emails, GitHub issues, app logs, error reports) feed autonomous Claude Code tasks via GitHub Actions. Fake seed data, admin-only dashboard with drill-in, secured fetch/reject/complete APIs, per-source prompts wrapping the plan-and-do skill, and a local test plan.",
+    "special_instructions": null,
+    "ticket_id": null,
+    "ticket_url": null,
+    "branch_name": "autonomous-task-sources-workshop",
+    "original_branch": "main",
+    "docs_folder": "docs",
+    "workflow_scope": "create-pr",
+    "keep_files": true
+  },
+  "discovery": {
+    "agents_available": true,
+    "writer_agents": ["ba-writer"],
+    "coding_agents": ["be-coder", "db-coder", "fe-coder", "ui-designer"],
+    "review_agents": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer"],
+    "test_command": "cd backend && npm test ; cd frontend && npm run test:ci",
+    "youtrack_available": false,
+    "youtrack_mcp": null,
+    "youtrack_on_start": null,
+    "youtrack_on_resolve": null
+  },
+  "artifacts": {
+    "prd_skipped": false,
+    "prd_file": "docs/prds/PRD-AUTONOMOUS-TASK-SOURCES.md",
+    "plan_file": "docs/plans/PLAN-AUTONOMOUS-TASK-SOURCES.md",
+    "pr_url": "https://github.com/atra-consulting/coding-with-ai-lab/pull/61"
+  },
+  "completed_steps": []
+}
