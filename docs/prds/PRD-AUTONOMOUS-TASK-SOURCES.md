@@ -556,4 +556,10 @@ Quick reference:
 
 ## Implementation
 
-_To be filled in after development. Add commit hashes and PR links here._
+Branch: `autonomous-task-sources-workshop` (PR targets `main`).
+
+Key commits: agent_task table + seed (`106af13`), real-gap seed fix (`bda4f3d`), API + token middleware (`00f335a`), dashboard (`2b41981`), atomic guards + reset endpoint (`ca1aae0`), reset button (`8a89337`), prompts + CI + workshop guide + solve-all script (`a0dc538`), backend tests + resetDatabase fix (`125f4a3`), frontend specs (`d3ccece`), plus review fixes (list-filter validation + ISO timestamps; FE subscription/error/refresh) and the CLAUDE.md update.
+
+Tests: backend 77 passed / 2 skipped; frontend 91 passed.
+
+Added per user request during build: admin **reset** endpoint + button (re-run the demo without `--reset-db`), `docs/WORKSHOP-AUTONOMOUS-TASKS.md` (reset, Git-commit cleanup, solve-all instructions), and `scripts/solve-all-agent-tasks.sh`.
