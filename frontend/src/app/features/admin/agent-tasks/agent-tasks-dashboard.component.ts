@@ -20,8 +20,11 @@ const ALL_SOURCES: AgentTaskSource[] = ['EMAIL', 'GITHUB_ISSUE', 'APP_LOG', 'ERR
     @if (activeSource) {
       <app-agent-task-list />
     } @else {
-      <div class="page-header">
+      <div class="page-header d-flex justify-content-between align-items-center">
         <h2>Agent-Aufgaben</h2>
+        <button class="btn btn-outline-danger" (click)="resetAllTasks()">
+          Alle Aufgaben zurücksetzen
+        </button>
       </div>
 
       @if (loading) {
@@ -94,6 +97,12 @@ export class AgentTasksDashboardComponent implements OnInit {
       this.activeSource = src && ALL_SOURCES.includes(src) ? src : null;
     });
 
+    this.loadSummary();
+  }
+
+  loadSummary(): void {
+    this.loading = true;
+    this.errorMessage = null;
     this.agentTaskService.getSummary().subscribe({
       next: (data) => {
         this.summaries = data;
@@ -102,6 +111,17 @@ export class AgentTasksDashboardComponent implements OnInit {
       error: () => {
         this.errorMessage = 'Fehler beim Laden der Zusammenfassung.';
         this.loading = false;
+      },
+    });
+  }
+
+  resetAllTasks(): void {
+    if (!window.confirm('Alle Agent-Aufgaben auf OPEN zurücksetzen?')) {
+      return;
+    }
+    this.agentTaskService.resetAll().subscribe({
+      next: () => {
+        this.loadSummary();
       },
     });
   }

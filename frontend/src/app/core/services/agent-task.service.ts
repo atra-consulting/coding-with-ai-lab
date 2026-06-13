@@ -36,4 +36,8 @@ export class AgentTaskService {
   getSummary(): Observable<AgentTaskSummary[]> {
     return this.http.get<AgentTaskSummary[]>(`${this.baseUrl}/summary`);
   }
+
+  resetAll(): Observable<{ reset: number }> {
+    return this.http.post<{ reset: number }>(`${this.baseUrl}/reset`, {});
+  }
 }
