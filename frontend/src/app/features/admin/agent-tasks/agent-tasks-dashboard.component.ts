@@ -1,4 +1,5 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AgentTaskSource, AgentTaskSummary } from '../../../core/models/agent-task.model';
 import { AgentTaskService } from '../../../core/services/agent-task.service';
@@ -84,6 +85,7 @@ const ALL_SOURCES: AgentTaskSource[] = ['EMAIL', 'GITHUB_ISSUE', 'APP_LOG', 'ERR
 export class AgentTasksDashboardComponent implements OnInit {
   private agentTaskService = inject(AgentTaskService);
   private route = inject(ActivatedRoute);
+  private destroyRef = inject(DestroyRef);
 
   allSources = ALL_SOURCES;
   summaries: AgentTaskSummary[] = [];
@@ -92,12 +94,13 @@ export class AgentTasksDashboardComponent implements OnInit {
   activeSource: AgentTaskSource | null = null;
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe((params) => {
+    this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const src = params['source'] as AgentTaskSource | undefined;
       this.activeSource = src && ALL_SOURCES.includes(src) ? src : null;
+      if (!this.activeSource) {
+        this.loadSummary();
+      }
     });
-
-    this.loadSummary();
   }
 
   loadSummary(): void {
@@ -119,9 +122,15 @@ export class AgentTasksDashboardComponent implements OnInit {
     if (!window.confirm('Alle Agent-Aufgaben auf OPEN zurücksetzen?')) {
       return;
     }
+    this.loading = true;
+    this.errorMessage = null;
     this.agentTaskService.resetAll().subscribe({
       next: () => {
         this.loadSummary();
+      },
+      error: () => {
+        this.errorMessage = 'Fehler beim Zurücksetzen der Aufgaben.';
+        this.loading = false;
       },
     });
   }

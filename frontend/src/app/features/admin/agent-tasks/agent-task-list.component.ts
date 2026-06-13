@@ -1,4 +1,5 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { NgbPagination } from '@ng-bootstrap/ng-bootstrap';
 import { AgentTask, AgentTaskSource } from '../../../core/models/agent-task.model';
@@ -74,6 +75,7 @@ import { AgentTaskService } from '../../../core/services/agent-task.service';
 export class AgentTaskListComponent implements OnInit {
   private agentTaskService = inject(AgentTaskService);
   private route = inject(ActivatedRoute);
+  private destroyRef = inject(DestroyRef);
 
   tasksPage: Page<AgentTask> | null = null;
   currentPage = 1;
@@ -83,7 +85,7 @@ export class AgentTaskListComponent implements OnInit {
   activeSource: AgentTaskSource | null = null;
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe((params) => {
+    this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const src = params['source'] as AgentTaskSource | undefined;
       this.activeSource = src ?? null;
       this.currentPage = 1;

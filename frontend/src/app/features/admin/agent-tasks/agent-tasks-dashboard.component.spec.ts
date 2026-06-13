@@ -123,8 +123,8 @@ describe('AgentTasksDashboardComponent — with source queryParam (list view)', 
 
   beforeEach(async () => {
     mockService = makeMockService();
-    // getSummary is called in loadSummary() which is always invoked from ngOnInit,
-    // regardless of activeSource — wire it up to avoid errors
+    // getSummary is NOT called when activeSource is set (loadSummary only runs when
+    // no source param is present), but wire it up defensively to avoid test errors
     mockService.getSummary.and.returnValue(of(MOCK_SUMMARIES));
     mockService.getAll.and.returnValue(
       of({
