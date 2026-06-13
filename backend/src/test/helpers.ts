@@ -141,6 +141,9 @@ export async function resetDatabase(): Promise<void> {
       { sql: 'DELETE FROM abteilung', args: [] },
       { sql: 'DELETE FROM firma', args: [] },
       { sql: 'DELETE FROM sessions', args: [] },
+      // agent_task has no FK dependents; must be cleared so re-seeding with
+      // explicit ids 1-16 does not cause PRIMARY KEY conflicts.
+      { sql: 'DELETE FROM agent_task', args: [] },
     ],
     'write'
   );
