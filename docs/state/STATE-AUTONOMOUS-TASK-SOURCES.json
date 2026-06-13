@@ -32,7 +32,7 @@
     "prd_skipped": false,
     "prd_file": "docs/prds/PRD-AUTONOMOUS-TASK-SOURCES.md",
     "plan_file": "docs/plans/PLAN-AUTONOMOUS-TASK-SOURCES.md",
-    "pr_url": null
+    "pr_url": "https://github.com/atra-consulting/coding-with-ai-lab/pull/61"
   },
   "completed_steps": []
 }
