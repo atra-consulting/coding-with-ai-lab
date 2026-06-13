@@ -31,7 +31,7 @@ Column spec:
 | source | text | NOT NULL — enum: `EMAIL`, `GITHUB_ISSUE`, `APP_LOG`, `ERROR_REPORT` |
 | title | text | NOT NULL |
 | body | text | NOT NULL — raw content Claude reads |
-| status | text | NOT NULL, default `OPEN` — enum: `OPEN`, `DONE`, `REJECTED` |
+| status | text | NOT NULL, default `OPEN` — enum: `OPEN`, `IN_PROGRESS`, `DONE`, `REJECTED` |
 | comment | text | nullable — rejection or resolution comment |
 | metadata | text | nullable — JSON string, source-specific fields (e.g. email sender, issue number, log level, stack trace) |
 | pickedUpAt | text | nullable — ISO-8601 timestamp, set when a caller fetches the task |
@@ -39,7 +39,9 @@ Column spec:
 | createdAt | text | NOT NULL, default `datetime('now')` |
 | updatedAt | text | NOT NULL, default `datetime('now')` |
 
-New enums: `AgentTaskSource` (`EMAIL`, `GITHUB_ISSUE`, `APP_LOG`, `ERROR_REPORT`) and `AgentTaskStatus` (`OPEN`, `DONE`, `REJECTED`).
+New enums: `AgentTaskSource` (`EMAIL`, `GITHUB_ISSUE`, `APP_LOG`, `ERROR_REPORT`) and `AgentTaskStatus` (`OPEN`, `IN_PROGRESS`, `DONE`, `REJECTED`).
+
+Status lifecycle: `OPEN` → (claimed via `/next`) → `IN_PROGRESS` → (`/done` or `/reject`) → `DONE` / `REJECTED`. Seed rows all start `OPEN`.
 
 Schema files:
 - `backend/src/db/schema/schema.ts` — Drizzle table definition. Date defaults MUST use the Drizzle `sql` tag: `default(sql\`(datetime('now'))\`)`. A bare string is not valid.
@@ -139,6 +141,7 @@ The dashboard landing page shows four Bootstrap cards — one per source. This i
 Each card shows:
 - Source label (human-readable: "Customer Emails", "GitHub Issues", "Application Logs", "Error Reports")
 - Count of OPEN tasks
+- Count of IN_PROGRESS tasks
 - Count of DONE tasks
 - Count of REJECTED tasks
 - A link or button to drill into the task list for that source
@@ -172,7 +175,7 @@ Route: `/admin/agent-tasks/:id`.
 Shows: title, source, status badge, body (full text, preformatted), metadata (formatted JSON), comment, createdAt, updatedAt, pickedUpAt, resolvedAt.
 
 Priority: High.
-Acceptance: All fields render. Status badge uses distinct colors (OPEN = blue/info, DONE = green/success, REJECTED = red/danger). Body renders as preformatted text.
+Acceptance: All fields render. Status badge uses distinct colors (OPEN = blue/info, IN_PROGRESS = yellow/warning, DONE = green/success, REJECTED = red/danger). Body renders as preformatted text.
 
 #### REQ-007: Sidebar entry
 
@@ -194,28 +197,26 @@ Acceptance: Admin sees the sidebar item. Non-admin does not.
 `GET /api/agent-tasks/next?source=<SOURCE>`
 
 - **Required query param: `source`** (`EMAIL`, `GITHUB_ISSUE`, `APP_LOG`, `ERROR_REPORT`). The caller MUST specify which task type it wants. Each GitHub Action / prompt runs per-source, so a source is always known. Missing `source` → 400. Value not in the enum whitelist → 400. There is no "fetch from any source" mode.
-- Returns the oldest OPEN unclaimed task (by `createdAt ASC`) for that source.
-- Uses a single atomic statement to prevent concurrent-runner race conditions:
+- Returns the oldest OPEN task (by `createdAt ASC`) for that source and **atomically claims it by setting `status = IN_PROGRESS`**.
+- Uses a single atomic statement. The `OPEN → IN_PROGRESS` status flip is the claim guard (compare-and-swap): only a task still in `OPEN` can be selected, so two concurrent runners cannot both claim the same row, and a claimed task is never returned again.
   ```
   UPDATE agent_task
-  SET pickedUpAt = now()
+  SET status = 'IN_PROGRESS', pickedUpAt = now()
   WHERE id = (
     SELECT id FROM agent_task
     WHERE status = 'OPEN'
       AND source = ?
-      AND pickedUpAt IS NULL
     ORDER BY createdAt ASC
     LIMIT 1
   )
   RETURNING *
   ```
-  The `pickedUpAt IS NULL` guard prevents re-picking an already-claimed task (no infinite retry loop).
-- Returns 200 with the full task object if a matching unclaimed task is found.
-- Returns 204 (no content) when no OPEN unclaimed task matches the source.
-- Rationale for keeping status OPEN: Claude may crash mid-task. Keeping it OPEN lets a later run re-pick it only if `pickedUpAt` is cleared. The `pickedUpAt` timestamp shows it was seen.
+- Returns 200 with the full task object (now `status: "IN_PROGRESS"`, `pickedUpAt` set) if an OPEN task is found.
+- Returns 204 (no content) when no OPEN task matches the source.
+- Note: a task left `IN_PROGRESS` (e.g. Claude crashed mid-task) is NOT re-claimed automatically — it stays `IN_PROGRESS` and is visible on the admin dashboard for a human to inspect. Resetting a stuck task back to `OPEN` is out of scope.
 
 Priority: High.
-Acceptance: With a valid `source`, returns oldest OPEN unclaimed task and sets `pickedUpAt`. Returns 204 when no unclaimed task exists for that source. Missing `source` → 400. Invalid `source` value → 400.
+Acceptance: With a valid `source`, returns oldest OPEN task, sets `status = IN_PROGRESS` and `pickedUpAt`. A second call returns the next OPEN task or 204 when none remain (the just-claimed task is not returned again). Missing `source` → 400. Invalid `source` value → 400.
 
 #### REQ-009: Agent API — reject a task
 
@@ -223,14 +224,13 @@ Acceptance: With a valid `source`, returns oldest OPEN unclaimed task and sets `
 
 Request body validated with Zod: `{ "comment": string }`. Non-empty string required. Missing or empty → 400 with `fieldErrors`.
 
-- Guards: if `task.status !== 'OPEN'` → 409 ConflictError. Do not update.
+- Guards: a task may be rejected only from a non-terminal status. If `task.status === 'DONE' || task.status === 'REJECTED'` → 409 ConflictError. Do not update. (Both `OPEN` and `IN_PROGRESS` are rejectable — the agent rejects after claiming, so the task is usually `IN_PROGRESS`.)
 - Sets `status = REJECTED`, `comment = body.comment`, `resolvedAt = now()`, `updatedAt = now()`.
 - Returns 200 with the updated task object.
 - Returns 404 if task not found.
-- Returns 409 if task is not in OPEN status.
 
 Priority: High.
-Acceptance: Missing comment → 400 with fieldErrors. Valid call → 200, status = REJECTED, comment stored, resolvedAt set. Already-DONE task → 409. Already-REJECTED task → 409.
+Acceptance: Missing comment → 400 with fieldErrors. Valid call on an OPEN or IN_PROGRESS task → 200, status = REJECTED, comment stored, resolvedAt set. Already-DONE task → 409. Already-REJECTED task → 409.
 
 #### REQ-010: Agent API — mark task done
 
@@ -238,14 +238,13 @@ Acceptance: Missing comment → 400 with fieldErrors. Valid call → 200, status
 
 Request body validated with Zod: `{ "comment"?: string }`. Comment is optional.
 
-- Guards: if `task.status !== 'OPEN'` → 409 ConflictError. Do not update.
+- Guards: a task may be marked done only from a non-terminal status. If `task.status === 'DONE' || task.status === 'REJECTED'` → 409 ConflictError. Do not update. (Both `OPEN` and `IN_PROGRESS` are completable — the agent completes after claiming, so the task is usually `IN_PROGRESS`.)
 - Sets `status = DONE`, `comment = body.comment ?? null`, `resolvedAt = now()`, `updatedAt = now()`.
 - Returns 200 with the updated task object.
 - Returns 404 if task not found.
-- Returns 409 if task is not in OPEN status.
 
 Priority: High.
-Acceptance: 200 returned, status = DONE. Optional comment stored when provided. Already-REJECTED task → 409. Already-DONE task → 409.
+Acceptance: Valid call on an OPEN or IN_PROGRESS task → 200, status = DONE. Optional comment stored when provided. Already-REJECTED task → 409. Already-DONE task → 409.
 
 #### REQ-011: Agent API — list all tasks (admin use)
 
@@ -264,7 +263,7 @@ Acceptance: Pagination, source and status filters all work. Returns standard Spr
 
 Returns per-source counts for the dashboard summary cards.
 
-Response shape: `{ source: string, openCount: number, doneCount: number, rejectedCount: number }[]`
+Response shape: `{ source: string, openCount: number, inProgressCount: number, doneCount: number, rejectedCount: number }[]`
 
 One entry per source value (`EMAIL`, `GITHUB_ISSUE`, `APP_LOG`, `ERROR_REPORT`).
 
@@ -396,7 +395,7 @@ Steps:
    curl -s -H "Authorization: Bearer test-secret-123" \
      "http://localhost:7070/api/agent-tasks/next?source=EMAIL" | jq .
    ```
-   Expected: a task JSON with `status: "OPEN"` and a `pickedUpAt` timestamp.
+   Expected: a task JSON now showing `status: "IN_PROGRESS"` and a `pickedUpAt` timestamp (the fetch claimed it).
 7. Reject a task manually (replace `<id>` with the returned id):
    ```
    curl -s -X POST \
@@ -473,17 +472,17 @@ Acceptance: A developer can follow these steps on a Mac with Node.js 20.19+, cur
 
 ### Backend (Playwright API tests under `backend/src/test/`)
 
-- `GET /api/agent-tasks/next?source=EMAIL` with valid token and OPEN tasks → returns oldest EMAIL task, sets `pickedUpAt`.
+- `GET /api/agent-tasks/next?source=EMAIL` with valid token and OPEN tasks → returns oldest EMAIL task, sets `status = IN_PROGRESS` and `pickedUpAt`.
 - `GET /api/agent-tasks/next?source=EMAIL` → returns only EMAIL tasks (never another source).
 - `GET /api/agent-tasks/next` with NO `source` param → 400.
-- `GET /api/agent-tasks/next?source=EMAIL` when no OPEN unclaimed EMAIL tasks → 204.
-- `GET /api/agent-tasks/next?source=EMAIL` called twice in a row → second call returns 204 (first task is claimed, `pickedUpAt IS NULL` guard applies).
+- `GET /api/agent-tasks/next?source=EMAIL` repeated until empty → eventually 204; a claimed (IN_PROGRESS) task is never returned again.
 - `GET /api/agent-tasks/next?source=INVALID` → 400.
-- `POST /api/agent-tasks/:id/reject` with comment → 200, status REJECTED, comment stored.
+- `POST /api/agent-tasks/:id/reject` with comment on an IN_PROGRESS task → 200, status REJECTED, comment stored.
+- `POST /api/agent-tasks/:id/reject` with comment on an OPEN task → 200, status REJECTED.
 - `POST /api/agent-tasks/:id/reject` without comment → 400 with fieldErrors.
 - `POST /api/agent-tasks/:id/reject` on DONE task → 409.
 - `POST /api/agent-tasks/:id/reject` on already-REJECTED task → 409.
-- `POST /api/agent-tasks/:id/done` with optional comment → 200, status DONE.
+- `POST /api/agent-tasks/:id/done` on an IN_PROGRESS task → 200, status DONE.
 - `POST /api/agent-tasks/:id/done` on REJECTED task → 409.
 - `POST /api/agent-tasks/:id/done` on already-DONE task → 409.
 - All agent endpoints with wrong token → 401.
@@ -498,7 +497,7 @@ Acceptance: A developer can follow these steps on a Mac with Node.js 20.19+, cur
 
 ### Frontend (Jasmine/Karma)
 
-- `AgentTasksDashboardComponent` renders four Bootstrap source cards with correct counts from the summary endpoint.
+- `AgentTasksDashboardComponent` renders four Bootstrap source cards with correct OPEN / IN_PROGRESS / DONE / REJECTED counts from the summary endpoint.
 - `AgentTaskListComponent` renders tasks filtered by source (reads from `queryParams`).
 - `AgentTaskDetailComponent` renders all fields; status badge uses correct Bootstrap color.
 - Sidebar hides "Agent-Aufgaben" for non-admin user.
@@ -524,9 +523,9 @@ Acceptance: A developer can follow these steps on a Mac with Node.js 20.19+, cur
 - [ ] `./start.sh --reset-db` starts cleanly. The `agent_task` table and both indexes exist. 16+ seed rows covering all four sources are present.
 - [ ] Admin user sees "Agent-Aufgaben" in the sidebar and can view the Bootstrap source summary cards, plain Bootstrap task list, and task detail.
 - [ ] Non-admin user (`user` account) does not see the sidebar item and cannot reach `/admin/agent-tasks`.
-- [ ] `GET /api/agent-tasks/next?source=EMAIL` with a valid bearer token returns the oldest OPEN unclaimed EMAIL task and sets `pickedUpAt`. Second call with no remaining unclaimed tasks for that source returns 204. A call with no `source` param returns 400.
-- [ ] `POST /api/agent-tasks/:id/reject` without a comment returns 400. With a comment and OPEN task, sets status REJECTED and stores the comment. On a non-OPEN task → 409.
-- [ ] `POST /api/agent-tasks/:id/done` sets status DONE. On a non-OPEN task → 409.
+- [ ] `GET /api/agent-tasks/next?source=EMAIL` with a valid bearer token returns the oldest OPEN EMAIL task and sets `status = IN_PROGRESS` + `pickedUpAt`. A claimed task is never returned again; when none remain → 204. A call with no `source` param returns 400.
+- [ ] `POST /api/agent-tasks/:id/reject` without a comment returns 400. With a comment on an OPEN or IN_PROGRESS task, sets status REJECTED and stores the comment. On a DONE/REJECTED task → 409.
+- [ ] `POST /api/agent-tasks/:id/done` sets status DONE from OPEN or IN_PROGRESS. On a DONE/REJECTED task → 409.
 - [ ] All three agent endpoints return 401 for missing or wrong token. Unset `AGENT_API_TOKEN` → 401.
 - [ ] `GET /api/agent-tasks` returns 401 for unauthenticated requests, 403 for the `user` account, 200 for the `admin` account.
 - [ ] `GET /api/agent-tasks/summary` returns 401 for unauthenticated, 403 for non-admin, 200 with four source-count objects for admin.
@@ -546,8 +545,8 @@ Quick reference:
 |------|---------|-----------------|
 | Start app with fresh seed | `./start.sh --reset-db` | Backend on 7070, frontend on 7200, 16+ agent tasks in DB |
 | Open admin dashboard | Browser: `http://localhost:7200/admin/agent-tasks` as `admin` | Four Bootstrap source cards, OPEN counts match seed |
-| Fetch next task | `curl -H "Authorization: Bearer <token>" "http://localhost:7070/api/agent-tasks/next?source=EMAIL"` | Task JSON, status OPEN, pickedUpAt set |
-| Fetch again (claimed) | Same curl command | 204 no content |
+| Fetch next task | `curl -H "Authorization: Bearer <token>" "http://localhost:7070/api/agent-tasks/next?source=EMAIL"` | Task JSON, status IN_PROGRESS, pickedUpAt set |
+| Fetch again | Same curl command | Next OPEN EMAIL task (claimed one is skipped); 204 once all are claimed |
 | Reject task | `curl -X POST ... /api/agent-tasks/<id>/reject` with comment body | 200, status REJECTED, comment stored |
 | Check dashboard | Browser refresh | REJECTED count incremented |
 | Run prompt locally | `claude -p .claude/prompts/agent-email.md` | Claude fetches unclaimed task, decides accept/reject, calls correct API, no interactive pauses |
