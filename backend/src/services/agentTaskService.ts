@@ -63,7 +63,7 @@ export interface AgentTaskFilters {
 export const agentTaskService = {
   async findNext(source: string): Promise<AgentTaskDTO | null> {
     const result = await client.execute({
-      sql: `UPDATE agent_task SET status='IN_PROGRESS', pickedUpAt=datetime('now')
+      sql: `UPDATE agent_task SET status='IN_PROGRESS', pickedUpAt=datetime('now'), updatedAt=datetime('now')
             WHERE id=(SELECT id FROM agent_task WHERE status='OPEN' AND source=? ORDER BY createdAt ASC LIMIT 1)
             RETURNING *`,
       args: [source],
@@ -83,32 +83,34 @@ export const agentTaskService = {
   },
 
   async reject(id: number, comment: string): Promise<AgentTaskDTO> {
-    const task = await this.findById(id);
-    if (task.status === 'DONE' || task.status === 'REJECTED') {
-      throw new ConflictError(
-        `AgentTask ${id} ist bereits im Status '${task.status}' und kann nicht abgelehnt werden`,
-      );
-    }
     const now = new Date().toISOString();
-    await client.execute({
-      sql: `UPDATE agent_task SET status='REJECTED', comment=?, resolvedAt=datetime('now'), updatedAt=? WHERE id=?`,
+    const result = await client.execute({
+      sql: `UPDATE agent_task SET status='REJECTED', comment=?, resolvedAt=datetime('now'), updatedAt=? WHERE id=? AND status NOT IN ('DONE','REJECTED')`,
       args: [comment, now, id],
     });
+    if (result.rowsAffected === 0) {
+      // Either not found or already in a terminal status
+      await this.findById(id); // throws NotFoundError (404) if row doesn't exist
+      throw new ConflictError(
+        `AgentTask ${id} ist bereits in einem terminalen Status und kann nicht abgelehnt werden`,
+      );
+    }
     return this.findById(id);
   },
 
   async done(id: number, comment?: string): Promise<AgentTaskDTO> {
-    const task = await this.findById(id);
-    if (task.status === 'DONE' || task.status === 'REJECTED') {
-      throw new ConflictError(
-        `AgentTask ${id} ist bereits im Status '${task.status}' und kann nicht abgeschlossen werden`,
-      );
-    }
     const now = new Date().toISOString();
-    await client.execute({
-      sql: `UPDATE agent_task SET status='DONE', comment=?, resolvedAt=datetime('now'), updatedAt=? WHERE id=?`,
+    const result = await client.execute({
+      sql: `UPDATE agent_task SET status='DONE', comment=?, resolvedAt=datetime('now'), updatedAt=? WHERE id=? AND status NOT IN ('DONE','REJECTED')`,
       args: [comment ?? null, now, id],
     });
+    if (result.rowsAffected === 0) {
+      // Either not found or already in a terminal status
+      await this.findById(id); // throws NotFoundError (404) if row doesn't exist
+      throw new ConflictError(
+        `AgentTask ${id} ist bereits in einem terminalen Status und kann nicht abgeschlossen werden`,
+      );
+    }
     return this.findById(id);
   },
 
@@ -146,6 +148,14 @@ export const agentTaskService = {
     const rows = rowsResult.rows as unknown as AgentTaskRow[];
 
     return buildPage(rows.map(toDTO), total, page, size);
+  },
+
+  async resetAll(): Promise<number> {
+    const result = await client.execute({
+      sql: `UPDATE agent_task SET status='OPEN', comment=NULL, pickedUpAt=NULL, resolvedAt=NULL, updatedAt=datetime('now')`,
+      args: [],
+    });
+    return result.rowsAffected;
   },
 
   async getSummary(): Promise<AgentTaskSummaryDTO[]> {

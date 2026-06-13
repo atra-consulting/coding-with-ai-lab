@@ -52,6 +52,17 @@ router.get(
   }),
 );
 
+// POST /api/agent-tasks/reset
+router.post(
+  '/reset',
+  requireAuth,
+  requireRole('ADMIN'),
+  asyncHandler(async (_req: Request, res: Response) => {
+    const count = await agentTaskService.resetAll();
+    res.json({ reset: count });
+  }),
+);
+
 // POST /api/agent-tasks/:id/reject
 router.post(
   '/:id/reject',
