@@ -103,6 +103,21 @@ export const chance = sqliteTable('chance', {
   updatedAt: text('updatedAt').notNull().default(sql`(datetime('now'))`),
 });
 
+// ─── agentTask ────────────────────────────────────────────────────────────────
+export const agentTask = sqliteTable('agent_task', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  source: text('source').notNull(),
+  title: text('title').notNull(),
+  body: text('body').notNull(),
+  status: text('status').notNull().default('OPEN'),
+  comment: text('comment'),
+  metadata: text('metadata'),
+  pickedUpAt: text('pickedUpAt'),
+  resolvedAt: text('resolvedAt'),
+  createdAt: text('createdAt').notNull().default(sql`(datetime('now'))`),
+  updatedAt: text('updatedAt').notNull().default(sql`(datetime('now'))`),
+});
+
 // ─── sessions ─────────────────────────────────────────────────────────────────
 // DOCUMENTARY ONLY — the session store (middleware/libsqlSessionStore.ts) reads
 // and writes this table via raw client.execute() calls, not through Drizzle.
