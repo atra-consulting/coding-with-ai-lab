@@ -80,6 +80,14 @@ Source PRD: `docs/prds/PRD-AUTONOMOUS-TASK-SOURCES.md`
 ### 2.5 Mount — `backend/src/app.ts`
 - [ ] Import + `app.use('/api/agent-tasks', agentTasksRouter)` before `errorHandler`.
 
+### 2.6 Review fixes (be-reviewer)
+- [ ] `findNext`: also set `updatedAt=datetime('now')` on the OPEN→IN_PROGRESS claim.
+- [ ] `reject`/`done`: make the terminal-state guard atomic — conditional `UPDATE ... WHERE id=? AND status NOT IN ('DONE','REJECTED')`; if `rowsAffected===0`, `findById` to return 404 (missing) vs 409 (terminal). Preserves the 409 under concurrency.
+
+### 2.7 Admin reset endpoint (repeated workshop runs)
+- [ ] Service `resetAll()`: `UPDATE agent_task SET status='OPEN', comment=NULL, pickedUpAt=NULL, resolvedAt=NULL, updatedAt=datetime('now')`. Returns count reset.
+- [ ] Route `POST /reset` (`requireAuth`+`requireRole('ADMIN')`) — register BEFORE `/:id` routes. Returns `{ reset: <count> }`. Re-arms all tasks to OPEN without `--reset-db`.
+
 ---
 
 ## Phase 3 — Frontend Dashboard (fe-coder + ui-designer)
@@ -104,6 +112,9 @@ Source PRD: `docs/prds/PRD-AUTONOMOUS-TASK-SOURCES.md`
 ### 3.5 Sidebar — `frontend/src/app/layout/sidebar/sidebar.component.ts`
 - [ ] Add icon (e.g. `faTasks`) import + field. Append to Administration `items`: `{ label:'Agent-Aufgaben', route:'/admin/agent-tasks', icon: faTasks, requiredRole:'ROLE_ADMIN' }`. `visibleItems()` already hides for non-admins.
 
+### 3.6 Reset button (dashboard)
+- [ ] Add a "Alle Aufgaben zurücksetzen" (Reset all tasks) button to the dashboard summary view (no `source`). On click: confirm, call `AgentTaskService.resetAll()` → `POST /api/agent-tasks/reset`, then reload `getSummary()`. Service method `resetAll(): Observable<{reset:number}>`. Lets a presenter re-arm tasks between workshop runs in one click.
+
 ---
 
 ## Phase 4 — Per-Source Prompts (direct)
@@ -124,6 +135,16 @@ Source PRD: `docs/prds/PRD-AUTONOMOUS-TASK-SOURCES.md`
 ### 5.1 `.github/workflows/agent-task-runner.yml` (new)
 - [ ] `workflow_dispatch` + `schedule` (daily 02:00 UTC). Steps: checkout, setup-node (match `deploy.yml` version/`.nvmrc`), install backend deps, set env `AGENT_API_TOKEN`, `APP_BASE_URL`, `ANTHROPIC_API_KEY` from secrets, run `claude -p .claude/prompts/agent-email.md`.
 - [ ] Header comments: does NOT run without secrets; lists all three required secrets; reference implementation only. Match `deploy.yml` style (`actions/checkout@v4`, `actions/setup-node@v4`).
+
+## Phase 5b — Workshop Operations Guide (direct) — NEW per user request
+
+### 5b.1 `docs/WORKSHOP-AUTONOMOUS-TASKS.md` (new)
+- [ ] **Reset between runs:** document the admin reset button + the `POST /api/agent-tasks/reset` curl equivalent, and `./start.sh --reset-db` as the full reset.
+- [ ] **Solve ALL tasks locally:** document `scripts/solve-all-agent-tasks.sh` (below) — loops every source, repeatedly runs the matching prompt until `/next` returns 204. Explain expected outcome (2 solved + 2 rejected per source).
+- [ ] **Remove the task-solution Git commits after a run:** document how to undo the branches/PRs/commits Claude created. Approach: tag a baseline before the workshop (`git tag workshop-baseline`), list agent branches (`git branch --list 'agent-*' 'autonomous-*'` etc.), delete them, and reset `main` back to the tag (`git reset --hard workshop-baseline` + force-push to a demo remote ONLY). Include the safe per-PR `git revert` alternative. Clearly warn this rewrites history — demo repos only.
+
+### 5b.2 `scripts/solve-all-agent-tasks.sh` (new)
+- [ ] Bash helper: for each source in EMAIL/GITHUB_ISSUE/APP_LOG/ERROR_REPORT, loop: `curl /next?source=X` (auth header); if 204 → next source; else run `claude -p .claude/prompts/agent-<source>.md`. Reads `AGENT_API_TOKEN` + `APP_BASE_URL` (default localhost:7070) from env. Echo progress. Make it the one-command "solve everything" entry point for local testing.
 
 ---
 
