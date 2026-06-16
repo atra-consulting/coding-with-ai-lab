@@ -1,29 +1,38 @@
 # Autonomous Agent Task Runner — REFERENCE / DEMO workflow.
 #
 # This is a teaching artifact for the "Claude Code for Advanced Users" workshop.
-# It shows how Claude Code, driven by GitHub Actions, can pull a task from the
-# app, decide to solve or reject it, implement it, and merge to main — autonomously.
+# It shows how Claude Code, driven by GitHub Actions, can pull tasks from the app,
+# decide to solve or reject each, implement them, and merge to main — autonomously.
 #
-# IT DOES NOT RUN until you configure the secrets below. The schedule is left
-# disabled-by-default in practice because the required secrets will be absent in
-# a fresh clone (the steps will fail fast). Treat this as a starting point, not a
-# production-ready auto-merge pipeline.
+# Triggers:
+#   - repository_dispatch (type: solve-agent-tasks): fired by the Vercel cron
+#     endpoint (GET /api/cron/agent-tasks) every 10 min when OPEN tasks exist.
+#     client_payload.cronRunId links this run back to a cron_run audit row; the
+#     final step calls POST /api/cron/runs/<id>/complete to close that row.
+#   - workflow_dispatch: manual run from the Actions UI (no cronRunId → no callback).
+#   - schedule: legacy daily fallback.
+#
+# IT DOES NOT RUN meaningfully until the secrets below are configured.
 #
 # Required repository secrets:
-#   AGENT_API_TOKEN   - shared secret for the /api/agent-tasks/{next,reject,done} API
+#   AGENT_API_TOKEN   - shared secret for /api/agent-tasks/* AND /api/cron/runs/*/complete
 #   APP_BASE_URL      - base URL of the DEPLOYED app (e.g. https://your-app.vercel.app)
 #   ANTHROPIC_API_KEY - API key Claude Code uses to call the Anthropic API
 #
-# Choose the source by changing the `source` input (default: email).
+# The Vercel-side env vars (CRON_SECRET, GH_DISPATCH_TOKEN) live in Vercel, not here —
+# see docs/API-TASKS.md "Environment Variables".
 
 name: Agent Task Runner
 
 on:
+  repository_dispatch:
+    types: [solve-agent-tasks]
   workflow_dispatch:
     inputs:
       source:
-        description: Which data source to process
-        required: true
+        # Informational only — the runner now drains ALL sources every run.
+        description: (Ignored) legacy single-source selector
+        required: false
         default: email
         type: choice
         options:
@@ -35,10 +44,22 @@ on:
     # Daily at 02:00 UTC. Remove or change as needed. Will fail without secrets.
     - cron: '0 2 * * *'
 
+# Single-flight: queue overlapping runs rather than running them concurrently.
+# The API side also guards with a RUNNING cron_run check, so a queued run that
+# finds no OPEN tasks simply records a SKIP.
+concurrency:
+  group: agent-task-runner
+  cancel-in-progress: false
+
 jobs:
   run-agent:
     name: Run autonomous agent
     runs-on: ubuntu-latest
+
+    # Exposed to step `if:` conditions. Empty unless this run came from the
+    # Vercel cron (repository_dispatch), which carries client_payload.cronRunId.
+    env:
+      CRON_RUN_ID: ${{ github.event.client_payload.cronRunId }}
 
     steps:
       - name: Checkout
@@ -58,20 +79,86 @@ jobs:
       - name: Install Claude Code
         run: npm install -g @anthropic-ai/claude-code
 
-      - name: Run the per-source agent prompt
+      - name: Drain all agent task sources
+        id: drain
         env:
           AGENT_API_TOKEN: ${{ secrets.AGENT_API_TOKEN }}
           APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          SOURCE: ${{ github.event.inputs.source || 'email' }}
         run: |
-          # Map the friendly input to the prompt file.
-          PROMPT=".claude/prompts/agent-${SOURCE}.md"
-          if [ ! -f "$PROMPT" ]; then
-            echo "Prompt not found: $PROMPT"
-            exit 1
-          fi
-          echo "Running $PROMPT against $APP_BASE_URL"
-          # Headless print mode. --dangerously-skip-permissions lets the agent run
-          # the curl + plan-and-do steps without interactive permission prompts.
-          claude -p "$(cat "$PROMPT")" --dangerously-skip-permissions
+          set -uo pipefail
+          # source enum value : prompt file suffix
+          SOURCES=("EMAIL:email" "GITHUB_ISSUE:github-issue" "APP_LOG:app-log" "ERROR_REPORT:error-report")
+          MAX_PER_SOURCE="${MAX_PER_SOURCE:-10}"
+          SOLVED=0
+          REJECTED=0
+          RUN_STATUS="SUCCESS"
+
+          for entry in "${SOURCES[@]}"; do
+            SOURCE="${entry%%:*}"
+            SUFFIX="${entry##*:}"
+            PROMPT=".claude/prompts/agent-${SUFFIX}.md"
+            if [ ! -f "$PROMPT" ]; then
+              echo "Prompt not found, skipping: $PROMPT"
+              continue
+            fi
+            echo "=================================================================="
+            echo " Source: ${SOURCE}  (prompt: ${PROMPT})"
+            echo "=================================================================="
+
+            i=0
+            while [ "$i" -lt "$MAX_PER_SOURCE" ]; do
+              i=$((i + 1))
+              echo "  [${SOURCE} #${i}] Running prompt..."
+              # The prompt itself claims (/next) and works ONE task per run, then
+              # exits. We loop until it reports the queue is empty.
+              OUTPUT=$(claude -p "$(cat "$PROMPT")" --dangerously-skip-permissions 2>&1) || {
+                echo "$OUTPUT"
+                echo "  claude run failed for ${SOURCE}; stopping this source." >&2
+                RUN_STATUS="FAILED"
+                break
+              }
+              echo "$OUTPUT"
+
+              if printf '%s' "$OUTPUT" | grep -q "No open ${SOURCE} tasks"; then
+                echo "  Queue for ${SOURCE} is empty."
+                break
+              fi
+
+              # One task was processed this iteration. Best-effort split: a
+              # REJECTED status in the API response means a rejection, else solved.
+              if printf '%s' "$OUTPUT" | grep -qE '"status" *: *"REJECTED"'; then
+                REJECTED=$((REJECTED + 1))
+              else
+                SOLVED=$((SOLVED + 1))
+              fi
+            done
+          done
+
+          echo "Summary: solved=${SOLVED} rejected=${REJECTED} status=${RUN_STATUS}"
+          {
+            echo "solved=${SOLVED}"
+            echo "rejected=${REJECTED}"
+            echo "run_status=${RUN_STATUS}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Report result back to the cron run
+        if: ${{ always() && env.CRON_RUN_ID != '' }}
+        env:
+          AGENT_API_TOKEN: ${{ secrets.AGENT_API_TOKEN }}
+          APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
+        run: |
+          GITHUB_RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          # On a failed/cancelled drain the outputs may be empty — default sensibly.
+          STATUS="${{ steps.drain.outputs.run_status }}"
+          SOLVED="${{ steps.drain.outputs.solved }}"
+          REJECTED="${{ steps.drain.outputs.rejected }}"
+          STATUS="${STATUS:-FAILED}"
+          SOLVED="${SOLVED:-0}"
+          REJECTED="${REJECTED:-0}"
+          echo "Closing cron_run ${CRON_RUN_ID}: status=${STATUS} solved=${SOLVED} rejected=${REJECTED}"
+          curl -s -o /dev/null -w 'callback HTTP %{http_code}\n' -X POST \
+            -H "Authorization: Bearer ${AGENT_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{\"status\":\"${STATUS}\",\"tasksSolved\":${SOLVED},\"tasksRejected\":${REJECTED},\"githubRunUrl\":\"${GITHUB_RUN_URL}\"}" \
+            "${APP_BASE_URL%/}/api/cron/runs/${CRON_RUN_ID}/complete"

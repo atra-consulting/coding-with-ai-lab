@@ -72,6 +72,13 @@ const ALLOWED_SORT_FIELDS: Record<string, Record<string, string>> = {
     source: 'source',
     title: 'title',
   },
+  cronRun: {
+    startedAt: 'startedAt',
+    finishedAt: 'finishedAt',
+    status: 'status',
+    job: 'job',
+    trigger: 'trigger',
+  },
 };
 
 export function parsePaginationParams(query: Record<string, unknown>): PaginationParams {

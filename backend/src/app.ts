@@ -12,6 +12,7 @@ import chancenRouter from './routes/chancen.js';
 import dashboardRouter from './routes/dashboard.js';
 import adminRouter from './routes/admin.js';
 import agentTasksRouter from './routes/agentTasks.js';
+import cronRouter from './routes/cron.js';
 
 const app = express();
 
@@ -42,6 +43,7 @@ app.use('/api/chancen', chancenRouter);
 app.use('/api/dashboard', dashboardRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/agent-tasks', agentTasksRouter);
+app.use('/api/cron', cronRouter);
 
 // Error handler MUST be last
 app.use(errorHandler);

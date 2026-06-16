@@ -6,6 +6,7 @@ import {
   faBuilding,
   faCalendarCheck,
   faChartLine,
+  faClock,
   faCommentDots,
   faListCheck,
   faMapMarkerAlt,
@@ -42,6 +43,7 @@ export class SidebarComponent {
 
   faAngleDoubleLeft = faAngleDoubleLeft;
   faAngleDoubleRight = faAngleDoubleRight;
+  faClock = faClock;
   faListCheck = faListCheck;
 
   bottomItems: NavItem[] = [
@@ -83,6 +85,12 @@ export class SidebarComponent {
           label: 'Agent-Aufgaben',
           route: '/admin/agent-tasks',
           icon: faListCheck,
+          requiredRole: 'ROLE_ADMIN',
+        },
+        {
+          label: 'Cron-Jobs',
+          route: '/admin/cron',
+          icon: faClock,
           requiredRole: 'ROLE_ADMIN',
         },
       ],

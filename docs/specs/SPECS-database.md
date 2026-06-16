@@ -27,7 +27,26 @@ Migration approach: plain `CREATE TABLE IF NOT EXISTS` statements. Run on every 
 
 ## Tables
 
-The database contains 6 tables: `firma`, `abteilung`, `person`, `adresse`, `aktivitaet`, `chance`.
+The database contains six core domain tables — `firma`, `abteilung`, `person`, `adresse`, `aktivitaet`, `chance` — plus operational tables: `agent_task` (autonomous task sources), `cron_run` (cron run history), and `sessions`.
+
+### CronRun (`cron_run`)
+
+Audit log of cron heartbeats/dispatches. Written by `backend/src/services/cronService.ts`; one row per tick (CRON or MANUAL). Append-only history — the "jobs" list is config-derived (`backend/src/config/cronJobs.ts`), not a table.
+
+| Column | SQLite Type | Constraints |
+|--------|-------------|-------------|
+| id | integer | PK, autoIncrement |
+| job | text | NOT NULL (e.g. `solve-tasks`) |
+| status | text | NOT NULL — `RUNNING` \| `SUCCESS` \| `FAILED` \| `SKIPPED` |
+| trigger | text | NOT NULL — `CRON` \| `MANUAL` (quoted as `"trigger"` in DDL/SQL; it is a SQL keyword) |
+| startedAt | text | NOT NULL, ISO-8601 — set explicitly by the service, **no** `datetime('now')` default (keeps the 30-min orphan-guard string compare ISO-consistent) |
+| finishedAt | text | nullable |
+| durationMs | integer | nullable |
+| result | text | nullable JSON summary (`{openTasks,dispatched}` / `{tasksSolved,tasksRejected}` / `{skipReason}`) |
+| githubRunUrl | text | nullable |
+| error | text | nullable |
+
+Indexes: `idx_cron_run_startedAt (startedAt DESC)`, `idx_cron_run_job_startedAt (job, startedAt DESC)`. No FKs.
 
 ## Storage Rules
 

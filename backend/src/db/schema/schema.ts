@@ -118,6 +118,20 @@ export const agentTask = sqliteTable('agent_task', {
   updatedAt: text('updatedAt').notNull().default(sql`(datetime('now'))`),
 });
 
+// ─── cronRun ──────────────────────────────────────────────────────────────────
+export const cronRun = sqliteTable('cron_run', {
+  id:           integer('id').primaryKey({ autoIncrement: true }),
+  job:          text('job').notNull(),
+  status:       text('status').notNull(),       // RUNNING | SUCCESS | FAILED | SKIPPED
+  trigger:      text('trigger').notNull(),       // CRON | MANUAL
+  startedAt:    text('startedAt').notNull(),     // ISO-8601 set explicitly by service — no default
+  finishedAt:   text('finishedAt'),
+  durationMs:   integer('durationMs'),
+  result:       text('result'),
+  githubRunUrl: text('githubRunUrl'),
+  error:        text('error'),
+});
+
 // ─── sessions ─────────────────────────────────────────────────────────────────
 // DOCUMENTARY ONLY — the session store (middleware/libsqlSessionStore.ts) reads
 // and writes this table via raw client.execute() calls, not through Drizzle.
