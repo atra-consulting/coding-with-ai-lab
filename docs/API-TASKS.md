@@ -222,6 +222,77 @@ All errors use the app-wide handler:
 
 ---
 
+## Cron Runner API
+
+Turns the agent-task queue into a scheduled, self-driving loop. A Vercel cron hits the dispatcher every 10 min; it fires a GitHub `repository_dispatch` that runs `.github/workflows/agent-task-runner.yml`, which drains every source and calls back to close the audit row. Base path: **`/api/cron`**.
+
+Source of truth: `backend/src/routes/cron.ts`, `backend/src/services/cronService.ts`, `backend/src/config/cronJobs.ts`.
+
+### cron_run object
+
+```json
+{
+  "id": 12,
+  "job": "solve-tasks",
+  "status": "SUCCESS",
+  "trigger": "CRON",
+  "startedAt": "2026-06-16T12:30:00.000Z",
+  "finishedAt": "2026-06-16T12:38:21.000Z",
+  "durationMs": 501000,
+  "result": "{\"tasksSolved\":2,\"tasksRejected\":1}",
+  "githubRunUrl": "https://github.com/atra-consulting/coding-with-ai-lab/actions/runs/123",
+  "error": null
+}
+```
+
+- `status`: `RUNNING | SUCCESS | FAILED | SKIPPED`. `trigger`: `CRON | MANUAL`.
+- `result` is a JSON **string** (or `null`): `{openTasks,dispatched}`, `{tasksSolved,tasksRejected}`, or `{skipReason}`.
+
+### Authentication
+
+- `GET /api/cron/agent-tasks` accepts **either** `Authorization: Bearer <CRON_SECRET>` (Vercel cron → trigger `CRON`) **or** an admin session (the "Run now" button → trigger `MANUAL`).
+- `POST /api/cron/runs/:id/complete` uses the agent token (`AGENT_API_TOKEN`), same scheme as `/api/agent-tasks/*`.
+- `GET /api/cron/runs` and `GET /api/cron/jobs` use an admin session (`requireAuth` + `requireRole('ADMIN')`).
+
+### GET `/api/cron/agent-tasks` — heartbeat + dispatcher
+Single-flight + skip-when-idle, then dispatch:
+- A run already `RUNNING` (orphans older than 30 min are auto-expired first) → records a `SKIPPED` run.
+- No OPEN tasks across any source → records a `SKIPPED` run.
+- Otherwise creates a `RUNNING` run and fires `repository_dispatch` (`solve-agent-tasks`, `client_payload.cronRunId`). Dispatch failure → the run is marked `FAILED`.
+- **Always returns `200`** with the `cron_run` object — a 4xx/5xx would make Vercel cron auto-retry and create duplicate runs.
+
+### POST `/api/cron/runs/:id/complete` — runner callback
+**Auth:** agent token. **Body:** `{ "status": "SUCCESS"|"FAILED", "tasksSolved": <int>, "tasksRejected": <int>, "githubRunUrl": "https://…" }`. Sets `finishedAt`, `durationMs`, `status`, `githubRunUrl`, `result`. `404` if no run with that id; `400` on body validation failure.
+
+### GET `/api/cron/runs` — paginated history (admin)
+**Query:** `job`, `page` (0-indexed), `size`, `sort` (`field,direction`; default `startedAt,DESC`; sortable: `startedAt`, `finishedAt`, `status`, `job`, `trigger`). Returns the Spring-Data page shape.
+
+### GET `/api/cron/jobs` — configured jobs + last run (admin)
+Each configured job with its newest run attached:
+
+```json
+[
+  { "name": "solve-tasks", "schedule": "*/10 * * * *", "description": "…", "dispatchEventType": "solve-agent-tasks", "lastRun": { /* cron_run or null */ } }
+]
+```
+
+---
+
+## Environment Variables
+
+| Var | Where | Used by |
+|-----|-------|---------|
+| `AGENT_API_TOKEN` | Vercel **and** GitHub repo secret (same value) | agent-task API + cron callback auth |
+| `CRON_SECRET` | Vercel only | validates the Vercel cron `Authorization: Bearer` header |
+| `GH_DISPATCH_TOKEN` | Vercel only | the dispatcher's `repository_dispatch` call (fine-grained PAT: Contents R/W + Actions R/W) |
+| `GH_DISPATCH_REPO` | Vercel only (optional) | overrides the dispatch target; defaults to `atra-consulting/coding-with-ai-lab` |
+| `APP_BASE_URL` | GitHub repo secret | runner → app base URL for the callback |
+| `ANTHROPIC_API_KEY` | GitHub repo secret | Claude CLI in the runner |
+
+All are read from `process.env`; never commit values. The `*/10` Vercel cron schedule requires a Vercel **Pro** plan; the admin "Run now" button (`/admin/cron`) works on any plan and is the local-dev test path (Vercel crons don't fire locally).
+
+---
+
 ## See also
 
 - `docs/WORKSHOP-AUTONOMOUS-TASKS.md` — local testing, reset between runs, removing task-solution commits, solve-all script.
