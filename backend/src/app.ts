@@ -12,6 +12,7 @@ import chancenRouter from './routes/chancen.js';
 import dashboardRouter from './routes/dashboard.js';
 import adminRouter from './routes/admin.js';
 import agentTasksRouter from './routes/agentTasks.js';
+import pkg from '../package.json' with { type: 'json' };
 
 const app = express();
 
@@ -28,7 +29,7 @@ app.use(sessionMiddleware);
 
 // Health check (public)
 app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({ status: 'ok', timestamp: new Date().toISOString(), version: pkg.version });
 });
 
 // Routes
