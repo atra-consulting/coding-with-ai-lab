@@ -14,5 +14,11 @@
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/agent-tasks",
+      "schedule": "*/10 * * * *"
+    }
   ]
 }
