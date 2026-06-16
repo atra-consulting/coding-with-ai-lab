@@ -13,6 +13,12 @@ The `agent_task` table holds tasks from four sources (`EMAIL`, `GITHUB_ISSUE`, `
 - **CI**: `.github/workflows/agent-task-runner.yml` (reference; needs secrets `AGENT_API_TOKEN`, `APP_BASE_URL`, `ANTHROPIC_API_KEY`).
 - **Workshop guide**: [`docs/WORKSHOP-AUTONOMOUS-TASKS.md`](docs/WORKSHOP-AUTONOMOUS-TASKS.md) — local testing, reset between runs, removing task-solution commits, `scripts/solve-all-agent-tasks.sh`.
 
+A second runner sources **real GitHub issues** (not the `agent_task` table) from org Project board #7. It selects issues by label/status, decides solve-or-pause, runs plan-and-do (merge to main), and pauses unanswerable issues with an `Input needed` label + comment for a human to resolve. Pieces:
+- **Selection rules**: OPEN issue picked when (label `Refinement needed` AND Status ≠ `Done`) OR (no `Refinement needed` AND Status in `In progress`/`In review`); any `Input needed` issue is skipped (both branches). See [`docs/prds/PRD-GH-ISSUE-AGENT-RUNNER.md`](docs/prds/PRD-GH-ISSUE-AGENT-RUNNER.md).
+- **Prompt**: `.claude/prompts/agent-gh-board.md` — one GitHub issue per `claude -p` run via `ISSUE_NUMBER`.
+- **Scripts**: `scripts/gh-issues-select.sh` (board selection), `scripts/gh-issue-status.sh get|set` (board Status), `scripts/solve-gh-board-issues.sh` (local runner).
+- **CI**: `.github/workflows/agent-issue-runner.yml` (reference; needs secret `GH_PROJECT_TOKEN` — org-SSO PAT with `project`+`repo` — plus `ANTHROPIC_API_KEY`, and `AGENT_API_TOKEN`/`APP_BASE_URL` only for the optional cron callback).
+
 ## Build & Run
 
 ```bash

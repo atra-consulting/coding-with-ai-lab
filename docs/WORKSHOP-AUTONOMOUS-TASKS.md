@@ -181,3 +181,29 @@ git push origin main
 ## 8. Wiring it to GitHub Actions (later)
 
 `.github/workflows/agent-task-runner.yml` is a reference workflow. It runs the same per-source prompt in CI. It needs three repository secrets — `AGENT_API_TOKEN`, `APP_BASE_URL` (your deployed app), `ANTHROPIC_API_KEY` — and will fail fast without them. Trigger it manually via **Run workflow** and pick a source, or leave the daily schedule.
+
+## 9. Variant — solving REAL GitHub issues from the project board
+
+A second runner works **real GitHub issues** on org Project board #7 instead of the `agent_task` table. Same idea (decide, run plan-and-do, merge to main), but the queue is your actual backlog and unanswerable issues pause for a human.
+
+**Selection** (`scripts/gh-issues-select.sh`) — an OPEN issue in this repo is picked when **either**:
+- it has label **`Refinement needed`** and board Status is **not** `Done`, or
+- it has **no** `Refinement needed` and board Status is `In progress` or `In review`.
+
+Any issue labelled **`Input needed`** is skipped (it waits on a human) — in both cases.
+
+**Lifecycle per issue** (`.claude/prompts/agent-gh-board.md`):
+1. Solvable → Status `In progress` → plan-and-do (implement, PR, **merge to main**) → Status `Done`, `Refinement needed` removed.
+2. Needs a human decision, or a blocker (unfixable test, ambiguous merge conflict) → adds **`Input needed`** + a comment naming exactly what is missing, then stops.
+3. **Resume:** a human answers in a comment and **removes the `Input needed` label**. The next run re-reads the whole issue thread (answer included) and continues. Note: the human must remove the label, not just reply.
+
+**Local test:**
+```bash
+export GH_TOKEN=...           # PAT with project + repo (or: gh auth token)
+export ANTHROPIC_API_KEY=...
+scripts/gh-issues-select.sh                 # dry-run: see which issues match (read-only)
+scripts/gh-issue-status.sh get 70           # read one issue's board Status
+scripts/solve-gh-board-issues.sh            # run the whole loop locally (capped at 10/run)
+```
+
+**CI** (`.github/workflows/agent-issue-runner.yml`) needs secret **`GH_PROJECT_TOKEN`** — a PAT with `project` + `repo`, owned by an `atra-consulting` org member with write access to project #7 and **SSO-authorized for the org** (the default `GITHUB_TOKEN` cannot write org Projects v2) — plus `ANTHROPIC_API_KEY`. `AGENT_API_TOKEN`/`APP_BASE_URL` are only needed for the optional cron-callback. Trigger via **Run workflow** or leave the daily schedule (03:00 UTC).

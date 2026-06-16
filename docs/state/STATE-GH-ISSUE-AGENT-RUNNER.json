@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "task_key": "GH-ISSUE-AGENT-RUNNER",
+  "status": "completed",
+  "current_step": "13.3",
+  "started": "2026-06-17T00:00:00Z",
+  "updated": "2026-06-17T00:00:00Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Build a second autonomous runner like agent-task-runner.yml, but sourced from real GitHub issues on Projects board #7. Select issues by label/status, decide doable-or-not, run /plan-and-do headless with pre-authorized checkpoints, set ticket In progress. On a real question, pause: add 'Input needed' label + explanatory comment; resume on a later run (fresh re-run with full issue+comments) after a human replies and removes the label.",
+    "special_instructions": null,
+    "branch_name": "gh-issue-agent-runner-projects",
+    "original_branch": "main",
+    "docs_folder": "docs",
+    "is_git_repo": true,
+    "workflow_scope": "full",
+    "decisions": {
+      "trigger": "reuse repository_dispatch (+ workflow_dispatch + schedule)",
+      "resume": "re-run /plan-and-do fresh each run with full issue + all comments",
+      "input_needed_exclusion": "excludes from BOTH selection branches",
+      "output_scope": "implement + PR + merge to main (full autonomy)"
+    }
+  },
+  "discovery": {
+    "agents_available": false,
+    "writer_agents": [],
+    "coding_agents": [],
+    "review_agents": [],
+    "test_command": "bash -n scripts/gh-issues-select.sh scripts/gh-issue-status.sh scripts/solve-gh-board-issues.sh && actionlint .github/workflows/agent-issue-runner.yml"
+  },
+  "artifacts": {
+    "prd_skipped": false,
+    "prd_file": "docs/prds/PRD-GH-ISSUE-AGENT-RUNNER.md",
+    "plan_file": "docs/plans/PLAN-GH-ISSUE-AGENT-RUNNER.md",
+    "pr_url": "https://github.com/atra-consulting/coding-with-ai-lab/pull/77"
+  },
+  "completed_steps": []
+}
