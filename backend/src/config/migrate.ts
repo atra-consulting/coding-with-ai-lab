@@ -112,6 +112,19 @@ export async function runMigrations(): Promise<void> {
       createdAt   TEXT NOT NULL DEFAULT (datetime('now')),
       updatedAt   TEXT NOT NULL DEFAULT (datetime('now'))
     );
+
+    CREATE TABLE IF NOT EXISTS cron_run (
+      id           INTEGER PRIMARY KEY AUTOINCREMENT,
+      job          TEXT NOT NULL,
+      status       TEXT NOT NULL,
+      "trigger"    TEXT NOT NULL,
+      startedAt    TEXT NOT NULL,
+      finishedAt   TEXT,
+      durationMs   INTEGER,
+      result       TEXT,
+      githubRunUrl TEXT,
+      error        TEXT
+    );
   `);
 
   await client.executeMultiple(`
@@ -130,6 +143,8 @@ export async function runMigrations(): Promise<void> {
     CREATE INDEX IF NOT EXISTS idx_sessions_expire ON sessions(expire);
     CREATE INDEX IF NOT EXISTS idx_agent_task_status_createdAt ON agent_task(status, createdAt);
     CREATE INDEX IF NOT EXISTS idx_agent_task_source_status ON agent_task(source, status);
+    CREATE INDEX IF NOT EXISTS idx_cron_run_startedAt ON cron_run(startedAt DESC);
+    CREATE INDEX IF NOT EXISTS idx_cron_run_job_startedAt ON cron_run(job, startedAt DESC);
   `);
 
   console.log('Database migrations complete.');
