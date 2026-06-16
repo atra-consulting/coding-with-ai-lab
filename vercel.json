@@ -18,7 +18,7 @@
   "crons": [
     {
       "path": "/api/cron/agent-tasks",
-      "schedule": "*/10 * * * *"
+      "schedule": "0 2 * * *"
     }
   ]
 }

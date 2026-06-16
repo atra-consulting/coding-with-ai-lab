@@ -272,7 +272,7 @@ Each configured job with its newest run attached:
 
 ```json
 [
-  { "name": "solve-tasks", "schedule": "*/10 * * * *", "description": "…", "dispatchEventType": "solve-agent-tasks", "lastRun": { /* cron_run or null */ } }
+  { "name": "solve-tasks", "schedule": "0 2 * * *", "description": "…", "dispatchEventType": "solve-agent-tasks", "lastRun": { /* cron_run or null */ } }
 ]
 ```
 
@@ -289,7 +289,7 @@ Each configured job with its newest run attached:
 | `APP_BASE_URL` | GitHub repo secret | runner → app base URL for the callback |
 | `ANTHROPIC_API_KEY` | GitHub repo secret | Claude CLI in the runner |
 
-All are read from `process.env`; never commit values. The `*/10` Vercel cron schedule requires a Vercel **Pro** plan; the admin "Run now" button (`/admin/cron`) works on any plan and is the local-dev test path (Vercel crons don't fire locally).
+All are read from `process.env`; never commit values. The Vercel cron is set to **once daily** (`0 2 * * *`) because Hobby plans reject sub-daily schedules at deploy time — bump it to `*/10 * * * *` only after upgrading to **Pro**. The admin "Run now" button (`/admin/cron`) triggers the same dispatch on demand on **any** plan, and is also the local-dev test path (Vercel crons don't fire locally).
 
 ---
 

@@ -8,8 +8,8 @@ export interface CronJob {
 export const CRON_JOBS: CronJob[] = [
   {
     name: 'solve-tasks',
-    schedule: '*/10 * * * *',
-    description: 'Drain all OPEN agent tasks via GitHub Actions',
+    schedule: '0 2 * * *',
+    description: 'Drain all OPEN agent tasks via GitHub Actions (daily; trigger manually anytime from the dashboard)',
     dispatchEventType: 'solve-agent-tasks',
   },
 ];
