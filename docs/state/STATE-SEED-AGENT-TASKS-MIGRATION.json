@@ -2,7 +2,7 @@
   "version": 1,
   "task_key": "SEED-AGENT-TASKS-MIGRATION",
   "status": "in_progress",
-  "current_step": "3.3",
+  "current_step": "8.1",
   "started": "2026-06-16T00:00:00Z",
   "updated": "2026-06-16T00:00:00Z",
   "config": {
@@ -13,7 +13,7 @@
     "original_branch": "main",
     "docs_folder": "docs",
     "is_git_repo": true,
-    "workflow_scope": null
+    "workflow_scope": "full"
   },
   "discovery": {
     "agents_available": true,
@@ -25,7 +25,7 @@
   "artifacts": {
     "prd_skipped": true,
     "prd_file": null,
-    "plan_file": null,
+    "plan_file": "docs/plans/PLAN-SEED-AGENT-TASKS-MIGRATION.md",
     "pr_url": null
   },
   "completed_steps": []
