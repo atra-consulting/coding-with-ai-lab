@@ -32,7 +32,7 @@
     "prd_skipped": false,
     "prd_file": "docs/prds/PRD-GH-ISSUE-AGENT-RUNNER.md",
     "plan_file": "docs/plans/PLAN-GH-ISSUE-AGENT-RUNNER.md",
-    "pr_url": null
+    "pr_url": "https://github.com/atra-consulting/coding-with-ai-lab/pull/77"
   },
   "completed_steps": []
 }

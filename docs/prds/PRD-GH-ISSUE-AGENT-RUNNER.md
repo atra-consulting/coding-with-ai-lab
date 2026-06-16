@@ -1,7 +1,13 @@
 # PRD — GitHub Issue Agent Runner
 
 **Task key:** GH-ISSUE-AGENT-RUNNER
-**Status:** Draft for approval
+**Status:** Implemented
+
+## Implementierung
+
+- PR: [#77](https://github.com/atra-consulting/coding-with-ai-lab/pull/77) (branch `gh-issue-agent-runner-projects` → `main`)
+- Files: `.github/workflows/agent-issue-runner.yml`, `.claude/prompts/agent-gh-board.md`,
+  `scripts/gh-issues-select.sh`, `scripts/gh-issue-status.sh`, `scripts/solve-gh-board-issues.sh`.
 
 ## Source
 
