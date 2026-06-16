@@ -30,8 +30,10 @@ If the issue is closed (`state` is `CLOSED`), print `SKIP: #$ISSUE_NUMBER closed
 ```bash
 gh pr list --repo atra-consulting/coding-with-ai-lab --state open \
   --json number,url,closingIssuesReferences \
-  --jq "[.[] | select(.closingIssuesReferences[]?.number == $ISSUE_NUMBER)] | length"
+  | jq --argjson n "$ISSUE_NUMBER" \
+      '[.[] | select(.closingIssuesReferences[]?.number == $n)] | length'
 ```
+(`$ISSUE_NUMBER` is passed as a typed `--argjson`, not spliced into the jq program text.)
 
 If the count is `> 0`, a previous run is mid-flight or a PR awaits a human merge. Do **not** start again. Print `SKIP: #$ISSUE_NUMBER open PR exists` and **exit**.
 
@@ -93,7 +95,8 @@ The runner solves several issues per run, so `main` may move under you. Before m
 
 ## Step 6 — If you cannot finish (tests unfixable, or a conflict you must not guess)
 
-Do the same as Step 4 (pause), but leave the Status at `In progress`:
+Add `Input needed` and post a comment (same as Step 4), but **leave the board Status at
+`In progress`** — do not move it back. You already set `In progress` in Step 5, so just leave it:
 
 ```bash
 gh issue edit "$ISSUE_NUMBER" --repo atra-consulting/coding-with-ai-lab --add-label "Input needed"
@@ -105,13 +108,15 @@ Leave the branch and PR open for a human. Print `PAUSED: #$ISSUE_NUMBER` and **e
 
 ## Step 7 — On success
 
-After plan-and-do has merged the PR into `main`:
+After plan-and-do has merged the PR into `main`, capture the merged PR URL from the
+`gh pr create` / plan-and-do output (or `gh pr list --search "$ISSUE_NUMBER in:body"
+--state merged --json url`) and substitute it for `<PR_URL>` below:
 
 ```bash
 scripts/gh-issue-status.sh set "$ISSUE_NUMBER" "Done"
 gh issue edit "$ISSUE_NUMBER" --repo atra-consulting/coding-with-ai-lab --remove-label "Refinement needed" || true
 gh issue comment "$ISSUE_NUMBER" --repo atra-consulting/coding-with-ai-lab \
-  --body "Done. Implemented and merged to main: PR LINK HERE."
+  --body "Done. Implemented and merged to main: <PR_URL>"
 ```
 
 Removing `Refinement needed` and moving to `Done` stops the issue from being picked up again.

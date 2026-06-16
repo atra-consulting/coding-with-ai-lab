@@ -42,10 +42,10 @@ if [ -z "$ISSUES" ]; then
   exit 0
 fi
 
-TOTAL=$(printf '%s\n' "$ISSUES" | wc -l | tr -d ' ')
+TOTAL=$(printf '%s\n' "$ISSUES" | grep -cE '^[0-9]+$')
 echo "Selected ${TOTAL} issue(s). Cap is ${MAX_ISSUES_PER_RUN} per run."
 
-SOLVED=0; PAUSED=0; SKIPPED=0; DEFERRED=0
+SOLVED=0; PAUSED=0; SKIPPED=0; DEFERRED=0; FAILED=0
 i=0
 while IFS= read -r n; do
   [ -n "$n" ] || continue
@@ -62,6 +62,7 @@ while IFS= read -r n; do
   output=$(ISSUE_NUMBER="$n" claude -p "$(cat "$PROMPT")" --dangerously-skip-permissions 2>&1) || {
     echo "$output"
     echo "  claude run failed for #${n}; continuing." >&2
+    FAILED=$((FAILED + 1))
     continue
   }
   echo "$output"
@@ -74,4 +75,6 @@ done <<< "$ISSUES"
 
 [ "$DEFERRED" -gt 0 ] && echo "Deferred ${DEFERRED} issue(s) over the cap."
 echo ""
-echo "Summary: solved=${SOLVED} paused=${PAUSED} skipped=${SKIPPED} deferred=${DEFERRED}"
+echo "Summary: solved=${SOLVED} paused=${PAUSED} skipped=${SKIPPED} deferred=${DEFERRED} failed=${FAILED}"
+[ "$FAILED" -gt 0 ] && echo "WARNING: ${FAILED} issue(s) failed to run (see output above)." >&2
+exit 0

@@ -96,7 +96,7 @@ jobs:
             exit 0
           fi
 
-          TOTAL=$(printf '%s\n' "$ISSUES" | wc -l | tr -d ' ')
+          TOTAL=$(printf '%s\n' "$ISSUES" | grep -cE '^[0-9]+$')
           echo "Selected ${TOTAL} issue(s). Cap is ${MAX_ISSUES_PER_RUN} per run."
 
           i=0

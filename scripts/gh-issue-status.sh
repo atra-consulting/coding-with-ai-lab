@@ -68,10 +68,12 @@ GRAPHQL
       page=$(gh api graphql -f query="$ITEM_QUERY" -f org="$GH_ORG" -F number="$GH_PROJECT_NUMBER" -f cursor="$cursor") \
         || { echo "ERROR: GraphQL item query failed." >&2; exit 1; }
     fi
+    # first(...) // empty returns only the first match (or nothing) without a
+    # `| head -n1` pipe, which would SIGPIPE jq under `set -o pipefail`.
     hit=$(printf '%s' "$page" | jq -r --argjson n "$ISSUE" '
-      .data.organization.projectV2.items.nodes[]
-      | select(.content != null and .content.number == $n)
-      | "\(.id)\t\(.status.name // "")"' | head -n1)
+      first(.data.organization.projectV2.items.nodes[]
+        | select(.content != null and .content.number == $n)
+        | "\(.id)\t\(.status.name // "")") // empty')
     if [ -n "$hit" ]; then
       printf '%s' "$hit"
       return 0
