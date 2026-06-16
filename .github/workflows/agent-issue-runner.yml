@@ -1,0 +1,164 @@
+# Autonomous GitHub Issue Agent Runner — REFERENCE / DEMO workflow.
+#
+# Sibling of agent-task-runner.yml, but the task source is REAL GitHub issues on
+# org Project board #7 ("Coding with AI: Fortgeschrittenen-Schulung"), not the
+# app's agent_task table. For each selected issue, Claude Code decides solve or
+# pause, then runs the plan-and-do skill to implement and merge to main.
+#
+# Selection (scripts/gh-issues-select.sh): an OPEN issue is picked when EITHER
+#   A) it has label "Refinement needed" AND Status != "Done", or
+#   B) it has NO "Refinement needed" AND Status in "In progress"/"In review".
+# Any issue labelled "Input needed" is skipped (it waits on a human).
+#
+# Triggers:
+#   - repository_dispatch (type: solve-github-issues): fired the same way as the
+#     existing runner; client_payload.cronRunId (if present) links to a cron_run row.
+#   - workflow_dispatch: manual run from the Actions UI.
+#   - schedule: daily fallback at 03:00 UTC (offset from agent-task-runner.yml).
+#
+# IT DOES NOT RUN meaningfully until the secrets below are configured.
+#
+# Required repository secrets:
+#   GH_PROJECT_TOKEN  - PAT with `project` + `repo`, owned by an atra-consulting org
+#                       member with write access to project #7, and SSO-authorized for
+#                       the org. The default GITHUB_TOKEN cannot write org Projects v2.
+#   ANTHROPIC_API_KEY - API key Claude Code uses to call the Anthropic API.
+#   AGENT_API_TOKEN   - only for the optional cron_run callback (repository_dispatch).
+#   APP_BASE_URL      - only for the optional cron_run callback.
+
+name: Agent Issue Runner
+
+on:
+  repository_dispatch:
+    types: [solve-github-issues]
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * *'
+
+# Single-flight: queue overlapping runs rather than running them concurrently.
+concurrency:
+  group: agent-issue-runner
+  cancel-in-progress: false
+
+jobs:
+  run-agent:
+    name: Run autonomous issue agent
+    runs-on: ubuntu-latest
+
+    # Job-level env so the gh CLI inside the claude subprocess inherits the token.
+    env:
+      CRON_RUN_ID: ${{ github.event.client_payload.cronRunId }}
+      GH_TOKEN: ${{ secrets.GH_PROJECT_TOKEN }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Backend — install dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Drain selected board issues
+        id: drain
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          MAX_ISSUES_PER_RUN: '10'
+        run: |
+          set -uo pipefail
+          PROMPT=".claude/prompts/agent-gh-board.md"
+          SOLVED=0
+          PAUSED=0
+          SKIPPED=0
+          DEFERRED=0
+          RUN_STATUS="SUCCESS"
+
+          # Deterministic selection lives in the script (GraphQL + jq).
+          ISSUES=$(scripts/gh-issues-select.sh) || {
+            echo "Selection script failed." >&2
+            echo "run_status=FAILED" >> "$GITHUB_OUTPUT"
+            exit 1
+          }
+
+          if [ -z "$ISSUES" ]; then
+            echo "No matching issues on board #7."
+            { echo "solved=0"; echo "paused=0"; echo "skipped=0";
+              echo "deferred=0"; echo "run_status=SUCCESS"; } >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          TOTAL=$(printf '%s\n' "$ISSUES" | wc -l | tr -d ' ')
+          echo "Selected ${TOTAL} issue(s). Cap is ${MAX_ISSUES_PER_RUN} per run."
+
+          i=0
+          while IFS= read -r n; do
+            [ -n "$n" ] || continue
+            i=$((i + 1))
+            if [ "$i" -gt "$MAX_ISSUES_PER_RUN" ]; then
+              DEFERRED=$((DEFERRED + 1))
+              continue
+            fi
+            echo "=================================================================="
+            echo " Issue #${n}  (${i}/${TOTAL})"
+            echo "=================================================================="
+
+            # One bad issue must not abort the run.
+            OUTPUT=$(ISSUE_NUMBER="$n" claude -p "$(cat "$PROMPT")" --dangerously-skip-permissions 2>&1) || {
+              echo "$OUTPUT"
+              echo "  claude run failed for #${n}; continuing." >&2
+              RUN_STATUS="FAILED"
+              continue
+            }
+            echo "$OUTPUT"
+
+            # Tally on the single machine-readable result line.
+            if   printf '%s' "$OUTPUT" | grep -qE '^SOLVED: '; then SOLVED=$((SOLVED + 1))
+            elif printf '%s' "$OUTPUT" | grep -qE '^PAUSED: '; then PAUSED=$((PAUSED + 1))
+            elif printf '%s' "$OUTPUT" | grep -qE '^SKIP: ';   then SKIPPED=$((SKIPPED + 1))
+            else
+              echo "  No result line for #${n}; counting as failed." >&2
+              RUN_STATUS="FAILED"
+            fi
+          done <<< "$ISSUES"
+
+          if [ "$DEFERRED" -gt 0 ]; then
+            echo "Deferred ${DEFERRED} issue(s) over the per-run cap; next run will pick them up."
+          fi
+          echo "Summary: solved=${SOLVED} paused=${PAUSED} skipped=${SKIPPED} deferred=${DEFERRED} status=${RUN_STATUS}"
+          {
+            echo "solved=${SOLVED}"
+            echo "paused=${PAUSED}"
+            echo "skipped=${SKIPPED}"
+            echo "deferred=${DEFERRED}"
+            echo "run_status=${RUN_STATUS}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Report result back to the cron run
+        if: ${{ always() && env.CRON_RUN_ID != '' }}
+        env:
+          AGENT_API_TOKEN: ${{ secrets.AGENT_API_TOKEN }}
+          APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
+        run: |
+          GITHUB_RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          STATUS="${{ steps.drain.outputs.run_status }}"
+          SOLVED="${{ steps.drain.outputs.solved }}"
+          PAUSED="${{ steps.drain.outputs.paused }}"
+          STATUS="${STATUS:-FAILED}"
+          SOLVED="${SOLVED:-0}"
+          PAUSED="${PAUSED:-0}"
+          # Reuse the original callback contract: paused issues map to tasksRejected.
+          echo "Closing cron_run ${CRON_RUN_ID}: status=${STATUS} solved=${SOLVED} paused=${PAUSED}"
+          curl -s -o /dev/null -w 'callback HTTP %{http_code}\n' -X POST \
+            -H "Authorization: Bearer ${AGENT_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{\"status\":\"${STATUS}\",\"tasksSolved\":${SOLVED},\"tasksRejected\":${PAUSED},\"githubRunUrl\":\"${GITHUB_RUN_URL}\"}" \
+            "${APP_BASE_URL%/}/api/cron/runs/${CRON_RUN_ID}/complete"
