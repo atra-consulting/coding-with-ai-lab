@@ -26,9 +26,10 @@ coding-with-ai-lab/
 │       │   ├── errorHandler.ts # Global error handler
 │       │   └── session.ts      # express-session configuration
 │       ├── seed/
-│       │   ├── dataMigration.ts # Loads fixture.json into the DB when empty
-│       │   ├── fixture.json     # Fixed seed data (390 rows total)
-│       │   └── build-fixture.ts # Dev tool: regenerates fixture.json after schema changes
+│       │   ├── dataMigration.ts  # Loads fixture.json into the DB when empty (CRM entities)
+│       │   ├── fixture.json      # Fixed seed data (390 rows total, CRM entities only)
+│       │   ├── agentTaskSeed.ts  # Idempotent agent_task seeding (INSERT OR IGNORE, ids 1–16)
+│       │   └── build-fixture.ts  # Dev tool: regenerates fixture.json after schema changes
 │       └── utils/
 │           ├── errors.ts       # Error types
 │           ├── pagination.ts   # Spring-Data-style page format helper (naming only; backend is Node)
@@ -157,8 +158,8 @@ cd frontend && npx ng build
 
 ### Startup Sequence (index.ts)
 
-1. `runMigrations()` — creates tables if they do not exist
-2. `runDataMigration()` — inserts fixture data from `backend/src/seed/fixture.json` if database is empty
+1. `runMigrations()` — creates tables if they do not exist; also calls `seedAgentTasks()` (INSERT OR IGNORE, ids 1–16) so `agent_task` rows exist on every startup including Vercel cold-starts
+2. `runDataMigration()` — inserts CRM fixture data from `backend/src/seed/fixture.json` if database is empty; skipped if rows exist
 3. `app.listen(7070)` — starts the HTTP server
 
 ## Configuration
@@ -196,15 +197,8 @@ All optional, with defaults:
 | SESSION_SECRET | `crm-dev-secret-key` | express-session signing secret |
 | CORS_ORIGINS | `http://localhost:7200` | Allowed CORS origins |
 | NODE_ENV | (unset) | `production` disables the `/api/auth/test-login` helper |
-| NOMINATIM_BASE_URL | `https://nominatim.openstreetmap.org` | Geocoding API base URL (admin address geocoding) |
-| GEOCODING_SLEEP_MS | (service default) | Delay between Nominatim requests to respect rate limits |
-| STUB_CONTROL_URL | (unset) | Test-only Nominatim stub control endpoint |
 
 No JWT secrets. No RSA key paths. No cookie-flag overrides.
-
-### Address Geocoding
-
-Addresses carry optional `latitude` / `longitude` coordinates. An ADMIN-only endpoint, `POST /api/admin/geocode-addresses`, batch-geocodes addresses that lack coordinates via the Nominatim API (`backend/src/services/geocodingService.ts`), rate-limited and identified by a `User-Agent`. See SPECS-backend.md (endpoint) and SPECS-database.md (columns). Tests use a local Nominatim stub — see SPECS-testing.md.
 
 ## Documentation
 

@@ -23,7 +23,7 @@ Cross-references:
 | TypeScript enum arrays and types | `backend/src/db/schema/enums.ts` |
 | Migration statements (DDL) | `backend/src/config/migrate.ts` |
 
-Migration approach: plain `CREATE TABLE IF NOT EXISTS` statements. Run on every startup before seed data is loaded.
+Migration approach: plain `CREATE TABLE IF NOT EXISTS` statements. Run on every startup before CRM seed data is loaded. After DDL, `seedAgentTasks()` (`backend/src/seed/agentTaskSeed.ts`) inserts the 16 `agent_task` rows idempotently (INSERT OR IGNORE, fixed ids 1–16) — so agent tasks exist in every deployment including Vercel cold-starts.
 
 ## Tables
 
