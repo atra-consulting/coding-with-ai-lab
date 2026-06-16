@@ -84,32 +84,3 @@ export async function resetDatabase(): Promise<void> {
   await runDataMigration();
   await seedAgentTasks();
 }
-
-/**
- * Insert an adresse row with null coordinates.  Returns the new row id.
- */
-export async function insertAdresseWithoutCoords(overrides: {
-  city?: string | null;
-  postalCode?: string | null;
-  street?: string | null;
-  houseNumber?: string | null;
-  country?: string | null;
-} = {}): Promise<number> {
-  const now = new Date().toISOString();
-  const result = await client.execute({
-    sql: `INSERT INTO adresse (street, houseNumber, postalCode, city, country, latitude, longitude, createdAt, updatedAt)
-       VALUES (?, ?, ?, ?, ?, NULL, NULL, ?, ?)`,
-    args: [
-      overrides.street ?? 'Teststraße',
-      overrides.houseNumber ?? '1',
-      overrides.postalCode !== undefined ? overrides.postalCode : '10115',
-      overrides.city !== undefined ? overrides.city : 'Berlin',
-      overrides.country ?? 'Deutschland',
-      now,
-      now,
-    ],
-  });
-  const rowid = result.lastInsertRowid;
-  if (rowid === undefined) throw new Error('insertAdresseWithoutCoords: lastInsertRowid is undefined');
-  return Number(rowid);
-}
