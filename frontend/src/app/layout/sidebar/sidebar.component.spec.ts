@@ -75,14 +75,14 @@ describe('SidebarComponent', () => {
     mockAuthService.currentUser.set(adminUser);
     fixture.detectChanges();
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Adressen geokodieren');
+    expect(text).toContain('Agent-Aufgaben');
   });
 
   it('hides item with requiredRole ADMIN when user only has USER role', () => {
     mockAuthService.currentUser.set(regularUser);
     fixture.detectChanges();
     const text = fixture.nativeElement.textContent as string;
-    expect(text).not.toContain('Adressen geokodieren');
+    expect(text).not.toContain('Agent-Aufgaben');
   });
 
   it('does not render the Administration section header when all its items are hidden', () => {

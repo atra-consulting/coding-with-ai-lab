@@ -15,7 +15,6 @@ import {
   faUsers,
   faAngleDoubleLeft,
   faAngleDoubleRight,
-  faUserShield,
 } from '@fortawesome/free-solid-svg-icons';
 import { LayoutService } from '../../core/services/layout.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -75,12 +74,6 @@ export class SidebarComponent {
     {
       title: 'Administration',
       items: [
-        {
-          label: 'Adressen geokodieren',
-          route: '/admin/geocoding',
-          icon: faUserShield,
-          requiredRole: 'ROLE_ADMIN',
-        },
         {
           label: 'Agent-Aufgaben',
           route: '/admin/agent-tasks',
