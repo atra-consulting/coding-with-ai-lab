@@ -13,6 +13,7 @@ interface Fixture {
   adresse: Record<string, unknown>[];
   aktivitaet: Record<string, unknown>[];
   chance: Record<string, unknown>[];
+  agentTask: Record<string, unknown>[];
 }
 
 // Insert order must respect FK dependencies:
@@ -35,10 +36,12 @@ const INSERT_SQL: Record<keyof Fixture, string> = {
                VALUES (@id, @typ, @subject, @description, @datum, @firmaId, @personId, @createdAt, @updatedAt)`,
   chance: `INSERT INTO chance (id, titel, beschreibung, wert, currency, phase, wahrscheinlichkeit, erwartetesDatum, firmaId, kontaktPersonId, createdAt, updatedAt)
            VALUES (@id, @titel, @beschreibung, @wert, @currency, @phase, @wahrscheinlichkeit, @erwartetesDatum, @firmaId, @kontaktPersonId, @createdAt, @updatedAt)`,
+  agentTask: `INSERT INTO agent_task (id, source, title, body, status, comment, metadata, pickedUpAt, resolvedAt, createdAt, updatedAt)
+              VALUES (@id, @source, @title, @body, @status, @comment, @metadata, @pickedUpAt, @resolvedAt, @createdAt, @updatedAt)`,
 };
 
 const INSERT_ORDER: (keyof Fixture)[] = [
-  'firma', 'abteilung', 'person', 'adresse', 'aktivitaet', 'chance',
+  'firma', 'abteilung', 'person', 'adresse', 'aktivitaet', 'chance', 'agentTask',
 ];
 
 export async function runDataMigration(): Promise<void> {
@@ -68,6 +71,7 @@ export async function runDataMigration(): Promise<void> {
     `=== Seeder: ${fixture.firma.length} Firmen, ${fixture.abteilung.length} Abteilungen, ` +
     `${fixture.person.length} Personen, ${fixture.adresse.length} Adressen, ` +
     `${fixture.aktivitaet.length} Aktivitaeten, ` +
-    `${fixture.chance.length} Chancen aus Fixture geladen ===`
+    `${fixture.chance.length} Chancen, ` +
+    `${fixture.agentTask.length} AgentTasks aus Fixture geladen ===`
   );
 }

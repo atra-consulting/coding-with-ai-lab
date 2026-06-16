@@ -1,3 +1,6 @@
+// MUST be first: loads backend/.env into process.env before db.ts / middleware
+// read it at module-load time.
+import './config/loadEnv.js';
 import app from './app.js';
 import { runMigrations } from './config/migrate.js';
 import { runDataMigration } from './seed/dataMigration.js';

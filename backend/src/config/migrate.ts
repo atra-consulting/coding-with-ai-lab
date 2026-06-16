@@ -10,6 +10,7 @@ export async function runMigrations(): Promise<void> {
   // Tables created in FK dependency order:
   // firma -> abteilung -> person -> adresse, aktivitaet, chance
   // Sessions table added for Phase 4 DB-backed session store.
+  // agent_task has no FK dependencies — appended last.
   //
   // executeMultiple issues each statement non-transactionally (like the old
   // sqlite.exec), which is safe here because every statement is IF NOT EXISTS.
@@ -97,6 +98,20 @@ export async function runMigrations(): Promise<void> {
       sess   TEXT NOT NULL,
       expire TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS agent_task (
+      id          INTEGER PRIMARY KEY AUTOINCREMENT,
+      source      TEXT NOT NULL,
+      title       TEXT NOT NULL,
+      body        TEXT NOT NULL,
+      status      TEXT NOT NULL DEFAULT 'OPEN',
+      comment     TEXT,
+      metadata    TEXT,
+      pickedUpAt  TEXT,
+      resolvedAt  TEXT,
+      createdAt   TEXT NOT NULL DEFAULT (datetime('now')),
+      updatedAt   TEXT NOT NULL DEFAULT (datetime('now'))
+    );
   `);
 
   await client.executeMultiple(`
@@ -113,6 +128,8 @@ export async function runMigrations(): Promise<void> {
     CREATE INDEX IF NOT EXISTS idx_adresse_firmaId ON adresse(firmaId);
     CREATE INDEX IF NOT EXISTS idx_adresse_personId ON adresse(personId);
     CREATE INDEX IF NOT EXISTS idx_sessions_expire ON sessions(expire);
+    CREATE INDEX IF NOT EXISTS idx_agent_task_status_createdAt ON agent_task(status, createdAt);
+    CREATE INDEX IF NOT EXISTS idx_agent_task_source_status ON agent_task(source, status);
   `);
 
   console.log('Database migrations complete.');
