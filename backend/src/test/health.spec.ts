@@ -34,9 +34,9 @@ test.describe('GET /api/health', () => {
     expect(typeof body.timestamp).toBe('string');
     expect(Number.isNaN(Date.parse(body.timestamp))).toBe(false);
 
-    // version comes straight from package.json
+    // version comes straight from package.json and looks like a semver string
     expect(body.version).toBe(pkg.version);
     expect(typeof body.version).toBe('string');
-    expect(body.version.length).toBeGreaterThan(0);
+    expect(body.version).toMatch(/^\d+\.\d+\.\d+/);
   });
 });
