@@ -145,8 +145,7 @@ const POSITIONEN = [
 // Curated real residential/commercial streets in German cities with correct
 // postal codes. Each tuple carries pre-computed lat/long (approximate street
 // centroid) so fixture generation is fully offline — no Nominatim call at
-// build time or at load time. Person addresses inherit these coordinates;
-// the admin geocoding action can refresh them on demand via ?force=true.
+// build time or at load time. Person addresses inherit these coordinates.
 interface PersonAddressSeed {
   street: string;
   postalCode: string;
@@ -356,8 +355,7 @@ BRANCH_SEEDS.forEach((branch, idx) => {
   });
 });
 // Person addresses: pick from curated real-street pool with pre-computed
-// coordinates. Fully offline — no geocoding required at load time. Admin
-// action can still refresh these via ?force=true.
+// coordinates. Fully offline — no geocoding required at load time.
 const personenSample = pickN(person, 50);
 for (const p of personenSample) {
   const createdAt = randCreatedAt();

@@ -117,12 +117,6 @@ Standard CRUD. Default sort: `datum,DESC`. Allowed sort fields: `datum`, `typ`, 
 
 Standard CRUD. Default sort: `createdAt,DESC`. Allowed sort fields: `titel`, `wert`, `phase`, `wahrscheinlichkeit`, `erwartetesDatum`, `createdAt`, `updatedAt`.
 
-### Admin / Geocoding (`/api/admin`)
-
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| POST | `/api/admin/geocode-addresses` | requireAuth + requireRole('ADMIN') | Geocodes `adresse` rows lacking coordinates via Nominatim. Pass `?force=true` to re-geocode rows that already have coordinates. Returns `{ total, succeeded, failed, skippedInsufficientData }`. |
-
 ### Standard CRUD pattern
 
 Every standard CRUD resource exposes:
@@ -135,21 +129,6 @@ Every standard CRUD resource exposes:
 | POST | `/api/{resource}` | Create → 201 |
 | PUT | `/api/{resource}/:id` | Full update or 404 |
 | DELETE | `/api/{resource}/:id` | Delete → 204 or 404 |
-
-## Services
-
-### geocodingService.ts
-
-`services/geocodingService.ts` exports two functions:
-
-- `geocodeAdresse(adresse)` — calls the Nominatim search API for a single address; returns `{ latitude, longitude }` on success or `null` when Nominatim finds nothing. Throws on HTTP errors or malformed responses.
-- `runGeocodingBatch({ force })` — iterates the `adresse` table (rows without coordinates, or all rows when `force=true`); calls `geocodeAdresse()` per row; updates matching DB rows; returns `{ total, succeeded, failed, skippedInsufficientData }`.
-
-Configuration:
-- `NOMINATIM_BASE_URL` env var — base URL for Nominatim requests; defaults to `https://nominatim.openstreetmap.org`.
-- `GEOCODING_SLEEP_MS` env var — sleep between requests; defaults to 3000 ms. In production the minimum is clamped to 1000 ms to honour the Nominatim usage policy.
-- Sets a `User-Agent` header on all Nominatim requests as required by the usage policy.
-- A module-level guard prevents concurrent batch runs (throws `ConflictError` if a batch is already in progress).
 
 ## Pagination
 
@@ -210,7 +189,7 @@ All 3 users currently hold all 7 permissions: `FIRMEN`, `PERSONEN`, `ABTEILUNGEN
 3. Sets `req.currentUser` on the request.
 4. Calls `next(new UnauthorizedError())` if session is missing or user not found.
 
-`requireRole('ADMIN')` is applied on `routes/admin.ts`. `requirePermission` exists in `src/middleware/auth.ts` but is not yet applied to entity routes. All authenticated entity routes currently share one access level.
+`requirePermission` exists in `src/middleware/auth.ts` but is not yet applied to entity routes. All authenticated entity routes currently share one access level.
 
 ### CORS
 
@@ -236,21 +215,22 @@ src/
     cors.ts         — CORS config
     errorHandler.ts — global error handler (last middleware)
     session.ts      — express-session config
-  routes/           — one file per entity (Express Router); also admin.ts (geocoding)
-  services/         — one file per entity (plain objects, raw SQL via better-sqlite3); also geocodingService.ts
+  routes/           — one file per entity (Express Router)
+  services/         — one file per entity (plain objects, raw SQL via better-sqlite3)
   utils/
     errors.ts       — typed error classes
     pagination.ts   — parsePaginationParams, parseSort, buildPage
     validation.ts   — Zod schemas and validate() helper
   seed/
-    dataMigration.ts — loads fixture.json into the DB when empty
-    fixture.json     — fixed seed data (25 Firmen, 50 Abteilungen, 100 Personen, 100 Adressen, 75 Aktivitaeten, 40 Chancen)
-    build-fixture.ts — dev tool to regenerate fixture.json after schema changes (not called at runtime)
+    dataMigration.ts  — loads fixture.json into the DB when empty (CRM entities only)
+    fixture.json      — fixed seed data (25 Firmen, 50 Abteilungen, 100 Personen, 100 Adressen, 75 Aktivitaeten, 40 Chancen)
+    agentTaskSeed.ts  — idempotent agent_task seeding (INSERT OR IGNORE, ids 1–16); called at end of runMigrations()
+    build-fixture.ts  — dev tool to regenerate fixture.json after schema changes (not called at runtime)
 ```
 
 Middleware order in `app.ts`: CORS → JSON body parser → session → routes → error handler.
 
-Mounted routers (9): `/api/auth`, `/api/firmen`, `/api/personen`, `/api/abteilungen`, `/api/adressen`, `/api/aktivitaeten`, `/api/chancen`, `/api/dashboard`, `/api/admin`. Plus `/api/health` (inline, public).
+Mounted routers (8): `/api/auth`, `/api/firmen`, `/api/personen`, `/api/abteilungen`, `/api/adressen`, `/api/aktivitaeten`, `/api/chancen`, `/api/dashboard`. Plus `/api/health` (inline, public).
 
 ## Exception Handling
 

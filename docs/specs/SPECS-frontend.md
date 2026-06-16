@@ -28,7 +28,6 @@ Visual design, colors, layout measurements, and AG Grid theming: `docs/specs/SPE
   /adressen                     → Adresse CRUD (no detail)
   /aktivitaeten                 → Aktivitaet CRUD (no detail)
   /chancen                      → permissionGuard('CHANCEN') → Chance CRUD + /board
-  /admin/geocoding              → roleGuard('ROLE_ADMIN') → AdminGeocodingComponent
   **                            → redirect /welcome
 ```
 
@@ -74,8 +73,6 @@ Each entity has a response interface and a `*Create` input interface.
 | dashboard.model.ts | DashboardData, RecentChance, RecentAktivitaet (re-exports ChancePhase, AktivitaetTyp) |
 | auth.model.ts | LoginRequest, LoginResponse, BenutzerInfo |
 | page.model.ts | Page\<T\> (content, totalElements, totalPages, size, number, first, last) |
-| geocode-result.model.ts | GeocodeResult — used by the admin geocoding feature |
-
 `auth.model.ts` contains three interfaces. `LoginRequest` has `benutzername` and `passwort`. `LoginResponse` has `benutzername`, `vorname`, `nachname`, `rollen`. `BenutzerInfo` has `id`, `benutzername`, `vorname`, `nachname`, `email`, `rollen`, `permissions`. No `RefreshResponse`.
 
 ## Services (core/services/)
@@ -141,14 +138,6 @@ Three public components. No auth required. No backend calls — data posts direc
 - Toggle between list and board view via btn-group
 - Phase badge color map: `docs/specs/SPECS-ui.md`
 
-### Admin Geocoding
-
-- Route: `/admin/geocoding`, guarded by `roleGuard('ROLE_ADMIN')`.
-- Triggers a backend batch geocode via `POST /api/admin/geocode-addresses` (optionally with `?force=true` to re-geocode addresses that already have coordinates).
-- Geocoding is performed by the backend using the Nominatim API for addresses that lack coordinates.
-- Displays progress and results (geocoded count, skipped count, errors) returned in a `GeocodeResult` response.
-- Admin-only; not visible to non-admin users.
-
 ## Layout Components
 
 ### Sidebar
@@ -160,7 +149,6 @@ Sections with role-filtered items. Items with a `requiredRole` are hidden when t
 | Übersicht | Dashboard (none) |
 | Kunden & Kontakte | Firmen (none), Personen (none), Abteilungen (none), Adressen (none) |
 | *(no title)* | Chancen (none), Aktivitäten (none) |
-| Administration | Adressen geokodieren → `/admin/geocoding` (ROLE_ADMIN) |
 
 Empty sections are hidden. Uses FontAwesome icons (`fa-icon`) and `RouterLinkActive`.
 

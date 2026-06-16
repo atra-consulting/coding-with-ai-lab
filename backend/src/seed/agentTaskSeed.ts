@@ -1,0 +1,242 @@
+import type { InArgs } from '@libsql/client';
+import { client } from '../config/db.js';
+
+interface AgentTaskSeedRow {
+  id: number;
+  source: string;
+  title: string;
+  body: string;
+  status: string;
+  comment: string | null;
+  metadata: string | null;
+  pickedUpAt: string | null;
+  resolvedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+const AGENT_TASK_SEED: AgentTaskSeedRow[] = [
+  {
+    id: 1,
+    source: 'EMAIL',
+    title: 'Show company phone number in the company list view',
+    body: 'The phone number is stored but not shown in the company list table. Please add the `phone` column to the company list.',
+    status: 'OPEN',
+    comment: null,
+    metadata: '{"sender":"k.bauer@mueller.de","subject":"Feature request: phone in company list"}',
+    pickedUpAt: null,
+    resolvedAt: null,
+    createdAt: '2026-06-01T09:15:00.000Z',
+    updatedAt: '2026-06-01T09:15:00.000Z',
+  },
+  {
+    id: 2,
+    source: 'EMAIL',
+    title: 'Sort activity list by date descending by default',
+    body: 'When I open the activity list for a company, the entries are shown in the order they were created, oldest first. It would make much more sense to show the most recent activities at the top. Please change the default sort order of the activity list to date descending.',
+    status: 'OPEN',
+    comment: null,
+    metadata: '{"sender":"m.hoffmann@fischer.de","subject":"Activity list sort order"}',
+    pickedUpAt: null,
+    resolvedAt: null,
+    createdAt: '2026-06-02T11:30:00.000Z',
+    updatedAt: '2026-06-02T11:30:00.000Z',
+  },
+  {
+    id: 3,
+    source: 'EMAIL',
+    title: 'Make the app look nicer',
+    body: 'Hi, the app works but it doesn\'t look great. Can you make it look nicer? Thanks.',
+    status: 'OPEN',
+    comment: null,
+    metadata: '{"sender":"user123@example.com","subject":"UI feedback"}',
+    pickedUpAt: null,
+    resolvedAt: null,
+    createdAt: '2026-06-03T14:00:00.000Z',
+    updatedAt: '2026-06-03T14:00:00.000Z',
+  },
+  {
+    id: 4,
+    source: 'EMAIL',
+    title: 'Fix the broken feature',
+    body: 'Something is broken. Please fix it as soon as possible.',
+    status: 'OPEN',
+    comment: null,
+    metadata: '{"sender":"anon@example.com","subject":"Bug report"}',
+    pickedUpAt: null,
+    resolvedAt: null,
+    createdAt: '2026-06-04T08:45:00.000Z',
+    updatedAt: '2026-06-04T08:45:00.000Z',
+  },
+  {
+    id: 5,
+    source: 'GITHUB_ISSUE',
+    title: 'Show total pipeline value on Chancen board',
+    body: 'The Chancen list shows individual opportunity values but there is no total anywhere. Please add a summary line or header showing the sum of all `wert` values across all Chancen records, displayed on the Chancen list page header.',
+    status: 'OPEN',
+    comment: null,
+    metadata: '{"issueNumber":42,"labels":["enhancement"]}',
+    pickedUpAt: null,
+    resolvedAt: null,
+    createdAt: '2026-06-04T10:00:00.000Z',
+    updatedAt: '2026-06-04T10:00:00.000Z',
+  },
+  {
+    id: 6,
+    source: 'GITHUB_ISSUE',
+    title: 'Filter persons list by department',
+    body: 'The persons list at `/personen` does not support filtering by department (Abteilung). Please add an `abteilungId` query parameter to `GET /api/personen` and wire a department dropdown filter to the frontend persons list page.',
+    status: 'OPEN',
+    comment: null,
+    metadata: '{"issueNumber":57,"labels":["enhancement","backend","frontend"]}',
+    pickedUpAt: null,
+    resolvedAt: null,
+    createdAt: '2026-06-05T09:00:00.000Z',
+    updatedAt: '2026-06-05T09:00:00.000Z',
+  },
+  {
+    id: 7,
+    source: 'GITHUB_ISSUE',
+    title: 'Improve performance',
+    body: 'The app feels slow sometimes. Performance should be improved.',
+    status: 'OPEN',
+    comment: null,
+    metadata: '{"issueNumber":63,"labels":["performance"]}',
+    pickedUpAt: null,
+    resolvedAt: null,
+    createdAt: '2026-06-05T13:20:00.000Z',
+    updatedAt: '2026-06-05T13:20:00.000Z',
+  },
+  {
+    id: 8,
+    source: 'GITHUB_ISSUE',
+    title: 'The dashboard is wrong',
+    body: 'The dashboard shows wrong data. Please fix it.',
+    status: 'OPEN',
+    comment: null,
+    metadata: '{"issueNumber":71,"labels":["bug"]}',
+    pickedUpAt: null,
+    resolvedAt: null,
+    createdAt: '2026-06-06T07:10:00.000Z',
+    updatedAt: '2026-06-06T07:10:00.000Z',
+  },
+  {
+    id: 9,
+    source: 'APP_LOG',
+    title: 'GET /api/health response missing version field',
+    body: 'The health check endpoint GET /api/health returns only { status, timestamp }. Monitoring tooling expects a version field so we can confirm which build is running. The backend package.json already declares "version": "1.0.0". Add a version field to the response object in backend/src/app.ts so the endpoint returns { status, timestamp, version } where version is read from the package.json version string.',
+    status: 'OPEN',
+    comment: null,
+    metadata: '{"level":"WARN","timestamp":"2026-06-07T03:12:44.000Z","requestPath":"/api/health"}',
+    pickedUpAt: null,
+    resolvedAt: null,
+    createdAt: '2026-06-07T03:15:00.000Z',
+    updatedAt: '2026-06-07T03:15:00.000Z',
+  },
+  {
+    id: 10,
+    source: 'APP_LOG',
+    title: 'GET /api/chancen does not support filtering by phase',
+    body: 'The GET /api/chancen endpoint accepts sort and pagination but no phase filter query parameter. Every other list endpoint with a categorical field supports filtering (e.g. aktivitaeten by typ). Users need to filter open opportunities. Add an optional phase query parameter (one of NEU, QUALIFIZIERT, ANGEBOT, VERHANDLUNG, GEWONNEN, VERLOREN) to GET /api/chancen in backend/src/routes/chancen.ts and pass it through to chanceService.findAll in backend/src/services/chanceService.ts where a WHERE clause on c.phase should be conditionally appended.',
+    status: 'OPEN',
+    comment: null,
+    metadata: '{"level":"WARN","timestamp":"2026-06-07T08:55:10.000Z","requestPath":"/api/chancen"}',
+    pickedUpAt: null,
+    resolvedAt: null,
+    createdAt: '2026-06-07T09:00:00.000Z',
+    updatedAt: '2026-06-07T09:00:00.000Z',
+  },
+  {
+    id: 11,
+    source: 'APP_LOG',
+    title: 'Intermittent 500 on startup',
+    body: 'Sometimes the server returns 500 errors on startup. Happens maybe once a week.',
+    status: 'OPEN',
+    comment: null,
+    metadata: '{"level":"ERROR","timestamp":"2026-06-08T00:00:00.000Z","requestPath":"/"}',
+    pickedUpAt: null,
+    resolvedAt: null,
+    createdAt: '2026-06-08T00:05:00.000Z',
+    updatedAt: '2026-06-08T00:05:00.000Z',
+  },
+  {
+    id: 12,
+    source: 'APP_LOG',
+    title: 'Occasional slow query',
+    body: 'Some queries seem slow sometimes. Not sure which ones.',
+    status: 'OPEN',
+    comment: null,
+    metadata: '{"level":"WARN","timestamp":"2026-06-08T12:30:00.000Z","requestPath":"/api"}',
+    pickedUpAt: null,
+    resolvedAt: null,
+    createdAt: '2026-06-08T12:35:00.000Z',
+    updatedAt: '2026-06-08T12:35:00.000Z',
+  },
+  {
+    id: 13,
+    source: 'ERROR_REPORT',
+    title: 'Adresse typ field is stored in DB but never returned by the API',
+    body: 'The adresse table has a typ TEXT column (defined in backend/src/config/migrate.ts and in SPECS-database.md) used to classify addresses (e.g. WORK, HOME). However AdresseDTO, AdresseRow, the BASE_QUERY SELECT list, and AdresseCreateSchema in backend/src/services/adresseService.ts and backend/src/utils/validation.ts all omit typ entirely. As a result the field cannot be written on POST/PUT and is never present in GET responses. Add typ to AdresseDTO, AdresseRow, the SELECT in BASE_QUERY, the INSERT and UPDATE statements, and to AdresseCreateSchema as an optional nullable string.',
+    status: 'OPEN',
+    comment: null,
+    metadata: '{"stackTrace":"AdresseDTO missing field: typ\\n    at adresseService.toDTO (backend/src/services/adresseService.ts:41)","environment":"production"}',
+    pickedUpAt: null,
+    resolvedAt: null,
+    createdAt: '2026-06-09T16:00:00.000Z',
+    updatedAt: '2026-06-09T16:00:00.000Z',
+  },
+  {
+    id: 14,
+    source: 'ERROR_REPORT',
+    title: 'GET /api/chancen does not support text search by titel',
+    body: 'GET /api/firmen and GET /api/personen both accept a search query parameter that filters by name/firstName/lastName with a LIKE query. GET /api/chancen has no equivalent: chanceService.findAll in backend/src/services/chanceService.ts accepts only pagination and sort, and the route handler in backend/src/routes/chancen.ts never reads a search query param. Users cannot search for a deal by title. Add an optional search query parameter to GET /api/chancen and implement a WHERE LOWER(c.titel) LIKE LOWER(\'%\' || ? || \'%\') clause in chanceService.findAll, following the same pattern already used in firmaService.findAll.',
+    status: 'OPEN',
+    comment: null,
+    metadata: '{"stackTrace":"Feature absent: no search param on GET /api/chancen\\n    at chanceService.findAll (backend/src/services/chanceService.ts:77)","environment":"production"}',
+    pickedUpAt: null,
+    resolvedAt: null,
+    createdAt: '2026-06-10T10:20:00.000Z',
+    updatedAt: '2026-06-10T10:20:00.000Z',
+  },
+  {
+    id: 15,
+    source: 'ERROR_REPORT',
+    title: 'App crashes intermittently on Linux',
+    body: 'The app crashes sometimes on Linux servers. We can\'t reproduce it consistently.',
+    status: 'OPEN',
+    comment: null,
+    metadata: '{"stackTrace":"(no stack trace available)","environment":"production"}',
+    pickedUpAt: null,
+    resolvedAt: null,
+    createdAt: '2026-06-11T06:45:00.000Z',
+    updatedAt: '2026-06-11T06:45:00.000Z',
+  },
+  {
+    id: 16,
+    source: 'ERROR_REPORT',
+    title: 'Something fails sometimes on save',
+    body: 'Sometimes saving doesn\'t work. Please look into it.',
+    status: 'OPEN',
+    comment: null,
+    metadata: '{"stackTrace":"(no stack trace available)","environment":"unknown"}',
+    pickedUpAt: null,
+    resolvedAt: null,
+    createdAt: '2026-06-12T14:00:00.000Z',
+    updatedAt: '2026-06-12T14:00:00.000Z',
+  },
+];
+
+const INSERT_SQL =
+  `INSERT OR IGNORE INTO agent_task (id, source, title, body, status, comment, metadata, pickedUpAt, resolvedAt, createdAt, updatedAt)` +
+  ` VALUES (@id, @source, @title, @body, @status, @comment, @metadata, @pickedUpAt, @resolvedAt, @createdAt, @updatedAt)`;
+
+export async function seedAgentTasks(): Promise<void> {
+  const stmts = AGENT_TASK_SEED.map((row) => ({
+    sql: INSERT_SQL,
+    args: row as unknown as InArgs,
+  }));
+
+  await client.batch(stmts, 'write');
+
+  console.log(`=== Seeder: agent_task ensured (${AGENT_TASK_SEED.length} rows, INSERT OR IGNORE) ===`);
+}

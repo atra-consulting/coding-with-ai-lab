@@ -35,12 +35,9 @@ cd backend && npx playwright test -g "<test title>"          # targeted by title
 ### Global setup
 
 `backend/src/test/globalSetup.ts` runs before the suite:
-1. Starts an in-process Nominatim stub HTTP server on an ephemeral port. The stub exposes a `/search` endpoint (consumed by the backend) and a `/control` HTTP API so test worker processes can set stub behavior (`PUT /control`), reset it (`DELETE /control`), and read call counts (`GET /control/count`).
-2. Kills any existing process on port 7070, then spawns the backend child process (`tsx src/index.ts`) with `NODE_ENV=test` and `NOMINATIM_BASE_URL` pointing to the stub.
-3. Polls `GET /api/health` until the backend responds (30 s deadline).
-4. Returns a teardown function that SIGTERM-kills the backend and closes the stub server.
-
-The stub control URL is written to `process.env.STUB_CONTROL_URL` so worker processes can reach it.
+1. Kills any existing process on port 7070, then spawns the backend child process (`tsx src/index.ts`) with `NODE_ENV=test`.
+2. Polls `GET /api/health` until the backend responds (30 s deadline).
+3. Returns a teardown function that SIGTERM-kills the backend.
 
 ### Authentication
 
@@ -90,7 +87,7 @@ Three hardcoded users (defined in `backend/src/config/users.ts`):
 | user     | test123   | USER    |
 | demo     | demo1234  | ADMIN   |
 
-Roles are stored bare in `users.ts` (`ADMIN` / `USER`); the auth wire format prefixes them (`ROLE_ADMIN`). Only `user` lacks the ADMIN role — use it to test `requireRole('ADMIN')` 403 paths (e.g. `POST /api/admin/geocode-addresses`).
+Roles are stored bare in `users.ts` (`ADMIN` / `USER`); the auth wire format prefixes them (`ROLE_ADMIN`). Only `user` lacks the ADMIN role — use it to test `requireRole('ADMIN')` 403 paths.
 
 All three currently hold the full 7-permission set (`FIRMEN`, `PERSONEN`, `ABTEILUNGEN`, `ADRESSEN`, `AKTIVITAETEN`, `CHANCEN`, `BENUTZERVERWALTUNG`). When a new permission is added that not all users hold, test the 403 path with the user who lacks it. If no such user exists yet, document the gap in the test file rather than fabricating credentials.
 
@@ -101,11 +98,6 @@ All three currently hold the full 7-permission set (`FIRMEN`, `PERSONEN`, `ABTEI
 | `loginCtx(benutzername, passwort)` | Creates a new `APIRequestContext` and logs in; returns the context with cookie. |
 | `login(request, benutzername, passwort)` | Logs in on an existing context. |
 | `resetDatabase()` | Deletes all rows in reverse FK order, then re-seeds from `fixture.json` via `runDataMigration()`. |
-| `insertAdresseWithoutCoords(overrides?)` | Inserts an `adresse` row with null lat/lon; returns the new row id. |
-| `setStubResponse(behavior, oneShot?)` | Sets the Nominatim stub behavior via HTTP PUT. |
-| `clearStubOverrides()` | Resets stub to default success and clears call count. |
-| `getStubCallCount()` | Returns how many times the stub's `/search` was called. |
-| `resetStubCallCount()` | Resets the call count to zero. |
 
 ### SQLite quirks in tests
 
@@ -170,9 +162,7 @@ All error responses follow:
 |------|---------------|
 | `auth.spec.ts` | POST `/api/auth/login`, GET `/api/auth/me`, POST `/api/auth/logout` |
 | `firmen-crud.spec.ts` | GET/POST/PUT/DELETE `/api/firmen` and `/api/firmen/:id` |
-| `admin-geocoding.spec.ts` | POST `/api/admin/geocode-addresses` (auth, batch logic, stub behavior) |
-| `adressen-coords.spec.ts` | Address coordinate endpoints |
-| `geocoding-rate-limit.spec.ts` | Geocoding rate-limit behavior |
+| `adressen-coords.spec.ts` | Address rows expose their baked-in latitude/longitude |
 
 ---
 
@@ -263,8 +253,6 @@ For components using `inject()` that cannot be overridden by a provider, use `Te
 | `layout.service.spec.ts` | `LayoutService` (collapsed signal, localStorage persistence, toggle) |
 | `role.guard.spec.ts` | `roleGuard` (allow with matching role, deny with wrong role, deny when null) |
 | `sidebar.component.spec.ts` | `SidebarComponent` (render, permission filtering, collapse toggle) |
-| `admin.service.spec.ts` | `AdminService` HTTP methods (`geocodeAddresses` with and without `force`) |
-| `admin-geocoding.component.spec.ts` | `AdminGeocodingComponent` (UI interactions with admin service) |
 
 ### Code standards (both stacks)
 
