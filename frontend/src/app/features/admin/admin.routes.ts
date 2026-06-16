@@ -24,4 +24,10 @@ export const ADMIN_ROUTES: Routes = [
         (m) => m.AgentTaskDetailComponent,
       ),
   },
+  {
+    path: 'cron',
+    canActivate: [roleGuard('ROLE_ADMIN')],
+    loadComponent: () =>
+      import('./cron/cron-dashboard.component').then((m) => m.CronDashboardComponent),
+  },
 ];

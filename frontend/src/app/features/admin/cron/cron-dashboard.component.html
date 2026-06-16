@@ -1,0 +1,127 @@
+<div class="page-header d-flex justify-content-between align-items-center">
+  <h2>Cron-Jobs</h2>
+  <button
+    class="btn btn-primary"
+    (click)="runNow()"
+    [disabled]="triggering"
+  >
+    @if (triggering) {
+      <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+    }
+    Jetzt ausführen
+  </button>
+</div>
+
+@if (triggerMessage) {
+  <div class="alert alert-info alert-dismissible fade show" role="alert">
+    {{ triggerMessage }}
+    <button
+      type="button"
+      class="btn-close"
+      (click)="triggerMessage = null"
+      aria-label="Schließen"
+    ></button>
+  </div>
+}
+
+@if (errorMessage) {
+  <div class="alert alert-danger" role="alert">{{ errorMessage }}</div>
+}
+
+@if (loading) {
+  <div class="d-flex justify-content-center py-4">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Lädt…</span>
+    </div>
+  </div>
+} @else {
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-3 g-3 mb-4">
+    @for (job of jobs; track job.name) {
+      <div class="col">
+        <div class="card h-100">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <strong>{{ job.name }}</strong>
+            <code class="text-muted small">{{ job.schedule }}</code>
+          </div>
+          <div class="card-body">
+            <p class="card-text text-muted small mb-3">{{ job.description }}</p>
+            @if (job.lastRun) {
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="small text-muted">Letzter Lauf:</span>
+                <span [class]="statusBadgeClass(job.lastRun.status)">{{ job.lastRun.status }}</span>
+              </div>
+              <div class="small text-muted mt-1">{{ job.lastRun.startedAt | date: 'dd.MM.yyyy HH:mm' }}</div>
+            } @else {
+              <span class="small text-muted">Noch kein Lauf aufgezeichnet.</span>
+            }
+          </div>
+        </div>
+      </div>
+    }
+    @if (jobs.length === 0) {
+      <div class="col-12">
+        <p class="text-muted">Keine Cron-Jobs konfiguriert.</p>
+      </div>
+    }
+  </div>
+}
+
+<h4 class="mb-3">Ausführungsverlauf</h4>
+
+@if (loadingRuns) {
+  <div class="d-flex justify-content-center py-4">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Lädt…</span>
+    </div>
+  </div>
+} @else {
+  <div class="table-container">
+    <table class="table table-hover table-sm align-middle">
+      <thead>
+        <tr>
+          <th>Status</th>
+          <th>Job</th>
+          <th>Trigger</th>
+          <th>Gestartet</th>
+          <th>Beendet</th>
+          <th>Dauer</th>
+          <th>GH-Link</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (run of runsPage?.content ?? []; track run.id) {
+          <tr>
+            <td><span [class]="statusBadgeClass(run.status)">{{ run.status }}</span></td>
+            <td>{{ run.job }}</td>
+            <td><span [class]="triggerBadgeClass(run.trigger)">{{ run.trigger }}</span></td>
+            <td>{{ run.startedAt | date: 'dd.MM.yyyy HH:mm' }}</td>
+            <td>{{ run.finishedAt ? (run.finishedAt | date: 'dd.MM.yyyy HH:mm') : '—' }}</td>
+            <td>{{ formatDuration(run.durationMs) }}</td>
+            <td>
+              @if (run.githubRunUrl) {
+                <a [href]="run.githubRunUrl" target="_blank" rel="noopener">Run öffnen</a>
+              } @else {
+                —
+              }
+            </td>
+          </tr>
+        }
+        @if (!runsPage || runsPage.content.length === 0) {
+          <tr>
+            <td colspan="7" class="text-center text-muted">Keine Ausführungen vorhanden.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (runsPage && runsPage.totalPages > 1) {
+    <ngb-pagination
+      [collectionSize]="runsPage.totalElements"
+      [(page)]="currentPage"
+      [pageSize]="pageSize"
+      (pageChange)="onPageChange($event)"
+      [maxSize]="5"
+    ></ngb-pagination>
+  }
+}
