@@ -10,6 +10,7 @@
 import { request as playwrightRequest, type APIRequestContext } from '@playwright/test';
 import { client } from '../config/db.js';
 import { runDataMigration } from '../seed/dataMigration.js';
+import { seedAgentTasks } from '../seed/agentTaskSeed.js';
 import type { StubBehavior } from './globalSetup.js';
 
 // ---------------------------------------------------------------------------
@@ -149,6 +150,7 @@ export async function resetDatabase(): Promise<void> {
   );
   await client.execute('PRAGMA foreign_keys = ON');
   await runDataMigration();
+  await seedAgentTasks();
 }
 
 /**

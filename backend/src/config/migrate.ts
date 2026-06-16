@@ -1,4 +1,5 @@
 import { client } from './db.js';
+import { seedAgentTasks } from '../seed/agentTaskSeed.js';
 
 export async function runMigrations(): Promise<void> {
   console.log('Running database migrations...');
@@ -146,6 +147,12 @@ export async function runMigrations(): Promise<void> {
     CREATE INDEX IF NOT EXISTS idx_cron_run_startedAt ON cron_run(startedAt DESC);
     CREATE INDEX IF NOT EXISTS idx_cron_run_job_startedAt ON cron_run(job, startedAt DESC);
   `);
+
+  // Idempotent data seed: agent tasks are inserted on every deployment via
+  // INSERT OR IGNORE so they are always present (Vercel/Turso included),
+  // independent of the firma-empty guard in runDataMigration(). Existing rows
+  // (e.g. DONE/REJECTED/IN_PROGRESS) are never overwritten.
+  await seedAgentTasks();
 
   console.log('Database migrations complete.');
 }
