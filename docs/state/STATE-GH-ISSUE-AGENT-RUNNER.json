@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "task_key": "GH-ISSUE-AGENT-RUNNER",
+  "status": "in_progress",
+  "current_step": "3.3",
+  "started": "2026-06-17T00:00:00Z",
+  "updated": "2026-06-17T00:00:00Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Build a second autonomous runner like agent-task-runner.yml, but sourced from real GitHub issues on Projects board #7. Select issues by label/status, decide doable-or-not, run /plan-and-do headless with pre-authorized checkpoints, set ticket In progress. On a real question, pause: add 'Input needed' label + explanatory comment; resume on a later run (fresh re-run with full issue+comments) after a human replies and removes the label.",
+    "special_instructions": null,
+    "branch_name": "gh-issue-agent-runner-projects",
+    "original_branch": "main",
+    "docs_folder": "docs",
+    "is_git_repo": true,
+    "workflow_scope": null,
+    "decisions": {
+      "trigger": "reuse repository_dispatch (+ workflow_dispatch + schedule)",
+      "resume": "re-run /plan-and-do fresh each run with full issue + all comments",
+      "input_needed_exclusion": "excludes from BOTH selection branches",
+      "output_scope": "implement + PR + merge to main (full autonomy)"
+    }
+  },
+  "discovery": {
+    "agents_available": false,
+    "writer_agents": [],
+    "coding_agents": [],
+    "review_agents": [],
+    "test_command": null
+  },
+  "artifacts": {
+    "prd_skipped": null,
+    "prd_file": null,
+    "plan_file": null,
+    "pr_url": null
+  },
+  "completed_steps": []
+}
