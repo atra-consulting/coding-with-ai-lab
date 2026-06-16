@@ -2,7 +2,7 @@
   "version": 1,
   "task_key": "GH-ISSUE-AGENT-RUNNER",
   "status": "in_progress",
-  "current_step": "6.4",
+  "current_step": "7.5",
   "started": "2026-06-17T00:00:00Z",
   "updated": "2026-06-17T00:00:00Z",
   "config": {
@@ -13,7 +13,7 @@
     "original_branch": "main",
     "docs_folder": "docs",
     "is_git_repo": true,
-    "workflow_scope": null,
+    "workflow_scope": "full",
     "decisions": {
       "trigger": "reuse repository_dispatch (+ workflow_dispatch + schedule)",
       "resume": "re-run /plan-and-do fresh each run with full issue + all comments",
@@ -26,12 +26,12 @@
     "writer_agents": [],
     "coding_agents": [],
     "review_agents": [],
-    "test_command": null
+    "test_command": "bash -n scripts/gh-issues-select.sh scripts/gh-issue-status.sh scripts/solve-gh-board-issues.sh && actionlint .github/workflows/agent-issue-runner.yml"
   },
   "artifacts": {
     "prd_skipped": false,
     "prd_file": "docs/prds/PRD-GH-ISSUE-AGENT-RUNNER.md",
-    "plan_file": null,
+    "plan_file": "docs/plans/PLAN-GH-ISSUE-AGENT-RUNNER.md",
     "pr_url": null
   },
   "completed_steps": []
