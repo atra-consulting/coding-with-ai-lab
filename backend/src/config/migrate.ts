@@ -125,6 +125,12 @@ export async function runMigrations(): Promise<void> {
       githubRunUrl TEXT,
       error        TEXT
     );
+
+    CREATE TABLE IF NOT EXISTS cron_job_state (
+      job       TEXT PRIMARY KEY,
+      enabled   INTEGER NOT NULL DEFAULT 1,
+      updatedAt TEXT NOT NULL
+    );
   `);
 
   await client.executeMultiple(`

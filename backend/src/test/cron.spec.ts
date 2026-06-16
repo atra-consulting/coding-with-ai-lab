@@ -67,6 +67,7 @@ interface CronJobWithLastRun {
   schedule: string;
   description: string;
   dispatchEventType: string;
+  enabled: boolean;
   lastRun: CronRunDTO | null;
 }
 
@@ -652,6 +653,10 @@ test.describe('GET /api/cron/jobs', () => {
       expect(typeof solveJob!.dispatchEventType).toBe('string');
     });
 
+    await test.step('solve-tasks has an enabled boolean field', () => {
+      expect(typeof solveJob!.enabled).toBe('boolean');
+    });
+
     await test.step('lastRun is null (no runs seeded)', () => {
       // We cleared cron_run in beforeAll so no runs exist yet.
       expect(solveJob!.lastRun).toBeNull();
@@ -678,6 +683,131 @@ test.describe('GET /api/cron/jobs', () => {
 
     await test.step('lastRun.status is RUNNING', () => {
       expect(solveJob!.lastRun!.status).toBe('RUNNING');
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Suite 7: PATCH /api/cron/jobs/:name — enable/disable toggle
+// ---------------------------------------------------------------------------
+
+test.describe('PATCH /api/cron/jobs/:name — toggle', () => {
+  let admin: APIRequestContext;
+  let user: APIRequestContext;
+  let anon: APIRequestContext;
+
+  test.beforeAll(async () => {
+    admin = await loginCtx('admin', 'admin123');
+    user = await loginCtx('user', 'test123');
+    anon = await anonCtx();
+  });
+
+  test.afterAll(async () => {
+    // Always re-enable the job so subsequent test runs are not affected
+    await admin.patch('/api/cron/jobs/solve-tasks', { data: { enabled: true } });
+    await admin.dispose();
+    await user.dispose();
+    await anon.dispose();
+  });
+
+  // ── Auth gates ──────────────────────────────────────────────────────────────
+
+  test('anon → 401', async () => {
+    const resp = await anon.patch('/api/cron/jobs/solve-tasks', { data: { enabled: false } });
+    expect(resp.status()).toBe(401);
+  });
+
+  test('non-admin user → 403', async () => {
+    const resp = await user.patch('/api/cron/jobs/solve-tasks', { data: { enabled: false } });
+    expect(resp.status()).toBe(403);
+  });
+
+  // ── Not found ───────────────────────────────────────────────────────────────
+
+  test('unknown job name → 404', async () => {
+    const resp = await admin.patch('/api/cron/jobs/nonexistent-job', { data: { enabled: false } });
+    expect(resp.status()).toBe(404);
+  });
+
+  // ── Validation ──────────────────────────────────────────────────────────────
+
+  test('invalid body: enabled is a string → 400', async () => {
+    const resp = await admin.patch('/api/cron/jobs/solve-tasks', { data: { enabled: 'no' } });
+    expect(resp.status()).toBe(400);
+    const body = await resp.json() as { fieldErrors: Record<string, string> };
+    expect(typeof body.fieldErrors).toBe('object');
+  });
+
+  test('invalid body: enabled missing → 400', async () => {
+    const resp = await admin.patch('/api/cron/jobs/solve-tasks', { data: {} });
+    expect(resp.status()).toBe(400);
+    const body = await resp.json() as { fieldErrors: Record<string, string> };
+    expect(typeof body.fieldErrors).toBe('object');
+  });
+
+  // ── Happy path ──────────────────────────────────────────────────────────────
+
+  test('admin can disable solve-tasks → 200, enabled false', async () => {
+    const resp = await admin.patch('/api/cron/jobs/solve-tasks', { data: { enabled: false } });
+    expect(resp.status()).toBe(200);
+    const body = await resp.json() as CronJobWithLastRun;
+    expect(body.name).toBe('solve-tasks');
+    expect(body.enabled).toBe(false);
+  });
+
+  test('admin can re-enable solve-tasks → 200, enabled true', async () => {
+    const resp = await admin.patch('/api/cron/jobs/solve-tasks', { data: { enabled: true } });
+    expect(resp.status()).toBe(200);
+    const body = await resp.json() as CronJobWithLastRun;
+    expect(body.enabled).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Suite 8: Disabled-job tick behaviour
+// ---------------------------------------------------------------------------
+//
+// When solve-tasks is disabled, GET /api/cron/agent-tasks must record a
+// SKIPPED run with "Job is disabled" even though OPEN tasks exist.
+//
+
+test.describe('Disabled-job tick behaviour', () => {
+  let admin: APIRequestContext;
+
+  test.beforeAll(async () => {
+    await resetDatabase(); // ensure OPEN tasks exist
+    await clearCronRuns();
+    admin = await loginCtx('admin', 'admin123');
+
+    // Disable the job via the PATCH endpoint
+    await admin.patch('/api/cron/jobs/solve-tasks', { data: { enabled: false } });
+  });
+
+  test.afterAll(async () => {
+    // Re-enable so other tests/runs are unaffected
+    await admin.patch('/api/cron/jobs/solve-tasks', { data: { enabled: true } });
+    await clearCronRuns();
+    await admin.dispose();
+  });
+
+  test('tick while job is disabled → 200 with SKIPPED status and "Job is disabled" reason', async () => {
+    const resp = await admin.get('/api/cron/agent-tasks');
+    expect(resp.status()).toBe(200);
+
+    const body = await resp.json() as CronRunDTO;
+
+    await test.step('status is SKIPPED', () => {
+      expect(body.status).toBe('SKIPPED');
+    });
+
+    await test.step('job is solve-tasks', () => {
+      expect(body.job).toBe('solve-tasks');
+    });
+
+    await test.step('result contains skipReason "Job is disabled"', () => {
+      expect(typeof body.result).toBe('string');
+      const parsed = JSON.parse(body.result as string) as { skipReason: string };
+      expect(parsed.skipReason).toBe('Job is disabled');
     });
   });
 });

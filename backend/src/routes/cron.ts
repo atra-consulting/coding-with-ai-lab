@@ -10,7 +10,7 @@ declare module 'express' {
 import { requireAgentToken } from '../middleware/agentAuth.js';
 import { requireAuth, requireRole } from '../middleware/auth.js';
 import { findById } from '../config/users.js';
-import { UnauthorizedError } from '../utils/errors.js';
+import { UnauthorizedError, NotFoundError } from '../utils/errors.js';
 import { validate } from '../utils/validation.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { parsePaginationParams, parseSort } from '../utils/pagination.js';
@@ -20,12 +20,16 @@ import {
   markFailed,
   completeRun,
   isRunInProgress,
+  isJobEnabled,
+  setJobEnabled,
   listRuns,
   deriveJobsWithLastRun,
   CompleteRunBodySchema,
 } from '../services/cronService.js';
 import { agentTaskService } from '../services/agentTaskService.js';
 import { dispatchWorkflow } from '../utils/githubDispatch.js';
+import { CRON_JOBS } from '../config/cronJobs.js';
+import { z } from 'zod';
 
 const router = Router();
 
@@ -89,6 +93,13 @@ router.get(
   requireCronAuth as (req: Request, res: Response, next: NextFunction) => void,
   asyncHandler(async (req: Request, res: Response) => {
     const trigger = req.cronTrigger ?? 'MANUAL';
+
+    // Disabled guard: record a SKIPPED run and return early
+    if (!(await isJobEnabled('solve-tasks'))) {
+      const run = await recordSkip('solve-tasks', trigger, 'Job is disabled');
+      res.status(200).json(run);
+      return;
+    }
 
     // Single-flight guard: skip if another run is already RUNNING
     if (await isRunInProgress('solve-tasks')) {
@@ -168,6 +179,40 @@ router.get(
   requireRole('ADMIN'),
   asyncHandler(async (_req: Request, res: Response) => {
     res.json(await deriveJobsWithLastRun());
+  }),
+);
+
+// ─── PATCH /api/cron/jobs/:name ───────────────────────────────────────────────
+//
+// Enable or disable a cron job. Admin only.
+// Body: { "enabled": true | false }
+// 404 if the job name is not in CRON_JOBS.
+//
+
+const ToggleJobBodySchema = z.object({
+  enabled: z.boolean(),
+});
+
+router.patch(
+  '/jobs/:name',
+  requireAuth,
+  requireRole('ADMIN'),
+  asyncHandler(async (req: Request, res: Response) => {
+    const name = req.params['name'] as string;
+
+    // Validate the job name against the known list
+    const knownJob = CRON_JOBS.find((j) => j.name === name);
+    if (!knownJob) {
+      throw new NotFoundError(`Cron job '${name}' nicht gefunden`);
+    }
+
+    const { enabled } = validate(ToggleJobBodySchema, req.body);
+    await setJobEnabled(name, enabled);
+
+    // Return the updated job DTO (reuse deriveJobsWithLastRun, find by name)
+    const jobs = await deriveJobsWithLastRun();
+    const updated = jobs.find((j) => j.name === name);
+    res.json(updated);
   }),
 );
 

@@ -224,7 +224,7 @@ All errors use the app-wide handler:
 
 ## Cron Runner API
 
-Turns the agent-task queue into a scheduled, self-driving loop. A Vercel cron hits the dispatcher every 10 min; it fires a GitHub `repository_dispatch` that runs `.github/workflows/agent-task-runner.yml`, which drains every source and calls back to close the audit row. Base path: **`/api/cron`**.
+Turns the agent-task queue into a scheduled, self-driving loop. A Vercel cron hits the dispatcher once a day (`0 2 * * *` — Hobby caps crons at daily; `*/10` needs Pro); it fires a GitHub `repository_dispatch` that runs `.github/workflows/agent-task-runner.yml`, which drains every source and calls back to close the audit row. Base path: **`/api/cron`**.
 
 Source of truth: `backend/src/routes/cron.ts`, `backend/src/services/cronService.ts`, `backend/src/config/cronJobs.ts`.
 
@@ -256,6 +256,7 @@ Source of truth: `backend/src/routes/cron.ts`, `backend/src/services/cronService
 
 ### GET `/api/cron/agent-tasks` — heartbeat + dispatcher
 Single-flight + skip-when-idle, then dispatch:
+- Job is disabled (via `PATCH /api/cron/jobs/:name`) → records a `SKIPPED` run with `skipReason: "Job is disabled"` and dispatches nothing.
 - A run already `RUNNING` (orphans older than 30 min are auto-expired first) → records a `SKIPPED` run.
 - No OPEN tasks across any source → records a `SKIPPED` run.
 - Otherwise creates a `RUNNING` run and fires `repository_dispatch` (`solve-agent-tasks`, `client_payload.cronRunId`). Dispatch failure → the run is marked `FAILED`.
@@ -272,8 +273,31 @@ Each configured job with its newest run attached:
 
 ```json
 [
-  { "name": "solve-tasks", "schedule": "0 2 * * *", "description": "…", "dispatchEventType": "solve-agent-tasks", "lastRun": { /* cron_run or null */ } }
+  { "name": "solve-tasks", "schedule": "0 2 * * *", "description": "…", "dispatchEventType": "solve-agent-tasks", "enabled": true, "lastRun": { /* cron_run or null */ } }
 ]
+```
+
+`enabled` is `true` by default (when no `cron_job_state` row exists for the job).
+
+### PATCH `/api/cron/jobs/:name` — enable or disable a job (admin)
+**Auth:** admin session (`requireAuth` + `requireRole('ADMIN')`).
+**Body:** `{ "enabled": true | false }`.
+
+Upserts a `cron_job_state` row for the named job. Returns the updated job object (same shape as GET `/api/cron/jobs`).
+
+| Result | Meaning |
+|--------|---------|
+| `200` + job object | toggle applied |
+| `400` | `enabled` missing or not a boolean (`fieldErrors.enabled`) |
+| `404` | job name not found in the configured job list |
+| `401` / `403` | not logged in / not admin |
+
+```bash
+# Disable the solve-tasks job
+curl -s -X PATCH -b "$COOKIE" \
+  -H "Content-Type: application/json" \
+  -d '{"enabled":false}' \
+  "$APP_BASE_URL/api/cron/jobs/solve-tasks"
 ```
 
 ---

@@ -12,12 +12,13 @@ const makeLastRun = (): CronJobLastRun => ({
   durationMs: 300000,
 });
 
-const makeJob = (name = 'agent-tasks'): CronJob => ({
+const makeJob = (name = 'agent-tasks', enabled = true): CronJob => ({
   name,
   schedule: '0 * * * *',
   description: 'Processes pending agent tasks',
   dispatchEventType: 'agent_task',
   lastRun: makeLastRun(),
+  enabled,
 });
 
 const makeRun = (id = 1): CronRun => ({
@@ -170,6 +171,28 @@ describe('CronService', () => {
       httpMock.expectOne('/api/cron/agent-tasks').flush(mockRun);
 
       expect(received).toEqual(mockRun);
+    });
+  });
+
+  describe('setJobEnabled()', () => {
+    it('fires PATCH to /api/cron/jobs/solve-tasks with body { enabled: false }', () => {
+      service.setJobEnabled('solve-tasks', false).subscribe();
+
+      const req = httpMock.expectOne('/api/cron/jobs/solve-tasks');
+      expect(req.request.method).toBe('PATCH');
+      expect(req.request.body).toEqual({ enabled: false });
+      req.flush(makeJob('solve-tasks', false));
+    });
+
+    it('emits the updated CronJob returned by the server', () => {
+      const updatedJob = makeJob('solve-tasks', false);
+      let received: CronJob | undefined;
+
+      service.setJobEnabled('solve-tasks', false).subscribe((r) => (received = r));
+
+      httpMock.expectOne('/api/cron/jobs/solve-tasks').flush(updatedJob);
+
+      expect(received).toEqual(updatedJob);
     });
   });
 });

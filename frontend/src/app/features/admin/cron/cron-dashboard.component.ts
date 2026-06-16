@@ -26,9 +26,31 @@ export class CronDashboardComponent implements OnInit {
   errorMessage: string | null = null;
   triggerMessage: string | null = null;
 
+  /** Per-job in-flight flags: jobName → true while PATCH is in flight */
+  togglingJobs: Record<string, boolean> = {};
+  /** Per-job toggle error messages */
+  toggleErrors: Record<string, string | null> = {};
+
   ngOnInit(): void {
     this.loadJobs();
     this.loadRuns();
+  }
+
+  get solveTasksJob(): CronJob | undefined {
+    return this.jobs.find((j) => j.name === 'solve-tasks');
+  }
+
+  get runNowDisabled(): boolean {
+    const job = this.solveTasksJob;
+    return this.triggering || (job !== undefined && job.enabled === false);
+  }
+
+  get runNowTitle(): string | null {
+    const job = this.solveTasksJob;
+    if (job && job.enabled === false) {
+      return 'Job ist deaktiviert. Aktivieren Sie den Job, um ihn manuell auszuführen.';
+    }
+    return null;
   }
 
   loadJobs(): void {
@@ -87,6 +109,36 @@ export class CronDashboardComponent implements OnInit {
         error: () => {
           this.triggering = false;
           this.triggerMessage = 'Fehler beim Starten der Ausführung.';
+        },
+      });
+  }
+
+  toggleJob(job: CronJob): void {
+    // Optimistically flip
+    const previousEnabled = job.enabled;
+    job.enabled = !previousEnabled;
+
+    // Set in-flight flag
+    this.togglingJobs[job.name] = true;
+    this.toggleErrors[job.name] = null;
+
+    this.cronService
+      .setJobEnabled(job.name, job.enabled)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (updated) => {
+          // Replace the job with the returned DTO
+          const idx = this.jobs.findIndex((j) => j.name === updated.name);
+          if (idx !== -1) {
+            this.jobs[idx] = updated;
+          }
+          this.togglingJobs[job.name] = false;
+        },
+        error: () => {
+          // Revert the optimistic flip
+          job.enabled = previousEnabled;
+          this.togglingJobs[job.name] = false;
+          this.toggleErrors[job.name] = 'Fehler beim Ändern des Job-Status.';
         },
       });
   }

@@ -15,12 +15,13 @@ const makeLastRun = (): CronJobLastRun => ({
   durationMs: 300000,
 });
 
-const makeJob = (name = 'agent-tasks'): CronJob => ({
+const makeJob = (name = 'agent-tasks', enabled = true): CronJob => ({
   name,
   schedule: '0 * * * *',
   description: 'Processes pending agent tasks',
   dispatchEventType: 'agent_task',
   lastRun: makeLastRun(),
+  enabled,
 });
 
 const makeRun = (
@@ -68,6 +69,7 @@ function makeMockService(): jasmine.SpyObj<CronService> {
     'getJobs',
     'getRuns',
     'triggerNow',
+    'setJobEnabled',
   ]);
 }
 
@@ -469,5 +471,152 @@ describe('CronDashboardComponent — triggerMessage alert', () => {
   it('does not render the alert-info banner before any trigger is executed', () => {
     const alert: HTMLElement | null = fixture.nativeElement.querySelector('.alert-info');
     expect(alert).toBeNull();
+  });
+});
+
+// ─── toggleJob() ─────────────────────────────────────────────────────────────
+
+describe('CronDashboardComponent — toggleJob()', () => {
+  let fixture: ComponentFixture<CronDashboardComponent>;
+  let component: CronDashboardComponent;
+  let mockService: jasmine.SpyObj<CronService>;
+
+  beforeEach(async () => {
+    mockService = makeMockService();
+    mockService.getJobs.and.returnValue(of([makeJob('solve-tasks', true)]));
+    mockService.getRuns.and.returnValue(of(EMPTY_PAGE));
+
+    await setupTestBed(mockService);
+
+    fixture = TestBed.createComponent(CronDashboardComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('calls setJobEnabled with the job name and the new enabled value', fakeAsync(() => {
+    const updatedJob = makeJob('solve-tasks', false);
+    mockService.setJobEnabled.and.returnValue(of(updatedJob));
+
+    component.toggleJob(component.jobs[0]);
+    tick();
+
+    expect(mockService.setJobEnabled).toHaveBeenCalledWith('solve-tasks', false);
+  }));
+
+  it('replaces the job in the jobs array with the DTO returned from the service', fakeAsync(() => {
+    const updatedJob = makeJob('solve-tasks', false);
+    mockService.setJobEnabled.and.returnValue(of(updatedJob));
+
+    component.toggleJob(component.jobs[0]);
+    tick();
+
+    expect(component.jobs[0].enabled).toBeFalse();
+  }));
+
+  it('reverts the optimistic flip when the service returns an error', fakeAsync(() => {
+    mockService.setJobEnabled.and.returnValue(throwError(() => new Error('Server error')));
+
+    // job starts as enabled=true
+    component.toggleJob(component.jobs[0]);
+    tick();
+
+    // should have been reverted back to true
+    expect(component.jobs[0].enabled).toBeTrue();
+  }));
+
+  it('sets a toggleError message on service error', fakeAsync(() => {
+    mockService.setJobEnabled.and.returnValue(throwError(() => new Error('Server error')));
+
+    component.toggleJob(component.jobs[0]);
+    tick();
+
+    expect(component.toggleErrors['solve-tasks']).toContain('Fehler');
+  }));
+
+  it('clears the in-flight flag after successful toggle', fakeAsync(() => {
+    const updatedJob = makeJob('solve-tasks', false);
+    mockService.setJobEnabled.and.returnValue(of(updatedJob));
+
+    component.toggleJob(component.jobs[0]);
+    tick();
+
+    expect(component.togglingJobs['solve-tasks']).toBeFalse();
+  }));
+});
+
+// ─── Run Now button disabled when solve-tasks is disabled ────────────────────
+
+describe('CronDashboardComponent — Run Now button state', () => {
+  let fixture: ComponentFixture<CronDashboardComponent>;
+  let component: CronDashboardComponent;
+  let mockService: jasmine.SpyObj<CronService>;
+
+  describe('when the solve-tasks job is disabled', () => {
+    beforeEach(async () => {
+      mockService = makeMockService();
+      mockService.getJobs.and.returnValue(of([makeJob('solve-tasks', false)]));
+      mockService.getRuns.and.returnValue(of(EMPTY_PAGE));
+
+      await setupTestBed(mockService);
+
+      fixture = TestBed.createComponent(CronDashboardComponent);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
+    });
+
+    it('runNowDisabled returns true when solve-tasks is disabled', () => {
+      expect(component.runNowDisabled).toBeTrue();
+    });
+
+    it('the "Jetzt ausführen" button is disabled in the DOM', () => {
+      const btn: HTMLButtonElement = fixture.nativeElement.querySelector('button.btn-primary');
+      expect(btn.disabled).toBeTrue();
+    });
+
+    it('provides a non-empty title hint on the button', () => {
+      const btn: HTMLButtonElement = fixture.nativeElement.querySelector('button.btn-primary');
+      expect(btn.title.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('when the solve-tasks job is enabled', () => {
+    beforeEach(async () => {
+      mockService = makeMockService();
+      mockService.getJobs.and.returnValue(of([makeJob('solve-tasks', true)]));
+      mockService.getRuns.and.returnValue(of(EMPTY_PAGE));
+
+      await setupTestBed(mockService);
+
+      fixture = TestBed.createComponent(CronDashboardComponent);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
+    });
+
+    it('runNowDisabled returns false when solve-tasks is enabled', () => {
+      expect(component.runNowDisabled).toBeFalse();
+    });
+
+    it('the "Jetzt ausführen" button is enabled in the DOM', () => {
+      const btn: HTMLButtonElement = fixture.nativeElement.querySelector('button.btn-primary');
+      expect(btn.disabled).toBeFalse();
+    });
+  });
+
+  describe('when there is no solve-tasks job', () => {
+    beforeEach(async () => {
+      mockService = makeMockService();
+      mockService.getJobs.and.returnValue(of([makeJob('other-job', true)]));
+      mockService.getRuns.and.returnValue(of(EMPTY_PAGE));
+
+      await setupTestBed(mockService);
+
+      fixture = TestBed.createComponent(CronDashboardComponent);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
+    });
+
+    it('runNowDisabled returns false when solve-tasks job does not exist', () => {
+      expect(component.runNowDisabled).toBeFalse();
+    });
   });
 });

@@ -253,29 +253,65 @@ export interface CronJobWithLastRun {
   schedule: string;
   description: string;
   dispatchEventType: string;
+  enabled: boolean;
   lastRun: CronRunDTO | null;
 }
 
+// ─── Job enable/disable ───────────────────────────────────────────────────────
+
 /**
- * For each entry in CRON_JOBS, fetch the newest cron_run row (or null).
+ * Returns whether a job is enabled. Defaults to true when no state row exists.
+ */
+export async function isJobEnabled(job: string): Promise<boolean> {
+  const result = await client.execute({
+    sql: 'SELECT enabled FROM cron_job_state WHERE job = ?',
+    args: [job],
+  });
+  const row = result.rows[0] as unknown as { enabled: number } | undefined;
+  if (!row) return true;
+  return row.enabled === 1;
+}
+
+/**
+ * Insert or update the enabled flag for a job.
+ */
+export async function setJobEnabled(job: string, enabled: boolean): Promise<void> {
+  const updatedAt = new Date().toISOString();
+  await client.execute({
+    sql: `INSERT INTO cron_job_state (job, enabled, updatedAt)
+          VALUES (?, ?, ?)
+          ON CONFLICT(job) DO UPDATE
+            SET enabled   = excluded.enabled,
+                updatedAt = excluded.updatedAt`,
+    args: [job, enabled ? 1 : 0, updatedAt],
+  });
+}
+
+/**
+ * For each entry in CRON_JOBS, fetch the newest cron_run row (or null)
+ * and the current enabled state (default true when no cron_job_state row).
  */
 export async function deriveJobsWithLastRun(): Promise<CronJobWithLastRun[]> {
   const results: CronJobWithLastRun[] = [];
 
   for (const job of CRON_JOBS) {
-    const result = await client.execute({
-      sql: `SELECT * FROM cron_run
-            WHERE job = ?
-            ORDER BY startedAt DESC
-            LIMIT 1`,
-      args: [job.name],
-    });
-    const row = result.rows[0] as unknown as CronRunRow | undefined;
+    const [runResult, enabled] = await Promise.all([
+      client.execute({
+        sql: `SELECT * FROM cron_run
+              WHERE job = ?
+              ORDER BY startedAt DESC
+              LIMIT 1`,
+        args: [job.name],
+      }),
+      isJobEnabled(job.name),
+    ]);
+    const row = runResult.rows[0] as unknown as CronRunRow | undefined;
     results.push({
       name: job.name,
       schedule: job.schedule,
       description: job.description,
       dispatchEventType: job.dispatchEventType,
+      enabled,
       lastRun: row ? toDTO(row) : null,
     });
   }

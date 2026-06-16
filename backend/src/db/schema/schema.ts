@@ -132,6 +132,16 @@ export const cronRun = sqliteTable('cron_run', {
   error:        text('error'),
 });
 
+// ─── cronJobState ─────────────────────────────────────────────────────────────
+// Per-job enable/disable toggle. Absence of a row means "enabled" (default true).
+// enabled stored as INTEGER 0/1 — no {mode:'boolean'} used in this codebase.
+// updatedAt set explicitly by the service (no DB default), matching cronRun style.
+export const cronJobState = sqliteTable('cron_job_state', {
+  job:       text('job').primaryKey(),
+  enabled:   integer('enabled').notNull().default(1),  // 1 = enabled, 0 = disabled
+  updatedAt: text('updatedAt').notNull(),               // ISO-8601, set by service
+});
+
 // ─── sessions ─────────────────────────────────────────────────────────────────
 // DOCUMENTARY ONLY — the session store (middleware/libsqlSessionStore.ts) reads
 // and writes this table via raw client.execute() calls, not through Drizzle.

@@ -30,6 +30,7 @@ export interface CronJob {
   description: string;
   dispatchEventType: string;
   lastRun: CronJobLastRun | null;
+  enabled: boolean;
 }
 
 export type { Page };

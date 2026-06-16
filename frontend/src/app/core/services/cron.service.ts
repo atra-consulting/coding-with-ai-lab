@@ -26,4 +26,8 @@ export class CronService {
   triggerNow(): Observable<CronRun> {
     return this.http.get<CronRun>(`${this.baseUrl}/agent-tasks`);
   }
+
+  setJobEnabled(name: string, enabled: boolean): Observable<CronJob> {
+    return this.http.patch<CronJob>(`${this.baseUrl}/jobs/${name}`, { enabled });
+  }
 }
