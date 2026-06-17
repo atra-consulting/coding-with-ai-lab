@@ -19,7 +19,9 @@ Add the repository secret (Settings → Secrets and variables → Actions):
   `atra-consulting` org member with write access to project #7, and **SSO-authorized for
   the org**. The default `GITHUB_TOKEN` cannot write org Projects v2 — this is the one
   secret it won't run without.
-- **`ANTHROPIC_API_KEY`** — already present if the other runner works.
+- **`CLAUDE_CODE_OAUTH_TOKEN`** — a Claude Code OAuth token (generate with `claude setup-token`
+  using a Claude Pro/Max subscription). The runner authenticates headless `claude -p` with it.
+  Alternatively set `ANTHROPIC_API_KEY` to a real API key and pass that instead.
 - `AGENT_API_TOKEN` / `APP_BASE_URL` — only if you want the optional cron-callback; skip
   otherwise.
 
@@ -46,8 +48,8 @@ agent a task, add **`Refinement needed`** to the issue and put it on the board.
 **Locally** (good for testing first):
 
 ```bash
-export GH_TOKEN=$(gh auth token)      # needs project + repo scope
-export ANTHROPIC_API_KEY=...
+export GH_TOKEN=$(gh auth token)         # needs project + repo scope
+export CLAUDE_CODE_OAUTH_TOKEN=...       # from `claude setup-token` (or set ANTHROPIC_API_KEY)
 
 scripts/gh-issues-select.sh           # DRY RUN: which issues match? (read-only, safe)
 scripts/gh-issue-status.sh get 70     # read one issue's board Status

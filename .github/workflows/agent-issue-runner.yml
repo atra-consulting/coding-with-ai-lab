@@ -22,7 +22,8 @@
 #   GH_PROJECT_TOKEN  - PAT with `project` + `repo`, owned by an atra-consulting org
 #                       member with write access to project #7, and SSO-authorized for
 #                       the org. The default GITHUB_TOKEN cannot write org Projects v2.
-#   ANTHROPIC_API_KEY - API key Claude Code uses to call the Anthropic API.
+#   CLAUDE_CODE_OAUTH_TOKEN - Claude Code OAuth token (from `claude setup-token`) used to
+#                       authenticate the Anthropic API in headless `claude -p` mode.
 #   AGENT_API_TOKEN   - only for the optional cron_run callback (repository_dispatch).
 #   APP_BASE_URL      - only for the optional cron_run callback.
 
@@ -71,7 +72,7 @@ jobs:
       - name: Drain selected board issues
         id: drain
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # One issue per run: process the first selected issue, defer the rest.
           MAX_ISSUES_PER_RUN: '1'
         run: |

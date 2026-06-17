@@ -13,9 +13,9 @@
 # Local use only. Requires Claude Code on PATH and gh authenticated.
 #
 # Environment:
-#   GH_TOKEN            (required) PAT with `project` + `repo`
-#   ANTHROPIC_API_KEY   (required) so `claude -p` can call the Anthropic API
-#   MAX_ISSUES_PER_RUN  (optional) per-run cap, default 10
+#   GH_TOKEN                 (required) PAT with `project` + `repo`
+#   CLAUDE_CODE_OAUTH_TOKEN  (required, or ANTHROPIC_API_KEY) so `claude -p` can authenticate
+#   MAX_ISSUES_PER_RUN       (optional) per-run cap, default 10
 
 set -uo pipefail
 
@@ -27,8 +27,8 @@ if [ -z "${GH_TOKEN:-}" ]; then
   echo "ERROR: GH_TOKEN is not set (PAT with project + repo)." >&2
   exit 1
 fi
-if [ -z "${ANTHROPIC_API_KEY:-}" ]; then
-  echo "ERROR: ANTHROPIC_API_KEY is not set (needed by 'claude -p')." >&2
+if [ -z "${CLAUDE_CODE_OAUTH_TOKEN:-}" ] && [ -z "${ANTHROPIC_API_KEY:-}" ]; then
+  echo "ERROR: set CLAUDE_CODE_OAUTH_TOKEN (from 'claude setup-token') or ANTHROPIC_API_KEY for 'claude -p'." >&2
   exit 1
 fi
 
