@@ -87,9 +87,9 @@ Before finishing any document:
 
 This project uses:
 - Node.js 20.19+ / TypeScript 5.8 backend (Express 4.21)
-- better-sqlite3 9.6 with Drizzle ORM 0.41 (file-based SQLite at `backend/data/crmdb.sqlite`)
-- Session-based auth via `express-session` with hardcoded users in `backend/src/config/users.ts` (admin/admin123, user/test123, demo/demo1234)
+- @libsql/client 0.17 with Drizzle ORM 0.41 (file-based SQLite at `backend/data/crmdb.sqlite`)
+- Session-based auth via `express-session` (DB-backed store) with hardcoded users in `backend/src/config/users.ts` (admin/admin123, user/test123, demo/demo1234)
 - Angular 21 frontend (standalone components, Bootstrap 5)
-- German domain model (Firma, Person, Abteilung, Adresse, Gehalt, Aktivitaet, Vertrag, Chance)
+- German domain model (Firma, Person, Abteilung, Adresse, Aktivitaet, Chance)
 
 Write specs that reference these technologies when relevant. Link to existing PRDs in `docs/prds/` when related.

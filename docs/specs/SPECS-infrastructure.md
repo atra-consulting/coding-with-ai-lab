@@ -21,10 +21,11 @@ coding-with-ai-lab/
 │       ├── routes/             # Express route handlers (one per entity)
 │       ├── services/           # Business logic (one per entity)
 │       ├── middleware/
-│       │   ├── auth.ts         # requireRole / requirePermission guards
+│       │   ├── auth.ts         # requireAuth / requireRole guards
 │       │   ├── cors.ts         # CORS setup
 │       │   ├── errorHandler.ts # Global error handler
-│       │   └── session.ts      # express-session configuration
+│       │   ├── session.ts      # express-session configuration
+│       │   └── libsqlSessionStore.ts # DB-backed session store (sessions table)
 │       ├── seed/
 │       │   ├── dataMigration.ts  # Loads fixture.json into the DB when empty (CRM entities)
 │       │   ├── fixture.json      # Fixed seed data (390 rows total, CRM entities only)
@@ -49,6 +50,9 @@ coding-with-ai-lab/
 │   ├── uxdr/                   # UX Design Records
 │   ├── reviews/                # Code reviews
 │   └── specs/                  # This specification
+├── api/                        # Vercel serverless entry (api/index.ts wraps the Express app)
+├── .github/workflows/          # GitHub Actions (deploy + agent runners)
+├── vercel.json                 # Vercel build, rewrites, and cron config
 ├── .claude/
 │   ├── agents/                 # Claude agents
 │   └── skills/                 # Claude skills
@@ -66,9 +70,8 @@ Runtime: Node.js 20.19+. Language: TypeScript. Executed via `tsx`.
 | Dependency | Version | Purpose |
 |-----------|---------|---------|
 | express | ^4.21.2 | HTTP server and routing |
-| express-session | ^1.18.1 | Session-based authentication |
-| memorystore | ^1.6.7 | In-memory session store |
-| better-sqlite3 | ^9.6.0 | SQLite driver |
+| express-session | ^1.18.1 | Session-based authentication (DB-backed store) |
+| @libsql/client | ^0.17.3 | libSQL/SQLite driver (async API) |
 | drizzle-orm | ^0.41.0 | Type-safe ORM for SQLite |
 | bcryptjs | ^2.4.3 | Password hashing |
 | cors | ^2.8.5 | CORS middleware |
@@ -116,9 +119,10 @@ Dev dependencies:
 
 ### CRM Database
 
-- Engine: SQLite (via `better-sqlite3`)
-- File path: `backend/data/crmdb.sqlite`
-- Created automatically on first startup
+- Engine: SQLite via `@libsql/client` (libSQL, async API) wired into Drizzle through `drizzle-orm/libsql`
+- File path: `backend/data/crmdb.sqlite` (path resolved relative to `src/config/db.ts` via `__dirname`, so it is correct regardless of working directory). The client uses the `file:` URL scheme by default.
+- Created automatically on first startup (the data dir is created only when running file-based, not on Vercel)
+- Remote libSQL/Turso is optionally supported: if `TURSO_DATABASE_URL` (and optional `TURSO_AUTH_TOKEN`) are set, the client connects to that remote URL instead of the local file. Used for deployment; local development is file-based.
 
 Schema file paths, migration approach, table definitions, column specs, and enums: see [SPECS-database.md](SPECS-database.md).
 
@@ -128,7 +132,7 @@ No separate auth database. Users are hardcoded in `backend/src/config/users.ts`.
 
 Three users: `admin`, `user`, `demo`.
 
-Sessions stored in memory via `memorystore`. No JWT. No RSA keys.
+Sessions are stored in the database via a custom store, `backend/src/middleware/libsqlSessionStore.ts` (`sessions` table), wired into `express-session` in `backend/src/middleware/session.ts` (cookie name `JSESSIONID`). No JWT. No RSA keys.
 
 ## Startup
 
@@ -197,6 +201,8 @@ All optional, with defaults:
 | SESSION_SECRET | `crm-dev-secret-key` | express-session signing secret |
 | CORS_ORIGINS | `http://localhost:7200` | Allowed CORS origins |
 | NODE_ENV | (unset) | `production` disables the `/api/auth/test-login` helper |
+| TURSO_DATABASE_URL | (unset) | When set, connects the libSQL client to a remote libSQL/Turso URL instead of the local file (deployment) |
+| TURSO_AUTH_TOKEN | (unset) | Auth token for the remote libSQL/Turso connection |
 
 No JWT secrets. No RSA key paths. No cookie-flag overrides.
 
@@ -211,6 +217,20 @@ No JWT secrets. No RSA key paths. No cookie-flag overrides.
 | docs/reviews/ | Code review reports |
 | docs/specs/ | System specifications (this) |
 
-## No CI/CD
+## CI/CD & Deployment
 
-No Docker, GitHub Actions, GitLab CI, or other pipeline configurations. Local development only.
+### GitHub Actions (`.github/workflows/`)
+
+| Workflow | Purpose |
+|----------|---------|
+| `deploy.yml` | Deployment workflow |
+| `agent-task-runner.yml` | Runs Claude Code against the `agent_task` table (EMAIL / GITHUB_ISSUE / APP_LOG / ERROR_REPORT sources) |
+| `agent-issue-runner.yml` | Runs Claude Code against real GitHub issues from the org Project board |
+
+### Vercel deployment
+
+- `vercel.json` configures the build (`cd frontend && npm ci && npx ng build`), SPA rewrites, an `/api/*` rewrite to the serverless function, and a daily cron (`0 2 * * *`) hitting `/api/cron/agent-tasks`.
+- `api/index.ts` is the Vercel serverless entry point that wraps the Express app.
+- On Vercel the libSQL client connects to a remote libSQL/Turso URL (via `TURSO_DATABASE_URL`) since the filesystem is read-only.
+
+No Docker or GitLab CI.

@@ -16,9 +16,9 @@ Your spec reading list (paths are relative to the repo root):
 
 ## Test Framework
 
-- **Jasmine 5 + Karma 6** — Angular CLI default
-- Run command: `cd frontend && npx ng test` (watch mode) or `cd frontend && npx ng test --watch=false --browsers=ChromeHeadless` (single run)
-- Config: `frontend/karma.conf.js` and `frontend/tsconfig.spec.json`
+- **Jasmine 5 + Karma 6** — Angular CLI default (via the `@angular/build:karma` builder)
+- Run command: `cd frontend && npx ng test` (watch mode) or `cd frontend && npm run test:ci` (single CI run — maps to `ng test --configuration=ci`)
+- Config: there is **no** `frontend/karma.conf.js` — Karma is configured by the `@angular/build:karma` builder in `frontend/angular.json` (the `ci` configuration sets `browsers: "ChromeHeadlessNoSandbox"`). TypeScript test config is `frontend/tsconfig.spec.json`.
 - Test files live alongside source: `foo.component.spec.ts` next to `foo.component.ts`
 
 ## What to Test
@@ -65,6 +65,10 @@ NgbPagination is 1-indexed, backend is 0-indexed. A component calling `service.l
 - No real HTTP calls — always use `HttpClientTestingModule`
 - One behavior per `it(...)` block
 - Reset spies/mocks in `afterEach` if they hold state
+
+## Existing Spec Files
+
+The frontend suite already has these specs (paths relative to `frontend/src/app/`): `core/services/layout.service.spec.ts`, `core/services/cron.service.spec.ts`, `core/services/agent-task.service.spec.ts`, `core/guards/role.guard.spec.ts`, `layout/sidebar/sidebar.component.spec.ts`, `features/admin/agent-tasks/agent-task-list.component.spec.ts`, `features/admin/agent-tasks/agent-tasks-dashboard.component.spec.ts`, `features/admin/agent-tasks/agent-task-detail.component.spec.ts`, `features/admin/cron/cron-dashboard.component.spec.ts`. Check these before adding new files so you extend rather than duplicate coverage.
 
 ## Key Locations
 

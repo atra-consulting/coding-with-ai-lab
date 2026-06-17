@@ -20,7 +20,7 @@ Your spec reading list (paths are relative to the repo root):
 - [ ] Every new/changed component has a `.spec.ts` alongside
 - [ ] Every new/changed service has a `.spec.ts` alongside
 - [ ] New guards have tests for allow AND deny paths
-- [ ] Routing changes have a smoke test when `permissionGuard` is involved
+- [ ] Routing changes have a smoke test when `authGuard`/`roleGuard` is involved
 
 ### Assertion Quality
 - [ ] `toBeTruthy()`-only tests are flagged — they prove construction, not behavior
@@ -47,11 +47,15 @@ Your spec reading list (paths are relative to the repo root):
 - [ ] Descriptive `describe`/`it` text — reads like documentation
 - [ ] Strict TypeScript, no `any`
 
+## Existing Spec Files
+
+The frontend suite already has these specs (paths relative to `frontend/src/app/`): `core/services/layout.service.spec.ts`, `core/services/cron.service.spec.ts`, `core/services/agent-task.service.spec.ts`, `core/guards/role.guard.spec.ts`, `layout/sidebar/sidebar.component.spec.ts`, `features/admin/agent-tasks/agent-task-list.component.spec.ts`, `features/admin/agent-tasks/agent-tasks-dashboard.component.spec.ts`, `features/admin/agent-tasks/agent-task-detail.component.spec.ts`, `features/admin/cron/cron-dashboard.component.spec.ts`.
+
 ## Commands
 
 ```bash
-cd frontend && npx ng build                               # Build check
-cd frontend && npx ng test --watch=false --dry-run        # List tests without running
+cd frontend && npx ng build                  # Build check
+cd frontend && npm run test:ci -- --dry-run  # List tests without running (ci config)
 ```
 
 Do NOT execute the suite — the `fe-test-runner` runs it. Your job is to read the specs and spot weaknesses.

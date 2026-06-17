@@ -107,8 +107,9 @@ Drei vorkonfigurierte Benutzer stehen zur Verfügung:
 - **CRM-Stammdaten** — Firmen, Personen, Abteilungen, Adressen mit AG-Grid-Tabellen
 - **Chancen & Aktivitäten** — Vertriebspipeline und Aktivitäten-Tracking
 - **Dashboard** — KPI-Tiles und Übersicht der jüngsten Datensätze
-- **Adress-Geocoding** — Admin-Tool für Nominatim-basiertes Geocoding mit Karten-Ansicht
 - **Feedback** — Nutzerfeedback per QR-Code mit Thank-You-Page
+- **Admin-Tools** — Agent-Aufgaben- und Cron-Job-Dashboards (nur ADMIN)
+- **Dark Mode** — Umschaltbar in der Navbar, in `localStorage` gespeichert
 - **Session-Authentifizierung** — bcrypt-Passwörter mit rollenbasierter Zugriffskontrolle
 
 ---
@@ -119,7 +120,7 @@ Drei vorkonfigurierte Benutzer stehen zur Verfügung:
 |---------|-------------|
 | **Backend** | Node.js · TypeScript · Express · Drizzle ORM |
 | **Frontend** | Angular 21 · Bootstrap 5 · AG Grid · Chart.js |
-| **Datenbank** | SQLite (file-based, via `better-sqlite3`) |
+| **Datenbank** | SQLite (file-based, via `@libsql/client`) |
 | **Auth** | Session-basiert (bcrypt + `express-session`) |
 
 Konventionen, Patterns und Beispiele für AI-gestützte Entwicklung: **[CLAUDE.md](CLAUDE.md)**

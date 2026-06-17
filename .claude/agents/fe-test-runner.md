@@ -18,8 +18,10 @@ Your spec reading list (paths are relative to the repo root):
 
 Single CI-style run (preferred — no watcher):
 ```bash
-cd frontend && npx ng test --watch=false --browsers=ChromeHeadless
+cd frontend && npm run test:ci
 ```
+
+This maps to `ng test --configuration=ci`, whose `ci` configuration in `frontend/angular.json` sets `watch: false`, `progress: false`, and `browsers: "ChromeHeadlessNoSandbox"`. Do not pass `--browsers=ChromeHeadless` — that launcher is not configured.
 
 For a single spec file, use Karma's focused pattern via `fdescribe`/`fit` temporarily — NOT your job to add them. If the caller needs a narrow run, they provide the filter.
 
@@ -37,7 +39,7 @@ Report in this exact shape:
 ```
 Frontend tests
 
-Command: cd frontend && npx ng test --watch=false --browsers=ChromeHeadless
+Command: cd frontend && npm run test:ci
 Result: PASS | FAIL
 Passed: <N>
 Failed: <N>

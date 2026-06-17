@@ -27,7 +27,8 @@ Your spec reading list (paths are relative to the repo root):
 - [ ] Drizzle schema and `migrate.ts` CREATE TABLE stay in sync
 
 ### Security
-- [ ] Every route uses `requireAuth` plus `requireRole(...)` or `requirePermission(...)`
+- [ ] Every route uses `requireAuth` (plus `requireRole(...)` when the route is role-restricted); there is no `requirePermission` middleware
+- [ ] Agent/cron routes use `requireAgentToken` (shared-secret SHA-256 + `timingSafeEqual`)
 - [ ] Zod validation at the boundary on all write routes
 - [ ] No string concatenation in SQL — use parameterized queries or Drizzle builders
 - [ ] `sort` and other dynamic column names validated against a whitelist
@@ -42,11 +43,12 @@ Your spec reading list (paths are relative to the repo root):
 - [ ] No duplicated validation or mapping logic
 
 ### SQLite & Drizzle
-- [ ] `PRAGMA foreign_keys = ON` still enforced in `config/db.ts`
+- [ ] `PRAGMA foreign_keys = ON` still enforced (standalone `client.execute()` in `config/migrate.ts`)
 - [ ] Dates stored as ISO-8601 TEXT
 - [ ] Monetary values as REAL
 - [ ] Booleans handled as INTEGER 0/1 (converted in the service)
-- [ ] No `await` on better-sqlite3 calls (they're sync)
+- [ ] DB access is async — `await client.execute({ sql, args })` (@libsql/client); results read from `result.rows`
+- [ ] No `client.transaction()` — use single `client.execute()` statements
 - [ ] Indexes on foreign keys and common filter columns present in `migrate.ts`
 
 ### Pagination & Sorting
@@ -55,8 +57,9 @@ Your spec reading list (paths are relative to the repo root):
 - [ ] Sort field whitelisted per entity
 
 ### Session & Auth
+- [ ] Sessions persisted via `LibsqlSessionStore` (DB-backed `sessions` table), not in-memory
 - [ ] Session cookie `JSESSIONID`, `httpOnly`, reasonable `maxAge`
-- [ ] Role and permission arrays read from `config/users.ts`
+- [ ] Role arrays read from `config/users.ts`
 
 ## Build & Test Commands
 

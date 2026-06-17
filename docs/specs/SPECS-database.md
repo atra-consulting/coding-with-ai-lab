@@ -12,7 +12,7 @@ Cross-references:
 
 | Library | Version |
 |---------|---------|
-| better-sqlite3 | 9.6 |
+| @libsql/client | 0.17 |
 | drizzle-orm | 0.41 |
 
 ## Schema Files
@@ -23,7 +23,7 @@ Cross-references:
 | TypeScript enum arrays and types | `backend/src/db/schema/enums.ts` |
 | Migration statements (DDL) | `backend/src/config/migrate.ts` |
 
-Migration approach: plain `CREATE TABLE IF NOT EXISTS` statements. Run on every startup before CRM seed data is loaded. After DDL, `seedAgentTasks()` (`backend/src/seed/agentTaskSeed.ts`) inserts the 16 `agent_task` rows idempotently (INSERT OR IGNORE, fixed ids 1–16) — so agent tasks exist in every deployment including Vercel cold-starts.
+Migration approach: plain `CREATE TABLE IF NOT EXISTS` statements (run via the libsql client's `client.executeMultiple(...)`). Run on every startup before CRM seed data is loaded. Column additions use an idempotent guard — `PRAGMA table_info` check followed by `ALTER TABLE ... ADD COLUMN` (e.g. `firma.is_favorit`). After DDL, `seedAgentTasks()` (`backend/src/seed/agentTaskSeed.ts`) inserts the 16 `agent_task` rows idempotently (INSERT OR IGNORE, fixed ids 1–16) — so agent tasks exist in every deployment including Vercel cold-starts.
 
 ## Tables
 
@@ -54,7 +54,7 @@ Indexes: `idx_cron_run_startedAt (startedAt DESC)`, `idx_cron_run_job_startedAt 
 - All timestamps are `text` columns storing ISO-8601 strings.
 - Monetary values (`wert`, `amount`) use SQLite `REAL`.
 - Foreign keys enforce referential integrity.
-- `PRAGMA foreign_keys = ON` is set on every connection (see `backend/src/config/db.ts`). Required for cascade deletes to work.
+- `PRAGMA foreign_keys = ON` is executed at startup via `client.execute('PRAGMA foreign_keys = ON')` (see `backend/src/config/migrate.ts`; the libsql client is configured in `backend/src/config/db.ts`). Required for cascade deletes to work.
 
 ## Entities
 
@@ -69,6 +69,7 @@ Indexes: `idx_cron_run_startedAt (startedAt DESC)`, `idx_cron_run_job_startedAt 
 | phone | text | nullable |
 | email | text | nullable |
 | notes | text | nullable |
+| is_favorit | integer | NOT NULL, default `0` (boolean 0/1; added via idempotent `ALTER TABLE` in `migrate.ts`) |
 | createdAt | text | NOT NULL, default `datetime('now')` |
 | updatedAt | text | NOT NULL, default `datetime('now')` |
 

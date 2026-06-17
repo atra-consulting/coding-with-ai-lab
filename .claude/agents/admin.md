@@ -41,8 +41,8 @@ Your spec reading list (paths are relative to the repo root):
 - Node.js 20.19+ / TypeScript 5.8 / Express 4.21
 - SQLite file: `backend/data/crmdb.sqlite`
 - Schema created on startup from `backend/src/config/migrate.ts`
-- Seed data applied on first run from `backend/src/seed/seeder.ts`
-- Session-based auth (express-session + memorystore, `JSESSIONID` cookie)
+- Seed data applied on first run from `backend/src/seed/dataMigration.ts` (loads `fixture.json`); `agent_task` rows seeded idempotently from `backend/src/seed/agentTaskSeed.ts`
+- Session-based auth (express-session + DB-backed store `backend/src/middleware/libsqlSessionStore.ts`, `JSESSIONID` cookie)
 - Start: `cd backend && npx tsx --watch src/index.ts`
 
 ### Frontend (Port 7200)

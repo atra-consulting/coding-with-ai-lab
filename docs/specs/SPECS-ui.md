@@ -17,13 +17,13 @@ Defined in `frontend/src/_variables.scss` and imported globally.
 | `$body-bg` | `#f5f6f8` | Page background |
 | Font | `"Helvetica Neue", Helvetica, Arial, sans-serif` | `$font-family-sans-serif` |
 
-Bootstrap 5.3.8 is loaded after these variables so that Bootstrap utilities inherit the overrides. Custom SCSS is layered on top ("Bootstrap-first" convention: use Bootstrap utilities first, reach for custom rules only when Bootstrap cannot do it). Dark mode is supported via `data-bs-theme="dark"` on the `<html>` element, toggled by a button in the navbar and persisted to `localStorage`.
+Bootstrap 5.3.x (`bootstrap` ^5.3.8 in `frontend/package.json`) is loaded after these variables so that Bootstrap utilities inherit the overrides. Custom SCSS is layered on top ("Bootstrap-first" convention: use Bootstrap utilities first, reach for custom rules only when Bootstrap cannot do it). Dark mode is supported via `data-bs-theme="dark"` on the `<html>` element, toggled by a button in the navbar and persisted to `localStorage` — see the [Dark Mode](#dark-mode) section.
 
 ---
 
 ## AG Grid Theming
 
-All entity list views use `ag-grid-angular` with `themeQuartz` as the base theme. Every list component applies the same param override:
+All entity list views use `ag-grid-angular` (`ag-grid-angular` / `ag-grid-community` ^35.1.0 in `frontend/package.json`) with `themeQuartz` as the base theme. Every list component applies the same param override:
 
 ```ts
 theme = themeQuartz.withParams({ oddRowBackgroundColor: '#f0f0f0' });
@@ -51,6 +51,38 @@ Global header overrides in `frontend/src/styles.scss` (applied via CSS class sel
 > **Note:** The five rows marked `yes` in the `!important` column carry that flag in the source. These overrides require `!important` to penetrate AG Grid's own theme cascade (themeQuartz applies its styles via high-specificity scoped selectors). Rows without `!important` target properties that AG Grid's theme does not set directly, so the flag is not needed there.
 
 Note: `#0044cc` is a grid-only blue distinct from `$primary` (`#264892`). It is used nowhere else.
+
+---
+
+## AG Grid Cell Renderers
+
+Custom Angular cell renderer components used inside AG Grid list views. Icons come from FontAwesome (`@fortawesome/free-solid-svg-icons` v7.x, rendered via `@fortawesome/angular-fontawesome` ^4.0.0 — see `frontend/package.json`).
+
+### Aktivitaet type icon — `typ-icon-cell-renderer.component.ts`
+
+Renders the Aktivitaet `typ` column as a FontAwesome icon followed by a German label (icon has `me-1` spacing). Mapping (`TYP_MAP`):
+
+| `typ` value | Icon | Label |
+|-------------|------|-------|
+| ANRUF | `faPhone` | Anruf |
+| EMAIL | `faEnvelope` | E-Mail |
+| MEETING | `faUsers` | Meeting |
+| NOTIZ | `faNoteSticky` | Notiz |
+| AUFGABE | `faListCheck` | Aufgabe |
+
+Unknown / empty values fall back to `faQuestion` and show the raw value as the label.
+
+Location: `frontend/src/app/features/aktivitaet/aktivitaet-list/typ-icon-cell-renderer.component.ts`.
+
+### Firma favorite star — `star-cell-renderer.component.ts`
+
+Renders the Firma `favorit` column as a clickable star button.
+
+- Icon: `faStar`, color `#ffc107` (Bootstrap warning yellow).
+- Favorite state shown via opacity: `opacity: 1` when favorite, `0.3` when not.
+- It is a `btn btn-link p-0` button with `aria-label="Als Favorit markieren"`; clicking calls the parent's `onToggle(id, currentValue)` callback (passed via cell renderer params) and stops event propagation so the row is not selected.
+
+Location: `frontend/src/app/features/firma/firma-list/star-cell-renderer.component.ts`.
 
 ---
 
@@ -196,10 +228,22 @@ Canonical home. Cross-referenced from the Chance Board section in `SPECS-fronten
 |-------------------|-----------------------|
 | NEU | `bg-primary` |
 | QUALIFIZIERT | `bg-info` |
-| ANGEBOT | `bg-warning` |
+| ANGEBOT | `bg-warning text-dark` |
 | VERHANDLUNG | `bg-secondary` |
 | GEWONNEN | `bg-success` |
 | VERLOREN | `bg-danger` |
+
+Source: `frontend/src/app/shared/pipes/chance-phase-badge.pipe.ts` (`PHASE_BADGE_CLASSES`). ANGEBOT carries the extra `text-dark` token because Bootstrap's yellow `bg-warning` needs dark text for contrast. Unknown values fall back to `bg-secondary`.
+
+---
+
+## Dark Mode
+
+The app supports a light/dark theme toggle.
+
+- **Toggle location**: a button in the navbar (`frontend/src/app/layout/navbar/`), shown only when a user is logged in. It displays a moon icon (`faMoon`) in light mode and a sun icon (`faSun`) in dark mode, with German `aria-label`/`title` ("Dunkelmodus umschalten" / "Hellmodus umschalten").
+- **Theming mechanism**: `ThemeService` (`frontend/src/app/core/services/theme.service.ts`) sets `data-bs-theme="dark"` (or `"light"`) on the `<html>` element. This uses Bootstrap 5.3's native color-mode support — Bootstrap components and utilities adapt automatically; no custom dark-mode SCSS is required.
+- **State & persistence**: the current mode is held in an Angular signal and persisted to `localStorage` under the key `theme` (stored as a JSON boolean `isDark`). An `effect()` writes to `localStorage` and re-applies the `data-bs-theme` attribute on every change; the stored value is read back on startup so the choice survives reloads. Default is light mode.
 
 ---
 

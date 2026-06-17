@@ -2,7 +2,7 @@
 
 ## Project
 
-Full-stack CRM application. Node.js/TypeScript (Express + Drizzle ORM + SQLite) backend, Angular 21 frontend. German domain model: Firma, Person, Abteilung, Adresse, Aktivitaet, Chance. SQLite file-based database at `backend/data/crmdb.sqlite`. Authentication via hardcoded in-memory users (`backend/src/config/users.ts`) with session-based auth (3 users: admin/admin123, user/test123, demo/demo1234 — all with full permissions).
+Full-stack CRM application. Node.js/TypeScript (Express + Drizzle ORM + SQLite via `@libsql/client`) backend, Angular 21 frontend. German domain model: Firma, Person, Abteilung, Adresse, Aktivitaet, Chance. SQLite file-based database at `backend/data/crmdb.sqlite`. Authentication via hardcoded users with bcrypt-hashed passwords (`backend/src/config/users.ts`) and session-based auth; sessions are persisted to the DB via `libsqlSessionStore` (`sessions` table). 3 users: admin/admin123, user/test123, demo/demo1234 — admin and demo have role `ADMIN`, user has `USER`; all carry the full `permissions` array.
 
 ### Autonomous Task Sources (advanced workshop)
 
@@ -43,9 +43,9 @@ cd frontend && npx ng build                        # Frontend build check
 
 - **SQLite dates**: All dates stored as ISO-8601 text strings. Use `new Date().toISOString()` for timestamps.
 - **SQLite numeric**: Monetary values (`wert`, `amount`) stored as REAL. Returned as JSON numbers.
-- **PRAGMA foreign_keys**: Must be `ON` for cascade deletes to work. Set on every connection in `config/db.ts`.
+- **PRAGMA foreign_keys**: Must be `ON` for cascade deletes to work. Set as a standalone `client.execute('PRAGMA foreign_keys = ON')` in `config/migrate.ts` (libsql ignores pragmas batched with other statements).
 - **Sort parsing**: Sort arrives as query param `field,direction` (e.g., `name,asc`). Validated against per-entity field whitelists to prevent SQL injection.
-- **Authorization**: Every route file uses `requireRole(...)` or `requirePermission(...)` middleware from `middleware/auth.ts`.
+- **Authorization**: Entity routes use `requireAuth`; admin-only endpoints add `requireRole('ADMIN')`. Both from `middleware/auth.ts`. Agent/cron endpoints use `requireAgentToken`. There is no `requirePermission` middleware — authorization is role-based (users also carry a `permissions` array, currently unenforced).
 - **Error responses**: `{ status, message, timestamp, fieldErrors }` via global error handler in `middleware/errorHandler.ts`.
 - **Pagination**: Response shape mimics the Spring Data Page format (name only — backend is Node): `{ content, totalElements, totalPages, size, number, first, last }`. `number` is 0-indexed.
 - **Testing**: Backend uses Playwright (`@playwright/test`) for end-to-end API tests under `backend/src/test/`.
@@ -59,11 +59,11 @@ cd frontend && npx ng build                        # Frontend build check
 
 ## Adding a New Entity
 
-Backend (3 files): Drizzle schema in `db/schema/schema.ts` + CREATE TABLE in `config/migrate.ts` → Service in `services/` → Route handler in `routes/`. **Route file must use `requireRole(...)` or `requirePermission(...)`**.
+Backend (3 files): Drizzle schema in `db/schema/schema.ts` + CREATE TABLE in `config/migrate.ts` → Service in `services/` → Route handler in `routes/`. **Route file must guard with `requireAuth`** (add `requireRole('ADMIN')` for admin-only routes).
 
-Frontend (8+ files): Model interface → Service → Route file → List/Detail/Form components → register in `app.routes.ts` **with `canActivate: [permissionGuard('PERMISSION')]`** + add `permission: 'PERMISSION'` to sidebar item.
+Frontend (8+ files): Model interface → Service → Route file → List/Detail/Form components → register in `app.routes.ts` under the authenticated shell (**add `canActivate: [roleGuard('ROLE_ADMIN')]` for admin-only routes**) + add sidebar item (set `requiredRole: 'ROLE_ADMIN'` for admin-only).
 
-**Adding a new permission**: Add the permission string to the user's permissions array in `config/users.ts` → use `requirePermission('NAME')` on route → add `permissionGuard('NAME')` on frontend route + `permission: 'NAME'` on sidebar item.
+**Restricting access to a role**: Backend route guards with `requireRole('ADMIN')`; frontend route guards with `roleGuard('ROLE_ADMIN')` and the sidebar item sets `requiredRole: 'ROLE_ADMIN'`. (Backend roles are `ADMIN`/`USER`; the frontend exposes them prefixed as `ROLE_*`.)
 
 ## Commits & PRDs
 

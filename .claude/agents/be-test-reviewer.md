@@ -38,7 +38,7 @@ Your spec reading list (paths are relative to the repo root):
 ### SQLite-Specific
 - [ ] Dates compared as ISO-8601 strings, not `Date` objects
 - [ ] Monetary values compared with `toBeCloseTo` where arithmetic is involved
-- [ ] No `await` on better-sqlite3 calls
+- [ ] Raw `@libsql/client` DB calls are `await`ed (the driver is async)
 
 ### Security Coverage
 - [ ] Every protected route has a 401 test (no session) AND a 403 test (insufficient permission) where applicable
@@ -50,6 +50,10 @@ Your spec reading list (paths are relative to the repo root):
 - [ ] Strict TypeScript, no `any`
 - [ ] No hardcoded ports or URLs — use config / env
 - [ ] Login uses the three seeded users (admin/user/demo) — no fabricated credentials
+
+## Existing Test Files
+
+The backend suite already covers (under `backend/src/test/`): `auth.spec.ts`, `firmen-crud.spec.ts`, `adressen-coords.spec.ts`, `agentTasks.spec.ts`, `agentTaskSeed.spec.ts`, `cron.spec.ts`, `sessions-persistence.spec.ts`. Shared support files: `globalSetup.ts` and `helpers.ts`.
 
 ## Commands
 

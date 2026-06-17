@@ -30,6 +30,8 @@ For a targeted test title:
 cd backend && npx playwright test -g "<test title>"
 ```
 
+The suite under `backend/src/test/` includes: `auth.spec.ts`, `firmen-crud.spec.ts`, `adressen-coords.spec.ts`, `agentTasks.spec.ts`, `agentTaskSeed.spec.ts`, `cron.spec.ts`, `sessions-persistence.spec.ts` (plus `globalSetup.ts` and `helpers.ts` support files).
+
 ## Backend Prerequisites
 
 Playwright API tests hit `http://localhost:7070`. If the backend is not running:

@@ -57,7 +57,7 @@ Your spec reading list (paths are relative to the repo root):
 - [ ] Edit via route param + `patchValue()`
 
 ### Security
-- [ ] Routes guarded with `permissionGuard('PERMISSION')`
+- [ ] Authenticated routes under `authGuard`; admin-only routes use `roleGuard('ROLE_ADMIN')` (no `permissionGuard`)
 - [ ] No XSS vulnerabilities
 - [ ] No secrets in frontend code
 - [ ] Secure API calls
@@ -70,7 +70,6 @@ Your spec reading list (paths are relative to the repo root):
 
 ### Pagination
 - [ ] NgbPagination 1-indexed converted to 0-indexed for API calls
-- [ ] `@angular/localize/init` imported in main.ts
 
 ### UI/UX
 - [ ] Bootstrap 5 classes used correctly

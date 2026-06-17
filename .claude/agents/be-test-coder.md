@@ -38,7 +38,7 @@ For services, prefer testing through the route boundary. Only write unit-level s
 - One test file per route file: `backend/src/test/<entity>.spec.ts`
 - Use Playwright's `test.describe` for grouping, `test.beforeAll`/`beforeEach` for setup
 - Login helper: POST `/api/auth/login` with admin/admin123 to get a session cookie; reuse the cookie across tests via Playwright's `request.newContext({ storageState })` pattern
-- Reset or seed the SQLite DB between test suites when mutation tests pollute shared data — use `backend/src/seed/seeder.ts` entry points or a dedicated test seed
+- Reset or seed the SQLite DB between test suites when mutation tests pollute shared data — use `backend/src/seed/dataMigration.ts` / `agentTaskSeed.ts` entry points or a dedicated test seed
 
 ## Authorization Fixtures
 
@@ -54,7 +54,7 @@ All three currently hold full permissions. When the feature adds a new permissio
 - `PRAGMA foreign_keys = ON` must still be set on the test connection (see `config/db.ts`)
 - Dates are ISO-8601 text — assert with string equality, not `Date` equality
 - Monetary values are REAL — use tolerant comparison (`toBeCloseTo`) for computed amounts
-- better-sqlite3 is synchronous — no `await` on raw DB calls
+- The DB driver is `@libsql/client` (async) — raw DB calls return promises, so `await` them
 
 ## Code Standards
 
@@ -62,6 +62,10 @@ All three currently hold full permissions. When the feature adds a new permissio
 - `test.step(...)` for multi-phase tests
 - One assertion per behavior; avoid bundling unrelated checks
 - Clean up created rows in `afterAll` — or mark the test suite as mutation-safe and accept DB reset between runs
+
+## Existing Test Files
+
+The backend suite already covers (under `backend/src/test/`): `auth.spec.ts`, `firmen-crud.spec.ts`, `adressen-coords.spec.ts`, `agentTasks.spec.ts`, `agentTaskSeed.spec.ts`, `cron.spec.ts`, `sessions-persistence.spec.ts`. Shared support files: `globalSetup.ts` and `helpers.ts`. Check these before adding new files so you extend rather than duplicate coverage.
 
 ## Key Locations
 
