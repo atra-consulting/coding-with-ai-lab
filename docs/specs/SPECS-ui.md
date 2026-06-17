@@ -17,7 +17,7 @@ Defined in `frontend/src/_variables.scss` and imported globally.
 | `$body-bg` | `#f5f6f8` | Page background |
 | Font | `"Helvetica Neue", Helvetica, Arial, sans-serif` | `$font-family-sans-serif` |
 
-Bootstrap 5.3.8 is loaded after these variables so that Bootstrap utilities inherit the overrides. Custom SCSS is layered on top ("Bootstrap-first" convention: use Bootstrap utilities first, reach for custom rules only when Bootstrap cannot do it). Dark mode is not supported.
+Bootstrap 5.3.8 is loaded after these variables so that Bootstrap utilities inherit the overrides. Custom SCSS is layered on top ("Bootstrap-first" convention: use Bootstrap utilities first, reach for custom rules only when Bootstrap cannot do it). Dark mode is supported via `data-bs-theme="dark"` on the `<html>` element, toggled by a button in the navbar and persisted to `localStorage`.
 
 ---
 
