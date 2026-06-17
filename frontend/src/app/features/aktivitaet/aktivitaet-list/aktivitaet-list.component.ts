@@ -12,10 +12,11 @@ import {
 import { Aktivitaet } from '../../../core/models/aktivitaet.model';
 import { AktivitaetService } from '../../../core/services/aktivitaet.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
+import { TypIconCellRendererComponent } from './typ-icon-cell-renderer.component';
 
 @Component({
   selector: 'app-aktivitaet-list',
-  imports: [RouterLink, AgGridAngular, LoadingSpinnerComponent],
+  imports: [RouterLink, AgGridAngular, LoadingSpinnerComponent, TypIconCellRendererComponent],
   templateUrl: './aktivitaet-list.component.html',
 })
 export class AktivitaetListComponent implements OnInit {
@@ -37,6 +38,7 @@ export class AktivitaetListComponent implements OnInit {
       field: 'typ',
       headerName: 'Typ',
       filter: 'agTextColumnFilter',
+      cellRenderer: TypIconCellRendererComponent,
     },
     {
       field: 'datum',
