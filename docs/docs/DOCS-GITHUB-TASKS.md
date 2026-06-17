@@ -79,6 +79,6 @@ The next run re-reads the entire thread (your answer included) and continues fro
 - The prompt runs `claude -p --dangerously-skip-permissions` (required for headless
   autonomy, same as the reference runner). Use a least-scoped `GH_PROJECT_TOKEN`; ideally
   run in a sandbox.
-- The runner processes at most `MAX_ISSUES_PER_RUN` issues per run (default `10`); the rest
-  are deferred to the next run and logged.
+- The runner processes at most `MAX_ISSUES_PER_RUN` issues per run (set to `1` in
+  `agent-issue-runner.yml`); the rest are deferred to the next run and logged.
 - An issue with an already-open PR is skipped, so a run never opens a duplicate PR.
