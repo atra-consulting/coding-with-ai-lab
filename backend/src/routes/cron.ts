@@ -120,6 +120,47 @@ router.get(
   }),
 );
 
+// ─── GET /api/cron/github-issues ──────────────────────────────────────────────
+//
+// Triggered by the daily issue-runner cron or by an admin clicking
+// "Issue Runner ausführen". Fires the autonomous GitHub-issue agent
+// (repository_dispatch: solve-github-issues), which selects ONE issue from org
+// Project board #7 and decides solve-or-pause.
+//
+// Unlike /agent-tasks, this endpoint cannot cheaply pre-check whether there is
+// work to do — issue selection (label/Status rules) happens inside the workflow,
+// which no-ops gracefully when nothing matches. So we always dispatch (subject to
+// the single-flight guard) and let the workflow decide.
+//
+// ALWAYS responds 200 — same rationale as /agent-tasks (avoid Vercel cron retries).
+//
+router.get(
+  '/github-issues',
+  requireCronAuth as (req: Request, res: Response, next: NextFunction) => void,
+  asyncHandler(async (req: Request, res: Response) => {
+    const trigger = req.cronTrigger ?? 'MANUAL';
+
+    // Single-flight guard: skip if another run is already RUNNING
+    if (await isRunInProgress('solve-issues')) {
+      const run = await recordSkip('solve-issues', trigger, 'Another run is already RUNNING');
+      res.status(200).json(run);
+      return;
+    }
+
+    // Create the RUNNING row, then fire the GitHub dispatch
+    const run = await createRun('solve-issues', trigger);
+
+    try {
+      await dispatchWorkflow('solve-github-issues', { cronRunId: run.id });
+      res.status(200).json(run);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      const failedRun = await markFailed(run.id, message);
+      res.status(200).json(failedRun);
+    }
+  }),
+);
+
 // ─── POST /api/cron/runs/:id/complete ─────────────────────────────────────────
 //
 // Called by the GitHub Actions workflow when it finishes draining tasks.

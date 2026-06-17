@@ -26,4 +26,8 @@ export class CronService {
   triggerNow(): Observable<CronRun> {
     return this.http.get<CronRun>(`${this.baseUrl}/agent-tasks`);
   }
+
+  triggerIssueRunner(): Observable<CronRun> {
+    return this.http.get<CronRun>(`${this.baseUrl}/github-issues`);
+  }
 }

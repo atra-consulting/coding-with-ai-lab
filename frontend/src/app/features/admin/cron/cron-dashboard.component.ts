@@ -23,6 +23,7 @@ export class CronDashboardComponent implements OnInit {
   loading = false;
   loadingRuns = false;
   triggering = false;
+  triggeringIssues = false;
   errorMessage: string | null = null;
   triggerMessage: string | null = null;
 
@@ -86,6 +87,27 @@ export class CronDashboardComponent implements OnInit {
         },
         error: () => {
           this.triggering = false;
+          this.triggerMessage = 'Fehler beim Starten der Ausführung.';
+        },
+      });
+  }
+
+  runIssueRunner(): void {
+    this.triggeringIssues = true;
+    this.triggerMessage = null;
+    this.cronService
+      .triggerIssueRunner()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (run) => {
+          this.triggeringIssues = false;
+          this.triggerMessage = `Ausführung gestartet: ${run.status} (ID ${run.id})`;
+          this.loadJobs();
+          this.currentPage = 1;
+          this.loadRuns();
+        },
+        error: () => {
+          this.triggeringIssues = false;
           this.triggerMessage = 'Fehler beim Starten der Ausführung.';
         },
       });

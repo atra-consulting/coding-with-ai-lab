@@ -1,15 +1,27 @@
 <div class="page-header d-flex justify-content-between align-items-center">
   <h2>Cron-Jobs</h2>
-  <button
-    class="btn btn-primary"
-    (click)="runNow()"
-    [disabled]="triggering"
-  >
-    @if (triggering) {
-      <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-    }
-    Jetzt ausführen
-  </button>
+  <div class="d-flex gap-2">
+    <button
+      class="btn btn-primary"
+      (click)="runNow()"
+      [disabled]="triggering"
+    >
+      @if (triggering) {
+        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+      }
+      Task Runner ausführen
+    </button>
+    <button
+      class="btn btn-primary"
+      (click)="runIssueRunner()"
+      [disabled]="triggeringIssues"
+    >
+      @if (triggeringIssues) {
+        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+      }
+      Issue Runner ausführen
+    </button>
+  </div>
 </div>
 
 @if (triggerMessage) {
