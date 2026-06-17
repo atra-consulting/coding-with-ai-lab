@@ -165,7 +165,8 @@ This is CI/prompt/script work, not app code. No Playwright/Jasmine suites apply.
   `GITHUB_TOKEN` cannot reliably touch org Projects v2. Add repo secret **`GH_PROJECT_TOKEN`**
   (classic PAT with `project`, `repo`). **The PAT owner must be an `atra-consulting` org member
   with write access to project #7, and the PAT must be SSO-authorized for the org** — otherwise
-  `updateProjectV2ItemFieldValue` returns `403`. `ANTHROPIC_API_KEY` for Claude.
+  `updateProjectV2ItemFieldValue` returns `403`. `CLAUDE_CODE_OAUTH_TOKEN` (from
+  `claude setup-token`) authenticates Claude — or `ANTHROPIC_API_KEY` with a real API key.
   `--dangerously-skip-permissions` as in the original.
 - **Idempotency / single-flight:** `concurrency` group + the open-PR re-entry guard (lifecycle
   step 2). Re-running a `Done` issue is impossible by construction (selection excludes `Done`).
