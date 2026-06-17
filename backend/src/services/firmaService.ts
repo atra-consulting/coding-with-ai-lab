@@ -24,6 +24,7 @@ export interface FirmaDTO {
   phone: string | null;
   email: string | null;
   notes: string | null;
+  isFavorit: boolean;
   personenCount: number;
   abteilungenCount: number;
   adressen?: FirmaAddressSummary[];
@@ -39,6 +40,7 @@ interface FirmaRow {
   phone: string | null;
   email: string | null;
   notes: string | null;
+  is_favorit: number;
   createdAt: string;
   updatedAt: string;
   personenCount: number;
@@ -54,6 +56,7 @@ function toDTO(row: FirmaRow): FirmaDTO {
     phone: row.phone,
     email: row.email,
     notes: row.notes,
+    isFavorit: row.is_favorit === 1,
     personenCount: Number(row.personenCount),
     abteilungenCount: Number(row.abteilungenCount),
     createdAt: row.createdAt,
@@ -63,6 +66,7 @@ function toDTO(row: FirmaRow): FirmaDTO {
 
 const BASE_QUERY = `
   SELECT f.id, f.name, f.industry, f.website, f.phone, f.email, f.notes,
+         f.is_favorit,
          f.createdAt, f.updatedAt,
          (SELECT COUNT(*) FROM person p WHERE p.firmaId = f.id) AS personenCount,
          (SELECT COUNT(*) FROM abteilung a WHERE a.firmaId = f.id) AS abteilungenCount
@@ -74,12 +78,20 @@ export const firmaService = {
     search: string | undefined,
     page: number,
     size: number,
-    sort: SortParams
+    sort: SortParams,
+    favoritenOnly: boolean = false
   ): Promise<PageResult<FirmaDTO>> {
-    const where = search
-      ? `WHERE LOWER(f.name) LIKE LOWER('%' || ? || '%')`
-      : '';
-    const params: InValue[] = search ? [search] : [];
+    const conditions: string[] = [];
+    const params: InValue[] = [];
+
+    if (search) {
+      conditions.push(`LOWER(f.name) LIKE LOWER('%' || ? || '%')`);
+      params.push(search);
+    }
+    if (favoritenOnly) {
+      conditions.push(`f.is_favorit = 1`);
+    }
+    const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
     const countResult = await client.execute({
       sql: `SELECT COUNT(*) AS cnt FROM firma f ${where}`,
@@ -97,9 +109,10 @@ export const firmaService = {
     return buildPage(rows.map(toDTO), total, page, size);
   },
 
-  async listAll(): Promise<FirmaDTO[]> {
+  async listAll(favoritenOnly: boolean = false): Promise<FirmaDTO[]> {
+    const where = favoritenOnly ? 'WHERE f.is_favorit = 1' : '';
     const result = await client.execute({
-      sql: `${BASE_QUERY} ORDER BY f.name ASC`,
+      sql: `${BASE_QUERY} ${where} ORDER BY f.name ASC`,
       args: [],
     });
     const rows = result.rows as unknown as FirmaRow[];
@@ -172,5 +185,14 @@ export const firmaService = {
       sql: 'DELETE FROM firma WHERE id = ?',
       args: [id],
     });
+  },
+
+  async toggleFavorit(id: number): Promise<FirmaDTO> {
+    await this.findById(id); // throws 404 if not found
+    await client.execute({
+      sql: 'UPDATE firma SET is_favorit = CASE WHEN is_favorit = 1 THEN 0 ELSE 1 END WHERE id = ?',
+      args: [id],
+    });
+    return this.findById(id);
   },
 };

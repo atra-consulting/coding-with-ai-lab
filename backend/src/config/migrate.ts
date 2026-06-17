@@ -148,6 +148,18 @@ export async function runMigrations(): Promise<void> {
     CREATE INDEX IF NOT EXISTS idx_cron_run_job_startedAt ON cron_run(job, startedAt DESC);
   `);
 
+  // Idempotent: add is_favorit column to firma if not yet present.
+  // SQLite does not support ALTER TABLE ... ADD COLUMN IF NOT EXISTS, so we
+  // check PRAGMA table_info first.
+  const colInfo = await client.execute('PRAGMA table_info(firma)');
+  const colNames = (colInfo.rows as unknown as { name: string }[]).map(r => r.name);
+  if (!colNames.includes('is_favorit')) {
+    await client.execute(
+      'ALTER TABLE firma ADD COLUMN is_favorit INTEGER NOT NULL DEFAULT 0'
+    );
+    console.log('Migration: added is_favorit to firma');
+  }
+
   // Idempotent data seed: agent tasks are inserted on every deployment via
   // INSERT OR IGNORE so they are always present (Vercel/Turso included),
   // independent of the firma-empty guard in runDataMigration(). Existing rows
