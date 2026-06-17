@@ -23,7 +23,7 @@
           <p><strong>Kontaktperson:</strong> {{ chance.kontaktPersonName || '-' }}</p>
           <p>
             <strong>Phase:</strong>
-            <span class="badge" [class]="getPhaseBadgeClass(chance.phase)">{{ chance.phase }}</span>
+            <span class="badge" [class]="chance.phase | chancePhaseBadge">{{ chance.phase }}</span>
           </p>
           <p><strong>Wert:</strong> {{ chance.wert | eurCurrency: chance.currency }}</p>
         </div>
