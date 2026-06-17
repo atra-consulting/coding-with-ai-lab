@@ -12,19 +12,22 @@ import { ThemeService } from '../../core/services/theme.service';
 })
 export class NavbarComponent {
   private authService = inject(AuthService);
-  themeService = inject(ThemeService);
+  private themeService = inject(ThemeService);
 
   faDatabase = faDatabase;
   faSignOutAlt = faSignOutAlt;
-  faMoon = faMoon;
-  faSun = faSun;
 
+  isDark = computed(() => this.themeService.isDark());
   themeIcon = computed(() => this.themeService.isDark() ? faSun : faMoon);
 
   userName = computed(() => {
     const user = this.authService.currentUser();
     return user ? `${user.vorname} ${user.nachname}` : '';
   });
+
+  toggleTheme(): void {
+    this.themeService.toggleTheme();
+  }
 
   logout(): void {
     this.authService.logout();

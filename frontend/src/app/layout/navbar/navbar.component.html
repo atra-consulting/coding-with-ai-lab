@@ -7,10 +7,12 @@
     @if (userName()) {
       <div class="d-flex align-items-center">
         <span class="text-white me-3">{{ userName() }}</span>
-        <button class="btn btn-outline-light btn-sm me-2" (click)="themeService.toggleTheme()" title="Dunkelmodus umschalten">
+        <button type="button" class="btn btn-outline-light btn-sm me-2" (click)="toggleTheme()"
+          [attr.aria-label]="isDark() ? 'Hellmodus umschalten' : 'Dunkelmodus umschalten'"
+          [title]="isDark() ? 'Hellmodus umschalten' : 'Dunkelmodus umschalten'">
           <fa-icon [icon]="themeIcon()"></fa-icon>
         </button>
-        <button class="btn btn-outline-light btn-sm" (click)="logout()">
+        <button type="button" class="btn btn-outline-light btn-sm" (click)="logout()">
           <fa-icon [icon]="faSignOutAlt" class="me-1"></fa-icon> Abmelden
         </button>
       </div>
