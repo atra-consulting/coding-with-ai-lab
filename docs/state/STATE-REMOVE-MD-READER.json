@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "task_key": "REMOVE-MD-READER",
+  "status": "completed",
+  "current_step": "13.2",
+  "started": "2026-06-18T00:00:00Z",
+  "updated": "2026-06-18T00:00:00Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Remove the .claude/agents/md-reader.md agent. Update all files and agents.",
+    "special_instructions": null,
+    "branch_name": "remove-md-reader-agent",
+    "original_branch": "main",
+    "docs_folder": "docs",
+    "is_git_repo": true,
+    "workflow_scope": null
+  },
+  "discovery": {
+    "agents_available": true,
+    "writer_agents": ["ba-writer"],
+    "coding_agents": ["be-coder", "db-coder", "fe-coder", "ui-designer"],
+    "review_agents": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer"],
+    "test_command": "cd backend && npx playwright test"
+  },
+  "artifacts": {
+    "prd_skipped": true,
+    "prd_file": null,
+    "plan_file": "docs/plans/PLAN-REMOVE-MD-READER.md",
+    "pr_url": "https://github.com/atra-consulting/coding-with-ai-lab/pull/86"
+  },
+  "completed_steps": []
+}

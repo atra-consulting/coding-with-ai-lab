@@ -29,7 +29,6 @@ The following specialized subagents are available. Call the corresponding tool w
 | `db-reviewer` | Review queries, Drizzle mappings, performance | review |
 | `fe-coder` | Angular 21 frontend code, components, services | coding |
 | `fe-reviewer` | Review frontend code, patterns, accessibility | review |
-| `md-reader` | Read, search, summarize Markdown documentation | utility |
 | `ui-designer` | UI/UX design, layout, styling, accessibility | coding |
 | `ui-reviewer` | Critical UI evaluation, usability, WCAG audit | review |
 | `be-test-coder` | Write Playwright API tests for the backend | test-coding |
