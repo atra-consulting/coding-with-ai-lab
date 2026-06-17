@@ -111,8 +111,9 @@ the issue from scratch.
 
 - **`concurrency` group:** `agent-issue-runner`, `cancel-in-progress: false` — queues
   overlapping runs (own group, separate from `agent-task-runner`).
-- **`MAX_ISSUES_PER_RUN`** (default `10`): hard cap on issues processed per run. Overflow is
-  left for the next run; the step logs how many were deferred (no silent truncation).
+- **`MAX_ISSUES_PER_RUN`** (set to `1` in `agent-issue-runner.yml`): hard cap on issues
+  processed per run — one issue per run. Overflow is left for the next run; the step logs how
+  many were deferred (no silent truncation).
 
 ## Implementation Approach (high level)
 
