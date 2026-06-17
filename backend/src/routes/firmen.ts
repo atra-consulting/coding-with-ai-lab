@@ -14,7 +14,8 @@ router.get(
   '/all',
   requireAuth,
   asyncHandler(async (_req: Request, res: Response) => {
-    res.json(await firmaService.listAll());
+    const favoritenOnly = _req.query['favoritenOnly'] === 'true';
+    res.json(await firmaService.listAll(favoritenOnly));
   }),
 );
 
@@ -31,7 +32,8 @@ router.get(
       'firma',
     );
     const search = req.query['search'] as string | undefined;
-    res.json(await firmaService.findAll(search, page, size, sort));
+    const favoritenOnly = req.query['favoritenOnly'] === 'true';
+    res.json(await firmaService.findAll(search, page, size, sort, favoritenOnly));
   }),
 );
 
@@ -54,6 +56,16 @@ router.get(
     const id = parseInt(req.params['id'] as string, 10);
     const { page, size } = parsePaginationParams(req.query as Record<string, unknown>);
     res.json(await abteilungService.findByFirmaId(id, page, size));
+  }),
+);
+
+// PATCH /api/firmen/:id/favorit — toggle favorite status
+router.patch(
+  '/:id/favorit',
+  requireAuth,
+  asyncHandler(async (req: Request, res: Response) => {
+    const id = parseInt(req.params['id'] as string, 10);
+    res.json(await firmaService.toggleFavorit(id));
   }),
 );
 

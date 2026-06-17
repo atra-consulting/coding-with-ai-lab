@@ -8,8 +8,15 @@
 @if (loading) {
   <app-loading-spinner />
 } @else {
+  <div class="mb-2">
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" id="favoritenOnly"
+             [(ngModel)]="favoritenOnly" (change)="onFavoritenOnlyChange()">
+      <label class="form-check-label" for="favoritenOnly">Nur Favoriten anzeigen</label>
+    </div>
+  </div>
   <ag-grid-angular
-    style="width: 100%; height: calc(100vh - 180px)"
+    style="width: 100%; height: calc(100vh - 210px)"
     [theme]="theme"
     [rowData]="rowData"
     [columnDefs]="columnDefs"

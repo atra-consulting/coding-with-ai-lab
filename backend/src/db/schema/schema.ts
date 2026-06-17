@@ -10,6 +10,7 @@ export const firma = sqliteTable('firma', {
   phone: text('phone'),
   email: text('email'),
   notes: text('notes'),
+  isFavorit: integer('is_favorit').notNull().default(0),
   createdAt: text('createdAt').notNull().default(sql`(datetime('now'))`),
   updatedAt: text('updatedAt').notNull().default(sql`(datetime('now'))`),
 });

@@ -20,8 +20,13 @@ export class FirmaService {
     return this.http.get<Page<Firma>>(this.baseUrl, { params });
   }
 
-  listAll(): Observable<Firma[]> {
-    return this.http.get<Firma[]>(`${this.baseUrl}/all`);
+  listAll(favoritenOnly = false): Observable<Firma[]> {
+    const params = new HttpParams().set('favoritenOnly', favoritenOnly);
+    return this.http.get<Firma[]>(`${this.baseUrl}/all`, { params });
+  }
+
+  toggleFavorit(id: number): Observable<Firma> {
+    return this.http.patch<Firma>(`${this.baseUrl}/${id}/favorit`, {});
   }
 
   getById(id: number): Observable<Firma> {
