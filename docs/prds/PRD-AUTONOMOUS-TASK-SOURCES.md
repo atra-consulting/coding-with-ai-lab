@@ -563,3 +563,5 @@ Key commits: agent_task table + seed (`106af13`), real-gap seed fix (`bda4f3d`),
 Tests: backend 77 passed / 2 skipped; frontend 91 passed.
 
 Added per user request during build: admin **reset** endpoint + button (re-run the demo without `--reset-db`), `docs/WORKSHOP-AUTONOMOUS-TASKS.md` (reset, Git-commit cleanup, solve-all instructions), and `scripts/solve-all-agent-tasks.sh`.
+
+Later tweak (one task per run): `agent-task-runner.yml` now solves a single task per run — it tries the four sources in order, works/​rejects the FIRST open task, then stops (`MAX_TASKS_PER_RUN=1`), mirroring `MAX_ISSUES_PER_RUN=1` in the GitHub-issue runner. Remaining tasks are deferred to the next run. The local `scripts/solve-all-agent-tasks.sh` is intentionally left as a full drainer for demos.

@@ -30,7 +30,7 @@ on:
   workflow_dispatch:
     inputs:
       source:
-        # Informational only — the runner now drains ALL sources every run.
+        # Informational only — the runner works ONE task per run, trying sources in order.
         description: (Ignored) legacy single-source selector
         required: false
         default: email
@@ -79,22 +79,32 @@ jobs:
       - name: Install Claude Code
         run: npm install -g @anthropic-ai/claude-code
 
-      - name: Drain all agent task sources
+      - name: Solve one agent task (first source with an open task)
         id: drain
         env:
           AGENT_API_TOKEN: ${{ secrets.AGENT_API_TOKEN }}
           APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          # One task per run total: try sources in order, work the FIRST open
+          # task found, then stop. Remaining tasks are picked up by the next run
+          # (mirrors MAX_ISSUES_PER_RUN=1 in agent-issue-runner.yml).
+          MAX_TASKS_PER_RUN: '1'
         run: |
           set -uo pipefail
           # source enum value : prompt file suffix
           SOURCES=("EMAIL:email" "GITHUB_ISSUE:github-issue" "APP_LOG:app-log" "ERROR_REPORT:error-report")
-          MAX_PER_SOURCE="${MAX_PER_SOURCE:-10}"
+          MAX_TASKS_PER_RUN="${MAX_TASKS_PER_RUN:-1}"
           SOLVED=0
           REJECTED=0
           RUN_STATUS="SUCCESS"
 
           for entry in "${SOURCES[@]}"; do
+            # Stop once the per-run quota is reached; defer the rest to next run.
+            if [ "$((SOLVED + REJECTED))" -ge "$MAX_TASKS_PER_RUN" ]; then
+              echo "Per-run cap of ${MAX_TASKS_PER_RUN} reached; deferring remaining sources."
+              break
+            fi
+
             SOURCE="${entry%%:*}"
             SUFFIX="${entry##*:}"
             PROMPT=".claude/prompts/agent-${SUFFIX}.md"
@@ -106,33 +116,30 @@ jobs:
             echo " Source: ${SOURCE}  (prompt: ${PROMPT})"
             echo "=================================================================="
 
-            i=0
-            while [ "$i" -lt "$MAX_PER_SOURCE" ]; do
-              i=$((i + 1))
-              echo "  [${SOURCE} #${i}] Running prompt..."
-              # The prompt itself claims (/next) and works ONE task per run, then
-              # exits. We loop until it reports the queue is empty.
-              OUTPUT=$(claude -p "$(cat "$PROMPT")" --dangerously-skip-permissions 2>&1) || {
-                echo "$OUTPUT"
-                echo "  claude run failed for ${SOURCE}; stopping this source." >&2
-                RUN_STATUS="FAILED"
-                break
-              }
+            echo "  [${SOURCE}] Running prompt..."
+            # The prompt claims (/next) and works ONE task, then exits. An empty
+            # queue prints "No open <SOURCE> tasks" — we then try the next source.
+            OUTPUT=$(claude -p "$(cat "$PROMPT")" --dangerously-skip-permissions 2>&1) || {
               echo "$OUTPUT"
+              echo "  claude run failed for ${SOURCE}; trying next source." >&2
+              RUN_STATUS="FAILED"
+              continue
+            }
+            echo "$OUTPUT"
 
-              if printf '%s' "$OUTPUT" | grep -q "No open ${SOURCE} tasks"; then
-                echo "  Queue for ${SOURCE} is empty."
-                break
-              fi
+            if printf '%s' "$OUTPUT" | grep -q "No open ${SOURCE} tasks"; then
+              echo "  Queue for ${SOURCE} is empty; trying next source."
+              continue
+            fi
 
-              # One task was processed this iteration. Best-effort split: a
-              # REJECTED status in the API response means a rejection, else solved.
-              if printf '%s' "$OUTPUT" | grep -qE '"status" *: *"REJECTED"'; then
-                REJECTED=$((REJECTED + 1))
-              else
-                SOLVED=$((SOLVED + 1))
-              fi
-            done
+            # One task was processed. Best-effort split: a REJECTED status in the
+            # API response means a rejection, else solved. The quota check at the
+            # top of the next iteration ends the run.
+            if printf '%s' "$OUTPUT" | grep -qE '"status" *: *"REJECTED"'; then
+              REJECTED=$((REJECTED + 1))
+            else
+              SOLVED=$((SOLVED + 1))
+            fi
           done
 
           echo "Summary: solved=${SOLVED} rejected=${REJECTED} status=${RUN_STATUS}"
