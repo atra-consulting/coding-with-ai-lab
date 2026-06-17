@@ -8,6 +8,8 @@
 - PR: [#77](https://github.com/atra-consulting/coding-with-ai-lab/pull/77) (branch `gh-issue-agent-runner-projects` → `main`)
 - Files: `.github/workflows/agent-issue-runner.yml`, `.claude/prompts/agent-gh-board.md`,
   `scripts/gh-issues-select.sh`, `scripts/gh-issue-status.sh`, `scripts/solve-gh-board-issues.sh`.
+- Commit [`8e8d5bb`](https://github.com/atra-consulting/coding-with-ai-lab/commit/8e8d5bb): manual "Issue Runner ausführen"
+  dashboard trigger — `solve-issues` cron job + `GET /api/cron/github-issues` (event `solve-github-issues`).
 
 ## Source
 
