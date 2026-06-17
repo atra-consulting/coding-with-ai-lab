@@ -20,6 +20,7 @@ export interface Firma {
   phone: string;
   email: string;
   notes: string;
+  isFavorit: boolean;
   createdAt: string;
   updatedAt: string;
   personenCount: number;
