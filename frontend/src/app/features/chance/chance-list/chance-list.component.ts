@@ -30,6 +30,7 @@ export class ChanceListComponent implements OnInit {
   loading = true;
   theme = themeQuartz.withParams({ oddRowBackgroundColor: '#f0f0f0' });
   totalRows = 0;
+  totalWert = 0;
   displayedRows = 0;
   isFilterActive = false;
 
@@ -78,12 +79,17 @@ export class ChanceListComponent implements OnInit {
       next: (data) => {
         this.rowData = data;
         this.totalRows = data.length;
+        this.totalWert = data.reduce((sum, c) => sum + (c.wert ?? 0), 0);
         this.loading = false;
       },
       error: () => {
         this.loading = false;
       },
     });
+  }
+
+  formatWert(value: number): string {
+    return currencyFormatter.format(value);
   }
 
   onGridReady(params: GridReadyEvent): void {
