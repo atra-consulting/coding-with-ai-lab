@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "task_key": "ADD-ADRESSE-TYP-FIELD",
+  "status": "completed",
+  "current_step": "13.3",
+  "started": "2026-06-18T13:02:28.000Z",
+  "updated": "2026-06-18T13:02:28.000Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Add typ field to AdresseDTO, AdresseRow, BASE_QUERY, INSERT, UPDATE, and AdresseCreateSchema so it can be written on POST/PUT and returned in GET responses",
+    "special_instructions": "Skip PRD creation. Pre-authorize all checkpoints. Full workflow scope: implement, test, review, create PR, merge to main.",
+    "branch_name": "add-adresse-typ-field",
+    "original_branch": "main",
+    "docs_folder": "docs",
+    "is_git_repo": true,
+    "workflow_scope": "full"
+  },
+  "discovery": {
+    "agents_available": false,
+    "writer_agents": [],
+    "coding_agents": [],
+    "review_agents": [],
+    "test_command": null
+  },
+  "artifacts": {
+    "prd_skipped": null,
+    "prd_file": null,
+    "plan_file": "docs/plans/PLAN-ADD-ADRESSE-TYP-FIELD.md",
+    "pr_url": null
+  },
+  "completed_steps": []
+}

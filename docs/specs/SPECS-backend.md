@@ -115,7 +115,7 @@ Standard CRUD. Default sort: `datum,DESC`. Allowed sort fields: `datum`, `typ`, 
 
 ### Chancen (`/api/chancen`)
 
-Standard CRUD. Default sort: `createdAt,DESC`. Allowed sort fields: `titel`, `wert`, `phase`, `wahrscheinlichkeit`, `erwartetesDatum`, `createdAt`, `updatedAt`.
+Standard CRUD. Default sort: `createdAt,DESC`. Allowed sort fields: `titel`, `wert`, `phase`, `wahrscheinlichkeit`, `erwartetesDatum`, `createdAt`, `updatedAt`. Params: `search` (optional, case-insensitive substring match on `titel`), `phase` (optional enum filter), `page`, `size`, `sort`.
 
 ### Standard CRUD pattern
 
