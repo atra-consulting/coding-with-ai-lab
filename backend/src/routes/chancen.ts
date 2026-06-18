@@ -29,13 +29,14 @@ router.get(
       'DESC',
       'chance',
     );
+    const search = req.query['search'] as string | undefined;
     const phaseRaw = req.query['phase'] as string | undefined;
     if (phaseRaw !== undefined && !(CHANCE_PHASE as readonly string[]).includes(phaseRaw)) {
       res.status(400).json({ status: 400, message: `Ungültiger phase-Wert: ${phaseRaw}. Erlaubt: ${CHANCE_PHASE.join(', ')}` });
       return;
     }
     const phase = phaseRaw as ChancePhase | undefined;
-    res.json(await chanceService.findAll(page, size, sort, phase));
+    res.json(await chanceService.findAll(search, page, size, sort, phase));
   }),
 );
 

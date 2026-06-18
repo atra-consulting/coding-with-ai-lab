@@ -75,9 +75,14 @@ const BASE_QUERY = `
 `;
 
 export const chanceService = {
-  async findAll(page: number, size: number, sort: SortParams, phase?: ChancePhase): Promise<PageResult<ChanceDTO>> {
+  async findAll(search: string | undefined, page: number, size: number, sort: SortParams, phase?: ChancePhase): Promise<PageResult<ChanceDTO>> {
     const conditions: string[] = [];
     const params: InValue[] = [];
+
+    if (search) {
+      conditions.push(`LOWER(c.titel) LIKE LOWER('%' || ? || '%')`);
+      params.push(search);
+    }
 
     if (phase !== undefined) {
       conditions.push('c.phase = ?');
