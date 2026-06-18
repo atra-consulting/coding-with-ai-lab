@@ -23,6 +23,7 @@ export class CronDashboardComponent implements OnInit {
   loading = false;
   loadingRuns = false;
   triggering = false;
+  triggeringJob: string | null = null;
   errorMessage: string | null = null;
   triggerMessage: string | null = null;
 
@@ -70,15 +71,17 @@ export class CronDashboardComponent implements OnInit {
     this.loadRuns();
   }
 
-  runNow(): void {
+  runNow(job = 'solve-tasks'): void {
     this.triggering = true;
+    this.triggeringJob = job;
     this.triggerMessage = null;
     this.cronService
-      .triggerNow()
+      .triggerNow(job)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (run) => {
           this.triggering = false;
+          this.triggeringJob = null;
           this.triggerMessage = `Ausführung gestartet: ${run.status} (ID ${run.id})`;
           this.loadJobs();
           this.currentPage = 1;
@@ -86,6 +89,7 @@ export class CronDashboardComponent implements OnInit {
         },
         error: () => {
           this.triggering = false;
+          this.triggeringJob = null;
           this.triggerMessage = 'Fehler beim Starten der Ausführung.';
         },
       });

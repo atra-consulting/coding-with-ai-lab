@@ -261,6 +261,13 @@ Single-flight + skip-when-idle, then dispatch:
 - Otherwise creates a `RUNNING` run and fires `repository_dispatch` (`solve-agent-tasks`, `client_payload.cronRunId`). Dispatch failure → the run is marked `FAILED`.
 - **Always returns `200`** with the `cron_run` object — a 4xx/5xx would make Vercel cron auto-retry and create duplicate runs.
 
+### GET `/api/cron/github-issues` — GitHub-issue agent dispatcher
+Same auth as `/agent-tasks` (admin session via the per-job "Jetzt ausführen" button, or `CRON_SECRET`). Manual-only — there is no Vercel cron for it.
+- A `solve-github-issues` run already `RUNNING` → records a `SKIPPED` run.
+- Otherwise creates a `RUNNING` run and fires `repository_dispatch` (`solve-github-issues`, `client_payload.cronRunId`) → the [`github-issue-agent.yml`](../.github/workflows/github-issue-agent.yml) workflow. Dispatch failure → `FAILED`.
+- No work-queue pre-check (the issues live on GitHub): it always dispatches; the agent reports the outcome via the same `/runs/:id/complete` callback (`tasksSolved=1` implemented, `tasksRejected=1` input-needed, both `0` if no issue was open).
+- **Always returns `200`** with the `cron_run` object.
+
 ### POST `/api/cron/runs/:id/complete` — runner callback
 **Auth:** agent token. **Body:** `{ "status": "SUCCESS"|"FAILED", "tasksSolved": <int>, "tasksRejected": <int>, "githubRunUrl": "https://…" }`. Sets `finishedAt`, `durationMs`, `status`, `githubRunUrl`, `result`. `404` if no run with that id; `400` on body validation failure.
 
@@ -272,9 +279,12 @@ Each configured job with its newest run attached:
 
 ```json
 [
-  { "name": "solve-tasks", "schedule": "0 2 * * *", "description": "…", "dispatchEventType": "solve-agent-tasks", "lastRun": { /* cron_run or null */ } }
+  { "name": "solve-tasks", "schedule": "0 2 * * *", "description": "…", "dispatchEventType": "solve-agent-tasks", "lastRun": { /* cron_run or null */ } },
+  { "name": "solve-github-issues", "schedule": "manuell", "description": "…", "dispatchEventType": "solve-github-issues", "lastRun": { /* cron_run or null */ } }
 ]
 ```
+
+Each job renders as its own card in `/admin/cron` with a dedicated "Jetzt ausführen" button. `solve-tasks` drains the in-app `agent_task` queue; `solve-github-issues` works ONE real GitHub issue labelled `Refinement needed` (see below).
 
 ---
 
@@ -287,9 +297,32 @@ Each configured job with its newest run attached:
 | `GH_DISPATCH_TOKEN` | Vercel only | the dispatcher's `repository_dispatch` call (fine-grained PAT: Contents R/W + Actions R/W) |
 | `GH_DISPATCH_REPO` | Vercel only (optional) | overrides the dispatch target; defaults to `atra-consulting/coding-with-ai-lab` |
 | `APP_BASE_URL` | GitHub repo secret | runner → app base URL for the callback |
-| `ANTHROPIC_API_KEY` | GitHub repo secret | Claude CLI in the runner |
+| `ANTHROPIC_API_KEY` | GitHub repo secret | Claude CLI in the agent-task runner |
+| `CLAUDE_CODE_OAUTH_TOKEN` | GitHub repo secret | Claude CLI auth in the GitHub-issue agent (subscription token via `claude setup-token`; use **instead of** `ANTHROPIC_API_KEY`) |
+| `GH_PROJECT_TOKEN` | GitHub repo secret | **GitHub-issue agent only.** Classic PAT with scopes `repo`, `project`, `read:org`. Used by `gh` + `git` for issue/label/PR/push **and** moving the issue on Project board #7. The default `GITHUB_TOKEN` cannot write Projects v2. |
 
 All are read from `process.env`; never commit values. The Vercel cron is set to **once daily** (`0 2 * * *`) because Hobby plans reject sub-daily schedules at deploy time — bump it to `*/10 * * * *` only after upgrading to **Pro**. The admin "Run now" button (`/admin/cron`) triggers the same dispatch on demand on **any** plan, and is also the local-dev test path (Vercel crons don't fire locally).
+
+---
+
+## GitHub-Issue Agent (real issues, not the `agent_task` queue)
+
+A **second** autonomous agent, separate from the agent-task runner. It works against **real GitHub issues** labelled **`Refinement needed`**, one issue per run, triggered **manually** from the `solve-github-issues` card in `/admin/cron`.
+
+**Pieces**
+- **Trigger:** `GET /api/cron/github-issues` (above) → `repository_dispatch` `solve-github-issues`.
+- **Workflow:** [`.github/workflows/github-issue-agent.yml`](../.github/workflows/github-issue-agent.yml) — runs `claude -p` once with the prompt below, then calls `/runs/:id/complete`.
+- **Prompt:** [`.claude/prompts/agent-github-refinement.md`](../.claude/prompts/agent-github-refinement.md).
+- **Token:** `GH_PROJECT_TOKEN` (see env table) — needs Projects-v2 write, which the default `GITHUB_TOKEN` lacks.
+
+**Per-run flow**
+1. Pick ONE open `Refinement needed` issue (skip ones already `Input needed`; prefer non-`Likely to fail`; tie-break lowest number).
+2. **Decide** implement vs ask.
+   - **Ask** (info/decision missing, or the issue text says so): comment a precise question + `@dave0688`, add the **`Input needed`** label. Board stays **Backlog**. → `AGENT_RESULT: INPUT_NEEDED`.
+   - **Implement** (all info present): move the issue to **In progress** on board #7 → run `plan-and-do` (build check only; **no test authoring**) → open a PR against `main` (**never merged**, left for human review) → move to **In review** + comment the PR link. → `AGENT_RESULT: IMPLEMENTED`.
+3. If implementation stalls, it falls back to the ask path (Backlog + `Input needed` + comment).
+
+**Status is tracked on the Project board** (#7 "Coding with AI: Fortgeschrittenen-Schulung"), not via labels — except the explicit `Input needed` label that flags issues awaiting a maintainer reply. Project IDs and status-option ids are pinned in the prompt.
 
 ---
 

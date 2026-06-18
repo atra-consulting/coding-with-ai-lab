@@ -1,0 +1,142 @@
+# GitHub Issue Agent — autonomous refinement & implementation of ONE GitHub issue.
+#
+# Companion to agent-task-runner.yml. Where that runner drains the in-app
+# `agent_task` queue, THIS workflow works against REAL GitHub issues labelled
+# "Refinement needed". It processes exactly ONE issue per run:
+#   • move the issue to "In progress" on the project board (#7),
+#   • if all info is present → implement it (plan-and-do) and open a PR (NO merge),
+#     then move the issue to "In review",
+#   • if a decision/clarification is missing → comment + @-mention the maintainer,
+#     add the "Input needed" label, and leave the board on "Backlog".
+#
+# Triggers:
+#   - repository_dispatch (type: solve-github-issues): fired by the app's
+#     GET /api/cron/github-issues endpoint when an admin clicks "Jetzt ausführen"
+#     on the github-issue agent card in /admin/cron. client_payload.cronRunId
+#     links back to a cron_run row; the final step closes it via
+#     POST /api/cron/runs/<id>/complete.
+#   - workflow_dispatch: manual run from the Actions UI (no cronRunId → no callback).
+#
+# IT DOES NOT RUN meaningfully until the secrets below are configured.
+#
+# Required repository secrets:
+#   GH_PROJECT_TOKEN        - PAT (classic) with scopes: repo, project, read:org.
+#                             Used by gh + git for ALL issue/PR/board/push actions.
+#                             The default GITHUB_TOKEN CANNOT write Projects v2.
+#   CLAUDE_CODE_OAUTH_TOKEN - subscription OAuth token (create with `claude setup-token`).
+#                             Use INSTEAD of ANTHROPIC_API_KEY; do not set both.
+#   AGENT_API_TOKEN         - shared secret for the /api/cron/runs/<id>/complete callback.
+#   APP_BASE_URL            - base URL of the DEPLOYED app (e.g. https://your-app.vercel.app).
+
+name: GitHub Issue Agent
+
+on:
+  repository_dispatch:
+    types: [solve-github-issues]
+  workflow_dispatch:
+
+# Single-flight: queue overlapping runs rather than running them concurrently.
+# The API side also guards with a RUNNING cron_run check.
+concurrency:
+  group: github-issue-agent
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  run-agent:
+    name: Refine & implement one GitHub issue
+    runs-on: ubuntu-latest
+
+    # Exposed to step `if:` conditions. Empty unless this run came from the app
+    # (repository_dispatch), which carries client_payload.cronRunId.
+    env:
+      CRON_RUN_ID: ${{ github.event.client_payload.cronRunId }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Use the project PAT so git push (new branch) and gh PR creation work,
+          # and so the persisted credentials are not the limited default token.
+          token: ${{ secrets.GH_PROJECT_TOKEN }}
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Backend — install dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Configure git identity
+        run: |
+          git config --global user.name "github-issue-agent"
+          git config --global user.email "github-issue-agent@users.noreply.github.com"
+
+      - name: Run the GitHub issue agent
+        id: agent
+        env:
+          # gh CLI + git auth (issues, labels, project board, push, PR).
+          GH_TOKEN: ${{ secrets.GH_PROJECT_TOKEN }}
+          # Claude Code subscription auth. Do NOT also set ANTHROPIC_API_KEY.
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: |
+          set -uo pipefail
+          PROMPT=".claude/prompts/agent-github-refinement.md"
+          RUN_STATUS="SUCCESS"
+          SOLVED=0
+          REJECTED=0
+
+          echo "Running GitHub issue agent (one issue per run)…"
+          OUTPUT=$(claude -p "$(cat "$PROMPT")" --dangerously-skip-permissions 2>&1) || {
+            echo "$OUTPUT"
+            echo "claude run failed." >&2
+            RUN_STATUS="FAILED"
+          }
+          echo "$OUTPUT"
+
+          # The prompt prints exactly ONE machine-readable result marker at the end.
+          if printf '%s' "$OUTPUT" | grep -q "AGENT_RESULT: IMPLEMENTED"; then
+            SOLVED=1
+          elif printf '%s' "$OUTPUT" | grep -q "AGENT_RESULT: INPUT_NEEDED"; then
+            # Parked awaiting human input — counted as "rejected" (not solved) for the run summary.
+            REJECTED=1
+          fi
+
+          echo "Summary: solved=${SOLVED} rejected=${REJECTED} status=${RUN_STATUS}"
+          {
+            echo "solved=${SOLVED}"
+            echo "rejected=${REJECTED}"
+            echo "run_status=${RUN_STATUS}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Report result back to the cron run
+        if: ${{ always() && env.CRON_RUN_ID != '' }}
+        env:
+          AGENT_API_TOKEN: ${{ secrets.AGENT_API_TOKEN }}
+          APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
+        run: |
+          GITHUB_RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          STATUS="${{ steps.agent.outputs.run_status }}"
+          SOLVED="${{ steps.agent.outputs.solved }}"
+          REJECTED="${{ steps.agent.outputs.rejected }}"
+          STATUS="${STATUS:-FAILED}"
+          SOLVED="${SOLVED:-0}"
+          REJECTED="${REJECTED:-0}"
+          echo "Closing cron_run ${CRON_RUN_ID}: status=${STATUS} solved=${SOLVED} rejected=${REJECTED}"
+          curl -s -o /dev/null -w 'callback HTTP %{http_code}\n' -X POST \
+            -H "Authorization: Bearer ${AGENT_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{\"status\":\"${STATUS}\",\"tasksSolved\":${SOLVED},\"tasksRejected\":${REJECTED},\"githubRunUrl\":\"${GITHUB_RUN_URL}\"}" \
+            "${APP_BASE_URL%/}/api/cron/runs/${CRON_RUN_ID}/complete"

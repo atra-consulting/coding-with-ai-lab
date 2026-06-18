@@ -75,14 +75,34 @@ async function requireCronAuth(req: Request, _res: Response, next: NextFunction)
   next(new UnauthorizedError('Nicht authentifiziert oder kein CRON_SECRET / Admin-Session'));
 }
 
+// ─── createRunAndDispatch (shared) ─────────────────────────────────────────────
+//
+// Create a RUNNING cron_run row, fire the GitHub repository_dispatch, and respond
+// 200 with the run. If the dispatch throws (e.g. GH_DISPATCH_TOKEN unset) the run
+// is marked FAILED. ALWAYS responds 200 — a 4xx/5xx would make Vercel cron
+// auto-retry, potentially creating duplicate RUNNING rows.
+//
+async function createRunAndDispatch(
+  job: string,
+  eventType: string,
+  trigger: string,
+  res: Response,
+): Promise<void> {
+  const run = await createRun(job, trigger);
+  try {
+    await dispatchWorkflow(eventType, { cronRunId: run.id });
+    res.status(200).json(run);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    const failedRun = await markFailed(run.id, message);
+    res.status(200).json(failedRun);
+  }
+}
+
 // ─── GET /api/cron/agent-tasks ────────────────────────────────────────────────
 //
 // Triggered by Vercel cron (every 10 min) or by an admin clicking "Run now".
-//
-// ALWAYS responds 200, even on errors — a 4xx/5xx response would cause
-// Vercel cron to auto-retry the request, potentially creating duplicate
-// RUNNING rows. All outcomes (SKIPPED, RUNNING+dispatched, FAILED) are
-// encoded in the returned CronRunDTO.
+// Drains the in-app agent_task queue (sources EMAIL/GITHUB_ISSUE/APP_LOG/...).
 //
 router.get(
   '/agent-tasks',
@@ -107,16 +127,35 @@ router.get(
     }
 
     // Create the RUNNING row, then fire the GitHub dispatch
-    const run = await createRun('solve-tasks', trigger);
+    await createRunAndDispatch('solve-tasks', 'solve-agent-tasks', trigger, res);
+  }),
+);
 
-    try {
-      await dispatchWorkflow('solve-agent-tasks', { cronRunId: run.id });
+// ─── GET /api/cron/github-issues ──────────────────────────────────────────────
+//
+// Triggered by an admin clicking "Jetzt ausführen" on the github-issue agent card
+// (manual only — there is no Vercel cron for this job). Fires the
+// `solve-github-issues` workflow, which runs Claude Code against ONE open GitHub
+// issue labelled "Refinement needed".
+//
+// Unlike /agent-tasks there is no backend-visible work queue to pre-check (the
+// issues live on GitHub), so we always dispatch and let the agent report back via
+// /runs/:id/complete. Single-flight still guards against overlapping runs.
+//
+router.get(
+  '/github-issues',
+  requireCronAuth as (req: Request, res: Response, next: NextFunction) => void,
+  asyncHandler(async (req: Request, res: Response) => {
+    const trigger = req.cronTrigger ?? 'MANUAL';
+
+    // Single-flight guard: skip if another run is already RUNNING
+    if (await isRunInProgress('solve-github-issues')) {
+      const run = await recordSkip('solve-github-issues', trigger, 'Another run is already RUNNING');
       res.status(200).json(run);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      const failedRun = await markFailed(run.id, message);
-      res.status(200).json(failedRun);
+      return;
     }
+
+    await createRunAndDispatch('solve-github-issues', 'solve-github-issues', trigger, res);
   }),
 );
 

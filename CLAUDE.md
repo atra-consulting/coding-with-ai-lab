@@ -13,6 +13,10 @@ The `agent_task` table holds tasks from four sources (`EMAIL`, `GITHUB_ISSUE`, `
 - **CI**: `.github/workflows/agent-task-runner.yml` (reference; needs secrets `AGENT_API_TOKEN`, `APP_BASE_URL`, `ANTHROPIC_API_KEY`).
 - **Workshop guide**: [`docs/WORKSHOP-AUTONOMOUS-TASKS.md`](docs/WORKSHOP-AUTONOMOUS-TASKS.md) — local testing, reset between runs, removing task-solution commits, `scripts/solve-all-agent-tasks.sh`.
 
+### GitHub-Issue Agent (second agent — real issues)
+
+A **second**, independent agent works against **real GitHub issues** (not the `agent_task` table) labelled **`Refinement needed`**, **one issue per run**, triggered **manually** from the `solve-github-issues` card in `/admin/cron`. It decides implement-vs-ask: if all info is present it implements via `plan-and-do` and opens a PR against `main` (**never merged** — left for human review); if a decision/clarification is missing (or the issue text demands it) it comments a precise question, `@`-mentions the maintainer, and adds the **`Input needed`** label. Task status is tracked on **GitHub Project board #7** ("Coding with AI: Fortgeschrittenen-Schulung"): claimed issue → **In progress**, PR opened → **In review** (not via labels, except `Input needed`). Pieces: trigger `GET /api/cron/github-issues` → `repository_dispatch` `solve-github-issues` → workflow `.github/workflows/github-issue-agent.yml` → prompt `.claude/prompts/agent-github-refinement.md`. Needs secret `GH_PROJECT_TOKEN` (classic PAT with `repo`, `project`, `read:org` — Projects-v2 write that the default `GITHUB_TOKEN` lacks) plus `CLAUDE_CODE_OAUTH_TOKEN`, `AGENT_API_TOKEN`, `APP_BASE_URL`. Full reference: [`docs/API-TASKS.md`](docs/API-TASKS.md).
+
 ## Build & Run
 
 ```bash
