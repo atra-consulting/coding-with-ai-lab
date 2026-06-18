@@ -2,7 +2,7 @@
   "version": 1,
   "task_key": "SORT-ACTIVITY-DATE-DESC",
   "status": "in_progress",
-  "current_step": "3.3",
+  "current_step": "7.5",
   "started": "2026-06-18T11:48:51.000Z",
   "updated": "2026-06-18T11:48:51.000Z",
   "config": {
@@ -13,19 +13,19 @@
     "original_branch": null,
     "docs_folder": "docs",
     "is_git_repo": true,
-    "workflow_scope": null
+    "workflow_scope": "full"
   },
   "discovery": {
-    "agents_available": false,
-    "writer_agents": [],
-    "coding_agents": [],
-    "review_agents": [],
-    "test_command": null
+    "agents_available": true,
+    "writer_agents": ["ba-writer"],
+    "coding_agents": ["be-coder", "db-coder", "fe-coder", "ui-designer"],
+    "review_agents": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer"],
+    "test_command": "cd frontend && npx ng test --configuration=ci"
   },
   "artifacts": {
-    "prd_skipped": null,
+    "prd_skipped": true,
     "prd_file": null,
-    "plan_file": null,
+    "plan_file": "docs/plans/PLAN-SORT-ACTIVITY-DATE-DESC.md",
     "pr_url": null
   },
   "completed_steps": []
