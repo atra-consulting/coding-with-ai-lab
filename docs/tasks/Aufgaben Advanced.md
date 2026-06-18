@@ -10,7 +10,7 @@ claude
 
 Prompt für Claude:
 ```
-/plan-and-do Crate a new security-reviewer agent. It checks both front-end and 
+/plan-and-do Create a new security-reviewer agent. It checks both front-end and 
 back-end code for common security vulnerabilities and security best practices.
 It replaces all existing security review functionality in all ./claude/agents.
 Update CLAUDE.md and all ./claude/agents with this new agent.
