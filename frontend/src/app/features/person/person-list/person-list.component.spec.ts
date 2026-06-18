@@ -7,7 +7,6 @@ import { PersonListComponent } from './person-list.component';
 import { PersonService } from '../../../core/services/person.service';
 import { AbteilungService } from '../../../core/services/abteilung.service';
 import { Abteilung } from '../../../core/models/abteilung.model';
-import { Page } from '../../../core/models/page.model';
 import { Person } from '../../../core/models/person.model';
 
 describe('PersonListComponent', () => {
@@ -17,15 +16,7 @@ describe('PersonListComponent', () => {
   let mockAbteilungService: jasmine.SpyObj<AbteilungService>;
   let httpMock: HttpTestingController;
 
-  const mockPage: Page<Person> = {
-    content: [],
-    totalElements: 0,
-    totalPages: 0,
-    size: 9999,
-    number: 0,
-    first: true,
-    last: true,
-  };
+  const mockPersons: Person[] = [];
 
   const mockAbteilungen: Abteilung[] = [
     { id: 1, name: 'Engineering', description: '', firmaId: 1, firmaName: 'Acme GmbH', personenCount: 5 },
@@ -33,8 +24,8 @@ describe('PersonListComponent', () => {
   ];
 
   beforeEach(async () => {
-    mockPersonService = jasmine.createSpyObj('PersonService', ['getAll']);
-    mockPersonService.getAll.and.returnValue(of(mockPage));
+    mockPersonService = jasmine.createSpyObj('PersonService', ['listAll']);
+    mockPersonService.listAll.and.returnValue(of(mockPersons));
 
     mockAbteilungService = jasmine.createSpyObj('AbteilungService', ['listAll']);
     mockAbteilungService.listAll.and.returnValue(of([]));
@@ -79,21 +70,14 @@ describe('PersonListComponent', () => {
       expect(component.abteilungen).toEqual(mockAbteilungen);
     });
 
-    it('should call personService.getAll() on init', () => {
+    it('should call personService.listAll() on init', () => {
       fixture.detectChanges();
-      expect(mockPersonService.getAll).toHaveBeenCalledTimes(1);
+      expect(mockPersonService.listAll).toHaveBeenCalledTimes(1);
     });
 
-    it('should call personService.getAll() with page 0 and size 9999 on init', () => {
+    it('should call personService.listAll() with undefined when selectedAbteilungId is null', () => {
       fixture.detectChanges();
-      expect(mockPersonService.getAll).toHaveBeenCalledWith(0, 9999, 'lastName,asc', '', undefined);
-    });
-
-    it('should call personService.getAll() with undefined (not null) as abteilungId when selectedAbteilungId is null', () => {
-      component.selectedAbteilungId = null;
-      fixture.detectChanges();
-      const callArgs = mockPersonService.getAll.calls.mostRecent().args;
-      expect(callArgs[4]).toBeUndefined();
+      expect(mockPersonService.listAll).toHaveBeenCalledWith(undefined);
     });
   });
 
@@ -118,54 +102,54 @@ describe('PersonListComponent', () => {
   });
 
   describe('onDepartmentChange()', () => {
-    it('should call personService.getAll() again when department changes', () => {
+    it('should call personService.listAll() again when department changes', () => {
       fixture.detectChanges();
-      mockPersonService.getAll.calls.reset();
+      mockPersonService.listAll.calls.reset();
 
       component.onDepartmentChange();
 
-      expect(mockPersonService.getAll).toHaveBeenCalledTimes(1);
+      expect(mockPersonService.listAll).toHaveBeenCalledTimes(1);
     });
 
-    it('should pass selectedAbteilungId as the 5th argument when a department is selected', () => {
+    it('should pass selectedAbteilungId when a department is selected', () => {
       fixture.detectChanges();
-      mockPersonService.getAll.calls.reset();
+      mockPersonService.listAll.calls.reset();
 
       component.selectedAbteilungId = 5;
       component.onDepartmentChange();
 
-      expect(mockPersonService.getAll).toHaveBeenCalledWith(0, 9999, 'lastName,asc', '', 5);
+      expect(mockPersonService.listAll).toHaveBeenCalledWith(5);
     });
 
-    it('should pass undefined (not null) as the 5th argument when selectedAbteilungId is null', () => {
+    it('should pass undefined (not null) when selectedAbteilungId is null', () => {
       fixture.detectChanges();
-      mockPersonService.getAll.calls.reset();
+      mockPersonService.listAll.calls.reset();
 
       component.selectedAbteilungId = null;
       component.onDepartmentChange();
 
-      const callArgs = mockPersonService.getAll.calls.mostRecent().args;
-      expect(callArgs[4]).toBeUndefined();
+      const callArgs = mockPersonService.listAll.calls.mostRecent().args;
+      expect(callArgs[0]).toBeUndefined();
     });
 
     it('should pass abteilungId=1 when selectedAbteilungId is 1', () => {
       fixture.detectChanges();
-      mockPersonService.getAll.calls.reset();
+      mockPersonService.listAll.calls.reset();
 
       component.selectedAbteilungId = 1;
       component.onDepartmentChange();
 
-      expect(mockPersonService.getAll).toHaveBeenCalledWith(0, 9999, 'lastName,asc', '', 1);
+      expect(mockPersonService.listAll).toHaveBeenCalledWith(1);
     });
 
     it('should pass abteilungId=0 unchanged when selectedAbteilungId is 0', () => {
       fixture.detectChanges();
-      mockPersonService.getAll.calls.reset();
+      mockPersonService.listAll.calls.reset();
 
       component.selectedAbteilungId = 0;
       component.onDepartmentChange();
 
-      expect(mockPersonService.getAll).toHaveBeenCalledWith(0, 9999, 'lastName,asc', '', 0);
+      expect(mockPersonService.listAll).toHaveBeenCalledWith(0);
     });
   });
 });
