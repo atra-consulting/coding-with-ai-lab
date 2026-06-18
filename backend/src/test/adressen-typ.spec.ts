@@ -54,13 +54,6 @@ test.afterAll(async () => {
 test.describe('POST /api/adressen — typ field', () => {
   const createdIds: number[] = [];
 
-  test.afterAll(async () => {
-    for (const id of createdIds) {
-      await client.execute({ sql: 'DELETE FROM adresse WHERE id = ?', args: [id] });
-    }
-    createdIds.length = 0;
-  });
-
   test('creates address with typ: "WORK" and returns typ: "WORK"', async () => {
     const resp = await adminCtx.post('/api/adressen', {
       data: { ...BASE_PAYLOAD, typ: 'WORK' },
@@ -97,6 +90,13 @@ test.describe('POST /api/adressen — typ field', () => {
     await test.step('typ is null', () => {
       expect(body['typ']).toBeNull();
     });
+  });
+
+  test('returns 401 when unauthenticated', async () => {
+    const resp = await anonCtx.post('/api/adressen', {
+      data: { ...BASE_PAYLOAD, typ: 'WORK' },
+    });
+    expect(resp.status()).toBe(401);
   });
 });
 
@@ -137,6 +137,16 @@ test.describe('GET /api/adressen/:id — typ field', () => {
       expect(body['typ']).toBe('HOME');
     });
   });
+
+  test('returns 401 when unauthenticated', async () => {
+    const resp = await anonCtx.get(`/api/adressen/${testId}`);
+    expect(resp.status()).toBe(401);
+  });
+
+  test('returns 404 for unknown id', async () => {
+    const resp = await adminCtx.get('/api/adressen/999999');
+    expect(resp.status()).toBe(404);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -167,6 +177,11 @@ test.describe('GET /api/adressen — typ key in list', () => {
         expect(typ === null || typeof typ === 'string').toBe(true);
       }
     });
+  });
+
+  test('returns 401 when unauthenticated', async () => {
+    const resp = await anonCtx.get('/api/adressen');
+    expect(resp.status()).toBe(401);
   });
 });
 
@@ -240,5 +255,19 @@ test.describe('PUT /api/adressen/:id — typ field', () => {
     await test.step('GET confirms null typ in DB', () => {
       expect(getBody['typ']).toBeNull();
     });
+  });
+
+  test('returns 401 when unauthenticated', async () => {
+    const resp = await anonCtx.put(`/api/adressen/${testId}`, {
+      data: { ...BASE_PAYLOAD, typ: 'HOME' },
+    });
+    expect(resp.status()).toBe(401);
+  });
+
+  test('returns 404 for unknown id', async () => {
+    const resp = await adminCtx.put('/api/adressen/999999', {
+      data: { ...BASE_PAYLOAD, typ: 'HOME' },
+    });
+    expect(resp.status()).toBe(404);
   });
 });
