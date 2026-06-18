@@ -61,7 +61,7 @@ Login response:
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| GET | `/api/health` | Public | Returns `{ status: "ok", timestamp }` |
+| GET | `/api/health` | Public | Returns `{ status: "ok", timestamp, version }` |
 
 ### Firmen (`/api/firmen`)
 
