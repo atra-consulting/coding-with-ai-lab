@@ -11,8 +11,10 @@ const router = Router();
 router.get(
   '/all',
   requireAuth,
-  asyncHandler(async (_req: Request, res: Response) => {
-    res.json(await personService.listAll());
+  asyncHandler(async (req: Request, res: Response) => {
+    const abteilungIdRaw = parseInt(req.query['abteilungId'] as string, 10);
+    const abteilungId = isNaN(abteilungIdRaw) || abteilungIdRaw <= 0 ? undefined : abteilungIdRaw;
+    res.json(await personService.listAll(abteilungId));
   }),
 );
 

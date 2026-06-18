@@ -90,7 +90,10 @@ export const personService = {
     const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
     const countResult = await client.execute({
-      sql: `SELECT COUNT(*) AS cnt FROM person p ${where}`,
+      sql: `SELECT COUNT(*) AS cnt FROM person p
+        LEFT JOIN firma f ON p.firmaId = f.id
+        LEFT JOIN abteilung a ON p.abteilungId = a.id
+        ${where}`,
       args: [...params],
     });
     const countRow = countResult.rows[0] as unknown as { cnt: number };
@@ -105,10 +108,12 @@ export const personService = {
     return buildPage(rows.map(toDTO), total, page, size);
   },
 
-  async listAll(): Promise<PersonDTO[]> {
+  async listAll(abteilungId?: number): Promise<PersonDTO[]> {
+    const where = abteilungId !== undefined ? 'WHERE p.abteilungId = ?' : '';
+    const args: InValue[] = abteilungId !== undefined ? [abteilungId] : [];
     const result = await client.execute({
-      sql: `${BASE_QUERY} ORDER BY p.lastName ASC, p.firstName ASC`,
-      args: [],
+      sql: `${BASE_QUERY} ${where} ORDER BY p.lastName ASC, p.firstName ASC`,
+      args,
     });
     const rows = result.rows as unknown as PersonRow[];
     return rows.map(toDTO);
