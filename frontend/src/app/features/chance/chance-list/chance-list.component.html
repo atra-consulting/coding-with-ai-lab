@@ -4,7 +4,7 @@
       Chancen@if (totalRows > 0) {: {{ isFilterActive ? displayedRows + '/' + totalRows : totalRows }}}
     </h2>
     @if (totalRows > 0) {
-      <small class="text-muted">Gesamtwert: {{ formatWert(totalWert) }}</small>
+      <small class="text-muted">Gesamtwert: {{ totalWert | eurCurrency }}</small>
     }
   </div>
   <a routerLink="neu" class="btn btn-primary">Neue Chance</a>
