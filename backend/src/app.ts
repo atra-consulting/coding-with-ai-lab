@@ -1,3 +1,4 @@
+import { createRequire } from 'module';
 import express from 'express';
 import { corsMiddleware } from './middleware/cors.js';
 import { sessionMiddleware } from './middleware/session.js';
@@ -12,6 +13,8 @@ import chancenRouter from './routes/chancen.js';
 import dashboardRouter from './routes/dashboard.js';
 import agentTasksRouter from './routes/agentTasks.js';
 import cronRouter from './routes/cron.js';
+
+const { version } = createRequire(import.meta.url)('../package.json') as { version: string };
 
 const app = express();
 
@@ -28,7 +31,7 @@ app.use(sessionMiddleware);
 
 // Health check (public)
 app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({ status: 'ok', timestamp: new Date().toISOString(), version });
 });
 
 // Routes
