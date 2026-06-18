@@ -1,5 +1,6 @@
 import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { AgGridAngular } from 'ag-grid-angular';
 import {
   ColDef,
@@ -9,18 +10,21 @@ import {
   SizeColumnsToContentStrategy,
   themeQuartz,
 } from 'ag-grid-community';
+import { Abteilung } from '../../../core/models/abteilung.model';
 import { Person } from '../../../core/models/person.model';
+import { AbteilungService } from '../../../core/services/abteilung.service';
 import { PersonService } from '../../../core/services/person.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-person-list',
-  imports: [RouterLink, AgGridAngular, LoadingSpinnerComponent],
+  imports: [RouterLink, AgGridAngular, LoadingSpinnerComponent, FormsModule],
   templateUrl: './person-list.component.html',
 })
 export class PersonListComponent implements OnInit {
   private gridApi?: GridApi;
   private personService = inject(PersonService);
+  private abteilungService = inject(AbteilungService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
 
@@ -30,6 +34,8 @@ export class PersonListComponent implements OnInit {
   totalRows = 0;
   displayedRows = 0;
   isFilterActive = false;
+  abteilungen: Abteilung[] = [];
+  selectedAbteilungId: number | null = null;
 
   columnDefs: ColDef<Person>[] = [
     {
@@ -50,16 +56,26 @@ export class PersonListComponent implements OnInit {
   autoSizeStrategy: SizeColumnsToContentStrategy = { type: 'fitCellContents' };
 
   ngOnInit(): void {
-    this.personService.listAll().subscribe({
-      next: (data) => {
-        this.rowData = data;
-        this.totalRows = data.length;
+    this.abteilungService.listAll().subscribe(data => this.abteilungen = data);
+    this.loadPersons();
+  }
+
+  private loadPersons(): void {
+    this.loading = true;
+    this.personService.getAll(0, 9999, 'lastName,asc', '', this.selectedAbteilungId ?? undefined).subscribe({
+      next: (page) => {
+        this.rowData = page.content;
+        this.totalRows = page.totalElements;
         this.loading = false;
       },
       error: () => {
         this.loading = false;
       },
     });
+  }
+
+  onDepartmentChange(): void {
+    this.loadPersons();
   }
 
   onGridReady(params: GridReadyEvent): void {

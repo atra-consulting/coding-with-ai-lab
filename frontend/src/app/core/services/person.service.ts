@@ -9,12 +9,15 @@ export class PersonService {
   private http = inject(HttpClient);
   private baseUrl = '/api/personen';
 
-  getAll(page = 0, size = 10, sort = 'lastName,asc', search = ''): Observable<Page<Person>> {
-    const params = new HttpParams()
+  getAll(page = 0, size = 10, sort = 'lastName,asc', search = '', abteilungId?: number): Observable<Page<Person>> {
+    let params = new HttpParams()
       .set('page', page)
       .set('size', size)
       .set('sort', sort)
       .set('search', search);
+    if (abteilungId) {
+      params = params.set('abteilungId', abteilungId);
+    }
     return this.http.get<Page<Person>>(this.baseUrl, { params });
   }
 
