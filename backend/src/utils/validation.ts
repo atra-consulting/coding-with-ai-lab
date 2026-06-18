@@ -44,6 +44,7 @@ export const AdresseCreateSchema = z.object({
   postalCode: z.string().max(20).optional().nullable(),
   city: z.string().max(100).optional().nullable(),
   country: z.string().max(100).optional().nullable(),
+  typ: z.string().max(50).optional().nullable(),
   firmaId: z.number().int().positive().optional().nullable(),
   personId: z.number().int().positive().optional().nullable(),
   latitude: z.number().min(-90).max(90).optional().nullable(),

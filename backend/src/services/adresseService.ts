@@ -10,6 +10,7 @@ export interface AdresseDTO {
   postalCode: string | null;
   city: string | null;
   country: string | null;
+  typ: string | null;
   firmaId: number | null;
   firmaName: string | null;
   personId: number | null;
@@ -27,6 +28,7 @@ interface AdresseRow {
   postalCode: string | null;
   city: string | null;
   country: string | null;
+  typ: string | null;
   firmaId: number | null;
   firmaName: string | null;
   personId: number | null;
@@ -51,6 +53,7 @@ function toDTO(row: AdresseRow): AdresseDTO {
     postalCode: row.postalCode,
     city: row.city,
     country: row.country,
+    typ: row.typ,
     firmaId: row.firmaId,
     firmaName: row.firmaName,
     personId: row.personId,
@@ -63,7 +66,7 @@ function toDTO(row: AdresseRow): AdresseDTO {
 }
 
 const BASE_QUERY = `
-  SELECT a.id, a.street, a.houseNumber, a.postalCode, a.city, a.country,
+  SELECT a.id, a.street, a.houseNumber, a.postalCode, a.city, a.country, a.typ,
          a.firmaId, f.name AS firmaName,
          a.personId, p.firstName AS personFirstName, p.lastName AS personLastName,
          a.latitude, a.longitude,
@@ -113,14 +116,15 @@ export const adresseService = {
   async create(dto: AdresseCreateDTO): Promise<AdresseDTO> {
     const now = new Date().toISOString();
     const result = await client.execute({
-      sql: `INSERT INTO adresse (street, houseNumber, postalCode, city, country, firmaId, personId, latitude, longitude, createdAt, updatedAt)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      sql: `INSERT INTO adresse (street, houseNumber, postalCode, city, country, typ, firmaId, personId, latitude, longitude, createdAt, updatedAt)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         dto.street ?? null,
         dto.houseNumber ?? null,
         dto.postalCode ?? null,
         dto.city ?? null,
         dto.country ?? null,
+        dto.typ ?? null,
         dto.firmaId ?? null,
         dto.personId ?? null,
         dto.latitude ?? null,
@@ -139,13 +143,14 @@ export const adresseService = {
     const current = await this.findById(id);
     const now = new Date().toISOString();
     await client.execute({
-      sql: `UPDATE adresse SET street=?, houseNumber=?, postalCode=?, city=?, country=?, firmaId=?, personId=?, latitude=?, longitude=?, updatedAt=? WHERE id=?`,
+      sql: `UPDATE adresse SET street=?, houseNumber=?, postalCode=?, city=?, country=?, typ=?, firmaId=?, personId=?, latitude=?, longitude=?, updatedAt=? WHERE id=?`,
       args: [
         dto.street ?? null,
         dto.houseNumber ?? null,
         dto.postalCode ?? null,
         dto.city ?? null,
         dto.country ?? null,
+        dto.typ ?? null,
         dto.firmaId ?? null,
         dto.personId ?? null,
         dto.latitude === undefined ? current.latitude : dto.latitude,
