@@ -29,7 +29,9 @@ router.get(
       'DESC',
       'chance',
     );
-    const search = req.query['search'] as string | undefined;
+    const searchRaw = req.query['search'];
+    const searchFirst = Array.isArray(searchRaw) ? searchRaw[0] : searchRaw;
+    const search = typeof searchFirst === 'string' ? searchFirst : undefined;
     const phaseRaw = req.query['phase'] as string | undefined;
     if (phaseRaw !== undefined && !(CHANCE_PHASE as readonly string[]).includes(phaseRaw)) {
       res.status(400).json({ status: 400, message: `Ungültiger phase-Wert: ${phaseRaw}. Erlaubt: ${CHANCE_PHASE.join(', ')}` });
