@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "task_key": "ADD-PHONE-COMPANY-LIST",
+  "status": "completed",
+  "current_step": "13.3",
+  "started": "2026-06-18T11:36:40.000Z",
+  "updated": "2026-06-18T11:36:40.000Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "The phone number is stored but not shown in the company list table. Please add the `phone` column to the company list.",
+    "special_instructions": null,
+    "branch_name": null,
+    "original_branch": null,
+    "docs_folder": "docs",
+    "is_git_repo": true,
+    "workflow_scope": "full"
+  },
+  "discovery": {
+    "agents_available": false,
+    "writer_agents": [],
+    "coding_agents": [],
+    "review_agents": [],
+    "test_command": null
+  },
+  "artifacts": {
+    "prd_skipped": true,
+    "prd_file": null,
+    "plan_file": "docs/plans/PLAN-ADD-PHONE-COMPANY-LIST.md",
+    "pr_url": null
+  },
+  "completed_steps": []
+}
