@@ -41,9 +41,7 @@ non-native speakers understand, no passive voice. Use sentence fragments.
 cd coding-with-ai-lab
 start.sh
 ```
-Als Admin einloggen, dann "gent-Aufgaben" öffnen
-
-Dashboard existing in der App.
+Als Admin einloggen, dann "Agent-Aufgaben" öffnen.
 
 ## Agentenbasierte Software-Entwicklung
 ### Tickets im KI-Dialog umsetzen
