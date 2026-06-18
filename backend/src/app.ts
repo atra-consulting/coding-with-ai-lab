@@ -1,4 +1,6 @@
-import { createRequire } from 'module';
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import express from 'express';
 import { corsMiddleware } from './middleware/cors.js';
 import { sessionMiddleware } from './middleware/session.js';
@@ -14,7 +16,8 @@ import dashboardRouter from './routes/dashboard.js';
 import agentTasksRouter from './routes/agentTasks.js';
 import cronRouter from './routes/cron.js';
 
-const { version } = createRequire(import.meta.url)('../package.json') as { version: string };
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const { version } = JSON.parse(readFileSync(join(__dirname, '../package.json'), 'utf8')) as { version: string };
 
 const app = express();
 

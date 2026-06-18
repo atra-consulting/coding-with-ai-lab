@@ -6,8 +6,12 @@
  *
  * No authentication is required — the endpoint is public.
  */
+import { createRequire } from 'node:module';
 import { test, expect, request as playwrightRequest } from '@playwright/test';
 import type { APIRequestContext } from '@playwright/test';
+
+const require = createRequire(import.meta.url);
+const { version: expectedVersion } = require('../../package.json') as { version: string };
 
 const BASE_URL = 'http://localhost:7070';
 
@@ -39,9 +43,9 @@ test.describe('GET /api/health', () => {
     expect(typeof body.timestamp).toBe('string');
   });
 
-  test('response body has version: "1.0.0"', async () => {
+  test('response body has version matching package.json', async () => {
     const resp = await ctx.get('/api/health');
     const body = await resp.json() as { status: string; timestamp: string; version: string };
-    expect(body.version).toBe('1.0.0');
+    expect(body.version).toBe(expectedVersion);
   });
 });
