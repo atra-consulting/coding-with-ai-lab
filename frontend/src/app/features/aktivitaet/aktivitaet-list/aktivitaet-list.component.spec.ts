@@ -100,11 +100,12 @@ describe('AktivitaetListComponent', () => {
     const subject = new Subject<Aktivitaet[]>();
     mockAktivitaetService.listAll.and.returnValue(subject.asObservable());
     fixture.detectChanges();
-    const spinner = fixture.nativeElement.querySelector('app-loading-spinner');
-    expect(spinner).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('app-loading-spinner')).not.toBeNull();
     subject.next([]);
     subject.complete();
     tick();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('app-loading-spinner')).toBeNull();
   }));
 
   it('should hide spinner and show grid after data loads', fakeAsync(() => {
