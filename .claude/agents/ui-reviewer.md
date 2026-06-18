@@ -63,12 +63,15 @@ Severity levels:
 
 ## Project Context
 
-This is an Angular 21 CRM application with Bootstrap 5. Key areas:
-- Entity list views with pagination (NgbPagination)
+This is an Angular 21 CRM application with Bootstrap 5.3.x, AG Grid (^35.x), and FontAwesome (v7.x). Key areas:
+- Entity list views (AG Grid) with pagination (NgbPagination)
 - Detail views and edit forms
 - Kanban board for Chancen (drag & drop pipeline)
 - Login page via CIAM service
 - German domain model labels
+- Dark mode: navbar toggle + `ThemeService`, `localStorage`-persisted, sets `data-bs-theme` on `<html>` (verify contrast in BOTH light and dark)
+- Chance phase badges: `chance-phase-badge.pipe.ts` (ANGEBOT uses `bg-warning text-dark` for contrast)
+- AG Grid cell renderers: Aktivitaet type icons (`typ-icon-cell-renderer.component.ts`) and Firma favorite star (`star-cell-renderer.component.ts`, `#ffc107`, opacity toggle)
 
 Components live in `frontend/src/app/features/`.
 

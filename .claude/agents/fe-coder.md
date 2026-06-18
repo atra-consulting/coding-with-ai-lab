@@ -29,7 +29,7 @@ Your spec reading list (paths are relative to the repo root):
 - Reactive forms with `FormBuilder`
 - Edit mode via route param `id`, populate with `patchValue()`
 - Bootstrap 5 + SCSS for styling
-- `@angular/localize/init` must be imported in `main.ts`
+- German locale is registered in `main.ts` via `registerLocaleData(localeDe)` (no `@angular/localize/init` import)
 
 ## Pagination
 
@@ -52,8 +52,9 @@ Your spec reading list (paths are relative to the repo root):
 
 ## Authorization
 
-- Routes guarded with `canActivate: [permissionGuard('PERMISSION')]`
-- Sidebar items need `permission: 'PERMISSION'`
+- Authenticated routes live under the parent route guarded by `canActivate: [authGuard]`
+- Admin-only routes additionally use `canActivate: [roleGuard('ROLE_ADMIN')]` (role-based; there is no `permissionGuard`)
+- Sidebar items gate visibility with `requiredRole: 'ROLE_ADMIN'` (omit for items visible to all authenticated users)
 
 ## Commands
 

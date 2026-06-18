@@ -17,16 +17,16 @@ Your spec reading list (paths are relative to the repo root):
 ## Architecture Rules
 
 - Backend code lives in `backend/src/`
-- Layering: `routes/<entity>.ts` → `services/<entity>Service.ts` → `config/db.ts` (better-sqlite3 via Drizzle)
-- Every route file MUST enforce auth via `requireAuth` plus `requireRole(...)` or `requirePermission(...)` middleware from `middleware/auth.ts`
+- Layering: `routes/<entity>.ts` → `services/<entity>Service.ts` → `config/db.ts` (@libsql/client via Drizzle)
+- Every route file MUST enforce auth via `requireAuth` (and `requireRole(...)` when a route needs to be limited to specific roles) from `middleware/auth.ts`. There is no `requirePermission` middleware
 - Validate request bodies with Zod schemas at the boundary; let the global error handler in `middleware/errorHandler.ts` shape the response
 
 ## Stack & Versions
 
 - Node.js 20.19+ / TypeScript 5.8
 - Express 4.21 (classic `Router()` style)
-- better-sqlite3 9.6 with Drizzle ORM 0.41
-- express-session 1.18 with memorystore (24h TTL, cookie `JSESSIONID`, httpOnly)
+- @libsql/client 0.17 (async API) with Drizzle ORM 0.41 (`drizzle-orm/libsql`)
+- express-session 1.18 with `LibsqlSessionStore` — DB-backed `sessions` table (24h TTL, cookie `JSESSIONID`, httpOnly)
 - bcryptjs 2.4 for password hashing
 - Zod 3.23 for input validation
 - Playwright for API tests
@@ -43,7 +43,7 @@ Each entity follows:
 ## Code Standards
 
 - Strict TypeScript, no `any`
-- Async/await everywhere; avoid Promise chains
+- Async/await everywhere — all DB access via `await client.execute(...)`; avoid Promise chains
 - Return typed responses; never leak raw DB rows — map to DTOs
 - Dates: store/transmit as ISO-8601 strings (`new Date().toISOString()`)
 - Monetary values: SQLite `REAL`, serialized as JSON numbers
@@ -51,9 +51,10 @@ Each entity follows:
 
 ## Authorization Pattern
 
-- Permission-based (preferred): `router.get('/', requireAuth, requirePermission('CHANCEN'), handler)`
-- Role-based: `requireRole('ADMIN', 'USER')`
-- New permissions: add the string to `ALL_PERMISSIONS` in `config/users.ts`, grant it on the relevant user, then reference it via `requirePermission('NAME')`
+- Authenticated routes: `router.get('/', requireAuth, asyncHandler(handler))`
+- Role-restricted routes: add `requireRole('ADMIN', 'USER')` after `requireAuth`
+- There is NO `requirePermission` middleware — `auth.ts` exports only `requireAuth` and `requireRole`
+- Agent-task and cron routes use `requireAgentToken` from `middleware/agentAuth.ts` (shared-secret SHA-256 + `timingSafeEqual`); admin agent-task endpoints add `requireRole('ADMIN')` on top of a session
 
 ## Pagination & Sorting
 
@@ -63,10 +64,11 @@ Each entity follows:
 
 ## SQLite Quirks
 
-- `PRAGMA foreign_keys = ON` must be set on every connection (see `config/db.ts`) — otherwise cascade deletes silently fail
+- `PRAGMA foreign_keys = ON` is set as a standalone `client.execute()` in `config/migrate.ts` (never inside a transaction) — required for cascade deletes
 - No native `BOOLEAN` — use `INTEGER` (0/1) and convert in the service layer
 - No native `DATE`/`TIMESTAMP` — use `TEXT` with ISO-8601 strings
-- better-sqlite3 is synchronous; don't wrap statements in `await`
+- @libsql/client is async: data access goes through `await client.execute({ sql, args })`. Read results from `result.rows`; use `result.lastInsertRowid` after INSERTs
+- Do NOT use `client.transaction()` (see `libsqlSessionStore.ts`) — issue single `client.execute()` statements
 
 ## Key Locations
 
@@ -75,11 +77,11 @@ Each entity follows:
 - Routes: `backend/src/routes/`
 - Services: `backend/src/services/`
 - Middleware: `backend/src/middleware/` (auth, cors, errorHandler, session)
-- DB connection: `backend/src/config/db.ts`
+- DB connection: `backend/src/config/db.ts` (@libsql/client + Drizzle)
 - Schema (SQL): `backend/src/config/migrate.ts`
 - Schema (Drizzle): `backend/src/db/schema/`
 - Users: `backend/src/config/users.ts`
-- Seed data: `backend/src/seed/seeder.ts`
+- Seed data: `backend/src/seed/dataMigration.ts` (+ `fixture.json`, `agentTaskSeed.ts`)
 - Errors: `backend/src/utils/errors.ts`
 
 ## Before Committing

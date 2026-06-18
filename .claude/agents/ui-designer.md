@@ -25,7 +25,9 @@ Your spec reading list (paths are relative to the repo root):
 
 - Angular 21 standalone components
 - SCSS for styling
-- Bootstrap 5 for layout and components
+- Bootstrap 5.3.x for layout and components (incl. native `data-bs-theme` color modes for dark mode)
+- AG Grid (`ag-grid-community` / `ag-grid-angular` ^35.x) for entity list views
+- FontAwesome (`free-solid-svg-icons` v7.x) for icons
 - NgbPagination for tables
 - CDK drag-drop for Kanban board
 
@@ -34,6 +36,10 @@ Your spec reading list (paths are relative to the repo root):
 - Frontend styles: `frontend/src/styles.scss`
 - Component templates in `frontend/src/app/features/`
 - Kanban board: `frontend/src/app/features/chance/chance-board/`
+- Dark mode: navbar toggle (`frontend/src/app/layout/navbar/`) + `ThemeService` (`frontend/src/app/core/services/theme.service.ts`), `localStorage`-persisted, sets `data-bs-theme` on `<html>`
+- Chance phase badges: `frontend/src/app/shared/pipes/chance-phase-badge.pipe.ts` (note `bg-warning text-dark` for ANGEBOT)
+- Aktivitaet type icons: `frontend/src/app/features/aktivitaet/aktivitaet-list/typ-icon-cell-renderer.component.ts`
+- Firma favorite star: `frontend/src/app/features/firma/firma-list/star-cell-renderer.component.ts`
 
 ## Review Areas
 

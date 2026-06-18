@@ -103,7 +103,7 @@ All three currently hold the full 7-permission set (`FIRMEN`, `PERSONEN`, `ABTEI
 
 - **Dates:** stored and returned as ISO-8601 text strings. Assert with string equality, not `Date` equality.
 - **Monetary values:** stored as REAL. Use `toBeCloseTo` for computed amounts where floating-point drift is possible.
-- **better-sqlite3 is synchronous:** no `await` on raw DB calls inside helpers.
+- **DB driver is `@libsql/client` (async):** raw DB calls return promises — `await` them inside helpers.
 - **Foreign keys:** `PRAGMA foreign_keys = ON` is set on the connection in `config/db.ts`. The `resetDatabase()` helper temporarily disables it with `OFF` for the bulk delete, then re-enables it.
 
 ### Fixture row counts
@@ -163,6 +163,12 @@ All error responses follow:
 | `auth.spec.ts` | POST `/api/auth/login`, GET `/api/auth/me`, POST `/api/auth/logout` |
 | `firmen-crud.spec.ts` | GET/POST/PUT/DELETE `/api/firmen` and `/api/firmen/:id` |
 | `adressen-coords.spec.ts` | Address rows expose their baked-in latitude/longitude |
+| `agentTasks.spec.ts` | `/api/agent-tasks` endpoints (next/reject/done/reset/summary/:id) and `requireAgentToken` auth |
+| `agentTaskSeed.spec.ts` | Idempotent `seedAgentTasks()` seeding (INSERT OR IGNORE, fixed ids 1–16) |
+| `cron.spec.ts` | Cron/scheduler endpoints |
+| `sessions-persistence.spec.ts` | Session persistence across requests |
+
+Non-spec support files in the same directory: `globalSetup.ts` (spawns/polls/tears down the backend) and `helpers.ts` (shared login/reset helpers).
 
 ---
 
@@ -177,10 +183,13 @@ All error responses follow:
 ### Run commands
 
 ```bash
-cd frontend && npx ng test                                               # watch mode (development)
-cd frontend && npx ng test --watch=false --browsers=ChromeHeadless       # single CI run (preferred)
-cd frontend && npm test                                                  # alias (maps to "ng test")
+cd frontend && npx ng test                          # watch mode (development)
+cd frontend && npm test                             # alias (maps to "ng test")
+cd frontend && npm run test:ci                      # single CI run (preferred) — maps to "ng test --configuration=ci"
+cd frontend && npx ng test --configuration=ci       # same as test:ci
 ```
+
+The `ci` configuration is defined in `frontend/angular.json` under the test target: `watch: false`, `progress: false`, `browsers: "ChromeHeadlessNoSandbox"` (the headless Chrome launcher used in CI). There is no `--browsers=ChromeHeadless` flag in the real scripts.
 
 ### What to test (frontend)
 
@@ -250,9 +259,17 @@ For components using `inject()` that cannot be overridden by a provider, use `Te
 
 | File | Covers |
 |------|--------|
-| `layout.service.spec.ts` | `LayoutService` (collapsed signal, localStorage persistence, toggle) |
-| `role.guard.spec.ts` | `roleGuard` (allow with matching role, deny with wrong role, deny when null) |
-| `sidebar.component.spec.ts` | `SidebarComponent` (render, permission filtering, collapse toggle) |
+| `core/services/layout.service.spec.ts` | `LayoutService` (collapsed signal, localStorage persistence, toggle) |
+| `core/services/cron.service.spec.ts` | `CronService` (cron HTTP methods) |
+| `core/services/agent-task.service.spec.ts` | `AgentTaskService` (agent-task HTTP methods) |
+| `core/guards/role.guard.spec.ts` | `roleGuard` (allow with matching role, deny with wrong role, deny when null) |
+| `layout/sidebar/sidebar.component.spec.ts` | `SidebarComponent` (render, permission filtering, collapse toggle) |
+| `features/admin/agent-tasks/agent-task-list.component.spec.ts` | `AgentTaskListComponent` |
+| `features/admin/agent-tasks/agent-tasks-dashboard.component.spec.ts` | `AgentTasksDashboardComponent` |
+| `features/admin/agent-tasks/agent-task-detail.component.spec.ts` | `AgentTaskDetailComponent` |
+| `features/admin/cron/cron-dashboard.component.spec.ts` | `CronDashboardComponent` |
+
+Paths are relative to `frontend/src/app/`.
 
 ### Code standards (both stacks)
 

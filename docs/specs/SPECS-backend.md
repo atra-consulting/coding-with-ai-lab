@@ -10,10 +10,10 @@ Node.js/TypeScript backend. Express 4.21 on port 7070. SQLite file database via 
 | Language | TypeScript | 5.8 |
 | Framework | Express | 4.21 |
 | ORM | Drizzle ORM | 0.41 |
-| Database | SQLite (better-sqlite3) | 9.6 |
+| Database | SQLite (@libsql/client) | 0.17 |
 | Validation | Zod | 3.23 |
 | Auth | express-session + bcryptjs | 1.18 / 2.4 |
-| Session store | memorystore | 1.6 |
+| Session store | LibsqlSessionStore (DB-backed `sessions` table) | — |
 | Dev runner | tsx --watch | 4.19 |
 
 Database file: `backend/data/crmdb.sqlite`. Created on first startup.
@@ -157,7 +157,7 @@ Sort fields are validated against a per-entity whitelist in `src/utils/paginatio
 
 ### Session auth
 
-- `express-session` with `memorystore` backend.
+- `express-session` with `LibsqlSessionStore` backend — sessions persisted to a `sessions` table in the libsql/SQLite DB (see `src/middleware/libsqlSessionStore.ts`). Default TTL 24 hours.
 - Cookie name: `JSESSIONID`. HttpOnly. SameSite: lax. MaxAge: 24 hours.
 - Session secret from env var `SESSION_SECRET`. Falls back to `crm-dev-secret-key` in development.
 - Login: `bcryptjs.compareSync()` compares submitted password to stored hash.
@@ -189,7 +189,9 @@ All 3 users currently hold all 7 permissions: `FIRMEN`, `PERSONEN`, `ABTEILUNGEN
 3. Sets `req.currentUser` on the request.
 4. Calls `next(new UnauthorizedError())` if session is missing or user not found.
 
-`requirePermission` exists in `src/middleware/auth.ts` but is not yet applied to entity routes. All authenticated entity routes currently share one access level.
+`requireRole(...roles)` (also in `src/middleware/auth.ts`) gates a route to users holding at least one of the listed roles, returning `403` otherwise. Entity routes currently use only `requireAuth`, so all authenticated users share one access level. There is no `requirePermission` middleware.
+
+Agent-task and cron routes use `requireAgentToken` instead — a shared-secret check (SHA-256 hash of `AGENT_API_TOKEN`, compared with `timingSafeEqual`); admin agent-task endpoints additionally require a session plus `requireRole('ADMIN')`.
 
 ### CORS
 
@@ -204,19 +206,21 @@ src/
   index.ts          — entry point: migrate → seed → listen
   app.ts            — Express app wiring (middleware order, route mounting)
   config/
-    db.ts           — better-sqlite3 + Drizzle setup, PRAGMA foreign_keys = ON
+    db.ts           — @libsql/client + Drizzle setup (drizzle-orm/libsql)
     migrate.ts      — CREATE TABLE IF NOT EXISTS statements
     users.ts        — hardcoded user list
   db/schema/
     schema.ts       — Drizzle table definitions
     enums.ts        — TypeScript enum arrays and types
   middleware/
-    auth.ts         — requireAuth, requireRole, requirePermission
+    auth.ts         — requireAuth, requireRole
+    agentAuth.ts    — requireAgentToken (shared-secret check for agent/cron routes)
     cors.ts         — CORS config
     errorHandler.ts — global error handler (last middleware)
     session.ts      — express-session config
+    libsqlSessionStore.ts — DB-backed express-session Store (sessions table)
   routes/           — one file per entity (Express Router)
-  services/         — one file per entity (plain objects, raw SQL via better-sqlite3)
+  services/         — one file per entity (plain objects, raw SQL via @libsql/client)
   utils/
     errors.ts       — typed error classes
     pagination.ts   — parsePaginationParams, parseSort, buildPage
@@ -230,7 +234,7 @@ src/
 
 Middleware order in `app.ts`: CORS → JSON body parser → session → routes → error handler.
 
-Mounted routers (8): `/api/auth`, `/api/firmen`, `/api/personen`, `/api/abteilungen`, `/api/adressen`, `/api/aktivitaeten`, `/api/chancen`, `/api/dashboard`. Plus `/api/health` (inline, public).
+Mounted routers (10): `/api/auth`, `/api/firmen`, `/api/personen`, `/api/abteilungen`, `/api/adressen`, `/api/aktivitaeten`, `/api/chancen`, `/api/dashboard`, `/api/agent-tasks`, `/api/cron`. Plus `/api/health` (inline, public).
 
 ## Exception Handling
 
@@ -266,23 +270,33 @@ Each entity follows this pattern:
 ```
 Drizzle schema (schema.ts)
   → Zod schema + CreateDTO (validation.ts)
-  → Service (services/<entity>Service.ts)  — raw SQL via better-sqlite3
+  → Service (services/<entity>Service.ts)  — raw SQL via @libsql/client (async)
   → Route handler (routes/<entity>.ts)     — Express Router
 ```
 
 ### Service pattern
 
-Services are plain exported objects (not classes). They use `sqlite.prepare().get/all/run()` directly.
+Services are plain exported objects (not classes). Every method is `async` and runs queries via `await client.execute({ sql, args })` from `config/db.ts`. Results come back on `result.rows`; inserts expose `result.lastInsertRowid`.
 
 ```typescript
 export const firmaService = {
-  findAll(search, page, size, sort): PageResult<FirmaDTO> { ... },
-  listAll(): FirmaDTO[] { ... },
-  findById(id): FirmaDTO { ... },   // throws NotFoundError if missing
-  create(dto): FirmaDTO { ... },
-  update(id, dto): FirmaDTO { ... }, // calls findById first to get 404 on missing
-  delete(id): void { ... },          // calls findById first to get 404 on missing
+  async findAll(search, page, size, sort): Promise<PageResult<FirmaDTO>> { ... },
+  async listAll(): Promise<FirmaDTO[]> { ... },
+  async findById(id): Promise<FirmaDTO> { ... },   // throws NotFoundError if missing
+  async create(dto): Promise<FirmaDTO> { ... },
+  async update(id, dto): Promise<FirmaDTO> { ... }, // calls findById first to get 404 on missing
+  async delete(id): Promise<void> { ... },          // calls findById first to get 404 on missing
 };
+```
+
+Example query:
+```typescript
+const result = await client.execute({
+  sql: `${BASE_QUERY} WHERE f.id = ?`,
+  args: [id],
+});
+const row = result.rows[0] as unknown as FirmaRow | undefined;
+if (!row) throw new NotFoundError(`Firma mit ID ${id} nicht gefunden`);
 ```
 
 `create()` and `update()` set `updatedAt` to `new Date().toISOString()`.
@@ -291,18 +305,20 @@ export const firmaService = {
 
 ### Route pattern
 
+Handlers are `async` and wrapped in `asyncHandler` (from `utils/asyncHandler.ts`), which forwards any rejected promise to the global error handler — no manual try/catch needed.
+
 ```typescript
-router.get('/:id', requireAuth, (req, res, next) => {
-  try {
-    const id = parseInt(req.params['id'], 10);
-    res.json(firmaService.findById(id));
-  } catch (err) {
-    next(err);
-  }
-});
+router.get(
+  '/:id',
+  requireAuth,
+  asyncHandler(async (req: Request, res: Response) => {
+    const id = parseInt(req.params['id'] as string, 10);
+    res.json(await firmaService.findById(id));
+  }),
+);
 ```
 
-All route handlers wrap logic in try/catch and call `next(err)`. The global error handler converts typed errors to HTTP responses.
+The global error handler converts typed errors to HTTP responses.
 
 ### Validation pattern
 
@@ -310,7 +326,7 @@ Request bodies are validated with Zod before passing to the service:
 
 ```typescript
 const dto = validate(FirmaCreateSchema, req.body);
-res.status(201).json(firmaService.create(dto));
+res.status(201).json(await firmaService.create(dto));
 ```
 
 `validate()` throws `ValidationError` (→ 400) with `fieldErrors` populated from Zod issues.

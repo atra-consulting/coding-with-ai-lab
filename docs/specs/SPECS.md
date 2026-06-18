@@ -26,7 +26,7 @@ Full-Stack-CRM-Anwendung. Node.js/TypeScript-Backend mit Angular-Frontend.
 | Schicht | Technologie | Version |
 |---------|------------|---------|
 | Backend | Node.js / TypeScript mit Express | 4.21 (Node.js 20.19+) |
-| ORM | Drizzle ORM + better-sqlite3 | aktuell |
+| ORM | Drizzle ORM + @libsql/client | 0.41 / 0.17.3 |
 | Auth | express-session + bcryptjs | aktuell |
 | Validierung | Zod | aktuell |
 | TS-Ausführung | tsx (mit Hot Reload) | aktuell |
