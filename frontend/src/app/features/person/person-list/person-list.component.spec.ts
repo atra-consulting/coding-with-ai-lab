@@ -73,12 +73,11 @@ describe('PersonListComponent', () => {
       expect(mockAbteilungService.listAll).toHaveBeenCalledTimes(1);
     });
 
-    it('should populate abteilungen from the listAll response', fakeAsync(() => {
+    it('should populate abteilungen from the listAll response', () => {
       mockAbteilungService.listAll.and.returnValue(of(mockAbteilungen));
       fixture.detectChanges();
-      tick();
       expect(component.abteilungen).toEqual(mockAbteilungen);
-    }));
+    });
 
     it('should call personService.getAll() on init', () => {
       fixture.detectChanges();
@@ -157,6 +156,16 @@ describe('PersonListComponent', () => {
       component.onDepartmentChange();
 
       expect(mockPersonService.getAll).toHaveBeenCalledWith(0, 9999, 'lastName,asc', '', 1);
+    });
+
+    it('should pass abteilungId=0 unchanged when selectedAbteilungId is 0', () => {
+      fixture.detectChanges();
+      mockPersonService.getAll.calls.reset();
+
+      component.selectedAbteilungId = 0;
+      component.onDepartmentChange();
+
+      expect(mockPersonService.getAll).toHaveBeenCalledWith(0, 9999, 'lastName,asc', '', 0);
     });
   });
 });

@@ -186,6 +186,7 @@ test('F-4: GET /api/personen?abteilungId=0 ignores the param and returns all per
 
   await test.step('totalElements with abteilungId=0 matches baseline', () => {
     expect(bodyFiltered.totalElements).toBe(bodyBaseline.totalElements);
+    expect(bodyFiltered.totalElements).toBe(100);
   });
 });
 
