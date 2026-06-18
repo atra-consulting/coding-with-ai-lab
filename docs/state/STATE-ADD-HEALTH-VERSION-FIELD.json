@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "task_key": "ADD-HEALTH-VERSION-FIELD",
+  "status": "in_progress",
+  "current_step": "3.3",
+  "started": "2026-06-18T12:47:11.000Z",
+  "updated": "2026-06-18T12:47:11.000Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Add version field to GET /api/health response, reading from backend package.json",
+    "special_instructions": "Workflow scope: full. Skip PRD. Keep planning files.",
+    "branch_name": null,
+    "original_branch": "filter-persons-by-department",
+    "docs_folder": "docs",
+    "is_git_repo": true,
+    "workflow_scope": "full"
+  },
+  "discovery": {
+    "agents_available": true,
+    "writer_agents": ["ba-writer"],
+    "coding_agents": ["be-coder", "fe-coder", "ui-designer"],
+    "review_agents": ["be-reviewer", "fe-reviewer", "db-reviewer", "ui-reviewer", "ba-reviewer"],
+    "test_coding_agents": ["be-test-coder", "fe-test-coder"],
+    "test_review_agents": ["be-test-reviewer", "fe-test-reviewer"],
+    "test_runner_agents": ["be-test-runner", "fe-test-runner"],
+    "test_command": null
+  },
+  "artifacts": {
+    "prd_skipped": true,
+    "prd_file": null,
+    "plan_file": null,
+    "pr_url": null
+  },
+  "completed_steps": ["1", "2", "3.1", "3.2", "3.3"]
+}
