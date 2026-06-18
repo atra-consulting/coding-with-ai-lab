@@ -1,4 +1,5 @@
 import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AgGridAngular } from 'ag-grid-angular';
@@ -23,6 +24,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
 })
 export class PersonListComponent implements OnInit {
   private gridApi?: GridApi;
+  private personsSubscription?: Subscription;
   private personService = inject(PersonService);
   private abteilungService = inject(AbteilungService);
   private router = inject(Router);
@@ -62,10 +64,11 @@ export class PersonListComponent implements OnInit {
 
   private loadPersons(): void {
     this.loading = true;
-    this.personService.getAll(0, 9999, 'lastName,asc', '', this.selectedAbteilungId ?? undefined).subscribe({
-      next: (page) => {
-        this.rowData = page.content;
-        this.totalRows = page.totalElements;
+    this.personsSubscription?.unsubscribe();
+    this.personsSubscription = this.personService.listAll(this.selectedAbteilungId ?? undefined).subscribe({
+      next: (data) => {
+        this.rowData = data;
+        this.totalRows = data.length;
         this.loading = false;
       },
       error: () => {

@@ -15,13 +15,17 @@ export class PersonService {
       .set('size', size)
       .set('sort', sort)
       .set('search', search);
-    if (abteilungId !== undefined) {
+    if (abteilungId != null) {
       params = params.set('abteilungId', abteilungId);
     }
     return this.http.get<Page<Person>>(this.baseUrl, { params });
   }
 
-  listAll(): Observable<Person[]> {
+  listAll(abteilungId?: number): Observable<Person[]> {
+    if (abteilungId !== undefined) {
+      const params = new HttpParams().set('abteilungId', abteilungId);
+      return this.http.get<Person[]>(`${this.baseUrl}/all`, { params });
+    }
     return this.http.get<Person[]>(`${this.baseUrl}/all`);
   }
 
