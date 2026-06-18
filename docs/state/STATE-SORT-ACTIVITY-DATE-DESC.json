@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "task_key": "SORT-ACTIVITY-DATE-DESC",
+  "status": "in_progress",
+  "current_step": "3.3",
+  "started": "2026-06-18T11:48:51.000Z",
+  "updated": "2026-06-18T11:48:51.000Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Change the default sort order of the activity list to date descending. When opening the activity list for a company, the entries are currently shown oldest first. Change the default sort order so the most recent activities appear at the top (date descending).",
+    "special_instructions": null,
+    "branch_name": null,
+    "original_branch": null,
+    "docs_folder": "docs",
+    "is_git_repo": true,
+    "workflow_scope": null
+  },
+  "discovery": {
+    "agents_available": false,
+    "writer_agents": [],
+    "coding_agents": [],
+    "review_agents": [],
+    "test_command": null
+  },
+  "artifacts": {
+    "prd_skipped": null,
+    "prd_file": null,
+    "plan_file": null,
+    "pr_url": null
+  },
+  "completed_steps": []
+}
