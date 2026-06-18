@@ -29,7 +29,9 @@ router.get(
       'person',
     );
     const search = req.query['search'] as string | undefined;
-    res.json(await personService.findAll(search, page, size, sort));
+    const abteilungIdRaw = parseInt(req.query['abteilungId'] as string, 10);
+    const abteilungId = isNaN(abteilungIdRaw) ? undefined : abteilungIdRaw;
+    res.json(await personService.findAll(search, page, size, sort, abteilungId));
   }),
 );
 

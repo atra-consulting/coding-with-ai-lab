@@ -69,12 +69,25 @@ export const personService = {
     search: string | undefined,
     page: number,
     size: number,
-    sort: SortParams
+    sort: SortParams,
+    abteilungId?: number
   ): Promise<PageResult<PersonDTO>> {
-    const where = search
-      ? `WHERE LOWER(p.firstName) LIKE LOWER('%' || ? || '%') OR LOWER(p.lastName) LIKE LOWER('%' || ? || '%')`
-      : '';
-    const params: InValue[] = search ? [search, search] : [];
+    const conditions: string[] = [];
+    const params: InValue[] = [];
+
+    if (search) {
+      conditions.push(
+        `(LOWER(p.firstName) LIKE LOWER('%' || ? || '%') OR LOWER(p.lastName) LIKE LOWER('%' || ? || '%'))`
+      );
+      params.push(search, search);
+    }
+
+    if (abteilungId !== undefined) {
+      conditions.push(`p.abteilungId = ?`);
+      params.push(abteilungId);
+    }
+
+    const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
     const countResult = await client.execute({
       sql: `SELECT COUNT(*) AS cnt FROM person p ${where}`,
