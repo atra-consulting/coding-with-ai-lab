@@ -17,7 +17,7 @@ import { StarCellRendererComponent, StarCellRendererParams } from './star-cell-r
 
 @Component({
   selector: 'app-firma-list',
-  imports: [RouterLink, AgGridAngular, LoadingSpinnerComponent, FormsModule, StarCellRendererComponent],
+  imports: [RouterLink, AgGridAngular, LoadingSpinnerComponent, FormsModule],
   templateUrl: './firma-list.component.html',
 })
 export class FirmaListComponent implements OnInit {

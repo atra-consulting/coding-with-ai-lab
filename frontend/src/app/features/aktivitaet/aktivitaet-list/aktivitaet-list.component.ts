@@ -16,7 +16,7 @@ import { TypIconCellRendererComponent } from './typ-icon-cell-renderer.component
 
 @Component({
   selector: 'app-aktivitaet-list',
-  imports: [RouterLink, AgGridAngular, LoadingSpinnerComponent, TypIconCellRendererComponent],
+  imports: [RouterLink, AgGridAngular, LoadingSpinnerComponent],
   templateUrl: './aktivitaet-list.component.html',
 })
 export class AktivitaetListComponent implements OnInit {

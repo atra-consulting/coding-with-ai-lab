@@ -18,7 +18,7 @@ const currencyFormatter = new Intl.NumberFormat('de-DE', { style: 'currency', cu
 
 @Component({
   selector: 'app-chance-list',
-  imports: [RouterLink, AgGridAngular, LoadingSpinnerComponent, PhaseBadgeCellRendererComponent],
+  imports: [RouterLink, AgGridAngular, LoadingSpinnerComponent],
   templateUrl: './chance-list.component.html',
 })
 export class ChanceListComponent implements OnInit {
