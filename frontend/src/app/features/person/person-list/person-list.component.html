@@ -1,6 +1,7 @@
 <div class="page-header">
   <h2>Personen@if (totalRows > 0) {: {{ isFilterActive ? displayedRows + '/' + totalRows : totalRows }}}</h2>
-  <select class="form-select form-select-sm" style="width: auto"
+  <select class="form-select form-select-sm w-auto"
+    aria-label="Nach Abteilung filtern"
     [(ngModel)]="selectedAbteilungId" (ngModelChange)="onDepartmentChange()">
     <option [ngValue]="null">Alle Abteilungen</option>
     @for (abt of abteilungen; track abt.id) {

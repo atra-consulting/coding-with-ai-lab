@@ -15,7 +15,7 @@ export class PersonService {
       .set('size', size)
       .set('sort', sort)
       .set('search', search);
-    if (abteilungId) {
+    if (abteilungId !== undefined) {
       params = params.set('abteilungId', abteilungId);
     }
     return this.http.get<Page<Person>>(this.baseUrl, { params });

@@ -30,7 +30,7 @@ router.get(
     );
     const search = req.query['search'] as string | undefined;
     const abteilungIdRaw = parseInt(req.query['abteilungId'] as string, 10);
-    const abteilungId = isNaN(abteilungIdRaw) ? undefined : abteilungIdRaw;
+    const abteilungId = isNaN(abteilungIdRaw) || abteilungIdRaw <= 0 ? undefined : abteilungIdRaw;
     res.json(await personService.findAll(search, page, size, sort, abteilungId));
   }),
 );
