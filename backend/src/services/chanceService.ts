@@ -79,9 +79,10 @@ export const chanceService = {
     const conditions: string[] = [];
     const params: InValue[] = [];
 
-    if (search) {
+    const trimmedSearch = search?.trim();
+    if (trimmedSearch) {
       conditions.push(`LOWER(c.titel) LIKE LOWER('%' || ? || '%')`);
-      params.push(search);
+      params.push(trimmedSearch);
     }
 
     if (phase !== undefined) {
