@@ -1,5 +1,9 @@
 # CLAUDE.md
 
+## Writing Style
+
+Applies to all Claude instances, skills, and subagents. Write as short and brief as possible. Use short sentences. Use simple words non-native speakers understand. No passive voice. Use sentence fragments.
+
 ## Project
 
 Full-stack CRM application. Node.js/TypeScript (Express + Drizzle ORM + SQLite via `@libsql/client`) backend, Angular 21 frontend. German domain model: Firma, Person, Abteilung, Adresse, Aktivitaet, Chance. SQLite file-based database at `backend/data/crmdb.sqlite`. Authentication via hardcoded users with bcrypt-hashed passwords (`backend/src/config/users.ts`) and session-based auth; sessions are persisted to the DB via `libsqlSessionStore` (`sessions` table). 3 users: admin/admin123, user/test123, demo/demo1234 — admin and demo have role `ADMIN`, user has `USER`; all carry the full `permissions` array.
