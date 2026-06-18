@@ -58,9 +58,14 @@ describe('AgentTasksDashboardComponent — no source (summary view)', () => {
     expect(mockService.getSummary).toHaveBeenCalledTimes(1);
   });
 
-  it('renders four summary cards (one per source)', () => {
-    const cards = fixture.nativeElement.querySelectorAll('.card');
-    expect(cards.length).toBe(4);
+  it('renders three source cards (GitHub Issues removed)', () => {
+    const cards = fixture.nativeElement.querySelectorAll('.source-card');
+    expect(cards.length).toBe(3);
+  });
+
+  it('renders four aggregate KPI tiles (one per status)', () => {
+    const tiles = fixture.nativeElement.querySelectorAll('.kpi-tile');
+    expect(tiles.length).toBe(4);
   });
 
   it('renders the EMAIL card label "Customer Emails"', () => {
@@ -68,24 +73,31 @@ describe('AgentTasksDashboardComponent — no source (summary view)', () => {
     expect(text).toContain('Customer Emails');
   });
 
-  it('renders all four source labels', () => {
+  it('renders the remaining source labels (no GitHub Issues)', () => {
     const text: string = fixture.nativeElement.textContent;
     expect(text).toContain('Customer Emails');
-    expect(text).toContain('GitHub Issues');
     expect(text).toContain('Application Logs');
     expect(text).toContain('Error Reports');
+    expect(text).not.toContain('GitHub Issues');
   });
 
   it('displays openCount from mock summary in EMAIL card', () => {
-    const cards = fixture.nativeElement.querySelectorAll('.card');
+    const cards = fixture.nativeElement.querySelectorAll('.source-card');
     const emailCard: HTMLElement = cards[0];
     expect(emailCard.textContent).toContain('4');
   });
 
   it('displays inProgressCount from mock summary', () => {
-    const cards = fixture.nativeElement.querySelectorAll('.card');
+    const cards = fixture.nativeElement.querySelectorAll('.source-card');
     const emailCard: HTMLElement = cards[0];
     expect(emailCard.textContent).toContain('1');
+  });
+
+  it('shows the total task count for the EMAIL source', () => {
+    const cards = fixture.nativeElement.querySelectorAll('.source-card');
+    const emailCard: HTMLElement = cards[0];
+    // 4 + 1 + 2 + 1 = 8 tasks
+    expect(emailCard.textContent).toContain('8 Aufgaben');
   });
 
   it('renders the reset button "Alle Aufgaben zurücksetzen"', () => {
@@ -165,8 +177,8 @@ describe('AgentTasksDashboardComponent — with source queryParam (list view)', 
     expect(listEl).toBeTruthy();
   });
 
-  it('does NOT render the four summary cards when source is set', () => {
-    const cards = fixture.nativeElement.querySelectorAll('.card');
+  it('does NOT render the source cards when source is set', () => {
+    const cards = fixture.nativeElement.querySelectorAll('.source-card');
     expect(cards.length).toBe(0);
   });
 });
