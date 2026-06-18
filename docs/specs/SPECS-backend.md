@@ -61,7 +61,7 @@ Login response:
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| GET | `/api/health` | Public | Returns `{ status: "ok", timestamp }` |
+| GET | `/api/health` | Public | Returns `{ status: "ok", timestamp, version }` |
 
 ### Firmen (`/api/firmen`)
 
@@ -82,8 +82,8 @@ Allowed sort fields: `name`, `industry`, `createdAt`, `updatedAt`.
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/api/personen` | Paginated list. Params: `search`, `page`, `size`, `sort`. Default: `lastName,ASC` |
-| GET | `/api/personen/all` | Full list, no pagination |
+| GET | `/api/personen` | Paginated list. Params: `search`, `page`, `size`, `sort`, `abteilungId` (optional filter). Default: `lastName,ASC` |
+| GET | `/api/personen/all` | Full list, no pagination. Optional param: `abteilungId` to filter by department |
 | GET | `/api/personen/:id` | Single record |
 | POST | `/api/personen` | Create → 201 |
 | PUT | `/api/personen/:id` | Full update |

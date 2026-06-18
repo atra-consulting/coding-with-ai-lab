@@ -1,4 +1,5 @@
 import { client } from '../config/db.js';
+import type { InValue } from '@libsql/client';
 import { NotFoundError } from '../utils/errors.js';
 import { buildPage, type PageResult, type SortParams } from '../utils/pagination.js';
 import { type ChancePhase } from '../db/schema/enums.js';
@@ -74,17 +75,27 @@ const BASE_QUERY = `
 `;
 
 export const chanceService = {
-  async findAll(page: number, size: number, sort: SortParams): Promise<PageResult<ChanceDTO>> {
+  async findAll(page: number, size: number, sort: SortParams, phase?: ChancePhase): Promise<PageResult<ChanceDTO>> {
+    const conditions: string[] = [];
+    const params: InValue[] = [];
+
+    if (phase !== undefined) {
+      conditions.push('c.phase = ?');
+      params.push(phase);
+    }
+
+    const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
     const countResult = await client.execute({
-      sql: 'SELECT COUNT(*) AS cnt FROM chance',
-      args: [],
+      sql: `SELECT COUNT(*) AS cnt FROM chance c ${where}`,
+      args: [...params],
     });
     const countRow = countResult.rows[0] as unknown as { cnt: number };
     const total = Number(countRow.cnt);
 
     const rowsResult = await client.execute({
-      sql: `${BASE_QUERY} ORDER BY c.${sort.field} ${sort.direction} LIMIT ? OFFSET ?`,
-      args: [size, page * size],
+      sql: `${BASE_QUERY} ${where} ORDER BY c.${sort.field} ${sort.direction} LIMIT ? OFFSET ?`,
+      args: [...params, size, page * size],
     });
     const rows = rowsResult.rows as unknown as ChanceRow[];
 

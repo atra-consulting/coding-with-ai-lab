@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import express from 'express';
 import { corsMiddleware } from './middleware/cors.js';
 import { sessionMiddleware } from './middleware/session.js';
@@ -12,6 +15,9 @@ import chancenRouter from './routes/chancen.js';
 import dashboardRouter from './routes/dashboard.js';
 import agentTasksRouter from './routes/agentTasks.js';
 import cronRouter from './routes/cron.js';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const { version } = JSON.parse(readFileSync(join(__dirname, '../package.json'), 'utf8')) as { version: string };
 
 const app = express();
 
@@ -28,7 +34,7 @@ app.use(sessionMiddleware);
 
 // Health check (public)
 app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({ status: 'ok', timestamp: new Date().toISOString(), version });
 });
 
 // Routes

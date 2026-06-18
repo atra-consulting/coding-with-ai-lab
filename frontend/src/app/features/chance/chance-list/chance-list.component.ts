@@ -12,12 +12,13 @@ import {
 import { Chance } from '../../../core/models/chance.model';
 import { ChanceService } from '../../../core/services/chance.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
+import { EurCurrencyPipe } from '../../../shared/pipes/currency.pipe';
 
 const currencyFormatter = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' });
 
 @Component({
   selector: 'app-chance-list',
-  imports: [RouterLink, AgGridAngular, LoadingSpinnerComponent],
+  imports: [RouterLink, AgGridAngular, LoadingSpinnerComponent, EurCurrencyPipe],
   templateUrl: './chance-list.component.html',
 })
 export class ChanceListComponent implements OnInit {
@@ -30,6 +31,7 @@ export class ChanceListComponent implements OnInit {
   loading = true;
   theme = themeQuartz.withParams({ oddRowBackgroundColor: '#f0f0f0' });
   totalRows = 0;
+  totalWert = 0;
   displayedRows = 0;
   isFilterActive = false;
 
@@ -78,6 +80,7 @@ export class ChanceListComponent implements OnInit {
       next: (data) => {
         this.rowData = data;
         this.totalRows = data.length;
+        this.totalWert = data.reduce((sum, c) => sum + (c.wert ?? 0), 0);
         this.loading = false;
       },
       error: () => {
