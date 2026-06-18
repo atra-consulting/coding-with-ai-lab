@@ -23,7 +23,17 @@ export class CronService {
     return this.http.get<Page<CronRun>>(`${this.baseUrl}/runs`, { params });
   }
 
-  triggerNow(): Observable<CronRun> {
-    return this.http.get<CronRun>(`${this.baseUrl}/agent-tasks`);
+  /**
+   * Map a cron job name to its trigger endpoint. Each job dispatches a different
+   * GitHub Actions workflow, so they have separate endpoints.
+   */
+  private static readonly TRIGGER_ENDPOINTS: Record<string, string> = {
+    'solve-tasks': '/agent-tasks',
+    'solve-github-issues': '/github-issues',
+  };
+
+  triggerNow(job = 'solve-tasks'): Observable<CronRun> {
+    const path = CronService.TRIGGER_ENDPOINTS[job] ?? '/agent-tasks';
+    return this.http.get<CronRun>(`${this.baseUrl}${path}`);
   }
 }
