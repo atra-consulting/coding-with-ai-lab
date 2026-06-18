@@ -52,8 +52,6 @@ test.afterAll(async () => {
 // POST /api/adressen — typ round-trip
 // ---------------------------------------------------------------------------
 test.describe('POST /api/adressen — typ field', () => {
-  const createdIds: number[] = [];
-
   test('creates address with typ: "WORK" and returns typ: "WORK"', async () => {
     const resp = await adminCtx.post('/api/adressen', {
       data: { ...BASE_PAYLOAD, typ: 'WORK' },
@@ -64,7 +62,6 @@ test.describe('POST /api/adressen — typ field', () => {
     });
 
     const body = await resp.json() as Record<string, unknown>;
-    createdIds.push(body['id'] as number);
 
     await test.step('typ is "WORK"', () => {
       expect(body['typ']).toBe('WORK');
@@ -81,7 +78,6 @@ test.describe('POST /api/adressen — typ field', () => {
     });
 
     const body = await resp.json() as Record<string, unknown>;
-    createdIds.push(body['id'] as number);
 
     await test.step('typ key is present', () => {
       expect('typ' in body).toBe(true);
