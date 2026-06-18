@@ -2,7 +2,7 @@
   "version": 1,
   "task_key": "ADD-ADRESSE-TYP-FIELD",
   "status": "in_progress",
-  "current_step": "3.3",
+  "current_step": "7.5",
   "started": "2026-06-18T13:02:28.000Z",
   "updated": "2026-06-18T13:02:28.000Z",
   "config": {
@@ -25,7 +25,7 @@
   "artifacts": {
     "prd_skipped": null,
     "prd_file": null,
-    "plan_file": null,
+    "plan_file": "docs/plans/PLAN-ADD-ADRESSE-TYP-FIELD.md",
     "pr_url": null
   },
   "completed_steps": []
