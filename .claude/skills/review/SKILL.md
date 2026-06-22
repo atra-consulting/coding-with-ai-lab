@@ -2,8 +2,8 @@
 name: "project:review"
 description: "Local code review with multi-round review & fix cycle. Use for reviewing code, checking changes, getting feedback on a branch, or before creating a PR."
 argument-hint: (optional special instructions)
-version: 1.7.0
-last-modified: 2026-06-09
+version: 1.8.0
+last-modified: 2026-06-22
 allowed-tools:
   - Read
   - Edit
@@ -88,7 +88,7 @@ Then STOP immediately.
 If NOT in plan mode, display header:
 
 ```
-Code Review (v1.7.0, 2026-06-09)
+Code Review (v1.8.0, 2026-06-22)
 ****************************************
 
 Local code review - multi-round review & fix cycle
@@ -384,9 +384,9 @@ Create context summary from PRD (purpose, goals, requirements) and CLAUDE.md (co
 
 ## PHASE 5: MULTI-ROUND REVIEW & FIX CYCLE
 
-One review round. Reviewers find issues, fixers plan fixes, reviewers approve plan, fixes applied.
+Up to `max_rounds` rounds (3 with fix agents, 1 without — see Step 5.0). Each round: reviewers find issues, fixers plan fixes, the user approves the fixes (Step 5.2.5), reviewers validate the plan, fixes applied. The loop ends early on a clean round.
 
-Complete all rounds autonomously without prompting the user mid-review.
+Run each round autonomously except for the single findings-approval checkpoint (Step 5.2.5). Never interrupt with status-check questions.
 
 ### Step 5.0: Initialize Round Tracking
 
@@ -397,10 +397,12 @@ Create tracking structure:
   - `line` (line number or null)
   - `description` (what's wrong)
   - `found_by` (agent name or "built-in review")
+  - `proposed_fix` (brief description of the planned change — null until planned in Step 5.2)
+  - `proposed_fix_by` (agent that will apply it — null until planned)
   - `fix_description` (what changed — null until fixed)
   - `fixed_by` (agent name or "direct fix" — null until fixed)
 - `current_round = 1`
-- `max_rounds = 1`
+- **`max_rounds`**: set to `3` when `fix_agents_available = true`, otherwise `1`. The review→fix→re-review loop only helps when fixes happen between rounds, so without fix agents one round is all that adds value. The loop still ends early on a clean round (Step 5.1.3).
 
 ### Step 5.1: REVIEW PHASE
 
@@ -426,6 +428,8 @@ Display: `--- Review Round <current_round>/<max_rounds> ---`
 
 3. If `applicable_reviewers` is empty:
    - Fall through to built-in review (Step 5.1.2)
+
+**For rounds 2+** (`current_round > 1`): append to every reviewer prompt — "Focus on fix correctness, regressions introduced by the previous round's fixes, and any remaining issues."
 
 **If review_agents_available = false:**
 - Use built-in review checklist below
@@ -508,6 +512,8 @@ Record per issue:
 - `line` (line number or null)
 - `description` (use backticks for code identifiers)
 - `found_by` (agent name or "built-in review")
+- `proposed_fix` = null (populated in Step 5.2)
+- `proposed_fix_by` = null (populated in Step 5.2)
 - `fix_description` = null (populated later in Step 5.4)
 - `fixed_by` = null (populated later in Step 5.4)
 
@@ -550,17 +556,45 @@ Display: `--- Fix Planning (Round <current_round>) ---`
 4. Each agent produces a fix plan listing per issue:
    - Issue # (reference to the issue index from Step 5.1.3)
    - File and line
-   - `fix_description` (brief description of the proposed change)
+   - `proposed_fix` (brief description of the proposed change)
    - Rationale
 
-5. Collect and merge all fix plans
+5. Collect and merge all fix plans. For each issue, set `proposed_fix` and `proposed_fix_by` = the agent that produced the plan.
 
 Display: `Fix plans created: <count> fixes proposed`
 
 **If fix_agents_available = false:**
 - List issues found as actionable items in review output
-- Skip Steps 5.3 and 5.4
+- Skip Steps 5.2.5, 5.3, and 5.4
 - Proceed to Step 5.5 (single round only when no fixers available)
+
+### Step 5.2.5: FINDINGS APPROVAL CHECKPOINT
+
+**Skip this checkpoint** when no fix agents exist, when this round found zero issues, or in **embedded mode** (called from plan-and-do — the caller drives fix approval at its own checkpoint; approve all planned fixes automatically and continue to Step 5.3).
+
+**Otherwise (fix agents exist AND findings are present — any severity):** Display the full findings table including proposed fixes:
+
+```
+Round <current_round> — Findings & Proposed Fixes
+
+| # | Severity | File | Issue | Found by | Proposed Fix | Fix by |
+|---|----------|------|-------|----------|--------------|--------|
+| 1 | CRITICAL | path/to/file.ts:28 | description | be-reviewer | proposed fix description | be-coder |
+| 2 | WARNING  | path/to/route.ts:15 | description | built-in review | proposed fix description | be-coder |
+```
+
+Then call the `AskUserQuestion` tool with:
+1. Approve all fixes, proceed
+2. Approve some, skip others (specify which to skip)
+3. Skip all fixes this round (record issues only)
+
+Wait for the user's response.
+
+- **Approve all** → mark every finding for execution. Continue to Step 5.3.
+- **Approve some** → call the `AskUserQuestion` tool to ask which issue numbers to skip. For each skipped issue, set `proposed_fix` = "—", `proposed_fix_by` = "—". Continue to Step 5.3 with the approved subset only.
+- **Skip all** → clear `proposed_fix` / `proposed_fix_by` for all findings (back to null). Skip Steps 5.3 and 5.4. Proceed to next round or finish (Step 5.5).
+
+This is the one genuine decision point in the review loop — it does not violate User Autonomy, which only forbids status-check interruptions.
 
 ### Step 5.3: PLAN REVIEW PHASE
 
@@ -585,6 +619,8 @@ Display: `Fix plan approved by reviewers`
 ### Step 5.4: EXECUTE FIXES PHASE
 
 Display: `--- Applying Fixes (Round <current_round>) ---`
+
+**Only act on approved findings** — those whose `proposed_fix` is set and not "—" (per Step 5.2.5). Leave skipped findings recorded but unfixed (`fix_description` / `fixed_by` stay null).
 
 **If dry_run_mode = true:**
 - Display each fix: `[DRY-RUN] Would fix: <file>:<line> — <brief description> (by: <agent-name>)`
@@ -658,14 +694,15 @@ Format review as markdown:
 
 **Issues found**: X | **Fixes applied**: Y
 
-| # | Severity | File | Issue | Found by | Fix | Fixed by |
-|---|----------|------|-------|----------|-----|----------|
-| 1 | CRITICAL | `path/to/file.kt:28` | `getCurrentUser()` throws NoSuchElementException on anonymous requests | be-reviewer | Added null-safe `findFirst().orElse(null)` with anonymous user fallback | be-coder |
-| 2 | WARNING | `path/to/config.kt:15` | CORS allows wildcard origins | be-reviewer | Restricted to explicit origin allowlist from config | be-coder |
-| 3 | SUGGESTION | `path/to/util.kt:50` | Could extract duplicated validation logic | be-reviewer | — | — |
+| # | Severity | File | Issue | Found by | Proposed Fix | Fix by | Applied | Applied by |
+|---|----------|------|-------|----------|--------------|--------|---------|------------|
+| 1 | CRITICAL | `path/to/file.ts:28` | `getCurrentUser()` throws on anonymous requests | be-reviewer | Add null-safe fallback for anonymous user | be-coder | Added null-safe `?? null` with anonymous fallback | be-coder |
+| 2 | WARNING | `path/to/route.ts:15` | CORS allows wildcard origins | be-reviewer | Restrict to explicit origin allowlist | be-coder | skipped | — |
+| 3 | SUGGESTION | `path/to/util.ts:50` | Could extract duplicated validation logic | be-reviewer | — | — | — | — |
 
-<Use "—" in Fix and Fixed by columns for unfixed issues (e.g., suggestions skipped).>
-<Use "built-in review" as Found by when no reviewer agents. Use "direct fix" as Fixed by when no coder agents.>
+<Proposed Fix / Fix by come from Step 5.2 planning; Applied / Applied by from Step 5.4 execution.>
+<Use "—" for unfixed or unplanned issues (e.g., suggestions skipped). Use "skipped" in Applied when the user declined the fix at the Step 5.2.5 checkpoint.>
+<Use "built-in review" as Found by when no reviewer agents. Use "direct fix" as Applied by when no coder agents.>
 
 <FORMAT B — Clean round (0 issues):>
 
@@ -691,7 +728,7 @@ Clean pass. No issues found.
 - Create PR when ready
 
 ---
-Generated with Claude Code - review v1.7.0
+Generated with Claude Code - review v1.8.0
 ```
 
 ### Step 6.3: Write Review File
