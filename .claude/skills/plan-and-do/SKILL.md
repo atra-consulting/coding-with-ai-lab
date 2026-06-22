@@ -329,7 +329,8 @@ Write `[state_dir]/STATE-[task_key].json` using Write tool:
     "is_git_repo": true,
     "workflow_scope": null,
     "pr_prefix": null,
-    "pr_exists": null
+    "pr_exists": null,
+    "pr_url": null
   },
   "discovery": {
     "agents_available": false,
@@ -341,8 +342,7 @@ Write `[state_dir]/STATE-[task_key].json` using Write tool:
   "artifacts": {
     "prd_skipped": null,
     "prd_file": null,
-    "plan_file": null,
-    "pr_url": null
+    "plan_file": null
   },
   "completed_steps": []
 }
@@ -553,7 +553,7 @@ Write to `[plan_dir]/PLAN-[task_key].md`. Store as `plan_file`.
 
 ### Step 7.5: Checkpoint 7 — Plan Approval
 
-Update state: `current_step` = "7.5", set `artifacts.plan_file`, `discovery.test_command`, `config.workflow_scope`.
+Update state: `current_step` = "7.5", set `artifacts.plan_file` and `discovery.test_command`. Set `config.workflow_scope` (and `config.pr_prefix`, when derived) only *after* the user answers — never before.
 
 Display plan content. Display artifact paths per the ARTIFACT PATH DISPLAY RULE. **If `pr_exists = true`, also display "Open PR found: [pr_url]" so the user sees it before choosing** — `pr_exists`/`pr_url` come from Step 4.4b; do NOT re-detect here.
 
@@ -567,19 +567,21 @@ Display plan content. Display artifact paths per the ARTIFACT PATH DISPLAY RULE.
 5. **Edit** — Request changes to the plan.
 6. **Quit** — Execute Quit Pattern.
 
+**Numbering:** When `prd_skipped = false`, omit option 4 entirely and present exactly five options with no gap — renumber so Edit = 4 and Quit = 5. When `prd_skipped = true`, present all six as numbered above. Always label each option by name as well as number so the mapping below stays unambiguous.
+
 Store the user's choice in state as `config.workflow_scope`:
 - Choice 1 → `"implement"`
 - Choice 2 → `"implement-review"`
-- Choice 3 → `"full"`, then **if `pr_exists = false`, derive the PR prefix** (see below)
-- "Create PRD first" (only when `prd_skipped = true`) → set `prd_skipped = false`, update state (`artifacts.prd_skipped = false`). **If `is_git_repo`:** `git rm [plan_file] && git commit -m "docs: Remove draft plan, creating PRD first. [task_key]"`. Then go to STEP 6. After Step 6 completes, continue to Step 7.1 (re-run plan generation with the PRD as input) and return here.
+- Choice 3 → `"full"`, then **derive the PR prefix** (see below)
+- "Create PRD first" (only when `prd_skipped = true`) → set `prd_skipped = false`, update state (`artifacts.prd_skipped = false`). **If `is_git_repo`:** the draft plan was written in Step 7.4 but is only committed in Step 7.6, so it may be untracked — remove it safely: if `git ls-files --error-unmatch [plan_file]` succeeds (tracked), run `git rm [plan_file] && git commit -m "docs: Remove draft plan, creating PRD first. [task_key]"`; otherwise just `rm [plan_file]` (nothing to commit). Then go to STEP 6. After Step 6 completes, continue to Step 7.1 (re-run plan generation with the PRD as input) and return here.
 - Edit → call the `AskUserQuestion` tool to ask what changes are needed, apply them, re-display the plan, return to this checkpoint.
 - Quit → execute Quit Pattern.
 
-**Auto-derive PR title prefix (Choice 3 only, and only when `pr_exists = false`):** This lets the full workflow run uninterrupted through PR creation. Never ask the user.
+**Auto-derive PR title prefix (Choice 3 only):** This lets the full workflow run uninterrupted through PR creation/update. Always derive — for both new and existing PRs — so the PR title is never malformed. Never ask the user.
 1. Run: `git log [original_branch]..HEAD --oneline`
 2. Count commits starting with `feat:`, `fix:`, `chore:`, or `docs:` (case-sensitive).
 3. Majority prefix wins. Map `docs:` → `chore:`.
-4. If no commits yet, all `docs:`, or no clear majority (including ties): default to `feat:`.
+4. If no commits yet (e.g. a kept branch where the range is empty), all `docs:`, or no clear majority (including ties): default to `feat:`.
 
 Display: "PR prefix: [pr_prefix] (derived from commit history)." Store as `config.pr_prefix`.
 

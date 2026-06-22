@@ -326,7 +326,7 @@ Wait for response — do not push or create a PR without user confirmation.
 
   **CRITICAL:** The PR MUST target `original_branch` — the branch active when the skill started (stored in state file `config.original_branch`). Never default to main/master. Re-read the state file if `original_branch` is unknown.
 
-  **PR title:** Use `[pr_prefix] [brief title]. [task_key]` when `config.pr_prefix` is set (derived in Step 7.5). Otherwise fall back to `[brief title from task_key]`.
+  **PR title:** Use `[pr_prefix] [brief title]. [task_key]` when `config.pr_prefix` is set (derived in Step 7.5). When `config.pr_prefix` is null/empty, drop it entirely — use `[brief title]. [task_key]` with no leading space and no literal "null". This applies to both the `gh pr edit` and `gh pr create` commands below.
 
   **Existing PR?** If `config.pr_exists = true` (an open PR was found in Step 4.4b), update it instead of creating a new one:
   ```bash
@@ -354,8 +354,9 @@ Wait for response — do not push or create a PR without user confirmation.
 
 - **Push only:**
   ```bash
-  git push 2>/dev/null || echo "Push failed - commits are local only"
+  git push -u origin [branch_name] || echo "Push failed - commits are local only"
   ```
+  (Use the full `-u origin [branch_name]` form — a bare `git push` fails on a branch with no upstream, and suppressing stderr would hide why.)
   Continue to PC.5.
 
 - **Skip:** Display "Commits stay local on `[branch_name]`." Continue to PC.5.

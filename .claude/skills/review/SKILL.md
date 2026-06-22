@@ -207,6 +207,8 @@ If you lose track of variables (e.g., after context compression), re-read the st
 
 Note: The state file is created in Phase 3.4. If context compresses before that, re-derive `docs_folder` and `current_branch` from git before reading the state file.
 
+Note: The loop counters `current_round` and `max_rounds` are NOT persisted (the state file is written before Phase 5). After recovery, re-derive: `max_rounds` = 3 if `fix_agents_available` else 1; `current_round` = number of rounds already in `all_round_results`, plus 1 if the last round is mid-flight.
+
 ---
 
 ## PHASE 2: VALIDATION & SETUP
@@ -529,8 +531,7 @@ Then display round summary: `Round <current_round>: <count> issues found`
 
 **If no issues found:**
 - Display: `Round <current_round>: Clean. No issues found.`
-- If `current_round < max_rounds`: increment `current_round`, go back to Step 5.1
-- If `current_round = max_rounds`: proceed to Step 5.5
+- Proceed to Step 5.5. A clean round means there is nothing to fix, so the loop ends early — re-reviewing unchanged code adds no value. (This is why a fresh, already-clean branch finishes in one round even when `max_rounds = 3`.)
 
 **If issues found:** proceed to Step 5.2.
 
@@ -592,7 +593,7 @@ Wait for the user's response.
 
 - **Approve all** → mark every finding for execution. Continue to Step 5.3.
 - **Approve some** → call the `AskUserQuestion` tool to ask which issue numbers to skip. For each skipped issue, set `proposed_fix` = "—", `proposed_fix_by` = "—". Continue to Step 5.3 with the approved subset only.
-- **Skip all** → clear `proposed_fix` / `proposed_fix_by` for all findings (back to null). Skip Steps 5.3 and 5.4. Proceed to next round or finish (Step 5.5).
+- **Skip all** → clear `proposed_fix` / `proposed_fix_by` for all findings (back to null). Skip Steps 5.3 and 5.4. Proceed **directly to Step 5.5** (terminate the loop — the user declined fixes this round, so re-reviewing would only re-find the same issues).
 
 This is the one genuine decision point in the review loop — it does not violate User Autonomy, which only forbids status-check interruptions.
 
@@ -600,7 +601,7 @@ This is the one genuine decision point in the review loop — it does not violat
 
 Display: `--- Plan Review (Round <current_round>) ---`
 
-Launch reviewer agents with the fix plans via Task tool (in parallel - multiple Task calls in one message).
+Pass only **approved** fix plans (findings whose `proposed_fix` is set and not "—", per Step 5.2.5) to reviewers. Launch reviewer agents with those fix plans via Task tool (in parallel - multiple Task calls in one message).
 
 Each reviewer validates fixes in its domain:
 - Fix addresses the identified issue
@@ -678,7 +679,7 @@ Format review as markdown:
 **Branch**: <Current Branch>
 **Base**: <Main Branch>
 **Files Reviewed**: <Count>
-**Review Rounds**: <max_rounds>
+**Review Rounds**: <rounds actually run> (max <max_rounds>)
 
 ## Summary
 
@@ -757,7 +758,7 @@ Local Review Complete
 
 Branch: <CURRENT> (vs <BASE>)
 Files reviewed: <COUNT>
-Review rounds: <max_rounds>
+Review rounds: <rounds actually run> (max <max_rounds>)
 Reviewer agents: <list of reviewer agents used, or "None (built-in checklist)">
 Fix agents: <list of coder/designer agents used, or "None">
 
