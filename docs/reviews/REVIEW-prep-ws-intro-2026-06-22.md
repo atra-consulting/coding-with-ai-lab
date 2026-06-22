@@ -14,11 +14,11 @@ Adapted six new subagents (`python`/`shell`/`skill` × coder/reviewer) to this p
 
 ### Round 1
 
-**Issues found**: 1 | **Fixes applied**: 0
+**Issues found**: 1 | **Fixes applied**: 1
 
 | # | Severity | File | Issue | Found by | Fix | Fixed by |
 |---|----------|------|-------|----------|-----|----------|
-| 1 | SUGGESTION | `.claude/agents/skill-coder.md`, `.claude/agents/skill-reviewer.md` | Body still teaches the older slash-command skill format (`## Command Structure` with `/project:command-name`) rather than this repo's `.claude/skills/<name>/SKILL.md` directory format. Out of scope for this task (foreign-tool removal + registration), left as-is. | built-in review | — | — |
+| 1 | SUGGESTION | `.claude/agents/skill-coder.md`, `.claude/agents/skill-reviewer.md` | Body taught the older slash-command skill format (`## Command Structure` with `/project:command-name`) rather than this repo's `.claude/skills/<name>/SKILL.md` directory format. | built-in review | Replaced with the directory format + real frontmatter sample (`name: "project:..."`, `allowed-tools`, no MCP); fixed example paths; removed dangling agent-memory instructions. | direct fix |
 
 Verified clean:
 - Frontmatter: all 6 files have exactly `name`, `description`, `tools`, `model: sonnet`; no `memory:` field; coders get `Read, Write, Edit, Bash, Glob, Grep`, reviewers get `Read, Grep, Glob, Bash`.
@@ -31,7 +31,7 @@ Verified clean:
 
 ## Remaining Issues
 
-One suggestion (issue #1) left intentionally out of scope. No critical or warning issues.
+No remaining issues. Issue #1 fixed.
 
 ## Project Context Validation
 
