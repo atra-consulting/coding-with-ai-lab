@@ -1,6 +1,6 @@
 ---
 name: skill-reviewer
-description: "Use this agent when a custom Claude Code skill (slash command or workflow) has just been written or modified and needs expert review. Trigger after writing or editing any file in the custom skills directory to catch mistakes, verify branching logic, validate user decision points, and ensure alignment with current Claude Code best practices.\\n\\n<example>\\nContext: The user has just written a new custom skill for Claude Code.\\nuser: \"I've written a new skill at .claude/skills/deploy-check.md\"\\nassistant: \"Let me use the skill-reviewer agent to review this new skill for correctness and best practices.\"\\n<commentary>\\nA new custom skill was just written, so launch the skill-reviewer agent to inspect it for mistakes, branching coverage, and best practices.\\n</commentary>\\n</example>\\n\\n<example>\\nContext: The user updated an existing custom skill.\\nuser: \"I updated the rollback skill to handle a new edge case\"\\nassistant: \"I'll launch the skill-reviewer agent to verify the updated skill is correct and complete.\"\\n<commentary>\\nAn existing skill was modified, so use the skill-reviewer agent to re-validate branching logic and decision points.\\n</commentary>\\n</example>\\n\\n<example>\\nContext: The user asks to write a custom skill and wants it reviewed immediately after.\\nuser: \"Write a custom skill that checks for open PRs before deploying, then review it\"\\nassistant: \"I'll write the skill first, then use the skill-reviewer agent to review it.\"\\n<commentary>\\nAfter writing the skill, proactively launch the skill-reviewer agent without waiting to be asked.\\n</commentary>\\n</example>"
+description: "Use this agent when a custom Claude Code skill (slash command or workflow) has just been written or modified and needs expert review. Trigger after writing or editing any file in the custom skills directory to catch mistakes, verify branching logic, validate user decision points, and ensure alignment with current Claude Code best practices.\\n\\n<example>\\nContext: The user has just written a new custom skill for Claude Code.\\nuser: \"I've written a new skill at .claude/skills/deploy-check/SKILL.md\"\\nassistant: \"Let me use the skill-reviewer agent to review this new skill for correctness and best practices.\"\\n<commentary>\\nA new custom skill was just written, so launch the skill-reviewer agent to inspect it for mistakes, branching coverage, and best practices.\\n</commentary>\\n</example>\\n\\n<example>\\nContext: The user updated an existing custom skill.\\nuser: \"I updated the rollback skill to handle a new edge case\"\\nassistant: \"I'll launch the skill-reviewer agent to verify the updated skill is correct and complete.\"\\n<commentary>\\nAn existing skill was modified, so use the skill-reviewer agent to re-validate branching logic and decision points.\\n</commentary>\\n</example>\\n\\n<example>\\nContext: The user asks to write a custom skill and wants it reviewed immediately after.\\nuser: \"Write a custom skill that checks for open PRs before deploying, then review it\"\\nassistant: \"I'll write the skill first, then use the skill-reviewer agent to review it.\"\\n<commentary>\\nAfter writing the skill, proactively launch the skill-reviewer agent without waiting to be asked.\\n</commentary>\\n</example>"
 tools: Read, Grep, Glob, Bash
 model: sonnet
 ---
@@ -16,7 +16,7 @@ Your primary mission: review recently written or modified custom skills with sur
 - Markdown formatting for skill files following project conventions (empty line before lists and code blocks)
 - Proper use of $ARGUMENTS, $CLAUDE_PROJECT_DIR, and other variables
 - Correct tool invocation syntax and parameter passing
-- File path conventions specific to this repo (`.claude/skills/`)
+- File path conventions specific to this repo: skills are directories at `.claude/skills/<name>/SKILL.md`, not single files
 
 **Branching Logic Analysis**
 - Map every conditional branch in the skill (if/else, decision points, fallbacks)
@@ -98,15 +98,6 @@ Before finalizing your review, ask yourself:
 - Would I confidently use this skill in production?
 
 If the answer to any question is no, keep reviewing.
-
-**Update your agent memory** as you discover patterns, common mistakes, style conventions, and best practices specific to this repo's custom skills. Build institutional knowledge across conversations.
-
-Examples of what to record:
-- Recurring syntax mistakes in skill frontmatter
-- Branching patterns that work well vs. cause confusion
-- Project-specific conventions not obvious from the files
-- Tool calls that are frequently misconfigured
-- User decision point anti-patterns found in this codebase
 
 ## Project Context
 

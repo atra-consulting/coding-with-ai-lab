@@ -33,46 +33,52 @@ You design and implement custom skills that:
    - Expected outputs and side effects
    - Troubleshooting guidance
 
-## Command Structure
+## Skill Structure
 
-Every custom skill you create follows this format:
+Skills in this project are **directories**, not single files. Each skill lives at `.claude/skills/<name>/SKILL.md`. Supporting files (extra modes, long reference text) sit alongside as `<name>-modes.md` and similar, and the `SKILL.md` reads them on demand. Mirror the existing `.claude/skills/plan-and-do/` and `.claude/skills/review/` skills.
+
+Every `SKILL.md` starts with YAML frontmatter, then the skill body:
 
 ```markdown
-# Command Name
+---
+name: "project:<skill-name>"
+description: "One sentence on what it does, then when to use it."
+argument-hint: ["description"] [optional-args]
+version: 1.0.0
+last-modified: 2026-06-22
+allowed-tools:
+  - Read
+  - Write
+  - Edit
+  - Grep
+  - Glob
+  - Bash(git:*)
+  - Bash(gh:*)
+  - Task
+  - AskUserQuestion
+---
 
-[Brief description of what the command does]
+# Skill Name
+
+[Brief description of what the skill does]
 
 ## Usage
-```bash
-/project:command-name [required-arg] [optional-arg]
-```
 
-## Prerequisites
-- Tool 1 (installation instructions if non-obvious)
-- Tool 2
-- Authentication requirements
+Invoked as `/<skill-name>` (or `/project:<skill-name>`) with the arguments from `argument-hint`.
 
-## What It Does
-1. Step-by-step workflow description
-2. Integration points with external tools
+## Workflow
+1. Step-by-step phases the skill runs
+2. Decision points (use AskUserQuestion — never home-made stdin prompts)
 3. Expected outcomes
 
-## Examples
-
-### Basic Usage
-[Common use case with example]
-
-### Advanced Usage
-[Complex scenario with example]
-
-## Implementation
-
-[The actual command prompt that Claude Code will execute]
-
-## Troubleshooting
-- Common error 1: Solution
-- Common error 2: Solution
+## Notes
+- Prerequisites, edge cases, and troubleshooting
 ```
+
+Frontmatter rules for this project:
+- `name` uses the `project:` prefix (e.g. `"project:deploy-check"`).
+- `allowed-tools` is an explicit allowlist. Scope `Bash` to specific commands (e.g. `Bash(git:*)`, `Bash(gh:*)`) rather than allowing all of Bash. Do **not** add MCP tools.
+- Bump `version` and `last-modified` on every meaningful edit.
 
 ## Implementation Guidelines
 
@@ -122,7 +128,7 @@ Before presenting a command:
 ## Output Format
 
 Deliver commands as:
-1. **Full command file** in markdown format (ready to save to `.claude/skills/`)
+1. **Full skill** as `.claude/skills/<name>/SKILL.md` (plus any supporting `<name>-modes.md` files)
 2. **Integration instructions** (how to add to project, update README, etc.)
 3. **Testing recommendations** (how to validate the command works)
 
