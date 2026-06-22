@@ -91,8 +91,16 @@ Frontend (8+ files): Model interface → Service → Route file → List/Detail/
 | fe-test-coder | Write Jasmine/Karma unit tests for the frontend | test-coding |
 | fe-test-reviewer | Review frontend Jasmine/Karma tests | test-review |
 | fe-test-runner | Execute frontend Karma suite, report pass/fail | test-runner |
+| python-coder | Cross-platform Python scripts and data analysis (tooling, not app code) | coding |
+| python-reviewer | Review Python for correctness, portability, and external-data handling | review |
+| shell-coder | Cross-platform shell scripts (macOS / Linux / WSL) | coding |
+| shell-reviewer | Review shell scripts for portability, hangs, and safety | review |
+| skill-coder | Create and update Claude Code skills and subagents | coding |
+| skill-reviewer | Review Claude Code skills and subagents | review |
 
 Agent files: `.claude/agents/`
+
+The `python-*`, `shell-*`, and `skill-*` agents are general tooling agents — they are not bound to the CRM domain specs and instead read the root `CLAUDE.md` plus, for shell, `docs/specs/SPECS-infrastructure.md`.
 
 ## Specifications
 
