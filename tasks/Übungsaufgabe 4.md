@@ -21,8 +21,9 @@ auswählen und dann folgenden Prompt ausführen, der den
 ```
 /project:plan-and-do In-App CRM-Assistent als Chat-Widget. Erstellen keinen PR und
 pushe nicht - du hast bei diesem Repo nicht die Rechte dazu. Schreibe keine Tests, 
-die den Browser automatisieren. Aktualisiere am Schluss auch nicht die Specs und 
-Subagents. Schreibe zuerst eine PRD und dann den Plan.
+die den Browser automatisieren. Führe nur eine Review-Runde aus. Aktualisiere am 
+Schluss auch nicht die Specs und Subagents. Schreibe zuerst eine PRD und dann den 
+Plan.
 
 Unten rechts in der App erscheint ein aufklappbares Chat-Fenster. Der User stellt
 Fragen zu den CRM-Daten (Firmen, Personen, Chancen, Aktivitäten); die Antworten
