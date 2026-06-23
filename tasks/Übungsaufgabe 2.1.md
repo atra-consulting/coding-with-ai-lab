@@ -21,7 +21,7 @@ hochziehen kann — inklusive Framework-Wahl, Auth, CRUD und Design.
 
 ## Prompt
 
-Erzeuge ein neues Verzeichnis `künstler-webseite` und wechsele dort hinein. Starte Claude und wechsel mit <Tab> in den Auto-Modus. Wähle mit `/model` Sonnet aus. Dann führe diesen Prompt aus:
+Erzeuge ein neues Verzeichnis `künstler-webseite` und wechsele dort hinein. Starte Claude und wechsel mit "Tab" in den Auto-Modus. Wähle mit `/model` Sonnet aus. Dann führe diesen Prompt aus:
 
 ```
 Lass uns eine neue Web-App bauen. Diese soll mit NextJS und React

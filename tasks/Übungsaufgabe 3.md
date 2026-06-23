@@ -12,7 +12,7 @@ dieses Quartal?"
 
 ## Prompt
 
-Claude starten und mit Tab den Auto-Modus schalten. Mit `/model` Sonnet
+Claude starten und mit "Tab" in den Auto-Modus schalten. Mit `/model` Sonnet
 auswählen und dann folgenden Prompt ausführen, der den
 `/project:plan-and-do` Skill aufruft. 
 
@@ -37,8 +37,6 @@ AIzaSyAU2S4fPVIfYVQ51mpU0kHZpJuy0kVvgCk Ignoriere diese Datei in Git.
 ```
 
 Wenn der Skill fragt, ob eine PRD erstellt werden soll, dann bitte zustimmen.
-
-Der Google Gemini API Key ist: AIzaSyAU2S4fPVIfYVQ51mpU0kHZpJuy0kVvgCk 
 
 ## Erwartetes Ergebnis
 

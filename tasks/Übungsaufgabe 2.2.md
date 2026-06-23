@@ -16,7 +16,7 @@ parallel orchestriert.
 
 ## Prompt
 
-Claude starten und mit Tab den Auto-Modus schalten. Mit `/model` Sonnet
+Claude starten und mit "Tab" in den Auto-Modus schalten. Mit `/model` Sonnet
 auswählen und dann folgenden Prompt ausführen, der den
 `/project:plan-and-do` Skill aufruft. 
 

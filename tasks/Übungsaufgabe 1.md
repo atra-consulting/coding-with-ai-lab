@@ -10,7 +10,7 @@ CSV-Datei mit korrektem `Content-Type` und UTF-8-BOM für Excel-Kompatibilität.
 
 ## Prompt
 
-Mit <Tab> in den Plan-Modus schalten (steht ganz unten links). Mit `/model` Sonnet
+Mit "Tab" in den Plan-Modus schalten (steht ganz unten links). Mit `/model` Sonnet
 auswählen und dann diesen Prompt ausführen:
 
 ```
