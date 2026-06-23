@@ -24,6 +24,8 @@ Your spec reading list (paths are relative to the repo root):
 
 ## Writing Style Rules
 
+As short & brief as possible. Short sentences. Simple words non-native speakers understand. No passive voice. Use sentence fragments.
+
 **Follow these strictly:**
 
 - Short sentences. Max 15 words.

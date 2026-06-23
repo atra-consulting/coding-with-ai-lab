@@ -13,6 +13,10 @@ Two independent Claude-Code-in-CI agents. Both are documented in full in [`docs/
 
 Agent endpoints authenticate with `requireAgentToken` (`AGENT_API_TOKEN`); cron triggers with `requireCronAuth` (`CRON_SECRET` or admin session). See [`docs/API-TASKS.md`](docs/API-TASKS.md) for endpoint signatures, required secrets, and board mechanics.
 
+## Writing Style
+
+When writing Markdown (specs, plans, docs, reviews): as short & brief as possible. Short sentences. Simple words non-native speakers understand. No passive voice. Use sentence fragments.
+
 ## Build & Run
 
 ```bash
