@@ -2,7 +2,7 @@
 name: "project:review"
 description: "Local code review with multi-round review & fix cycle. Use for reviewing code, checking changes, getting feedback on a branch, or before creating a PR."
 argument-hint: (optional special instructions)
-version: 1.8.1
+version: 1.8.2
 last-modified: 2026-06-23
 allowed-tools:
   - Read
@@ -66,6 +66,7 @@ Parse arguments to determine mode:
 - **"doctor"** -> Doctor mode (run health checks and exit)
 - **"dryrun" or "dry-run" or "dry_run"** -> Dry-run mode
 - **"embedded"** -> Embedded mode (called from plan-and-do, skip header/plan-check/confirmation)
+- **`base:<ref>`** -> Optional. Compare against `<ref>` (a branch name or commit SHA) instead of main/master. Combines with other modes, e.g. `embedded base:abc1234`. This token is extracted in PHASE 1 parsing and is NOT treated as special instructions.
 - **Other text** -> Treat as special instructions for the review
 
 ## PHASE 0: PLAN MODE CHECK & HEADER
@@ -88,7 +89,7 @@ Then STOP immediately.
 If NOT in plan mode, display header:
 
 ```
-Code Review (v1.8.1, 2026-06-23)
+Code Review (v1.8.2, 2026-06-23)
 ****************************************
 
 Local code review - multi-round review & fix cycle
@@ -99,6 +100,15 @@ Then continue to PHASE 1.
 ## PHASE 1: PARAMETER PARSING & MODE DETECTION
 
 Parse `$ARGUMENTS` to determine execution mode.
+
+### Step 1.0: Extract Base Override
+
+Before any other parsing, scan `$ARGUMENTS` for a `base:<ref>` token (starts with literal `base:` followed by a branch name or commit SHA, no spaces inside the token).
+
+- If found: extract the ref value, store as `base_override`. Remove the `base:<ref>` token from `$ARGUMENTS` so it does not appear in `special_instructions`.
+- If not found: set `base_override = null`.
+
+The remaining `$ARGUMENTS` (after removing the `base:` token) is parsed as usual in Step 1.1.
 
 ### Step 1.1: Check for Special Modes
 
@@ -262,7 +272,19 @@ Store current branch as `current_branch`.
 
 ## PHASE 3: IDENTIFY CHANGED FILES
 
-### Step 3.1: Determine Main Branch
+### Step 3.1: Determine Base Branch
+
+**If `base_override` is set:**
+
+Verify the ref exists:
+```bash
+git rev-parse --verify <base_override>^{commit} >/dev/null 2>&1
+```
+
+- If it succeeds: set `main_branch = base_override`. Skip main/master detection entirely. Display: "Base override: `<base_override>`".
+- If it fails: display "Warning: base override `<base_override>` not found, falling back to main/master." Then continue with main/master detection below.
+
+**If `base_override` is null (or the override lookup above failed):**
 
 Check which main branch exists:
 ```bash
@@ -282,18 +304,23 @@ Create main branch: git checkout -b main
 ```
 Then STOP.
 
+(`main_branch` holds the resolved comparison base — either the override ref or the detected main/master.)
+
 ### Step 3.2: Fetch Latest Changes
 
-Fetch from remote (if remote exists):
+A commit SHA needs no fetch — it is already in the local object store. Only fetch when the base is a branch name.
+
+If `base_override` looks like a full SHA (40 hex chars) or a short SHA (7+ hex chars with no `/`), skip the fetch. Otherwise:
+
 ```bash
 git fetch origin <main_branch> 2>/dev/null || true
 ```
 
-Ignore errors if no remote configured.
+Ignore errors if no remote configured. The `|| true` already tolerates any failure.
 
 ### Step 3.3: Get Changed Files
 
-Get list of changed files vs main branch:
+Get list of changed files vs the resolved base (`main_branch` — override SHA or detected main/master):
 ```bash
 git diff --name-only <main_branch>...HEAD
 ```
@@ -683,7 +710,7 @@ Format review as markdown:
 
 **Date**: <ISO Date>
 **Branch**: <Current Branch>
-**Base**: <Main Branch>
+**Base**: <main_branch — the resolved comparison base: override SHA or main/master>
 **Files Reviewed**: <Count>
 **Review Rounds**: <rounds actually run> (max <max_rounds>)
 
@@ -735,7 +762,7 @@ Clean pass. No issues found.
 - Create PR when ready
 
 ---
-Generated with Claude Code - review v1.8.1
+Generated with Claude Code - review v1.8.2
 ```
 
 ### Step 6.3: Write Review File
@@ -762,7 +789,7 @@ Output final summary:
 ```
 Local Review Complete
 
-Branch: <CURRENT> (vs <BASE>)
+Branch: <CURRENT> (vs <main_branch — the resolved comparison base: override SHA or main/master>)
 Files reviewed: <COUNT>
 Review rounds: <rounds actually run> (max <max_rounds>)
 Reviewer agents: <list of reviewer agents used, or "None (built-in checklist)">

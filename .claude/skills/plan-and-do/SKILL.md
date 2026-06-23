@@ -2,7 +2,7 @@
 name: "project:plan-and-do"
 description: "End-to-end implementation workflow from idea to code review. Use for building features, implementing tasks, fixing complex bugs, or any substantial coding work. Handles planning, implementation, testing, and review automatically."
 argument-hint: ["description"] [special-instructions|resume:<step>]
-version: 1.10.1
+version: 1.10.2
 last-modified: 2026-06-23
 allowed-tools:
   - Read
@@ -40,6 +40,8 @@ All commits go to the NEW BRANCH created by this skill. When you start on a feat
 
 **Non-git mode:** If the project directory is not a git repository (e.g., ZIP download), all git operations (branch, commit, push, PR) are skipped. The skill still runs: state file, PRD, plan, implementation, and review all work without git.
 
+**Review scope:** Code review (Step 10) compares against `original_head` — the starting branch's commit captured at Step 4.4 — not main/master.
+
 ---
 
 ## PLAN MODE CHECK
@@ -56,7 +58,7 @@ If NOT in plan mode → continue.
 ## SKILL HEADER
 
 ```
-Plan and Do (v1.10.1, 2026-06-23)
+Plan and Do (v1.10.2, 2026-06-23)
 ************************************
 
 Plan and implement any work from freeform description
@@ -326,6 +328,7 @@ Write `[state_dir]/STATE-[task_key].json` using Write tool:
     "special_instructions": null,
     "branch_name": null,
     "original_branch": null,
+    "original_head": null,
     "docs_folder": "[docs_folder]",
     "is_git_repo": true,
     "workflow_scope": null,
@@ -386,7 +389,7 @@ If exists: append random 6-digit number to `branch_name`.
 
 **If `is_git_repo = false`:** Skip this step entirely. Continue to Step 5.
 
-Get current branch → store as `original_branch`.
+Get current branch → store as `original_branch`. Capture the starting commit → `original_head = git rev-parse HEAD`. Capture both BEFORE any branch creation, so `original_head` records the true starting point. (For the kept-branch path and the create-branch path, `original_head` is the same starting commit — it is captured once here, before branching.)
 
 **If on main/master:** Display: "On [branch]. Creating new branch [branch_name]." Always create the branch. Never ask. Never allow staying on main/master. Go to **Create branch** below.
 
@@ -419,7 +422,7 @@ gh pr list --head [branch_name] --state open --json number,title,url 2>/dev/null
 
 **If `is_git_repo = false`:** Skip this step.
 
-Update state with `branch_name`, `original_branch`, `pr_exists`, `pr_url`, then commit:
+Update state with `branch_name`, `original_branch`, `original_head`, `pr_exists`, `pr_url`, then commit:
 
 ```bash
 git add [state_dir]/STATE-[task_key].json
@@ -710,8 +713,10 @@ To make changes instead, the user can interrupt and run `/plan-and-do <key> resu
 ### Step 10.1: Invoke Review
 
 ```
-/review "embedded"
+/review "embedded base:[original_head]"
 ```
+
+Pass `original_head` (the starting branch's commit, from `config.original_head`) as the review base. This scopes the review to changes made since the skill started — not main/master. If `original_head` is somehow unset, fall back to `/review "embedded"` (review defaults to main/master).
 
 Wait for completion.
 
