@@ -1,44 +1,45 @@
-# Welcome to Coding with AI
+# Welcome to AI Coding Lab
 
 ## Training Setup
 
-- You'll work with a default CRM application (full-stack: Java/Spring Boot backend, Angular frontend, Kotlin CIAM service)
-- The application contains a set of pre-planned features and bugs
-- Throughout the training, you'll implement these features and fixes with AI assistance
+- You'll work with a full-stack CRM application (Node.js/TypeScript backend, Angular frontend)
+- The application contains pre-planned features and bugs
+- You'll implement these features and fixes with AI assistance
 - We're here to guide you
 
 ## What You Need to Get Started
 
-- **AI subscription**: Claude (Claude.com) or GitHub Copilot
-- **Node.js & npm**: For frontend development
-  - **Windows:** During Node.js installation, check the **"Automatically install the necessary tools. [...]"** checkbox — this installs build tools (Python, Visual Studio Build Tools) required for native modules like `better-sqlite3`.
+- **Claude Code**: The workshop tasks use **Claude Code** (requires a Claude subscription at Claude.com). All slash commands (`/plan-and-do`, `/review`, etc.) are Claude Code–specific.
+- **Node.js & npm**: For running the project
+  - **Windows:** During Node.js installation, check the **"Automatically install the necessary tools. [...]"** checkbox — this installs build tools (Python, Visual Studio Build Tools) required for native modules.
   - **Windows:** If you encounter permission issues (scripts cannot be executed), run in PowerShell:
     ```powershell
     Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
     ```
-- **Java**: JDK 21+ for backend
 - **Git CLI**: For version control, branching, and creating PRs with Claude
-- **Gemini API Key**: Some tasks require a Gemini API key. When the time comes, ask us and we'll send it to you.
+
+Full installation guide: **[SETUP.md](../SETUP.md)**
 
 ## How to Start the Project
 
-First, clone the repository:
+Clone the repository:
 
 ```bash
 git clone https://github.com/atra-consulting/coding-with-ai-lab.git
 cd coding-with-ai-lab
 ```
 
-Then from the root folder:
+Start the stack:
 
 ```bash
-./start.sh
+./start.sh           # macOS / Linux
+start.bat            # Windows
 ```
 
-This starts the entire stack:
-- Backend: http://localhost:7070
-- Frontend: http://localhost:7200
-- CIAM service: http://localhost:8081
+| URL | Description |
+|-----|-------------|
+| <http://localhost:7200> | Frontend |
+| <http://localhost:7070> | Backend API |
 
 ## Branching Convention
 
@@ -48,30 +49,33 @@ Create your own branch using this format:
 training-<MMYY>/<firstnamelastname>
 ```
 
-Example: `training-0304/john-doe` (March 2024, John Doe)
+Example: `training-0626/john-doe` (June 2026, John Doe)
+
+```bash
+git checkout -b training-0626/john-doe
+```
 
 ## How to Work on Tasks
 
-1. Find tasks in `/docs/tasks`
-2. Use the **`plan-and-do`** skill to get started on any task:
+1. Find tasks in **`/tasks/`**
+2. Use the **`/plan-and-do`** skill to get started on any task:
    - Type `/plan-and-do` with your task description
    - The skill handles planning, implementation, testing, and code review automatically
 
 ## Useful Commands
 
-These commands help you work more effectively in Claude Code:
-
 | Command | Purpose |
 |---------|---------|
-| `/plan-and-do <task>` | Start end-to-end implementation (planning → coding → testing → review) |
+| `/plan-and-do <task>` | End-to-end implementation (planning → coding → testing → review) |
 | `/review` | Review code changes with multi-round feedback cycle |
 | `/simplify` | Analyze code for quality, reuse, and efficiency improvements |
 | `/help` | Get help with Claude Code features |
 | `/clear` | Clear the conversation history |
+| `/compact` | Compress context window |
 
 ## Playwright-MCP: Browser Automation
 
-Playwright-MCP is a powerful tool that allows AI to interact with your application directly in the browser. Use it to:
+Playwright-MCP allows AI to interact with your running application directly in the browser:
 
 - **Take screenshots** of the UI to visually validate changes
 - **Fill forms and click buttons** to test features
@@ -79,12 +83,13 @@ Playwright-MCP is a powerful tool that allows AI to interact with your applicati
 - **Test edge cases** and user interactions automatically
 - **Debug UI issues** by seeing what the application looks like
 
-With Playwright-MCP, you can ask the AI to navigate your application, perform actions, and verify that everything works as expected. This is especially useful when testing frontend features or validating that your code changes work correctly in the UI.
-
 ## Full Documentation
 
-For detailed architecture, API specs, and coding conventions, see the [system specifications](./specs/SPECS.md).
+| Document | Content |
+|----------|---------|
+| [CHEATSHEET-CLAUDE-CODE.md](./CHEATSHEET-CLAUDE-CODE.md) | Claude Code cheat sheet for beginners |
+| [System specifications](./specs/SPECS.md) | Detailed architecture, API specs, coding conventions |
 
 ---
 
-**Questions?** Check the specs or ask for help. Happy coding! 🚀
+**Questions?** Check the specs or ask for help. Happy coding!
