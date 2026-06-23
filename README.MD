@@ -19,15 +19,19 @@
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-Drizzle%20ORM-003b57.svg">
 </p>
 
-> **Erstmal hier starten:** Vor dem ersten Start bitte **[SETUP.md](SETUP.md)** lesen — dort steht die komplette Installationsanleitung (Node.js, Claude Code, IDE, Markdown-Viewer).
+> **Erstmal hier starten:** Für die vollständige Installationsanleitung (Node.js, Claude Code, IDE) bitte **[SETUP.md](SETUP.md)** lesen.
 
 ---
 
 ## Inhalt
 
-- [Architektur](#architektur)
+- [Voraussetzungen](#voraussetzungen)
 - [Schnellstart](#schnellstart)
 - [Demo-Login](#demo-login)
+- [Workshop: Branch-Konvention](#workshop-branch-konvention)
+- [Workshop: Aufgaben bearbeiten](#workshop-aufgaben-bearbeiten)
+- [Nützliche Befehle](#nützliche-befehle)
+- [Playwright-MCP: Browser-Automation](#playwright-mcp-browser-automation)
 - [Features](#features)
 - [Tech-Stack](#tech-stack)
 - [Weiterführende Dokumentation](#weiterführende-dokumentation)
@@ -35,40 +39,35 @@
 
 ---
 
-## Architektur
+## Voraussetzungen
 
-```mermaid
-graph TB
-    subgraph Browser
-        FE["Frontend<br/><i>Angular 21</i><br/>:7200"]
-    end
+| Tool | Version | Zweck |
+|------|---------|-------|
+| **Node.js** | 20.19+ | Backend + Frontend bauen und starten |
+| **Git CLI** | beliebig | Versionskontrolle und Branches |
+| **Claude Code** | aktuell | AI-gestütztes Programmieren im Terminal |
 
-    subgraph "Backend"
-        API["Express API<br/><i>Node.js / TypeScript</i><br/>:7070"]
-    end
-
-    subgraph "Datenbank"
-        DB[("SQLite<br/><i>Drizzle ORM</i><br/>Firmen, Personen, ...")]
-    end
-
-    FE -- "/api/*" --> API
-    API --> DB
-```
-
-Detaillierte Architektur-Dokumentation: **[docs/architecture.md](docs/architecture.md)**
+Vollständige Installationsanleitung: **[SETUP.md](SETUP.md)**
 
 ---
 
 ## Schnellstart
 
-> **Voraussetzungen:** Node.js 20.19+ — vollständige Anleitung in **[SETUP.md](SETUP.md)**
+Repository klonen:
+
+```bash
+git clone https://github.com/atra-consulting/coding-with-ai-lab.git
+cd coding-with-ai-lab
+```
+
+Stack starten:
 
 ```bash
 ./start.sh           # macOS / Linux
 start.bat            # Windows
 ```
 
-Das Skript installiert bei Bedarf die npm-Abhängigkeiten, startet Backend und Frontend und wartet, bis beide bereit sind.
+Das Skript installiert npm-Abhängigkeiten, startet Backend und Frontend und wartet, bis beide bereit sind.
 
 | URL | Beschreibung |
 |-----|-------------|
@@ -84,21 +83,75 @@ Das Skript installiert bei Bedarf die npm-Abhängigkeiten, startet Backend und F
 ### Einzeln starten
 
 ```bash
-cd backend  && npx tsx --watch src/index.ts                         # Port 7070, Hot Reload
-cd frontend && npx ng serve --port 7200 --proxy-config proxy.conf.json
+cd backend  && npx tsx --watch src/index.ts                                      # Port 7070, Hot Reload
+cd frontend && npx ng serve --port 7200 --proxy-config proxy.conf.json           # Port 7200, Hot Reload
 ```
 
 ---
 
 ## Demo-Login
 
-Drei vorkonfigurierte Benutzer stehen zur Verfügung:
+Drei vorkonfigurierte Benutzer:
 
 | Benutzername | Passwort | Rolle | Zweck |
 |--------------|----------|-------|-------|
 | `admin` | `admin123` | ADMIN | Voller Zugriff inkl. Admin-Bereich |
 | `user` | `test123` | USER | Standard-CRM-Nutzer |
 | `demo` | `demo1234` | ADMIN | Schnellstart-Login für Demos |
+
+---
+
+## Workshop: Branch-Konvention
+
+Erstelle deinen eigenen Branch mit diesem Format:
+
+```
+training-<MMJJ>/<vornamenachname>
+```
+
+Beispiel: `training-0626/max-mustermann` (Juni 2026, Max Mustermann)
+
+```bash
+git checkout -b training-0626/max-mustermann
+```
+
+---
+
+## Workshop: Aufgaben bearbeiten
+
+1. Aufgaben findest du im Ordner **`/docs/tasks/`**
+2. Starte eine Aufgabe mit dem **`/plan-and-do`**-Skill in Claude Code:
+
+```
+/plan-and-do <Aufgabenbeschreibung>
+```
+
+Der Skill übernimmt Planung, Implementierung, Testing und Code Review automatisch.
+
+---
+
+## Nützliche Befehle
+
+| Befehl | Zweck |
+|--------|-------|
+| `/plan-and-do <Aufgabe>` | End-to-End-Implementierung (Planung → Coding → Testing → Review) |
+| `/review` | Code-Änderungen mit iterativem Feedback prüfen |
+| `/simplify` | Code auf Qualität, Wiederverwendung und Effizienz prüfen |
+| `/help` | Hilfe zu Claude Code |
+| `/clear` | Konversationshistorie löschen |
+| `/compact` | Kontext komprimieren |
+
+---
+
+## Playwright-MCP: Browser-Automation
+
+Playwright-MCP ermöglicht der AI, direkt mit der laufenden Anwendung im Browser zu interagieren:
+
+- **Screenshots** der UI machen und Änderungen visuell validieren
+- **Formulare ausfüllen und Buttons klicken** um Features zu testen
+- Durch die Anwendung **navigieren** und Workflows verifizieren
+- **Grenzfälle** und Benutzerinteraktionen automatisch testen
+- **UI-Probleme debuggen** durch visuelle Kontrolle der Anwendung
 
 ---
 
@@ -117,21 +170,12 @@ Drei vorkonfigurierte Benutzer stehen zur Verfügung:
 
 | Schicht | Technologie |
 |---------|-------------|
-| **Backend** | Node.js · TypeScript · Express · Drizzle ORM |
+| **Backend** | Node.js · TypeScript · Express · Drizzle ORM · `@libsql/client` |
 | **Frontend** | Angular 21 · Bootstrap 5 · AG Grid · Chart.js |
-| **Datenbank** | SQLite (file-based, via `better-sqlite3`) |
+| **Datenbank** | SQLite (via `@libsql/client`, Turso-kompatibel) |
 | **Auth** | Session-basiert (bcrypt + `express-session`) |
 
-Konventionen, Patterns und Beispiele für AI-gestützte Entwicklung: **[CLAUDE.md](CLAUDE.md)**
-
----
-
-## Domänenmodell
-
-Die Anwendung bildet ein deutschsprachiges CRM ab:
-
-**Stammdaten** — Firma, Person, Abteilung, Adresse
-**Vertrieb** — Aktivitaet, Chance
+Architektur-Details: **[docs/architecture.md](docs/architecture.md)**
 
 ---
 
@@ -140,12 +184,11 @@ Die Anwendung bildet ein deutschsprachiges CRM ab:
 | Dokument | Inhalt |
 |----------|--------|
 | [SETUP.md](SETUP.md) | Vollständige Installationsanleitung (Node.js, Claude Code, IDE) |
+| [CLAUDE.md](CLAUDE.md) | Anweisungen und Konventionen für AI-Coding-Assistenten |
 | [docs/architecture.md](docs/architecture.md) | Systemarchitektur mit Mermaid-Diagrammen |
 | [docs/specs/SPECS.md](docs/specs/SPECS.md) | Detaillierte Spezifikationen pro Bereich |
 | [docs/adr/](docs/adr/) | Architecture Decision Records |
 | [docs/prds/](docs/prds/) | Product Requirement Documents |
-| [docs/uxdr/](docs/uxdr/) | UX Design Records |
-| [CLAUDE.md](CLAUDE.md) | Anweisungen und Konventionen für AI-Coding-Assistenten |
 
 ### Projektstruktur
 
@@ -154,7 +197,7 @@ Die Anwendung bildet ein deutschsprachiges CRM ab:
 │   ├── src/          config · db · middleware · routes · seed · services
 │   └── data/         SQLite-Datenbankdatei (gitignored)
 ├── frontend/         Angular 21 SPA (core · features · layout · shared)
-├── docs/             Architektur, Specs, ADRs, PRDs, UXDRs
+├── docs/             Architektur, Specs, ADRs, PRDs, Tasks
 ├── start.sh          Startskript (macOS/Linux)
 ├── start.bat         Startskript (Windows)
 ├── SETUP.md          Installationsanleitung

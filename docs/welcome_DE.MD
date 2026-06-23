@@ -1,91 +1,88 @@
-# Willkommen zu Coding with AI
+# Willkommen zum AI Coding Lab
 
 ## Trainings-Setup
 
-- Du arbeitest mit einer Standard-CRM-Anwendung (Full-Stack: Java/Spring Boot Backend, Angular Frontend, Kotlin CIAM Service)
-- Die Anwendung enthält eine Reihe vordefinierter Features und Bugs
-- Während des Trainings implementierst du diese Features und Fixes mit KI-Unterstützung
+- Du arbeitest mit einer Full-Stack-CRM-Anwendung (Node.js/TypeScript Backend, Angular Frontend)
+- Die Anwendung enthält vordefinierte Features und Bugs
+- Du implementierst diese Features und Fixes mit KI-Unterstützung
 - Wir sind hier, um dich zu leiten
 
 ## Was du zum Starten brauchst
 
 - **KI-Abonnement**: Claude (Claude.com) oder GitHub Copilot
-- **Node.js & npm**: Für Frontend-Entwicklung
-  - **Windows:** Im Node.js-Installer die Checkbox **"Automatically install the necessary tools. [...]"** aktivieren — damit werden Build-Tools (Python, Visual Studio Build Tools) mitinstalliert, die für native Module wie `better-sqlite3` benötigt werden.
+- **Node.js & npm**: Für das Starten des Projekts
+  - **Windows:** Im Node.js-Installer die Checkbox **"Automatically install the necessary tools. [...]"** aktivieren — damit werden Build-Tools (Python, Visual Studio Build Tools) mitinstalliert, die für native Module benötigt werden.
   - **Windows:** Bei Berechtigungsproblemen (Skripte dürfen nicht ausgeführt werden) in PowerShell ausführen:
     ```powershell
     Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
     ```
-- **Java**: JDK 21+ für Backend
 - **Git CLI**: Für Versionskontrolle, Branching und zum Erstellen von PRs mit Claude
-- **Gemini API Key**: Für manche Aufgaben braucht ihr einen Gemini API Key. Wenn es soweit ist, fragt uns und wir schicken euch diesen zu.
+
+Vollständige Installationsanleitung: **[SETUP.md](../SETUP.md)**
 
 ## Wie du das Projekt startest
 
-Klone zunächst das Repository:
+Klone das Repository:
 
 ```bash
 git clone https://github.com/atra-consulting/coding-with-ai-lab.git
 cd coding-with-ai-lab
 ```
 
-Dann aus dem Root-Folder:
+Stack starten:
 
 ```bash
-./start.sh
+./start.sh           # macOS / Linux
+start.bat            # Windows
 ```
 
-Dies startet den kompletten Stack:
-- Backend: http://localhost:7070
-- Frontend: http://localhost:7200
-- CIAM Service: http://localhost:8081
+| URL | Beschreibung |
+|-----|-------------|
+| <http://localhost:7200> | Frontend |
+| <http://localhost:7070> | Backend API |
 
 ## Branch-Konvention
 
 Erstelle deinen eigenen Branch mit diesem Format:
 
 ```
-training-<DDMMJJ>/<vornamenachname>
+training-<MMJJ>/<vornamenachname>
 ```
 
-Beispiel: `training-190324/john-doe` (19. März 2024, John Doe)
+Beispiel: `training-0626/max-mustermann` (Juni 2026, Max Mustermann)
 
-## Wie du an Tasks arbeitest
+## Wie du an Aufgaben arbeitest
 
-1. Finde Tasks im Ordner `/docs/tasks`
-2. Tipp: Verwende den **`plan-and-do`** Skill um mit einem Task zu starten:
-   - Tippe `/plan-and-do` mit deiner Task-Beschreibung
-   - Der Skill handhabt Planung, Implementierung, Testing und Code Review automatisch
+1. Aufgaben findest du im Ordner **`/docs/tasks/`**
+2. Starte eine Aufgabe mit dem **`/plan-and-do`**-Skill in Claude Code:
+   - Tippe `/plan-and-do` mit deiner Aufgabenbeschreibung
+   - Der Skill übernimmt Planung, Implementierung, Testing und Code Review automatisch
 
 ## Nützliche Befehle
 
-Diese Befehle helfen dir, effizienter in Claude Code zu arbeiten:
-
 | Befehl | Zweck |
 |--------|-------|
-| `/plan-and-do <task>` | Starte End-to-End Implementierung (Planung → Coding → Testing → Review) |
-| `/review` | Überprüfe Code-Änderungen mit iterativem Feedback |
-| `/simplify` | Analysiere Code auf Qualität, Wiederverwendung und Effizienz |
-| `/help` | Hilfe zu Claude Code Funktionen |
-| `/clear` | Lösche die Konversationshistorie |
-| `/compact` | Kompaktere Kontextfenster |
+| `/plan-and-do <Aufgabe>` | End-to-End-Implementierung (Planung → Coding → Testing → Review) |
+| `/review` | Code-Änderungen mit iterativem Feedback prüfen |
+| `/simplify` | Code auf Qualität, Wiederverwendung und Effizienz prüfen |
+| `/help` | Hilfe zu Claude Code |
+| `/clear` | Konversationshistorie löschen |
+| `/compact` | Kontext komprimieren |
 
 ## Playwright-MCP: Browser-Automation
 
-Playwright-MCP ist ein leistungsstarkes Tool, das es der KI ermöglicht, direkt mit deiner Anwendung im Browser zu interagieren. Nutze es um:
+Playwright-MCP ermöglicht der AI, direkt mit der laufenden Anwendung im Browser zu interagieren:
 
-- **Screenshots** der UI zu machen und Änderungen visuell zu validieren
-- **Formulare auszufüllen und Buttons zu klicken** um Features zu testen
-- Durch die Anwendung zu **navigieren** und Workflows zu verifizieren
-- **Grenzfälle** und Benutzerinteraktionen automatisch zu testen
-- **UI-Probleme zu debuggen** durch visuelle Kontrolle der Anwendung
-
-Mit Playwright-MCP kannst du die KI bitten, deine Anwendung zu navigieren, Aktionen durchzuführen und zu verifizieren, dass alles wie erwartet funktioniert. Dies ist besonders nützlich beim Testen von Frontend-Features oder bei der Validierung, dass deine Code-Änderungen in der UI korrekt funktionieren.
+- **Screenshots** der UI machen und Änderungen visuell validieren
+- **Formulare ausfüllen und Buttons klicken** um Features zu testen
+- Durch die Anwendung **navigieren** und Workflows verifizieren
+- **Grenzfälle** und Benutzerinteraktionen automatisch testen
+- **UI-Probleme debuggen** durch visuelle Kontrolle der Anwendung
 
 ## Vollständige Dokumentation
 
-Für detaillierte Architektur, API-Spezifikationen und Coding-Konventionen siehe die [Systemspezifikationen](./specs/SPECS.md).
+Für detaillierte Architektur, API-Spezifikationen und Coding-Konventionen: **[Systemspezifikationen](./specs/SPECS.md)**
 
 ---
 
-**Fragen?** Schau in die Specs oder frag um Hilfe. Viel Erfolg beim Programmieren! 🚀
+**Fragen?** Schau in die Specs oder frag um Hilfe. Viel Erfolg beim Programmieren!
