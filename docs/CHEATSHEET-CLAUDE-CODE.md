@@ -15,6 +15,8 @@ Anthropics offizieller CLI für KI-gestütztes Programmieren. Läuft in jedem Te
 ```bash
 claude                 # Claude Code starten
 claude --model sonnet  # Mit bestimmtem Modell starten
+claude -c              # Letzte Konversation fortsetzen
+claude -r              # Bestimmte Konversation wieder aufnehmen
 ```
 
 Beim ersten Start öffnet Claude Code einen Browser für den Login (Anthropic-Konto oder API-Key).
@@ -26,12 +28,11 @@ Beim ersten Start öffnet Claude Code einen Browser für den Login (Anthropic-Ko
 | Befehl | Bedeutung |
 |--------|-----------|
 | `/help` | Hilfe anzeigen |
-| `/clear` | Gesprächsverlauf löschen |
-| `/compact` | Kontextfenster komprimieren (wenn es voll wird) |
+| `/clear` (alias: `/reset`) | Gesprächsverlauf löschen |
+| `/compact` | Gesprächsverlauf durch eine Zusammenfassung ersetzen (gibt Kontext frei) |
 | `/model [name]` | KI-Modell wechseln (z.B. `sonnet`, `opus`, `haiku`) |
 | `/config` | Einstellungen öffnen |
 | `/cost` | Sessionkosten anzeigen |
-| `/review` | Code-Änderungen reviewen (gegen `main`/`master` oder Basis-Commit) |
 | `/memory` | Erinnerungen anzeigen und verwalten |
 
 ---
@@ -46,6 +47,8 @@ Beim ersten Start öffnet Claude Code einen Browser für den Login (Anthropic-Ko
 | `Ctrl+D` | Claude Code beenden |
 | `↑ / ↓` | Verlauf navigieren |
 | `Tab` | Slash-Befehle autocomplete |
+| `Esc` | Auswahl/Dialog abbrechen |
+| `!befehl` | Shell-Befehl inline ausführen (z.B. `!ls`) |
 
 ---
 
@@ -68,10 +71,10 @@ Sonnet 4.6: 40% | mein-projekt main | +1 ~2 -1
 | Teil | Bedeutung |
 |------|-----------|
 | `Sonnet 4.6` | Aktuelles KI-Modell |
-| `40%` | Kontextfenster-Auslastung — bei ~80% `/compact` nutzen |
+| `40%` | Kontextfenster-Auslastung — ab ~80% `/compact` nutzen |
 | `mein-projekt` | Aktuelles Verzeichnis |
 | `main` | Aktueller Git-Branch |
-| `+1 ~2 -1` | Uncommittete Änderungen: neue / geänderte / gelöschte Dateien |
+| `+1 ~2 -1` | Git-uncommittete Änderungen (nur mit Custom-Script): neue / geänderte / gelöschte Dateien |
 
 **Statuszeile konfigurieren** — in `~/.claude/settings.json`:
 
@@ -84,7 +87,7 @@ Sonnet 4.6: 40% | mein-projekt main | +1 ~2 -1
 }
 ```
 
-Das Shell-Script bekommt JSON via stdin (Modell, Kontext, Workspace, Git-Status) und gibt einen formatierten String aus.
+Das Shell-Script bekommt JSON via stdin (Modell, Kontext, Workspace-Infos). Git-Informationen ermittelt das Script selbst via `git status`.
 
 ---
 
@@ -106,7 +109,7 @@ Claude Code fragt bei riskanten Aktionen nach (Dateien löschen, Befehle ausfüh
 | Problem | Lösung |
 |---------|--------|
 | Claude wirkt "verwirrt" | `/clear` — neues Gespräch starten |
-| Kontextfenster voll (>70%) | `/compact` |
+| Kontextfenster voll (>80%) | `/compact` |
 | Antwort läuft in die falsche Richtung | `Ctrl+C`, dann neu formulieren |
 | Ergebnisse passen nicht | Mehr Details, Fehlertexte und Dateinamen angeben |
 | Aufgabe zu groß | In kleinere Schritte aufteilen |
