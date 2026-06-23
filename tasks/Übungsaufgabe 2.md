@@ -44,6 +44,13 @@ Wenn der Skill fragt, ob eine PRD erstellt werden soll, dann bitte ablehnen.
 
 ## Erwartetes Ergebnis
 
+### Teil 1 — Phasen-Badges
+- `chance-list.component`: ag-Grid `cellRenderer` oder `cellClassRules` zeigt
+  `<span class="badge bg-success">GEWONNEN</span>` etc.
+- `chance-detail.component`: gleiche Badge-Darstellung.
+- Gemeinsame Helper-Funktion oder Pipe für das Farb-Mapping (DRY).
+
+### Teil 2 — Notiz-Feld
 - Neue Spalte `notes TEXT` in der `chance`-Tabelle.
 - Drizzle-Schema + Migration konsistent.
 - Backend akzeptiert und liefert `notes`.
@@ -54,6 +61,10 @@ Wenn der Skill fragt, ob eine PRD erstellt werden soll, dann bitte ablehnen.
 
 | Problem | Lösung |
 |---------|--------|
+| Badge wird als Text `<span>…</span>` angezeigt | ag-Grid rendert HTML nicht per Default. `cellRenderer` als Funktion nutzen, die Element zurückgibt, **oder** Angular-Template-Renderer. |
+| Badges zu klein / zu groß | Bootstrap-Klasse `badge` erzeugt kleine Badges. Bei Bedarf zusätzlich `fs-6` oder custom CSS. |
+| Farbe stimmt nicht mit Enum-Wert überein | Enum-Werte in `frontend/src/app/core/models/chance.model.ts` prüfen — Groß-/Kleinschreibung. |
+| Pipe wird nicht erkannt | Standalone-Pipe muss in `imports: [...]` der Komponente eingetragen sein. |
 | „no such column: notes" beim Laden | Migration lief nicht. App-Restart hilft meist, sonst `./start.sh --reset-db`. |
 | Validation schlägt fehl, obwohl Feld leer | Feld ist als optional gedacht. Im Zod-Schema: `z.string().max(2000).optional().nullable()`. |
 | Zeilenumbrüche im Detail verschwinden | CSS `white-space: pre-wrap` auf das Detail-Element setzen. |
