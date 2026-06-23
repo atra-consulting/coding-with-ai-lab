@@ -89,6 +89,19 @@ Sonnet 4.6: 40% | mein-projekt main | +1 ~2 -1
 
 Das Shell-Script bekommt JSON via stdin (Modell, Kontext, Workspace-Infos). Git-Informationen ermittelt das Script selbst via `git status`.
 
+**Statuszeile erstellen lassen** — diesen Prompt in Claude Code eingeben:
+
+```
+Erstelle ~/.claude/statusline-command.sh. Das Script liest JSON via stdin
+und gibt eine Statuszeile aus im Format:
+  Modell: Auslastung% | Verzeichnis Branch | +neu ~geändert -gelöscht
+Modell und Auslastung aus dem JSON. Verzeichnis und Branch per git-Befehl.
+Uncommittete Dateien per "git status --porcelain" zählen.
+Danach ~/.claude/settings.json anlegen oder ergänzen:
+  { "statusLine": { "type": "command", "command": "~/.claude/statusline-command.sh" } }
+Script ausführbar machen.
+```
+
 ---
 
 ## Berechtigungen
