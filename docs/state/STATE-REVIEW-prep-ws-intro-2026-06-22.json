@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "branch": "prep-ws-intro-2026-06-22",
+  "main_branch": "main",
+  "docs_folder": "docs",
+  "special_instructions": "Review docs/specs/ to ensure they match the app exactly. Review all .claude/agents/ subagents and both .claude/skills/ thoroughly. Ensure agents and skills match the reviewed specs.",
+  "review_agents_available": true,
+  "fix_agents_available": true,
+  "all_reviewers": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer", "be-test-reviewer", "fe-test-reviewer", "python-reviewer", "shell-reviewer", "skill-reviewer"],
+  "all_coders": ["ba-writer", "be-coder", "db-coder", "fe-coder", "python-coder", "shell-coder", "skill-coder"],
+  "all_designers": ["ui-designer"],
+  "changed_files": [
+    ".claude/agents/python-coder.md",
+    ".claude/agents/python-reviewer.md",
+    ".claude/agents/shell-coder.md",
+    ".claude/agents/shell-reviewer.md",
+    ".claude/agents/skill-coder.md",
+    ".claude/agents/skill-reviewer.md",
+    ".claude/skills/plan-and-do/SKILL.md",
+    ".claude/skills/plan-and-do/plan-and-do-modes.md",
+    ".claude/skills/review/SKILL.md",
+    ".claude/skills/review/review-modes.md",
+    "CLAUDE.md",
+    "docs/tasks/Übungsaufgabe 2.1.md"
+  ],
+  "dry_run_mode": false,
+  "started": "2026-06-23T00:00:00Z"
+}
