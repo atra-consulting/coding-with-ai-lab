@@ -2,8 +2,8 @@
 name: "project:plan-and-do"
 description: "End-to-end implementation workflow from idea to code review. Use for building features, implementing tasks, fixing complex bugs, or any substantial coding work. Handles planning, implementation, testing, and review automatically."
 argument-hint: ["description"] [special-instructions|resume:<step>]
-version: 1.9.0
-last-modified: 2026-04-20
+version: 1.10.2
+last-modified: 2026-06-23
 allowed-tools:
   - Read
   - Write
@@ -34,11 +34,13 @@ Prerequisites: git, test execution capability
 
 ## Branch Protection
 
-All commits go to the NEW BRANCH created by this skill. The original branch always stays clean. State file written to disk first, committed after switching to new branch.
+All commits go to the NEW BRANCH created by this skill. When you start on a feature branch (not main/master) you may choose to keep it instead of creating a new one (Step 4.4) — then commits go to that branch. When the skill creates a new branch, the original branch always stays clean. State file written to disk first, committed after switching to new branch.
 
 **PR Target Rule:** PRs always target `original_branch` — the branch that was active when the skill started. This branch is captured in Step 4.4 via `git branch --show-current` and stored in `config.original_branch`. Never default to main/master for PRs.
 
 **Non-git mode:** If the project directory is not a git repository (e.g., ZIP download), all git operations (branch, commit, push, PR) are skipped. The skill still runs: state file, PRD, plan, implementation, and review all work without git.
+
+**Review scope:** Code review (Step 10) compares against `original_head` — the starting branch's commit captured at Step 4.4 — not main/master.
 
 ---
 
@@ -56,7 +58,7 @@ If NOT in plan mode → continue.
 ## SKILL HEADER
 
 ```
-Plan and Do (v1.9.0, 2026-04-20)
+Plan and Do (v1.10.2, 2026-06-23)
 ************************************
 
 Plan and implement any work from freeform description
@@ -68,6 +70,8 @@ Plan and implement any work from freeform description
 
 **CRITICAL — MANDATORY WORKFLOW. NO SHORTCUTS.**
 You MUST execute every numbered step (1–13) in strict order. No skipping. No combining. No "just doing it" because the task looks simple. Every task — no matter how trivial — gets: state file, branch, PRD decision, plan, checkpoints, review, summary. The user relies on checkpoints to stay in control. Skipping steps breaks the skill. Do NOT write any implementation code before Step 8. If you feel tempted to skip ahead, STOP and follow the next step instead.
+
+**Questions are tasks, not investigations.** Even when the input is phrased as a question ("Why doesn't X work?", "Is Y broken?"), treat it as a task to investigate and fix through the full workflow. Do NOT answer it directly. Do NOT start reading source code, searching for patterns, querying logs, or analyzing the problem before Step 8 (Implementation). Parameter parsing, state setup, branch creation, planning, and plan approval come first — always.
 
 **CHECKPOINT RULE: NEVER auto-continue past a Standard Checkpoint.** You MUST call the `AskUserQuestion` tool and WAIT for the user's response at every Standard Checkpoint. The user must explicitly choose "Continue" before you proceed. No exceptions.
 
@@ -153,6 +157,10 @@ Read project's CLAUDE.md for `## Agents` section.
 
 **If found:** Parse each row's `name` and classify. Rules are **order-sensitive** — stop at the first match:
 
+0. Name starts with `python-`, `shell-`, or `skill-` → tooling agent (general, not CRM domain). Classify by suffix:
+   - ends with `-reviewer` → `tooling_review_agents` (e.g., `python-reviewer`, `shell-reviewer`, `skill-reviewer`)
+   - else (ends with `-coder`) → `tooling_coding_agents` (e.g., `python-coder`, `shell-coder`, `skill-coder`)
+   Dispatch tooling agents ONLY when the changed files are tooling files (`.py`, `.sh`/`.bash`, or files under `.claude/`). Never dispatch them for CRM domain files.
 1. Contains `-test-coder` → `test_coding_agents` (e.g., `be-test-coder`, `fe-test-coder`)
 2. Contains `-test-reviewer` → `test_review_agents` (e.g., `be-test-reviewer`, `fe-test-reviewer`)
 3. Contains `-test-runner` or ends with `-tester` → `test_runner_agents` (e.g., `be-test-runner`, `fe-test-runner`)
@@ -161,9 +169,9 @@ Read project's CLAUDE.md for `## Agents` section.
 6. Ends with `-reviewer` → `review_agents` (e.g., `be-reviewer`, `fe-reviewer`)
 7. Anything else (e.g., `admin`, `md-reader`) → skip as utility
 
-The order matters: `be-test-coder` must hit rule 1, NOT rule 5. Always check for `-test-` first.
+The order matters: `be-test-coder` must hit rule 1, NOT rule 5. Always check for `-test-` first. Rule 0 runs before all others.
 
-Display all six lists in one block, then set `agents_available = true` if any list is non-empty.
+Display all eight lists in one block (six standard plus the two tooling lists), then set `agents_available = true` if any list is non-empty.
 
 **If not found:** Display: "No agents found. Running in direct mode." Set `agents_available = false`.
 
@@ -190,6 +198,9 @@ When launching `review_agents` (Steps 6.2, 8.1, 11.1), do NOT launch every revie
 - Schema/SQL/Drizzle/migration changes → include `db-reviewer`
 - Visual/CSS/SCSS/template changes → include `ui-reviewer`
 - PRDs, plans, or pure spec text → include `ba-reviewer`
+- `**/*.py` changed → include `python-reviewer`
+- `**/*.sh` or `**/*.bash` changed → include `shell-reviewer`
+- Files under `.claude/**` (skills, agents, prompts) → include `skill-reviewer`
 
 Always include at least one reviewer. If unsure, default to `be-reviewer` and `fe-reviewer`.
 
@@ -273,6 +284,20 @@ git rev-parse --git-dir 2>/dev/null
 - If succeeds: set `is_git_repo = true`. Display: "Git repository detected."
 - If fails: set `is_git_repo = false`. Display: "Not a git repository. Running without git (no branches, commits, or PRs)."
 
+### Step 2.1: Pull Latest Changes
+
+**If `is_git_repo = false`:** Skip this step.
+
+Fetch and check whether the current branch is behind its upstream:
+
+```bash
+git fetch origin 2>/dev/null
+git rev-list HEAD..@{u} --count 2>/dev/null || echo "0"
+```
+
+- If the count is > 0: Display "Pulling latest changes..." then run `git pull`. If the pull fails, warn "Pull failed. Continuing with local state." Do NOT stop.
+- If the count is 0 or there is no upstream tracking branch: Display "Already up-to-date."
+
 Continue to STEP 3 either way.
 
 ---
@@ -309,22 +334,30 @@ Write `[state_dir]/STATE-[task_key].json` using Write tool:
     "special_instructions": null,
     "branch_name": null,
     "original_branch": null,
+    "original_head": null,
     "docs_folder": "[docs_folder]",
     "is_git_repo": true,
-    "workflow_scope": null
+    "workflow_scope": null,
+    "pr_prefix": null,
+    "pr_exists": null,
+    "pr_url": null
   },
   "discovery": {
     "agents_available": false,
     "writer_agents": [],
     "coding_agents": [],
     "review_agents": [],
+    "test_coding_agents": [],
+    "test_review_agents": [],
+    "test_runner_agents": [],
+    "tooling_coding_agents": [],
+    "tooling_review_agents": [],
     "test_command": null
   },
   "artifacts": {
     "prd_skipped": null,
     "prd_file": null,
-    "plan_file": null,
-    "pr_url": null
+    "plan_file": null
   },
   "completed_steps": []
 }
@@ -365,11 +398,16 @@ If exists: append random 6-digit number to `branch_name`.
 
 ### Step 4.4: Create and Push Branch
 
-**If `is_git_repo = false`:** Skip this step entirely. Continue to Step 5.
+**If `is_git_repo = false`:** Skip this step entirely. `original_head` stays `null`; Step 10.1 then uses plain `/review "embedded"`. Continue to Step 5.
 
-Get current branch → store as `original_branch`.
+Get current branch → store as `original_branch`. Capture the starting commit → `original_head = git rev-parse HEAD`. Capture both BEFORE any branch creation, so `original_head` records the true starting point. (For the kept-branch path and the create-branch path, `original_head` is the same starting commit — it is captured once here, before branching.)
 
-**If on main/master:** Display: "On [branch]. Creating new branch [branch_name]." Always create the branch. Never ask. Never allow staying on main/master.
+**If on main/master:** Display: "On [branch]. Creating new branch [branch_name]." Always create the branch. Never ask. Never allow staying on main/master. Go to **Create branch** below.
+
+**If NOT on main/master (already on a feature branch):** Display: "You are on branch `[original_branch]`. This looks like existing work." Call the `AskUserQuestion` tool with: 1-Keep this branch (recommended), 2-Create new branch, 3-Quit. Wait for response.
+- Keep → set `branch_name = original_branch`. Skip branch creation. Go to Step 4.4b.
+- Create new → continue to **Create branch** below.
+- Quit → execute Quit Pattern.
 
 **Create branch:**
 ```bash
@@ -378,9 +416,24 @@ git push -u origin [branch_name]
 ```
 If push fails: warn, continue local-only.
 
+### Step 4.4b: Check for Existing PR
+
+**If `is_git_repo = false`:** Skip this step. Continue to Step 4.5.
+
+Detect an open PR for `branch_name` (cheap, keeps logic uniform for new and kept branches — a just-created branch always returns none):
+
+```bash
+gh pr list --head [branch_name] --state open --json number,title,url 2>/dev/null
+```
+
+- If a PR is found: set `pr_exists = true`, store its URL as `pr_url`, display: "Open PR found: [pr_url]".
+- If none found, or `gh` is unavailable: set `pr_exists = false`, `pr_url = null`.
+
 ### Step 4.5: Commit State File
 
 **If `is_git_repo = false`:** Skip this step.
+
+Update state with `branch_name`, `original_branch`, `original_head`, `pr_exists`, `pr_url`, then commit:
 
 ```bash
 git add [state_dir]/STATE-[task_key].json
@@ -515,22 +568,37 @@ Write to `[plan_dir]/PLAN-[task_key].md`. Store as `plan_file`.
 
 ### Step 7.5: Checkpoint 7 — Plan Approval
 
-Update state: `current_step` = "7.5", set `artifacts.plan_file`, `discovery.test_command`, `config.workflow_scope`.
+Update state: `current_step` = "7.5", set `artifacts.plan_file` and `discovery.test_command`. Set `config.workflow_scope` (and `config.pr_prefix`, when derived) only *after* the user answers — never before.
 
-Display plan content. Display artifact paths per the ARTIFACT PATH DISPLAY RULE.
+Display plan content. Display artifact paths per the ARTIFACT PATH DISPLAY RULE. **If `pr_exists = true`, also display "Open PR found: [pr_url]" so the user sees it before choosing** — `pr_exists`/`pr_url` come from Step 4.4b; do NOT re-detect here.
 
 **Plan Approval Checkpoint — NOT a Standard Checkpoint.** Call the `AskUserQuestion` tool with these choices. Always in this order. Add "(Recommended)" after the one you recommend based on task complexity:
 
 1. **Approve and implement** — Run implementation and tests (Steps 8-9). Stop after testing. Best for small, low-risk changes.
 2. **Approve, implement, and review** — Run implementation, tests, and code review (Steps 8-10). Stop after review. Good for medium changes.
-3. **Approve, implement, review, and create PR** — Full workflow through PR creation (Steps 8-13). Best for complex or team-shared work.
-4. **Edit** — Request changes to the plan.
-5. **Quit** — Execute Quit Pattern.
+3. **If `pr_exists = false`: Approve, implement, review, and create PR** — Full workflow through PR creation (Steps 8-13). Best for complex or team-shared work.
+   **If `pr_exists = true`: Approve, implement, review, and update PR** — Full workflow; the post-completion step updates the existing PR instead of creating one.
+4. **If `prd_skipped = true`: Create PRD first** — Discard the current draft plan, create a PRD (Step 6), then regenerate the plan (Step 7) with the PRD as input. **Omit this option entirely when `prd_skipped = false`.**
+5. **Edit** — Request changes to the plan.
+6. **Quit** — Execute Quit Pattern.
+
+**Numbering:** When `prd_skipped = false`, omit option 4 entirely and present exactly five options with no gap — renumber so Edit = 4 and Quit = 5. When `prd_skipped = true`, present all six as numbered above. Always label each option by name as well as number so the mapping below stays unambiguous.
 
 Store the user's choice in state as `config.workflow_scope`:
 - Choice 1 → `"implement"`
 - Choice 2 → `"implement-review"`
-- Choice 3 → `"full"`
+- Choice 3 → `"full"`, then **derive the PR prefix** (see below)
+- "Create PRD first" (only when `prd_skipped = true`) → set `prd_skipped = false`, update state (`artifacts.prd_skipped = false`). **If `is_git_repo`:** the draft plan was written in Step 7.4 but is only committed in Step 7.6, so it may be untracked — remove it safely: if `git ls-files --error-unmatch [plan_file]` succeeds (tracked), run `git rm [plan_file] && git commit -m "docs: Remove draft plan, creating PRD first. [task_key]"`; otherwise just `rm [plan_file]` (nothing to commit). Then go to STEP 6. After Step 6 completes, continue to Step 7.1 (re-run plan generation with the PRD as input) and return here.
+- Edit → call the `AskUserQuestion` tool to ask what changes are needed, apply them, re-display the plan, return to this checkpoint.
+- Quit → execute Quit Pattern.
+
+**Auto-derive PR title prefix (Choice 3 only):** This lets the full workflow run uninterrupted through PR creation/update. Always derive — for both new and existing PRs — so the PR title is never malformed. Never ask the user.
+1. Run: `git log [original_branch]..HEAD --oneline`
+2. Count commits starting with `feat:`, `fix:`, `chore:`, or `docs:` (case-sensitive).
+3. Majority prefix wins. Map `docs:` → `chore:`.
+4. If no commits yet (e.g. a kept branch where the range is empty), all `docs:`, or no clear majority (including ties): default to `feat:`.
+
+Display: "PR prefix: [pr_prefix] (derived from commit history)." Store as `config.pr_prefix`.
 
 ### Step 7.6: Commit Plan
 
@@ -561,6 +629,9 @@ EOF
 | `backend/src/db/**`, `backend/src/config/migrate.ts`, `backend/src/config/db.ts`, `backend/src/seed/**` | `db-coder` |
 | `frontend/src/app/features/**`, `frontend/src/app/core/**`, `frontend/src/app/app.*` | `fe-coder` |
 | `frontend/src/styles.scss`, `*.scss`, visual/template-only changes | `ui-designer` |
+| `**/*.py` | `python-coder` |
+| `**/*.sh`, `**/*.bash` | `shell-coder` |
+| `.claude/**` (skills, agents, prompts, settings) | `skill-coder` |
 | Anything else (config, scripts, docs) | nearest match by domain, else direct mode |
 
 Apply the **DISPATCH NARRATION RULE** before every Task call. Launch independent agents in parallel.
@@ -655,9 +726,14 @@ To make changes instead, the user can interrupt and run `/plan-and-do <key> resu
 
 ### Step 10.1: Invoke Review
 
+Pick the invocation by whether `original_head` is set:
+
 ```
-/review "embedded"
+If `original_head` is set:    /review "embedded base:[original_head]"
+If `original_head` is unset:  /review "embedded"
 ```
+
+Pass `original_head` (the starting branch's commit, from `config.original_head`) as the review base. This scopes the review to changes made since the skill started — not main/master. When `original_head` is unset (e.g., non-git mode), use plain `/review "embedded"` so review defaults to main/master. Never pass the literal `base:[original_head]` — substitute the SHA or drop the token.
 
 Wait for completion.
 

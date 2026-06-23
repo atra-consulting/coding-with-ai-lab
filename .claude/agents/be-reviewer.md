@@ -46,7 +46,7 @@ Your spec reading list (paths are relative to the repo root):
 - [ ] Dates stored as ISO-8601 TEXT
 - [ ] Monetary values as REAL
 - [ ] Booleans handled as INTEGER 0/1 (converted in the service)
-- [ ] No `await` on better-sqlite3 calls (they're sync)
+- [ ] `await` present on all `client.execute()` / `client.batch()` calls (@libsql/client is async)
 - [ ] Indexes on foreign keys and common filter columns present in `migrate.ts`
 
 ### Pagination & Sorting

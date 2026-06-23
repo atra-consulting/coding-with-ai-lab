@@ -26,7 +26,7 @@ Full-Stack-CRM-Anwendung. Node.js/TypeScript-Backend mit Angular-Frontend.
 | Schicht | Technologie | Version |
 |---------|------------|---------|
 | Backend | Node.js / TypeScript mit Express | 4.21 (Node.js 20.19+) |
-| ORM | Drizzle ORM + better-sqlite3 | aktuell |
+| ORM | Drizzle ORM + @libsql/client (libSQL/Turso) | aktuell |
 | Auth | express-session + bcryptjs | aktuell |
 | Validierung | Zod | aktuell |
 | TS-Ausführung | tsx (mit Hot Reload) | aktuell |
@@ -38,9 +38,12 @@ Full-Stack-CRM-Anwendung. Node.js/TypeScript-Backend mit Angular-Frontend.
 | Datentabelle | AG Grid | 35.1.0 |
 | Drag & Drop | @angular/cdk | 21.2.1 |
 | QR-Code | qrcode | 1.5.4 |
-| TypeScript | | 5.9.2 |
+| TypeScript (Backend) | | ^5.8.3 |
+| TypeScript (Frontend) | | ~5.9.2 |
 
 ## Domain-Modell (Deutsch)
+
+**CRM-Entities (Geschäftsdaten):**
 
 | Entity | Übersetzung | Wichtige Beziehungen |
 |--------|------------|----------------------|
@@ -51,6 +54,14 @@ Full-Stack-CRM-Anwendung. Node.js/TypeScript-Backend mit Angular-Frontend.
 | Aktivitaet | Aktivität | optional Firma und/oder Person |
 | Chance | Verkaufschance | gehört zu Firma, optional kontaktPerson; hat Kanban-Phasen |
 | Benutzer | Benutzer | hardcodiert in `config/users.ts`; Rollen: ADMIN, USER |
+
+**Operative/System-Tabellen (kein CRM-Geschäftsinhalt):**
+
+| Tabelle | Zweck |
+|---------|-------|
+| `agent_task` | Autonome KI-Aufgaben; Lifecycle: OPEN → IN_PROGRESS → DONE / REJECTED; Quellen: EMAIL, GITHUB_ISSUE, APP_LOG, ERROR_REPORT |
+| `cron_run` | Laufzeitprotokoll für Cron-Jobs (Trigger, Status, Dauer, GitHub-Run-URL) |
+| `sessions` | Persistente express-session-Einträge; verwaltet von `LibsqlSessionStore` (kein in-memory Store) |
 
 ## Spezifikationsdokumente
 

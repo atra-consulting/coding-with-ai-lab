@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "task_key": "ADAPT-SUBAGENTS",
+  "status": "completed",
+  "current_step": "13",
+  "started": "2026-06-22T00:00:00Z",
+  "updated": "2026-06-22T00:00:00Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Review and adapt 6 new subagents (python/shell/skill coder+reviewer) to this project; add them to the CLAUDE.md agent list. Remove all foreign MCP tools.",
+    "special_instructions": "Remove all foreign tools that require MCP.",
+    "branch_name": "prep-ws-intro-2026-06-22",
+    "original_branch": "main",
+    "docs_folder": "docs",
+    "is_git_repo": true,
+    "workflow_scope": null
+  },
+  "discovery": {
+    "agents_available": true,
+    "writer_agents": [
+      "ba-writer"
+    ],
+    "coding_agents": [
+      "be-coder",
+      "db-coder",
+      "fe-coder",
+      "ui-designer"
+    ],
+    "review_agents": [
+      "ba-reviewer",
+      "be-reviewer",
+      "db-reviewer",
+      "fe-reviewer",
+      "ui-reviewer"
+    ],
+    "test_command": "n/a (docs-only change)"
+  },
+  "artifacts": {
+    "prd_skipped": true,
+    "prd_file": null,
+    "plan_file": "docs/plans/PLAN-ADAPT-SUBAGENTS.md",
+    "pr_url": null
+  },
+  "completed_steps": [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5"
+  ]
+}

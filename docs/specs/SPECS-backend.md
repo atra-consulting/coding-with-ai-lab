@@ -1,6 +1,6 @@
 # CRM Backend Specification
 
-Node.js/TypeScript backend. Express 4.21 on port 7070. SQLite file database via Drizzle ORM. Session-based authentication.
+Node.js/TypeScript backend. Express 4.21 on port 7070. SQLite file database via Drizzle ORM + `@libsql/client`. Session-based authentication.
 
 ## Stack
 
@@ -10,13 +10,13 @@ Node.js/TypeScript backend. Express 4.21 on port 7070. SQLite file database via 
 | Language | TypeScript | 5.8 |
 | Framework | Express | 4.21 |
 | ORM | Drizzle ORM | 0.41 |
-| Database | SQLite (better-sqlite3) | 9.6 |
+| Database driver | @libsql/client (async, promise-based) | 0.17.3 |
 | Validation | Zod | 3.23 |
 | Auth | express-session + bcryptjs | 1.18 / 2.4 |
-| Session store | memorystore | 1.6 |
+| Session store | LibsqlSessionStore (custom, persists to `sessions` table) | — |
 | Dev runner | tsx --watch | 4.19 |
 
-Database file: `backend/data/crmdb.sqlite`. Created on first startup.
+Database file: `backend/data/crmdb.sqlite`. Created on first startup. When `TURSO_DATABASE_URL` is set the remote Turso URL is used instead.
 
 ## Startup Sequence
 
@@ -97,6 +97,7 @@ Allowed sort fields: `firstName`, `lastName`, `email`, `position`, `createdAt`, 
 |--------|------|-------------|
 | GET | `/api/abteilungen` | Paginated list. Params: `page`, `size`, `sort`. Default: `name,ASC` |
 | GET | `/api/abteilungen/all` | Full list, no pagination |
+| GET | `/api/abteilungen/firma/:firmaId` | Non-paginated list for a single Firma (must be before `/:id`) |
 | GET | `/api/abteilungen/:id` | Single record |
 | GET | `/api/abteilungen/:id/personen` | Paginated persons for this Abteilung |
 | POST | `/api/abteilungen` | Create → 201 |
@@ -116,6 +117,36 @@ Standard CRUD. Default sort: `datum,DESC`. Allowed sort fields: `datum`, `typ`, 
 ### Chancen (`/api/chancen`)
 
 Standard CRUD. Default sort: `createdAt,DESC`. Allowed sort fields: `titel`, `wert`, `phase`, `wahrscheinlichkeit`, `erwartetesDatum`, `createdAt`, `updatedAt`. Params: `search` (optional, case-insensitive substring match on `titel`), `phase` (optional enum filter), `page`, `size`, `sort`.
+
+### Agent Tasks (`/api/agent-tasks`)
+
+Manages the autonomous-agent work queue. Lifecycle: `OPEN → IN_PROGRESS → DONE | REJECTED`.
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/agent-tasks/next?source=X` | requireAgentToken | Claim next OPEN task → IN_PROGRESS. Returns 204 when none exist |
+| GET | `/api/agent-tasks/summary` | requireAuth + requireRole('ADMIN') | Per-source open/done/rejected counts |
+| POST | `/api/agent-tasks/reset` | requireAuth + requireRole('ADMIN') | Reset all tasks back to OPEN |
+| POST | `/api/agent-tasks/:id/reject` | requireAgentToken | Mark task REJECTED (comment required) |
+| POST | `/api/agent-tasks/:id/done` | requireAgentToken | Mark task DONE |
+| GET | `/api/agent-tasks/:id` | requireAuth + requireRole('ADMIN') | Single task |
+| GET | `/api/agent-tasks` | requireAuth + requireRole('ADMIN') | Paginated list; filter by `source`, `status` |
+
+Agent endpoints are authenticated via `requireAgentToken` (see [agentAuth.ts](#agent-token-auth)). Admin endpoints require a valid admin session.
+
+### Cron (`/api/cron`)
+
+Triggers and records scheduled/manual CI workflow dispatches. Backed by the `cron_run` table and `cronService.ts`.
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/cron/agent-tasks` | requireCronAuth | Drain agent_task queue (Vercel cron or admin manual trigger) |
+| GET | `/api/cron/github-issues` | requireCronAuth | Trigger GitHub-issue agent (manual only) |
+| POST | `/api/cron/runs/:id/complete` | requireAgentToken | Called by GitHub Actions to record run result |
+| GET | `/api/cron/runs` | requireAuth + requireRole('ADMIN') | Paginated cron run history; filter by `job` |
+| GET | `/api/cron/jobs` | requireAuth + requireRole('ADMIN') | All configured jobs with their latest run |
+
+`requireCronAuth` (defined inline in `routes/cron.ts`) accepts either a `CRON_SECRET` bearer token (Vercel cron) or a valid admin session. It sets `req.cronTrigger` to `'CRON'` or `'MANUAL'` accordingly.
 
 ### Standard CRUD pattern
 
@@ -157,12 +188,13 @@ Sort fields are validated against a per-entity whitelist in `src/utils/paginatio
 
 ### Session auth
 
-- `express-session` with `memorystore` backend.
-- Cookie name: `JSESSIONID`. HttpOnly. SameSite: lax. MaxAge: 24 hours.
-- Session secret from env var `SESSION_SECRET`. Falls back to `crm-dev-secret-key` in development.
+- `express-session` with `LibsqlSessionStore` — a custom `express-session` Store subclass that persists sessions to the `sessions` table in the same libsql/Turso database. Expired rows are swept lazily on first request per process lifetime.
+- Cookie name: `JSESSIONID`. HttpOnly. SameSite: lax. MaxAge: 24 hours. `secure: true` in production.
+- Session secret from env var `SESSION_SECRET`. Falls back to `crm-dev-secret-key` in development (prints a warning in production).
 - Login: `bcryptjs.compareSync()` compares submitted password to stored hash.
 - Session fixation protection: `req.session.regenerate()` on successful login.
 - Logout: `req.session.destroy()` + clear cookie.
+- `app.set('trust proxy', 1)` is set so that `cookie.secure` works correctly behind Vercel's edge proxy.
 
 ### Users
 
@@ -187,9 +219,20 @@ All 3 users currently hold all 7 permissions: `FIRMEN`, `PERSONEN`, `ABTEILUNGEN
 1. Reads `req.session.userId`.
 2. Looks up user in the hardcoded list via `findById()`.
 3. Sets `req.currentUser` on the request.
-4. Calls `next(new UnauthorizedError())` if session is missing or user not found.
+4. If the session references a user that no longer exists, calls `req.session.destroy()` then calls `next(new UnauthorizedError())`.
+5. Calls `next(new UnauthorizedError())` if the session is missing.
 
-`requirePermission` exists in `src/middleware/auth.ts` but is not yet applied to entity routes. All authenticated entity routes currently share one access level.
+`requireRole(...roles)` (in `src/middleware/auth.ts`): checks that `req.currentUser` exists and that at least one of the user's roles matches. Returns 403 otherwise.
+
+`requireAuth` exports only these two functions. There is no `requirePermission` function in `auth.ts`.
+
+### Agent token auth
+
+`requireAgentToken` (in `src/middleware/agentAuth.ts`):
+
+- Reads the token from `Authorization: Bearer <token>` first, then falls back to the `X-Agent-Token` header.
+- Compares SHA-256 hashes of the incoming and configured (`AGENT_API_TOKEN` env var) tokens using `timingSafeEqual` to prevent timing attacks.
+- Returns 401 if the env var is not set, the header is absent, or the token does not match.
 
 ### CORS
 
@@ -204,23 +247,27 @@ src/
   index.ts          — entry point: migrate → seed → listen
   app.ts            — Express app wiring (middleware order, route mounting)
   config/
-    db.ts           — better-sqlite3 + Drizzle setup, PRAGMA foreign_keys = ON
-    migrate.ts      — CREATE TABLE IF NOT EXISTS statements
+    db.ts           — @libsql/client setup; exports `client` and `db` (Drizzle)
+    migrate.ts      — CREATE TABLE IF NOT EXISTS + PRAGMA foreign_keys = ON
     users.ts        — hardcoded user list
+    cronJobs.ts     — static list of configured cron job names
   db/schema/
     schema.ts       — Drizzle table definitions
     enums.ts        — TypeScript enum arrays and types
   middleware/
-    auth.ts         — requireAuth, requireRole, requirePermission
-    cors.ts         — CORS config
-    errorHandler.ts — global error handler (last middleware)
-    session.ts      — express-session config
+    auth.ts               — requireAuth, requireRole
+    agentAuth.ts          — requireAgentToken
+    cors.ts               — CORS config
+    errorHandler.ts       — global error handler (last middleware)
+    libsqlSessionStore.ts — custom express-session Store backed by `sessions` table
+    session.ts            — express-session config (uses LibsqlSessionStore)
   routes/           — one file per entity (Express Router)
-  services/         — one file per entity (plain objects, raw SQL via better-sqlite3)
+  services/         — one file per entity (async functions, raw SQL via @libsql/client)
   utils/
-    errors.ts       — typed error classes
-    pagination.ts   — parsePaginationParams, parseSort, buildPage
-    validation.ts   — Zod schemas and validate() helper
+    asyncHandler.ts  — wraps async route handlers; forwards rejected Promises to next()
+    errors.ts        — typed error classes
+    pagination.ts    — parsePaginationParams, parseSort, buildPage
+    validation.ts    — Zod schemas and validate() helper
   seed/
     dataMigration.ts  — loads fixture.json into the DB when empty (CRM entities only)
     fixture.json      — fixed seed data (25 Firmen, 50 Abteilungen, 100 Personen, 100 Adressen, 75 Aktivitaeten, 40 Chancen)
@@ -230,7 +277,7 @@ src/
 
 Middleware order in `app.ts`: CORS → JSON body parser → session → routes → error handler.
 
-Mounted routers (8): `/api/auth`, `/api/firmen`, `/api/personen`, `/api/abteilungen`, `/api/adressen`, `/api/aktivitaeten`, `/api/chancen`, `/api/dashboard`. Plus `/api/health` (inline, public).
+Mounted routers (10): `/api/auth`, `/api/firmen`, `/api/personen`, `/api/abteilungen`, `/api/adressen`, `/api/aktivitaeten`, `/api/chancen`, `/api/dashboard`, `/api/agent-tasks`, `/api/cron`. Plus `/api/health` (inline, public).
 
 ## Exception Handling
 
@@ -266,22 +313,22 @@ Each entity follows this pattern:
 ```
 Drizzle schema (schema.ts)
   → Zod schema + CreateDTO (validation.ts)
-  → Service (services/<entity>Service.ts)  — raw SQL via better-sqlite3
-  → Route handler (routes/<entity>.ts)     — Express Router
+  → Service (services/<entity>Service.ts)  — async functions, raw SQL via @libsql/client
+  → Route handler (routes/<entity>.ts)     — Express Router + asyncHandler
 ```
 
 ### Service pattern
 
-Services are plain exported objects (not classes). They use `sqlite.prepare().get/all/run()` directly.
+Services are plain exported objects (not classes). They call `await client.execute({ sql, args })` directly. All service methods are `async` and return Promises.
 
 ```typescript
 export const firmaService = {
-  findAll(search, page, size, sort): PageResult<FirmaDTO> { ... },
-  listAll(): FirmaDTO[] { ... },
-  findById(id): FirmaDTO { ... },   // throws NotFoundError if missing
-  create(dto): FirmaDTO { ... },
-  update(id, dto): FirmaDTO { ... }, // calls findById first to get 404 on missing
-  delete(id): void { ... },          // calls findById first to get 404 on missing
+  async findAll(search, page, size, sort): Promise<PageResult<FirmaDTO>> { ... },
+  async listAll(): Promise<FirmaDTO[]> { ... },
+  async findById(id): Promise<FirmaDTO> { ... },   // throws NotFoundError if missing
+  async create(dto): Promise<FirmaDTO> { ... },
+  async update(id, dto): Promise<FirmaDTO> { ... }, // calls findById first to get 404 on missing
+  async delete(id): Promise<void> { ... },          // calls findById first to get 404 on missing
 };
 ```
 
@@ -291,18 +338,18 @@ export const firmaService = {
 
 ### Route pattern
 
-```typescript
-router.get('/:id', requireAuth, (req, res, next) => {
-  try {
-    const id = parseInt(req.params['id'], 10);
-    res.json(firmaService.findById(id));
-  } catch (err) {
-    next(err);
-  }
-});
-```
+All route handlers are wrapped in `asyncHandler` from `src/utils/asyncHandler.ts`. This forwards any rejected Promise (including thrown errors) to Express's `next()` error chain so the global error handler can format the response. Manual try/catch blocks are not used.
 
-All route handlers wrap logic in try/catch and call `next(err)`. The global error handler converts typed errors to HTTP responses.
+```typescript
+router.get(
+  '/:id',
+  requireAuth,
+  asyncHandler(async (req: Request, res: Response) => {
+    const id = parseInt(req.params['id'] as string, 10);
+    res.json(await firmaService.findById(id));
+  }),
+);
+```
 
 ### Validation pattern
 
@@ -310,7 +357,7 @@ Request bodies are validated with Zod before passing to the service:
 
 ```typescript
 const dto = validate(FirmaCreateSchema, req.body);
-res.status(201).json(firmaService.create(dto));
+res.status(201).json(await firmaService.create(dto));
 ```
 
 `validate()` throws `ValidationError` (→ 400) with `fieldErrors` populated from Zod issues.
@@ -325,6 +372,13 @@ Enum values used in Zod schemas:
 | AktivitaetTyp | ANRUF, EMAIL, MEETING, NOTIZ, AUFGABE |
 
 Canonical enum definition: see [SPECS-database.md](SPECS-database.md).
+
+### SQLite / libsql notes
+
+- `PRAGMA foreign_keys = ON` is executed once at startup in `migrate.ts` via `await client.execute('PRAGMA foreign_keys = ON')` as a standalone statement before any DDL. It is **not** set in `db.ts`.
+- `@libsql/client` is fully async — every call to `client.execute()` returns a Promise and must be awaited. There is no synchronous API.
+- No native `BOOLEAN` — use `INTEGER` (0/1) and convert in the service layer.
+- No native `DATE`/`TIMESTAMP` — use `TEXT` with ISO-8601 strings.
 
 ### Adding a new entity
 

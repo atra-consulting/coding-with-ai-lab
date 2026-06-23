@@ -2,20 +2,20 @@
 
 ## Project
 
-Full-stack CRM application. Node.js/TypeScript (Express + Drizzle ORM + SQLite) backend, Angular 21 frontend. German domain model: Firma, Person, Abteilung, Adresse, Aktivitaet, Chance. SQLite file-based database at `backend/data/crmdb.sqlite`. Authentication via hardcoded in-memory users (`backend/src/config/users.ts`) with session-based auth (3 users: admin/admin123, user/test123, demo/demo1234 — all with full permissions).
+Full-stack CRM application. Node.js/TypeScript (Express + Drizzle ORM + libSQL/SQLite via `@libsql/client`) backend, Angular 21 frontend. German domain model: Firma, Person, Abteilung, Adresse, Aktivitaet, Chance. Local SQLite file at `backend/data/crmdb.sqlite`; production runs on Turso cloud when `TURSO_DATABASE_URL` is set. Authentication via hardcoded users (`backend/src/config/users.ts`, bcrypt-hashed passwords), session-based and persisted to the `sessions` table (`LibsqlSessionStore`). 3 users: admin/admin123 (ADMIN), user/test123 (USER), demo/demo1234 (ADMIN). Enforcement is role-based via `requireRole('ADMIN')`; users also carry a `permissions` array, but no `requirePermission` middleware is wired up.
 
-### Autonomous Task Sources (advanced workshop)
+### Autonomous Agents (advanced workshop)
 
-The `agent_task` table holds tasks from four sources (`EMAIL`, `GITHUB_ISSUE`, `APP_LOG`, `ERROR_REPORT`) with lifecycle `OPEN → IN_PROGRESS → DONE | REJECTED`. Claude Code, driven by GitHub Actions, pulls a task, decides solve-or-reject, implements it, and merges. Pieces:
-- **API** `/api/agent-tasks`: `GET /next?source=X` (claims OPEN→IN_PROGRESS), `POST /:id/reject` (mandatory comment), `POST /:id/done`, `POST /reset` (admin), `GET /summary`, `GET /:id`, `GET /`. Agent endpoints use the `requireAgentToken` middleware (shared secret in env `AGENT_API_TOKEN`, SHA-256 + `timingSafeEqual`); admin endpoints use session + `requireRole('ADMIN')`. Full reference: [`docs/API-TASKS.md`](docs/API-TASKS.md).
-- **Dashboard** (admin only): `/admin/agent-tasks` — summary cards, per-source list, task detail, reset button.
-- **Prompts**: `.claude/prompts/agent-*.md` — one per source; run headless via `claude -p`, pre-authorizing every plan-and-do checkpoint.
-- **CI**: `.github/workflows/agent-task-runner.yml` (reference; needs secrets `AGENT_API_TOKEN`, `APP_BASE_URL`, `ANTHROPIC_API_KEY`).
-- **Workshop guide**: [`docs/WORKSHOP-AUTONOMOUS-TASKS.md`](docs/WORKSHOP-AUTONOMOUS-TASKS.md) — local testing, reset between runs, removing task-solution commits, `scripts/solve-all-agent-tasks.sh`.
+Two independent Claude-Code-in-CI agents. Both are documented in full in [`docs/API-TASKS.md`](docs/API-TASKS.md); the workshop walkthrough is [`docs/WORKSHOP-AUTONOMOUS-TASKS.md`](docs/WORKSHOP-AUTONOMOUS-TASKS.md).
 
-### GitHub-Issue Agent (second agent — real issues)
+- **Agent-task runner** — drains the `agent_task` table (sources `EMAIL`, `GITHUB_ISSUE`, `APP_LOG`, `ERROR_REPORT`; lifecycle `OPEN → IN_PROGRESS → DONE | REJECTED`) via the `/api/agent-tasks` API, decides solve-or-reject, implements, and merges. Admin dashboard at `/admin/agent-tasks`. Workflow `.github/workflows/agent-task-runner.yml`, prompts `.claude/prompts/agent-*.md`.
+- **GitHub-issue agent** — works real GitHub issues labelled `Refinement needed`, one per run, triggered from the `solve-github-issues` card in `/admin/cron`. Implements-or-asks; opens a PR against `main` (never merged) or comments a question and adds `Input needed`. Status tracked on GitHub Project board #7. Workflow `.github/workflows/github-issue-agent.yml`, prompt `.claude/prompts/agent-github-refinement.md`.
 
-A **second**, independent agent works against **real GitHub issues** (not the `agent_task` table) labelled **`Refinement needed`**, **one issue per run**, triggered **manually** from the `solve-github-issues` card in `/admin/cron`. It decides implement-vs-ask: if all info is present it implements via `plan-and-do` and opens a PR against `main` (**never merged** — left for human review); if a decision/clarification is missing (or the issue text demands it) it comments a precise question, `@`-mentions the maintainer, and adds the **`Input needed`** label. Task status is tracked on **GitHub Project board #7** ("Coding with AI: Fortgeschrittenen-Schulung"): claimed issue → **In progress**, PR opened → **In review** (not via labels, except `Input needed`). Pieces: trigger `GET /api/cron/github-issues` → `repository_dispatch` `solve-github-issues` → workflow `.github/workflows/github-issue-agent.yml` → prompt `.claude/prompts/agent-github-refinement.md`. Needs secret `GH_PROJECT_TOKEN` (classic PAT with `repo`, `project`, `read:org` — Projects-v2 write that the default `GITHUB_TOKEN` lacks) plus `CLAUDE_CODE_OAUTH_TOKEN`, `AGENT_API_TOKEN`, `APP_BASE_URL`. Full reference: [`docs/API-TASKS.md`](docs/API-TASKS.md).
+Agent endpoints authenticate with `requireAgentToken` (`AGENT_API_TOKEN`); cron triggers with `requireCronAuth` (`CRON_SECRET` or admin session). See [`docs/API-TASKS.md`](docs/API-TASKS.md) for endpoint signatures, required secrets, and board mechanics.
+
+## Writing Style
+
+When writing Markdown (specs, plans, docs, reviews): as short & brief as possible. Short sentences. Simple words non-native speakers understand. No passive voice. Use sentence fragments.
 
 ## Build & Run
 
@@ -39,11 +39,12 @@ cd frontend && npx ng build                        # Frontend build check
 
 ### Backend
 
+- **DB client**: `@libsql/client` is **async** — every service method `await`s `client.execute({ sql, args })`. No synchronous better-sqlite3 calls. Route handlers wrap async logic in `asyncHandler(...)` from `utils/asyncHandler.ts`.
 - **SQLite dates**: All dates stored as ISO-8601 text strings. Use `new Date().toISOString()` for timestamps.
-- **SQLite numeric**: Monetary values (`wert`, `amount`) stored as REAL. Returned as JSON numbers.
-- **PRAGMA foreign_keys**: Must be `ON` for cascade deletes to work. Set on every connection in `config/db.ts`.
+- **SQLite numeric**: The monetary column `wert` (in `chance`) is stored as REAL. Returned as JSON numbers.
+- **PRAGMA foreign_keys**: Must be `ON` for cascade deletes to work. Set once at startup in `config/migrate.ts` (`runMigrations()`), not per-connection.
 - **Sort parsing**: Sort arrives as query param `field,direction` (e.g., `name,asc`). Validated against per-entity field whitelists to prevent SQL injection.
-- **Authorization**: Every route file uses `requireRole(...)` or `requirePermission(...)` middleware from `middleware/auth.ts`.
+- **Authorization**: Entity routes use `requireAuth` (login required); admin/cron routes use `requireRole('ADMIN')`. Both come from `middleware/auth.ts`, which exports only `requireAuth` and `requireRole` — there is **no** `requirePermission`. Agent endpoints use `requireAgentToken` (`middleware/agentAuth.ts`).
 - **Error responses**: `{ status, message, timestamp, fieldErrors }` via global error handler in `middleware/errorHandler.ts`.
 - **Pagination**: Response shape mimics the Spring Data Page format (name only — backend is Node): `{ content, totalElements, totalPages, size, number, first, last }`. `number` is 0-indexed.
 - **Testing**: Backend uses Playwright (`@playwright/test`) for end-to-end API tests under `backend/src/test/`.
@@ -57,11 +58,11 @@ cd frontend && npx ng build                        # Frontend build check
 
 ## Adding a New Entity
 
-Backend (3 files): Drizzle schema in `db/schema/schema.ts` + CREATE TABLE in `config/migrate.ts` → Service in `services/` → Route handler in `routes/`. **Route file must use `requireRole(...)` or `requirePermission(...)`**.
+Backend (3 files): Drizzle schema in `db/schema/schema.ts` + CREATE TABLE in `config/migrate.ts` → Service in `services/` → Route handler in `routes/`. **Route file must guard with `requireAuth`** (or `requireRole('ADMIN')` for admin-only routes).
 
-Frontend (8+ files): Model interface → Service → Route file → List/Detail/Form components → register in `app.routes.ts` **with `canActivate: [permissionGuard('PERMISSION')]`** + add `permission: 'PERMISSION'` to sidebar item.
+Frontend (8+ files): Model interface → Service → Route file → List/Detail/Form components → register in `app.routes.ts` **with `canActivate: [authGuard]`** (add `roleGuard('ROLE_ADMIN')` for admin-only) + add the sidebar item (set `requiredRole: 'ROLE_ADMIN'` if admin-only).
 
-**Adding a new permission**: Add the permission string to the user's permissions array in `config/users.ts` → use `requirePermission('NAME')` on route → add `permissionGuard('NAME')` on frontend route + `permission: 'NAME'` on sidebar item.
+**Access control is role-based.** Enforcement uses roles only: `requireRole('ADMIN')` on the backend, `roleGuard('ROLE_ADMIN')` on the frontend, `requiredRole` on the sidebar item. The per-user `permissions` array in `config/users.ts` exists on the model but is not enforced by any middleware — there is no permission guard or `requirePermission`.
 
 ## Commits & PRDs
 
@@ -91,8 +92,16 @@ Frontend (8+ files): Model interface → Service → Route file → List/Detail/
 | fe-test-coder | Write Jasmine/Karma unit tests for the frontend | test-coding |
 | fe-test-reviewer | Review frontend Jasmine/Karma tests | test-review |
 | fe-test-runner | Execute frontend Karma suite, report pass/fail | test-runner |
+| python-coder | Cross-platform Python scripts and data analysis (tooling, not app code) | coding |
+| python-reviewer | Review Python for correctness, portability, and external-data handling | review |
+| shell-coder | Cross-platform shell scripts (macOS / Linux / WSL) | coding |
+| shell-reviewer | Review shell scripts for portability, hangs, and safety | review |
+| skill-coder | Create and update Claude Code skills and subagents | coding |
+| skill-reviewer | Review Claude Code skills and subagents | review |
 
 Agent files: `.claude/agents/`
+
+The `python-*`, `shell-*`, and `skill-*` agents are general tooling agents — they are not bound to the CRM domain specs and instead read the root `CLAUDE.md` plus, for shell, `docs/specs/SPECS-infrastructure.md`.
 
 ## Specifications
 

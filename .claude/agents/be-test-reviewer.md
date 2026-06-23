@@ -38,7 +38,7 @@ Your spec reading list (paths are relative to the repo root):
 ### SQLite-Specific
 - [ ] Dates compared as ISO-8601 strings, not `Date` objects
 - [ ] Monetary values compared with `toBeCloseTo` where arithmetic is involved
-- [ ] No `await` on better-sqlite3 calls
+- [ ] All DB calls in test setup/teardown are properly `await`-ed (@libsql/client is async)
 
 ### Security Coverage
 - [ ] Every protected route has a 401 test (no session) AND a 403 test (insufficient permission) where applicable

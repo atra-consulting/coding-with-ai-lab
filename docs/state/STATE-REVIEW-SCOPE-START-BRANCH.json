@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "task_key": "REVIEW-SCOPE-START-BRANCH",
+  "status": "completed",
+  "current_step": "13",
+  "started": "2026-06-23T00:00:00Z",
+  "updated": "2026-06-23T00:00:00Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Update .claude/skills/plan-and-do/SKILL.md: The scope for calling the review skill is the changes against the starting branch. That's not necessarily main/master.",
+    "special_instructions": null,
+    "branch_name": "prep-ws-intro-2026-06-22",
+    "original_branch": "prep-ws-intro-2026-06-22",
+    "docs_folder": "docs",
+    "is_git_repo": true,
+    "workflow_scope": "implement-review",
+    "pr_prefix": null,
+    "pr_exists": false,
+    "pr_url": null
+  },
+  "discovery": {
+    "agents_available": false,
+    "writer_agents": [],
+    "coding_agents": [],
+    "review_agents": [],
+    "test_command": "N/A (docs-only)"
+  },
+  "artifacts": {
+    "prd_skipped": true,
+    "prd_file": null,
+    "plan_file": "docs/plans/PLAN-REVIEW-SCOPE-START-BRANCH.md"
+  },
+  "completed_steps": []
+}
