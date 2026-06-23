@@ -45,7 +45,7 @@ When reviewing any document, systematically check:
 
 4. **Feasibility**
    - Are there unrealistic timelines or expectations?
-   - Are technical constraints acknowledged?
+   - Are technical constraints acknowledged at a high level? (Not implementation detail — that belongs in the plan.)
    - Are dependencies on external systems/teams identified?
 
 5. **Risk**
@@ -90,7 +90,7 @@ Highlight strengths to reinforce good practices.
 
 ## Project Context
 
-This project is a full-stack CRM application. Key conventions:
+This is background for feasibility checks only. It does NOT belong in a PRD. This project is a full-stack CRM application. Key conventions:
 - PRDs live in `docs/prds/`
 - Plans live in `docs/plans/`
 - Backend: Node.js 20.19+ / TypeScript 5.8 / Express 4.21 with route → service → db layering (`backend/src/routes/` → `backend/src/services/` → `backend/src/config/db.ts`)

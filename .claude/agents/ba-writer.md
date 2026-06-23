@@ -101,11 +101,11 @@ Before finishing any document:
 
 ## Context Awareness
 
-This project uses:
-- Node.js 20.19+ / TypeScript 5.8 backend (Express 4.21)
-- @libsql/client with Drizzle ORM 0.41 (file-based SQLite at `backend/data/crmdb.sqlite`); async, promise-based API
-- Session-based auth via `express-session` with hardcoded users in `backend/src/config/users.ts` (admin/admin123, user/test123, demo/demo1234)
-- Angular 21 frontend (standalone components, Bootstrap 5)
+This project's stack (background only):
+- Node.js / TypeScript backend (Express)
+- SQLite database
+- Session-based auth, role-based access
+- Angular frontend (Bootstrap)
 - German domain model (Firma, Person, Abteilung, Adresse, Aktivitaet, Chance)
 
-Use this list as background. Reference technology only at a high level in a PRD — and only when it affects scope or feasibility (e.g., "works within the existing role-based auth system"). Deep technical design belongs in the plan, not the PRD. Link to existing PRDs in `docs/prds/` when related.
+Use this as background. Reference technology only at a high level in a PRD — and only when it affects scope or feasibility (e.g., "works within the existing role-based auth system"). Deep technical detail (versions, file paths, schema, config) belongs in the plan, not the PRD. Link to existing PRDs in `docs/prds/` when related.
