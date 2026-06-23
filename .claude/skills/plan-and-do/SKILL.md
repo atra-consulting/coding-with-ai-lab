@@ -2,8 +2,8 @@
 name: "project:plan-and-do"
 description: "End-to-end implementation workflow from idea to code review. Use for building features, implementing tasks, fixing complex bugs, or any substantial coding work. Handles planning, implementation, testing, and review automatically."
 argument-hint: ["description"] [special-instructions|resume:<step>]
-version: 1.10.0
-last-modified: 2026-06-22
+version: 1.10.1
+last-modified: 2026-06-23
 allowed-tools:
   - Read
   - Write
@@ -56,7 +56,7 @@ If NOT in plan mode → continue.
 ## SKILL HEADER
 
 ```
-Plan and Do (v1.10.0, 2026-06-22)
+Plan and Do (v1.10.1, 2026-06-23)
 ************************************
 
 Plan and implement any work from freeform description
@@ -155,6 +155,7 @@ Read project's CLAUDE.md for `## Agents` section.
 
 **If found:** Parse each row's `name` and classify. Rules are **order-sensitive** — stop at the first match:
 
+0. Name starts with `python-`, `shell-`, or `skill-` → **skip** as general tooling agent (not CRM domain). These are dispatched only when changed files are tooling files (`.py`, `.sh`, or files under `.claude/`). Do NOT add to any coding or review list.
 1. Contains `-test-coder` → `test_coding_agents` (e.g., `be-test-coder`, `fe-test-coder`)
 2. Contains `-test-reviewer` → `test_review_agents` (e.g., `be-test-reviewer`, `fe-test-reviewer`)
 3. Contains `-test-runner` or ends with `-tester` → `test_runner_agents` (e.g., `be-test-runner`, `fe-test-runner`)
@@ -163,7 +164,7 @@ Read project's CLAUDE.md for `## Agents` section.
 6. Ends with `-reviewer` → `review_agents` (e.g., `be-reviewer`, `fe-reviewer`)
 7. Anything else (e.g., `admin`, `md-reader`) → skip as utility
 
-The order matters: `be-test-coder` must hit rule 1, NOT rule 5. Always check for `-test-` first.
+The order matters: `be-test-coder` must hit rule 1, NOT rule 5. Always check for `-test-` first. Rule 0 runs before all others.
 
 Display all six lists in one block, then set `agents_available = true` if any list is non-empty.
 

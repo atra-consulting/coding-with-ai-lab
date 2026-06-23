@@ -58,6 +58,8 @@ await ctx.post('/api/auth/login', { data: { benutzername: 'admin', passwort: 'ad
 
 This endpoint is intended for test speed when the test cares about session state but not about the login flow itself. The standard login endpoint is used when the login flow is under test.
 
+**Note:** No current test uses `POST /api/auth/test-login`. All existing tests authenticate via the password-based `loginCtx()` helper. The endpoint remains available for future tests where password validation is out of scope.
+
 #### Session reuse pattern
 
 Create one `APIRequestContext` per user role in `test.beforeAll`, log in once, and reuse the context across all tests in the suite. Dispose in `test.afterAll`.
@@ -97,7 +99,7 @@ All three currently hold the full 7-permission set (`FIRMEN`, `PERSONEN`, `ABTEI
 |--------|---------|
 | `loginCtx(benutzername, passwort)` | Creates a new `APIRequestContext` and logs in; returns the context with cookie. |
 | `login(request, benutzername, passwort)` | Logs in on an existing context. |
-| `resetDatabase()` | Deletes all rows in reverse FK order, then re-seeds from `fixture.json` via `runDataMigration()`. |
+| `resetDatabase()` | Deletes all rows in reverse FK order, then re-seeds CRM data via `runDataMigration()` and agent tasks via `seedAgentTasks()` (fixed IDs 1–16). |
 
 ### SQLite quirks in tests
 
@@ -158,11 +160,20 @@ All error responses follow:
 
 ### Existing test files
 
-| File | Routes covered |
-|------|---------------|
+| File | Routes / concerns covered |
+|------|--------------------------|
 | `auth.spec.ts` | POST `/api/auth/login`, GET `/api/auth/me`, POST `/api/auth/logout` |
 | `firmen-crud.spec.ts` | GET/POST/PUT/DELETE `/api/firmen` and `/api/firmen/:id` |
-| `adressen-coords.spec.ts` | Address rows expose their baked-in latitude/longitude |
+| `adressen-coords.spec.ts` | GET/POST/PUT `/api/adressen` — latitude/longitude fields |
+| `adressen-typ.spec.ts` | GET/POST/PUT `/api/adressen` — `typ` field (WORK, HOME, null) |
+| `agentTasks.spec.ts` | GET `/api/agent-tasks/next`, POST `/:id/reject`, POST `/:id/done`, GET `/api/agent-tasks`, GET `/api/agent-tasks/summary`, POST `/api/agent-tasks/reset` |
+| `agentTaskSeed.spec.ts` | `seedAgentTasks()` idempotency — 16 fixed-ID rows survive repeated seeding |
+| `chancen-phase-filter.spec.ts` | GET `/api/chancen?phase=<value>` — per-phase filtering and invalid-phase 400 |
+| `chancen-search.spec.ts` | GET `/api/chancen?search=<term>` — case-insensitive title search, combined search+phase filter |
+| `cron.spec.ts` | GET `/api/cron/agent-tasks`, POST `/api/cron/runs/:id/complete`, GET `/api/cron/runs`, GET `/api/cron/jobs` |
+| `health.spec.ts` | GET `/api/health` — status, timestamp, version fields |
+| `personen-filter.spec.ts` | GET `/api/personen?abteilungId=<id>` — department filter, combined abteilungId+search |
+| `sessions-persistence.spec.ts` | Session row creation on login, cross-request persistence, DB row deletion on logout |
 
 ---
 
@@ -177,10 +188,12 @@ All error responses follow:
 ### Run commands
 
 ```bash
-cd frontend && npx ng test                                               # watch mode (development)
-cd frontend && npx ng test --watch=false --browsers=ChromeHeadless       # single CI run (preferred)
-cd frontend && npm test                                                  # alias (maps to "ng test")
+cd frontend && npx ng test                 # watch mode (development)
+cd frontend && npm test                    # alias (maps to "ng test")
+cd frontend && npm run test:ci             # single CI run — watch=false, ChromeHeadlessNoSandbox (preferred)
 ```
+
+The `test:ci` script maps to `ng test --configuration=ci`. The `ci` configuration in `angular.json` sets `watch: false`, `progress: false`, and `browsers: ChromeHeadlessNoSandbox` (not `ChromeHeadless`).
 
 ### What to test (frontend)
 
@@ -248,11 +261,22 @@ For components using `inject()` that cannot be overridden by a provider, use `Te
 
 ### Existing spec files
 
-| File | Covers |
-|------|--------|
-| `layout.service.spec.ts` | `LayoutService` (collapsed signal, localStorage persistence, toggle) |
-| `role.guard.spec.ts` | `roleGuard` (allow with matching role, deny with wrong role, deny when null) |
-| `sidebar.component.spec.ts` | `SidebarComponent` (render, permission filtering, collapse toggle) |
+| File (path relative to `frontend/src/app/`) | Covers |
+|---------------------------------------------|--------|
+| `core/services/layout.service.spec.ts` | `LayoutService` (collapsed signal, localStorage persistence, toggle) |
+| `core/services/agent-task.service.spec.ts` | `AgentTaskService` HTTP methods and URL shapes |
+| `core/services/cron.service.spec.ts` | `CronService` HTTP methods and URL shapes |
+| `core/services/person.service.spec.ts` | `PersonService` — pagination index conversion, HTTP calls |
+| `core/guards/role.guard.spec.ts` | `roleGuard` (allow with matching role, deny with wrong role, deny when null) |
+| `layout/sidebar/sidebar.component.spec.ts` | `SidebarComponent` (render, permission filtering, collapse toggle) |
+| `features/firma/firma-list/firma-list.component.spec.ts` | `FirmaListComponent` — render, data binding, interactions |
+| `features/person/person-list/person-list.component.spec.ts` | `PersonListComponent` — render, data binding, interactions |
+| `features/aktivitaet/aktivitaet-list/aktivitaet-list.component.spec.ts` | `AktivitaetListComponent` — render, data binding, interactions |
+| `features/chance/chance-list/chance-list.component.spec.ts` | `ChanceListComponent` — render, data binding, interactions |
+| `features/admin/agent-tasks/agent-task-detail.component.spec.ts` | `AgentTaskDetailComponent` — detail view, `statusBadgeClass()` |
+| `features/admin/agent-tasks/agent-task-list.component.spec.ts` | `AgentTaskListComponent` — list view, source param, `statusBadgeClass()` |
+| `features/admin/agent-tasks/agent-tasks-dashboard.component.spec.ts` | `AgentTasksDashboardComponent` — summary and per-source views |
+| `features/admin/cron/cron-dashboard.component.spec.ts` | `CronDashboardComponent` — ngOnInit, pagination, runNow() |
 
 ### Code standards (both stacks)
 

@@ -89,9 +89,7 @@ Brief bullet points.
 - If the script is only intended for one OS and that is clearly documented, note it but deprioritize cross-platform issues.
 - Short sentences. Active voice. Be direct.
 
-**Update your agent memory** as you discover recurring patterns, common mistakes, OS-specific quirks, and project conventions in this codebase's shell scripts. This builds institutional knowledge across conversations.
-
-Examples of what to record:
+Note recurring patterns in your review output so the requester can track trends across reviews:
 - Recurring cross-platform issues found in this project's scripts
 - Color/output conventions used across scripts
 - Common patterns (e.g., how scripts handle logging, errors, or setup)

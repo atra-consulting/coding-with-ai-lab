@@ -76,10 +76,8 @@ For each issue:
 - If you need to know the target platform (Mac/Windows/Linux) and it's not clear, ask before reviewing platform-sensitive code.
 - Do not rewrite entire functions unless necessary to illustrate a fix.
 
-**Update your agent memory** as you discover recurring patterns, common mistakes, project-specific conventions, and platform-sensitive code areas. This builds up institutional knowledge across conversations.
-
-Examples of what to record:
-- Recurring platform issues found in this codebase (e.g., hardcoded Unix paths, missing encoding params)
+Note recurring patterns in your review output so the requester can track trends across reviews:
+- Recurring platform issues (e.g., hardcoded Unix paths, missing encoding params)
 - Common external data handling mistakes (e.g., missing timeout on requests, no schema validation)
 - Project-specific libraries or patterns that affect review criteria
 - Files or modules with known fragility or technical debt

@@ -12,8 +12,10 @@ Cross-references:
 
 | Library | Version |
 |---------|---------|
-| better-sqlite3 | 9.6 |
+| @libsql/client | (libSQL / Turso) |
 | drizzle-orm | 0.41 |
+
+The DB driver is `@libsql/client` (libSQL/Turso), not better-sqlite3. The API is **async**: `await client.execute(sql)`, `await client.executeMultiple(sql)` (non-transactional bulk DDL). Local development uses `file:backend/data/crmdb.sqlite`; production uses a `TURSO_DATABASE_URL` env var. Drizzle is initialized with `drizzle(client, { schema })` from `drizzle-orm/libsql`.
 
 ## Schema Files
 
@@ -27,7 +29,7 @@ Migration approach: plain `CREATE TABLE IF NOT EXISTS` statements. Run on every 
 
 ## Tables
 
-The database contains six core domain tables — `firma`, `abteilung`, `person`, `adresse`, `aktivitaet`, `chance` — plus operational tables: `agent_task` (autonomous task sources), `cron_run` (cron run history), and `sessions`.
+The database contains six core domain tables — `firma`, `abteilung`, `person`, `adresse`, `aktivitaet`, `chance` — plus operational tables: `agent_task` (autonomous task sources), `cron_run` (cron run history), and `sessions` (server-side session store).
 
 ### CronRun (`cron_run`)
 
@@ -46,15 +48,45 @@ Audit log of cron heartbeats/dispatches. Written by `backend/src/services/cronSe
 | githubRunUrl | text | nullable |
 | error | text | nullable |
 
-Indexes: `idx_cron_run_startedAt (startedAt DESC)`, `idx_cron_run_job_startedAt (job, startedAt DESC)`. No FKs.
+No FKs. Indexes: `idx_cron_run_startedAt (startedAt DESC)`, `idx_cron_run_job_startedAt (job, startedAt DESC)`.
+
+### Sessions (`sessions`)
+
+Server-side session store. Written and read by `backend/src/middleware/libsqlSessionStore.ts` via raw `client.execute()` calls, not through Drizzle. The Drizzle definition in `schema.ts` is documentary only.
+
+| Column | SQLite Type | Constraints |
+|--------|-------------|-------------|
+| sid | text | PK |
+| sess | text | NOT NULL |
+| expire | text | NOT NULL |
+
+### AgentTask (`agent_task`)
+
+Autonomous task queue. Tasks arrive from four external sources and move through a defined lifecycle: `OPEN → IN_PROGRESS → DONE | REJECTED`. Seeded idempotently on every startup via `INSERT OR IGNORE` with fixed ids 1–16 (`backend/src/seed/agentTaskSeed.ts`).
+
+| Column | SQLite Type | Constraints |
+|--------|-------------|-------------|
+| id | integer | PK, autoIncrement |
+| source | text | NOT NULL — `AGENT_TASK_SOURCE` enum |
+| title | text | NOT NULL |
+| body | text | NOT NULL |
+| status | text | NOT NULL, default `OPEN` — `AGENT_TASK_STATUS` enum |
+| comment | text | nullable — rejection reason or agent note |
+| metadata | text | nullable — JSON string for extra context |
+| pickedUpAt | text | nullable — ISO-8601, set when status → IN_PROGRESS |
+| resolvedAt | text | nullable — ISO-8601, set when status → DONE or REJECTED |
+| createdAt | text | NOT NULL, default `datetime('now')` |
+| updatedAt | text | NOT NULL, default `datetime('now')` |
+
+No FKs. Indexes: `idx_agent_task_status_createdAt (status, createdAt)`, `idx_agent_task_source_status (source, status)`.
 
 ## Storage Rules
 
-- All tables use `integer` PKs with autoincrement.
+- All tables use `integer` PKs with autoincrement (except `sessions` which uses a `text` PK `sid`).
 - All timestamps are `text` columns storing ISO-8601 strings.
-- Monetary values (`wert`, `amount`) use SQLite `REAL`.
+- The only monetary column is `wert` in `chance` — stored as `REAL`.
 - Foreign keys enforce referential integrity.
-- `PRAGMA foreign_keys = ON` is set on every connection (see `backend/src/config/db.ts`). Required for cascade deletes to work.
+- `PRAGMA foreign_keys = ON` is issued once at startup inside `runMigrations()` in `backend/src/config/migrate.ts` via `await client.execute('PRAGMA foreign_keys = ON')`. It is **not** set per-connection in `db.ts`.
 
 ## Entities
 
@@ -162,3 +194,29 @@ Stored as plain `text` in SQLite. Validated by Zod on write. Defined in `backend
 |------|--------|
 | ChancePhase | NEU, QUALIFIZIERT, ANGEBOT, VERHANDLUNG, GEWONNEN, VERLOREN |
 | AktivitaetTyp | ANRUF, EMAIL, MEETING, NOTIZ, AUFGABE |
+| AgentTaskSource | EMAIL, GITHUB_ISSUE, APP_LOG, ERROR_REPORT |
+| AgentTaskStatus | OPEN, IN_PROGRESS, DONE, REJECTED |
+
+## Indexes
+
+All indexes are created in `backend/src/config/migrate.ts` via `CREATE INDEX IF NOT EXISTS`. They cover every FK column and the most common filter/sort columns. Inline table notes above reference these same index names.
+
+| Index name | Table | Columns |
+|------------|-------|---------|
+| idx_person_firmaId | person | firmaId |
+| idx_person_abteilungId | person | abteilungId |
+| idx_abteilung_firmaId | abteilung | firmaId |
+| idx_aktivitaet_firmaId | aktivitaet | firmaId |
+| idx_aktivitaet_personId | aktivitaet | personId |
+| idx_aktivitaet_datum | aktivitaet | datum DESC |
+| idx_aktivitaet_createdAt | aktivitaet | createdAt DESC |
+| idx_chance_firmaId | chance | firmaId |
+| idx_chance_phase | chance | phase |
+| idx_chance_createdAt | chance | createdAt DESC |
+| idx_adresse_firmaId | adresse | firmaId |
+| idx_adresse_personId | adresse | personId |
+| idx_sessions_expire | sessions | expire |
+| idx_agent_task_status_createdAt | agent_task | status, createdAt |
+| idx_agent_task_source_status | agent_task | source, status |
+| idx_cron_run_startedAt | cron_run | startedAt DESC |
+| idx_cron_run_job_startedAt | cron_run | job, startedAt DESC |

@@ -40,8 +40,8 @@ Examples:
   /plan-and-do "Fix login button" resume:10
 
 Prerequisites:
-  - git command available (required)
-  - Working in a git repository (required)
+  - git command available (optional — non-git mode skips branches, commits, and PRs)
+  - Working in a git repository (optional — skill runs in non-git mode when not detected)
   - Test execution capability (required)
 
 Features:

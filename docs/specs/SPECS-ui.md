@@ -17,7 +17,7 @@ Defined in `frontend/src/_variables.scss` and imported globally.
 | `$body-bg` | `#f5f6f8` | Page background |
 | Font | `"Helvetica Neue", Helvetica, Arial, sans-serif` | `$font-family-sans-serif` |
 
-Bootstrap 5.3.8 is loaded after these variables so that Bootstrap utilities inherit the overrides. Custom SCSS is layered on top ("Bootstrap-first" convention: use Bootstrap utilities first, reach for custom rules only when Bootstrap cannot do it). Dark mode is not supported.
+Bootstrap 5.3.8 is loaded after these variables so that Bootstrap utilities inherit the overrides. The load order is defined in the `styles` array of `frontend/angular.json`: first `src/_variables.scss`, then `node_modules/bootstrap/scss/bootstrap.scss`, then `src/styles.scss`. `styles.scss` also contains a redundant `@import 'variables'` at its top, which is harmless because the Angular build processes the `styles` array entries first. Custom SCSS is layered on top ("Bootstrap-first" convention: use Bootstrap utilities first, reach for custom rules only when Bootstrap cannot do it). Dark mode is not supported.
 
 ---
 
@@ -180,7 +180,7 @@ Usage contracts (which service to inject, how to call) are in `SPECS-frontend.md
 
 ### LoadingSpinnerComponent
 
-- Bootstrap spinner element (`spinner-border` or `spinner-grow`).
+- Bootstrap spinner element: `spinner-border text-primary` (only `spinner-border` is used; `spinner-grow` is not).
 
 ### EurCurrencyPipe
 
@@ -196,7 +196,7 @@ Canonical home. Cross-referenced from the Chance Board section in `SPECS-fronten
 |-------------------|-----------------------|
 | NEU | `bg-primary` |
 | QUALIFIZIERT | `bg-info` |
-| ANGEBOT | `bg-warning` |
+| ANGEBOT | `bg-warning text-dark` |
 | VERHANDLUNG | `bg-secondary` |
 | GEWONNEN | `bg-success` |
 | VERLOREN | `bg-danger` |
@@ -205,11 +205,11 @@ Canonical home. Cross-referenced from the Chance Board section in `SPECS-fronten
 
 ## Public-Page Card Template
 
-### Shared pattern — Login, Welcome, FeedbackQr
+### Shared pattern — Login, FeedbackQr
 
-These three components share the same visual template:
+These two components share the same visual template:
 
-- Centered card (`.login-card` / `.welcome-card` / `.qr-card`), `width: 480px`.
+- Centered card (`.login-card` / `.qr-card`), `width: 480px`.
 - `border-radius: 12px` — except `.qr-card` which uses `border-radius: 16px`.
 - Entry animation: `slideUp 0.4s ease-out` (`translateY(20px) → 0`, `opacity 0 → 1`).
 - Header gradient: `linear-gradient(135deg, $primary 0%, color.adjust($primary, $lightness: -8%) 100%)`.
@@ -222,7 +222,8 @@ These three components share the same visual template:
 
 - Card is responsive: `width: 100%`, `max-width: 580px` (not a fixed `480px`).
 - `border-radius: 20px` (not `12px`).
-- Entry animation: `slideUp 0.5s ease-out` (duration is `0.5s`, not `0.4s`).
+- Box shadow: `0 20px 60px rgba(38, 72, 146, 0.10), 0 4px 16px rgba(0, 0, 0, 0.05)` (not the shared shadow).
+- Entry animation: `slideUp 0.5s ease-out` (duration is `0.5s`, not `0.4s`); start position is `translateY(24px)` (not `20px`).
 - Header gradient lightness adjustment: `-10%` (not `-8%`).
 - Page background gradient: `linear-gradient(160deg, #f0f2f7 0%, #e2e6f0 50%, #d8dde9 100%)` — different angle (`160deg` vs `135deg`) and different stop colors.
 

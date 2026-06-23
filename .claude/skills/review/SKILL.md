@@ -2,8 +2,8 @@
 name: "project:review"
 description: "Local code review with multi-round review & fix cycle. Use for reviewing code, checking changes, getting feedback on a branch, or before creating a PR."
 argument-hint: (optional special instructions)
-version: 1.8.0
-last-modified: 2026-06-22
+version: 1.8.1
+last-modified: 2026-06-23
 allowed-tools:
   - Read
   - Edit
@@ -88,7 +88,7 @@ Then STOP immediately.
 If NOT in plan mode, display header:
 
 ```
-Code Review (v1.8.0, 2026-06-22)
+Code Review (v1.8.1, 2026-06-23)
 ****************************************
 
 Local code review - multi-round review & fix cycle
@@ -182,14 +182,15 @@ Read the project's CLAUDE.md (the one in the project root, not this skill file) 
 **If `## Agents` section found:**
 
 1. Parse markdown tables to extract agent names and purposes
-2. Extract reviewer agents (names containing `-reviewer`)
-3. Extract coder agents (names containing `-coder`)
-4. Extract designer agents (names containing `ui-designer` or `-designer`)
-5. Store `all_reviewers`, `all_coders`, `all_designers`
-6. Set `review_agents_available = true` if reviewers found
-7. Set `fix_agents_available = true` if coders OR designers found
-8. Display: "Review agents: [list of reviewer agent names]"
-9. Display: "Fix agents: [list of coder and designer agent names]"
+2. Exclude general tooling agents: skip any agent whose name starts with `python-`, `shell-`, or `skill-` — they are not CRM domain agents
+3. Extract reviewer agents (names containing `-reviewer`, after exclusion)
+4. Extract coder agents (names containing `-coder`, after exclusion)
+5. Extract designer agents (names containing `ui-designer` or `-designer`, after exclusion)
+6. Store `all_reviewers`, `all_coders`, `all_designers`
+7. Set `review_agents_available = true` if reviewers found
+8. Set `fix_agents_available = true` if coders OR designers found
+9. Display: "Review agents: [list of reviewer agent names]"
+10. Display: "Fix agents: [list of coder and designer agent names]"
 
 **If no `## Agents` section found or CLAUDE.md missing:**
 
@@ -414,11 +415,14 @@ Display: `--- Review Round <current_round>/<max_rounds> ---`
 
 **If review_agents_available = true:**
 
-1. Determine `applicable_reviewers` by matching changed files to reviewer agents:
-   - Read the agent table from CLAUDE.md
-   - For each agent row, extract the "File Types" or "Scope" column
-   - Match each changed file's extension against these patterns
-   - If a file matches multiple agents, prefer the most specific match (e.g., `*Repository.java` beats `*.java`)
+1. Determine `applicable_reviewers` by matching changed files to reviewer agents using agent NAME patterns:
+   - `be-*` reviewer → applies when any changed file is under `backend/` (excluding `backend/src/db/` and `backend/src/config/migrate.ts`)
+   - `db-*` reviewer → applies when any changed file is under `backend/src/db/`, `backend/src/config/migrate.ts`, or `backend/src/config/db.ts`
+   - `fe-*` reviewer → applies when any changed file is under `frontend/`
+   - `ui-*` reviewer → applies when any changed file is an `.scss` file or an Angular template (`.html` under `frontend/`)
+   - `ba-*` reviewer → applies when any changed file is under `docs/` (PRDs, plans, specs)
+   - `skill-*` reviewer → applies when any changed file is under `.claude/`
+   - If no pattern matches any changed file, include all reviewers as fallback
 
 2. If `applicable_reviewers` is non-empty:
    - Launch each applicable reviewer agent via Task tool (in parallel - multiple Task calls in one message)
@@ -541,11 +545,13 @@ Display: `--- Fix Planning (Round <current_round>) ---`
 
 **If fix_agents_available = true:**
 
-1. Determine applicable fixer agents:
-   - Read the agent table from CLAUDE.md
-   - For each `*-coder` or `*-designer` agent row, extract the "File Types" or "Scope" column
-   - Match each changed file's extension against these patterns
-   - If a file matches multiple agents, prefer the most specific match
+1. Determine applicable fixer agents using the same agent NAME patterns as Step 5.1.1:
+   - `be-*` coder → files under `backend/` (excluding db/migrate paths)
+   - `db-*` coder → files under `backend/src/db/`, `backend/src/config/migrate.ts`, or `backend/src/config/db.ts`
+   - `fe-*` coder → files under `frontend/`
+   - `ui-*` designer → `.scss` files or Angular templates under `frontend/`
+   - `skill-*` coder → files under `.claude/`
+   - If no pattern matches, use the nearest domain match or all coders as fallback
 
 2. Launch applicable fixer agents via Task tool (in parallel - multiple Task calls in one message)
 
@@ -571,7 +577,7 @@ Display: `Fix plans created: <count> fixes proposed`
 
 ### Step 5.2.5: FINDINGS APPROVAL CHECKPOINT
 
-**Skip this checkpoint** when no fix agents exist, when this round found zero issues, or in **embedded mode** (called from plan-and-do — the caller drives fix approval at its own checkpoint; approve all planned fixes automatically and continue to Step 5.3).
+**Skip this checkpoint** when no fix agents exist, when this round found zero issues (Step 5.1.3 already exits the loop in that case, so this condition is redundant but kept as a safety guard), or in **embedded mode** (called from plan-and-do — the caller drives fix approval at its own checkpoint; approve all planned fixes automatically and continue to Step 5.3).
 
 **Otherwise (fix agents exist AND findings are present — any severity):** Display the full findings table including proposed fixes:
 
@@ -729,7 +735,7 @@ Clean pass. No issues found.
 - Create PR when ready
 
 ---
-Generated with Claude Code - review v1.8.0
+Generated with Claude Code - review v1.8.1
 ```
 
 ### Step 6.3: Write Review File

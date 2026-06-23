@@ -38,7 +38,7 @@ For services, prefer testing through the route boundary. Only write unit-level s
 - One test file per route file: `backend/src/test/<entity>.spec.ts`
 - Use Playwright's `test.describe` for grouping, `test.beforeAll`/`beforeEach` for setup
 - Login helper: POST `/api/auth/login` with admin/admin123 to get a session cookie; reuse the cookie across tests via Playwright's `request.newContext({ storageState })` pattern
-- Reset or seed the SQLite DB between test suites when mutation tests pollute shared data — use `backend/src/seed/seeder.ts` entry points or a dedicated test seed
+- Reset or seed the SQLite DB between test suites when mutation tests pollute shared data — restart with `./start.sh --reset-db` or use `runDataMigration()` from `backend/src/seed/dataMigration.ts` as a reset hook
 
 ## Authorization Fixtures
 
@@ -54,7 +54,7 @@ All three currently hold full permissions. When the feature adds a new permissio
 - `PRAGMA foreign_keys = ON` must still be set on the test connection (see `config/db.ts`)
 - Dates are ISO-8601 text — assert with string equality, not `Date` equality
 - Monetary values are REAL — use tolerant comparison (`toBeCloseTo`) for computed amounts
-- better-sqlite3 is synchronous — no `await` on raw DB calls
+- @libsql/client is async — always `await` DB calls in test setup/teardown
 
 ## Code Standards
 

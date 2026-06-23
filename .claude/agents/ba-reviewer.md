@@ -90,10 +90,10 @@ This project is a full-stack CRM application. Key conventions:
 - PRDs live in `docs/prds/`
 - Plans live in `docs/plans/`
 - Backend: Node.js 20.19+ / TypeScript 5.8 / Express 4.21 with route → service → db layering (`backend/src/routes/` → `backend/src/services/` → `backend/src/config/db.ts`)
-- Database: better-sqlite3 9.6 with Drizzle ORM 0.41 (file-based SQLite at `backend/data/crmdb.sqlite`)
+- Database: @libsql/client with Drizzle ORM 0.41 (file-based SQLite at `backend/data/crmdb.sqlite`); async, promise-based API (`await client.execute(...)`)
 - Auth: session-based (`express-session` + memorystore), hardcoded users in `backend/src/config/users.ts`, role and permission middleware in `backend/src/middleware/auth.ts`
 - Frontend: Angular 21 standalone components, Bootstrap 5
-- German domain model (Firma, Person, Abteilung, Adresse, Gehalt, Aktivitaet, Vertrag, Chance)
+- German domain model (Firma, Person, Abteilung, Adresse, Aktivitaet, Chance)
 
 When reviewing, consider how requirements will translate to this specific tech stack.
 
