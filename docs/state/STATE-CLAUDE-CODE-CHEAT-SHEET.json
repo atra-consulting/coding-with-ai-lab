@@ -1,10 +1,10 @@
 {
   "version": 1,
   "task_key": "CLAUDE-CODE-CHEAT-SHEET",
-  "status": "in_progress",
-  "current_step": "5.1",
+  "status": "completed",
+  "current_step": "13.2",
   "started": "2026-06-23T00:00:00Z",
-  "updated": "2026-06-23T08:00:00Z",
+  "updated": "2026-06-23T08:30:00Z",
   "config": {
     "input_mode": "freeform",
     "user_description": "Das ist ein Repo für Einsteiger-Schulung in Claude Code. Erstelle ein Claude-Code-Sheet für Einsteiger.",
@@ -14,7 +14,7 @@
     "original_head": "3602f1370cdbd25edca11c802c86d39ba1b176c0",
     "docs_folder": "docs",
     "is_git_repo": true,
-    "workflow_scope": null,
+    "workflow_scope": "implement-review",
     "pr_prefix": null,
     "pr_exists": false,
     "pr_url": null
@@ -34,7 +34,7 @@
   "artifacts": {
     "prd_skipped": true,
     "prd_file": null,
-    "plan_file": null
+    "plan_file": "docs/plans/PLAN-CLAUDE-CODE-CHEAT-SHEET.md"
   },
-  "completed_steps": ["3.3", "4.4", "4.5", "5.1"]
+  "completed_steps": ["3.3", "4.4", "4.5", "5.1", "7.5", "7.6", "8.1", "9.3", "10.3", "13.2"]
 }
