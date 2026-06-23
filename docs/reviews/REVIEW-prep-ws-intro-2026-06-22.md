@@ -1,30 +1,47 @@
-# Code Review - prep-ws-intro-2026-06-22 (RECOGNIZE-TOOLING-AGENTS)
+# Code Review - prep-ws-intro-2026-06-22 (CLAUDE-CODE-CHEAT-SHEET)
 
 **Date**: 2026-06-23
 **Branch**: prep-ws-intro-2026-06-22
-**Base**: 127f788f6aa714f164bb9cd2325b206fa868acdd
-**Files Reviewed**: 1 (`.claude/skills/plan-and-do/SKILL.md`)
-**Review Rounds**: 1 (max 3)
+**Base**: 3602f1370cdbd25edca11c802c86d39ba1b176c0
+**Files Reviewed**: 1 (`docs/CHEATSHEET-CLAUDE-CODE.md`)
+**Review Rounds**: 3 (max 3)
 
 ## Summary
 
-Change makes the AGENT DISCOVERY in `plan-and-do/SKILL.md` recognize tooling agents (`python-*`, `shell-*`, `skill-*`). Rule 0 now classifies them into `tooling_coding_agents` / `tooling_review_agents` instead of skipping. Wired into the state JSON template, the Step 8.1 dispatch table, and the REVIEWER SCOPE FILTER. All gated on tooling files (`.py`, `.sh`/`.bash`, `.claude/**`).
-
-Plan and state files (`docs/plans/`, `docs/state/`) are generated workflow artifacts, not reviewed as code. Pre-existing uncommitted working-tree changes (unrelated `docs/state/*` deletions and `tasks/*`) predate this task and are out of scope.
-
-A domain pass by `skill-reviewer` ran during implementation (Step 8.1). It found one warning — the state template omitted the three test lists. Fixed before this review. Built-in checklist below found nothing further.
+Created a German-language Claude Code cheat sheet for beginners. 3 review rounds caught accuracy issues with command descriptions, model aliases, and status line documentation. All critical and warning issues resolved.
 
 ## Review Rounds
 
 ### Round 1
 
-Clean pass. No issues found.
+**Issues found**: 4 warnings, 4 suggestions | **Fixes applied**: 8
 
-Built-in checklist applied to `.claude/skills/plan-and-do/SKILL.md`:
-- **Project alignment**: Matches CLAUDE.md, which already documents `python-*`/`shell-*`/`skill-*` as general tooling agents. Rule 0 stays first; no collision with rules 1-7 (no CRM agent shares those prefixes).
-- **Consistency**: `tooling_coding_agents` / `tooling_review_agents` used identically in rule 0, the "eight lists" summary, and the state template. Dispatch table and REVIEWER SCOPE FILTER share the same globs (`.py`, `.sh`/`.bash`, `.claude/**`).
-- **JSON validity**: Step 3.3 `discovery` template is valid JSON.
-- **Security**: Not applicable — markdown skill documentation, no code paths, secrets, or input handling.
+| # | Severity | File | Issue | Found by | Applied | Applied by |
+|---|----------|------|-------|----------|---------|------------|
+| 1 | WARNING | `CHEATSHEET-CLAUDE-CODE.md:34` | `/review` described as built-in but is a custom skill | ba-reviewer | Removed from command table | direct fix |
+| 2 | WARNING | `CHEATSHEET-CLAUDE-CODE.md:30` | `/compact` described as "komprimieren" — misleading | ba-reviewer | Fixed: "Gesprächsverlauf durch eine Zusammenfassung ersetzen" | direct fix |
+| 3 | WARNING | `CHEATSHEET-CLAUDE-CODE.md:76` | Status line says Git info comes from JSON — actually from git commands | ba-reviewer | Fixed: "Git-Informationen ermittelt das Script selbst via git status" | direct fix |
+| 4 | WARNING | `CHEATSHEET-CLAUDE-CODE.md:109` | Threshold inconsistency: 70% vs 80% | ba-reviewer | Fixed to 80% throughout | direct fix |
+| 5 | SUGGESTION | `CHEATSHEET-CLAUDE-CODE.md:29` | `/clear` missing `/reset` alias | ba-reviewer | Added `(alias: /reset)` | direct fix |
+| 6 | SUGGESTION | `CHEATSHEET-CLAUDE-CODE.md:15` | Missing `-c` and `-r` flags for resuming conversations | ba-reviewer | Added both flags with descriptions | direct fix |
+| 7 | SUGGESTION | `CHEATSHEET-CLAUDE-CODE.md:39` | Missing `Esc` and `!befehl` shortcuts | ba-reviewer | Added both rows to shortcuts table | direct fix |
+| 8 | SUGGESTION | `CHEATSHEET-CLAUDE-CODE.md:74` | `+1 ~2 -1` not explained as Git-tracked or custom-script-only | ba-reviewer | Added clarification | direct fix |
+
+### Round 2
+
+**Issues found**: 1 warning | **Fixes applied**: 1
+
+| # | Severity | File | Issue | Found by | Applied | Applied by |
+|---|----------|------|-------|----------|---------|------------|
+| 1 | WARNING | `CHEATSHEET-CLAUDE-CODE.md:33` | `haiku` said not a valid alias — replaced with `fable` | ba-reviewer | Changed to `fable` | direct fix |
+
+### Round 3
+
+**Issues found**: 1 warning | **Fixes applied**: 1
+
+| # | Severity | File | Issue | Found by | Applied | Applied by |
+|---|----------|------|-------|----------|---------|------------|
+| 1 | WARNING | `CHEATSHEET-CLAUDE-CODE.md:33` | `fable` resolves but is currently unavailable — confusing for day-1 beginners | ba-reviewer | Reverted to `haiku` (confirmed working) | direct fix |
 
 ## Remaining Issues
 
@@ -32,13 +49,12 @@ No remaining issues.
 
 ## Project Context Validation
 
-- **CLAUDE.md**: The `## Agents` section lists all six tooling agents and notes they are "general tooling agents — not bound to the CRM domain specs." The change aligns: it dispatches them only for tooling files, never CRM files.
-- **No PRD**: Task was small; PRD skipped per plan-and-do Step 5.
+No PRD for this task (small scope, PRD skipped). CLAUDE.md writing style conventions followed: German, short sentences, simple words.
 
 ## Next Steps
 
-- Ensure no further consistency drift if more tooling agents are added.
-- Create PR when ready (PR targets `prep-ws-intro-2026-06-22`).
+- Review changes: `git diff 3602f1370cdbd25edca11c802c86d39ba1b176c0...prep-ws-intro-2026-06-22`
+- Create PR when ready
 
 ---
 Generated with Claude Code - review v1.8.2
