@@ -347,6 +347,9 @@ Write `[state_dir]/STATE-[task_key].json` using Write tool:
     "writer_agents": [],
     "coding_agents": [],
     "review_agents": [],
+    "test_coding_agents": [],
+    "test_review_agents": [],
+    "test_runner_agents": [],
     "tooling_coding_agents": [],
     "tooling_review_agents": [],
     "test_command": null
