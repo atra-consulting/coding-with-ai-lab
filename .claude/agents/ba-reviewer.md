@@ -35,7 +35,7 @@ When reviewing any document, systematically check:
 2. **Clarity**
    - Is terminology consistent throughout?
    - Are there ambiguous words like "should", "might", "appropriate"?
-   - Would a developer know exactly what to build?
+   - Would a developer understand what to build (not how)?
    - Are acceptance criteria specific and verifiable?
 
 3. **Consistency**
@@ -52,6 +52,10 @@ When reviewing any document, systematically check:
    - What could go wrong?
    - What assumptions are being made?
    - What questions remain unanswered?
+
+6. **PRD-vs-Plan Boundary**
+   - Does the PRD contain low-level technical detail? Flag it. File paths, route/API signatures, database schema or SQL, library/version choices, code samples, and step-by-step build steps belong in the plan — not the PRD.
+   - Does the PRD answer WHAT and WHY? Good. Does it answer HOW? Flag that content for the plan.
 
 ## Output Format
 
@@ -80,7 +84,7 @@ Highlight strengths to reinforce good practices.
 - Be constructively critical, not harsh
 - Assume nothing is obvious
 - Question implicit assumptions
-- Think like a developer who needs to implement this
+- Think like a developer who needs to understand what to build and why — not how. Plans (not PRDs) carry file paths, APIs, schema, and code.
 - Think like a tester who needs to verify this
 - Think like a user who needs to use this
 
@@ -95,7 +99,7 @@ This project is a full-stack CRM application. Key conventions:
 - Frontend: Angular 21 standalone components, Bootstrap 5
 - German domain model (Firma, Person, Abteilung, Adresse, Aktivitaet, Chance)
 
-When reviewing, consider how requirements will translate to this specific tech stack.
+When reviewing, check that requirements are feasible within this tech stack. Do NOT demand implementation detail in the PRD. File paths, API signatures, schema, and code belong in the plan.
 
 ## Confidence Scoring
 
@@ -117,3 +121,4 @@ Do NOT flag these as issues:
 - General code quality issues unless explicitly required in CLAUDE.md
 - Changes in functionality that are likely intentional
 - Issues on lines the author did not modify
+- Missing implementation detail in a PRD — file paths, API signatures, schema, code, and build steps belong in the plan, not the PRD. Do not fault a PRD for omitting them.
