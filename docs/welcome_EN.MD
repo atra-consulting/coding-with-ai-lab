@@ -51,9 +51,13 @@ training-<MMYY>/<firstnamelastname>
 
 Example: `training-0626/john-doe` (June 2026, John Doe)
 
+```bash
+git checkout -b training-0626/john-doe
+```
+
 ## How to Work on Tasks
 
-1. Find tasks in **`/docs/tasks/`**
+1. Find tasks in **`/tasks/`**
 2. Use the **`/plan-and-do`** skill to get started on any task:
    - Type `/plan-and-do` with your task description
    - The skill handles planning, implementation, testing, and code review automatically

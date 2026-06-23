@@ -51,9 +51,13 @@ training-<MMJJ>/<vornamenachname>
 
 Beispiel: `training-0626/max-mustermann` (Juni 2026, Max Mustermann)
 
+```bash
+git checkout -b training-0626/max-mustermann
+```
+
 ## Wie du an Aufgaben arbeitest
 
-1. Aufgaben findest du im Ordner **`/docs/tasks/`**
+1. Aufgaben findest du im Ordner **`/tasks/`**
 2. Starte eine Aufgabe mit dem **`/plan-and-do`**-Skill in Claude Code:
    - Tippe `/plan-and-do` mit deiner Aufgabenbeschreibung
    - Der Skill übernimmt Planung, Implementierung, Testing und Code Review automatisch

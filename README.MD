@@ -21,6 +21,8 @@
 
 > **Erstmal hier starten:** Für die vollständige Installationsanleitung (Node.js, Claude Code, IDE) bitte **[SETUP.md](SETUP.md)** lesen.
 
+> **English?** See **[docs/welcome_EN.MD](docs/welcome_EN.MD)** for an English introduction.
+
 ---
 
 ## Inhalt
@@ -119,7 +121,7 @@ git checkout -b training-0626/max-mustermann
 
 ## Workshop: Aufgaben bearbeiten
 
-1. Aufgaben findest du im Ordner **`/docs/tasks/`**
+1. Aufgaben findest du im Ordner **`/tasks/`**
 2. Starte eine Aufgabe mit dem **`/plan-and-do`**-Skill in Claude Code:
 
 ```
@@ -184,6 +186,9 @@ Architektur-Details: **[docs/architecture.md](docs/architecture.md)**
 | Dokument | Inhalt |
 |----------|--------|
 | [SETUP.md](SETUP.md) | Vollständige Installationsanleitung (Node.js, Claude Code, IDE) |
+| [docs/CHEATSHEET-CLAUDE-CODE.md](docs/CHEATSHEET-CLAUDE-CODE.md) | Claude Code Spickzettel für Einsteiger |
+| [docs/welcome_DE.MD](docs/welcome_DE.MD) | Deutsche Workshop-Einführung |
+| [docs/welcome_EN.MD](docs/welcome_EN.MD) | English workshop introduction |
 | [CLAUDE.md](CLAUDE.md) | Anweisungen und Konventionen für AI-Coding-Assistenten |
 | [docs/architecture.md](docs/architecture.md) | Systemarchitektur mit Mermaid-Diagrammen |
 | [docs/specs/SPECS.md](docs/specs/SPECS.md) | Detaillierte Spezifikationen pro Bereich |
