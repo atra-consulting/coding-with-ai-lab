@@ -387,7 +387,7 @@ If exists: append random 6-digit number to `branch_name`.
 
 ### Step 4.4: Create and Push Branch
 
-**If `is_git_repo = false`:** Skip this step entirely. Continue to Step 5.
+**If `is_git_repo = false`:** Skip this step entirely. `original_head` stays `null`; Step 10.1 then uses plain `/review "embedded"`. Continue to Step 5.
 
 Get current branch → store as `original_branch`. Capture the starting commit → `original_head = git rev-parse HEAD`. Capture both BEFORE any branch creation, so `original_head` records the true starting point. (For the kept-branch path and the create-branch path, `original_head` is the same starting commit — it is captured once here, before branching.)
 
@@ -712,11 +712,14 @@ To make changes instead, the user can interrupt and run `/plan-and-do <key> resu
 
 ### Step 10.1: Invoke Review
 
+Pick the invocation by whether `original_head` is set:
+
 ```
-/review "embedded base:[original_head]"
+If `original_head` is set:    /review "embedded base:[original_head]"
+If `original_head` is unset:  /review "embedded"
 ```
 
-Pass `original_head` (the starting branch's commit, from `config.original_head`) as the review base. This scopes the review to changes made since the skill started — not main/master. If `original_head` is somehow unset, fall back to `/review "embedded"` (review defaults to main/master).
+Pass `original_head` (the starting branch's commit, from `config.original_head`) as the review base. This scopes the review to changes made since the skill started — not main/master. When `original_head` is unset (e.g., non-git mode), use plain `/review "embedded"` so review defaults to main/master. Never pass the literal `base:[original_head]` — substitute the SHA or drop the token.
 
 Wait for completion.
 

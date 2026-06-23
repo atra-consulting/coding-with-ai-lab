@@ -278,7 +278,7 @@ Store current branch as `current_branch`.
 
 Verify the ref exists:
 ```bash
-git rev-parse --verify <base_override>^{commit} >/dev/null 2>&1
+git rev-parse --verify "<base_override>^{commit}" >/dev/null 2>&1
 ```
 
 - If it succeeds: set `main_branch = base_override`. Skip main/master detection entirely. Display: "Base override: `<base_override>`".
