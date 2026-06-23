@@ -157,7 +157,10 @@ Read project's CLAUDE.md for `## Agents` section.
 
 **If found:** Parse each row's `name` and classify. Rules are **order-sensitive** — stop at the first match:
 
-0. Name starts with `python-`, `shell-`, or `skill-` → **skip** as general tooling agent (not CRM domain). These are dispatched only when changed files are tooling files (`.py`, `.sh`, or files under `.claude/`). Do NOT add to any coding or review list.
+0. Name starts with `python-`, `shell-`, or `skill-` → tooling agent (general, not CRM domain). Classify by suffix:
+   - ends with `-reviewer` → `tooling_review_agents` (e.g., `python-reviewer`, `shell-reviewer`, `skill-reviewer`)
+   - else (ends with `-coder`) → `tooling_coding_agents` (e.g., `python-coder`, `shell-coder`, `skill-coder`)
+   Dispatch tooling agents ONLY when the changed files are tooling files (`.py`, `.sh`/`.bash`, or files under `.claude/`). Never dispatch them for CRM domain files.
 1. Contains `-test-coder` → `test_coding_agents` (e.g., `be-test-coder`, `fe-test-coder`)
 2. Contains `-test-reviewer` → `test_review_agents` (e.g., `be-test-reviewer`, `fe-test-reviewer`)
 3. Contains `-test-runner` or ends with `-tester` → `test_runner_agents` (e.g., `be-test-runner`, `fe-test-runner`)
@@ -168,7 +171,7 @@ Read project's CLAUDE.md for `## Agents` section.
 
 The order matters: `be-test-coder` must hit rule 1, NOT rule 5. Always check for `-test-` first. Rule 0 runs before all others.
 
-Display all six lists in one block, then set `agents_available = true` if any list is non-empty.
+Display all eight lists in one block (six standard plus the two tooling lists), then set `agents_available = true` if any list is non-empty.
 
 **If not found:** Display: "No agents found. Running in direct mode." Set `agents_available = false`.
 
@@ -195,6 +198,9 @@ When launching `review_agents` (Steps 6.2, 8.1, 11.1), do NOT launch every revie
 - Schema/SQL/Drizzle/migration changes → include `db-reviewer`
 - Visual/CSS/SCSS/template changes → include `ui-reviewer`
 - PRDs, plans, or pure spec text → include `ba-reviewer`
+- `**/*.py` changed → include `python-reviewer`
+- `**/*.sh` or `**/*.bash` changed → include `shell-reviewer`
+- Files under `.claude/**` (skills, agents, prompts) → include `skill-reviewer`
 
 Always include at least one reviewer. If unsure, default to `be-reviewer` and `fe-reviewer`.
 
@@ -341,6 +347,8 @@ Write `[state_dir]/STATE-[task_key].json` using Write tool:
     "writer_agents": [],
     "coding_agents": [],
     "review_agents": [],
+    "tooling_coding_agents": [],
+    "tooling_review_agents": [],
     "test_command": null
   },
   "artifacts": {
@@ -618,6 +626,9 @@ EOF
 | `backend/src/db/**`, `backend/src/config/migrate.ts`, `backend/src/config/db.ts`, `backend/src/seed/**` | `db-coder` |
 | `frontend/src/app/features/**`, `frontend/src/app/core/**`, `frontend/src/app/app.*` | `fe-coder` |
 | `frontend/src/styles.scss`, `*.scss`, visual/template-only changes | `ui-designer` |
+| `**/*.py` | `python-coder` |
+| `**/*.sh`, `**/*.bash` | `shell-coder` |
+| `.claude/**` (skills, agents, prompts, settings) | `skill-coder` |
 | Anything else (config, scripts, docs) | nearest match by domain, else direct mode |
 
 Apply the **DISPATCH NARRATION RULE** before every Task call. Launch independent agents in parallel.
