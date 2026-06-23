@@ -1,4 +1,6 @@
-# Ü 1 — CSV-Export für Firmenliste
+# Übungsaufgabe 1:
+
+# CSV-Export für Firmenliste
 
 **Umfang:** gering · **Bereiche:** Frontend · **Dauer:** ~20 Min
 
@@ -20,7 +22,8 @@ herunter (nicht nur die aktuelle Seite). Die CSV enthält ID, Name, Branche,
 Telefon, E-Mail und Erstelldatum. Excel soll die Datei direkt öffnen können,
 auch mit deutschen Umlauten. Benutze keine Custom Skills in diesem Projekt 
 und keine Subagents. Erstelle eine neue Git-Branche für Deine Arbeit, aber
-keinen PR. Die @CLAUDE.md hat die Spezifikationen dieser App.
+keinen PR. docs/specs/SPECS.md sind die Spezifikationen dieser App. Schreibe
+Tests, aber keine, die den Browser automatisieren.
 ```
 
 ## Erwartetes Ergebnis

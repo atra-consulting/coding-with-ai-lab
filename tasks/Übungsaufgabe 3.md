@@ -1,64 +1,72 @@
-# Ü 3 — In-App CRM-Assistent (Chat)
+# Übungsaufgabe 3
 
-**Umfang:** groß · **Bereiche:** Backend + Frontend · **Dauer:** ~75 Min
+# Neue App: Künstler-Webseite mit Next.js
+
+**Umfang:** groß (Greenfield-Projekt) · **Bereiche:** Full-Stack (neues Repo) · **Dauer:** ~+60 Min
 
 ## Ziel
 
-Ein Chat-Fenster in der Applikation, über das der User freie Fragen zu den
-CRM-Daten stellen kann. Die KI bekommt die Firmen, Personen, Chancen und
-Aktivitäten als strukturierten Kontext mit und antwortet in natürlicher
-Sprache — Beispiel: „Welche Firmen aus München haben noch keine Aktivitäten
-dieses Quartal?"
+Eine neue, eigenständige Web-App für den Künstler „Roy Bildermann" und seine
+Bildergalerie. Die Website präsentiert seine Werke und Informationen über
+den Künstler. Zusätzlich gibt es einen geschützten Login-Bereich, in dem der
+Künstler seine Werke verwalten kann.
+
+Diese Aufgabe zeigt, wie Claude Code ein komplettes neues Projekt
+hochziehen kann — inklusive Framework-Wahl, Auth, CRUD und Design.
+
+## Technologie-Stack
+
+- **Framework:** Next.js mit React
+- **Datenbank:** In-Memory-DB (wird beim Start automatisch hochgefahren)
+- **Authentifizierung:** JWT-basiert
+- **Responsiveness:** Desktop und Mobile
 
 ## Prompt
 
-Claude starten und mit "Tab" in den Auto-Modus schalten. Mit `/model` Sonnet
-auswählen und dann folgenden Prompt ausführen, der den
-`/project:plan-and-do` Skill aufruft. 
+Erzeuge ein neues Verzeichnis `künstler-webseite` und wechsele dort hinein. Starte Claude und wechsel mit "Tab" in den Auto-Modus. Wähle mit `/model` Sonnet aus. Dann führe diesen Prompt aus:
 
 ```
-/project:plan-and-do In-App CRM-Assistent als Chat-Widget. Erstellen keinen PR und
-pushe nicht - du hast bei diesem Repo nicht die Rechte dazu. Schreibe keine Tests, 
-die den Browser automatisieren. Aktualisiere am Schluss auch nicht die Specs und 
-Subagents.
-
-Unten rechts in der App erscheint ein aufklappbares Chat-Fenster. Der User stellt
-Fragen zu den CRM-Daten (Firmen, Personen, Chancen, Aktivitäten); die Antworten
-kommen von der Google gemini-2.5-flash API und werden auf Deutsch angezeigt. Das 
-Backend holt zu jeder Frage die relevanten Daten aus dem CRM und schickt sie zusammen
-mit der Frage an die KI. Der API-Key bleibt im Backend. Für den Einstieg reicht
-eine einfache Stichwort-Suche über die Daten.
-
-Logge die Ausführung im Backend so, dass Dir die Log-Einträge bei der
-Fehlersuche helfen können.
-
-Lege eine .env-Datei für den Google Gemini API Key und setzte diesen Wert:
-AIzaSyAU2S4fPVIfYVQ51mpU0kHZpJuy0kVvgCk Ignoriere diese Datei in Git.
+Lass uns eine neue Web-App bauen. Diese soll mit NextJS und React
+implementiert werden, eine inMemory DB haben (die direkt beim Start
+hochgefahren wird). Sie soll für Desktop und Mobile optimiert werden. Sie
+soll eine JWT Authentifizierung haben. Aktuell soll es einen User mit
+Benutzername „admin" und Passwort „passwort" geben. Thema der App: Eine
+Website für den Künstler „Roy Bildermann" und seine Bildergalerie. Auf der
+Website sollen die Werke dargestellt und Infos über den Künstler präsentiert
+werden. Es soll einen Loginbereich geben wo der Künstler seine Werke
+hochladen kann. Die Werke sollen sortierbar und löschbar sein, und zu jedem
+Werk soll man eine Beschreibung hinzufügen können. Design: Mache ein
+modernes und seriöses Design (nicht zu verspielt), welches die abstrakte
+Kunst des Künstlers gut zur Geltung bringt. Daten: Füge 3 Werke zur
+Datenbank hinzu, die gleich auf der Landingpage angezeigt werden sollen, 
+und 4 mehr, die ich auch noch sehen kann. Füge auch Informationen zum 
+Künstler, mit einem Bild. Falls etwas unklar ist, frage nicht, sondern 
+entscheide Du. Das ist ein One-Shot-Projekt, und ich akzzeptier Fehler
+von Dir! Schreibe keine Tests. Sage mir am Schluss, wie ich die Seite
+starten kann und wie ich sie beenden kann.
 ```
-
-Wenn der Skill fragt, ob eine PRD erstellt werden soll, dann bitte zustimmen.
 
 ## Erwartetes Ergebnis
 
-- Chat-Widget unten rechts, aufklappbar.
-- Eingaben wie „Welche Firmen haben die meisten Chancen?" liefern sinnvolle
-  Antworten.
-- CRM-Daten werden pro Anfrage vom Backend geholt und mitgeschickt —
-  nicht client-seitig vorhanden.
-- API-Key niemals im Frontend-Bundle.
+- Next.js-App startet lokal mit `npm run dev`.
+- Öffentliche Seiten: Landingpage + Künstler-Info, responsive.
+- Login mit admin / passwort funktioniert, JWT in HttpOnly-Cookie.
+- Admin-Bereich kann Werke anlegen / beschreiben / sortieren / löschen.
+- Drei Demo-Werke + Künstlerinfos sind vorgeladen.
 
 ## Troubleshooting
 
 | Problem | Lösung |
 |---------|--------|
-| 401 von Google Gemini API | API-Key-Environment-Variable prüfen: `GOOGLE_GEMINI_KEY`. Backend-Prozess nach Setzen neu starten. |
-| Token-Limit überschritten | Kontext zu groß. Stichwort-Filter vor dem Call schärfer machen oder auf die Top-N relevantesten Firmen beschränken. |
-| Antwort ist generisch / halluziniert | System-Prompt strenger formulieren: „Beantworte nur auf Basis der gelieferten Daten. Wenn die Daten die Antwort nicht hergeben, sage das." |
-| UI hängt während Gemini antwortet | Streaming nutzen (Gemini streamt standardmäßig) oder zumindest Loading-Indikator anzeigen. |
-| CORS-Fehler | Assistant-Endpoint läuft über den Angular-Proxy (`/api/*` → Backend). Keine direkten Gemini-Calls vom Browser. |
+| In-Memory DB verliert Daten bei Hot-Reload | Next.js Dev-Mode entlädt Module. Fix: DB-Instanz auf `globalThis` legen (`globalThis.__db ??= initDb()`). |
+| JWT in Local Storage | Sicherheitsrisiko (XSS). Stattdessen HttpOnly-Cookie, Set via `Set-Cookie` Header, Verify in Middleware. |
+| Bilder-Upload schlägt fehl | Next.js-App hat keinen Persistent Storage — für Workshop: Base64 in der DB speichern oder `/public/uploads`. |
+| Drag-and-Drop für Sortierung kompliziert | `@dnd-kit/sortable` ist der aktuelle Standard in React — einfacher als `react-dnd`. |
+| Responsiveness kaputt | Tailwind Default-Breakpoints reichen. Mobile-First: erst Mobile, dann `md:`, `lg:` Overrides. |
 
 ## Diskussionspunkte
 
-- RAG-light vs. echte Vektor-Suche: wann lohnt sich ein Embeddings-Ansatz?
-- Wie vermeidet man Prompt-Injection über User-Input in den CRM-Daten?
-- Cost-Monitoring: Wie protokolliert man Token-Verbrauch pro Anfrage?
+- Wann Next.js, wann SvelteKit, wann Angular mit SSR? Kriterien.
+- In-Memory-DB war Workshop-Vereinfachung — was bräuchte es für Produktion?
+- Bild-Optimierung: `next/image` kann eine Menge, aber nur bei statischen
+  Pfaden — was tun bei dynamischen Uploads?

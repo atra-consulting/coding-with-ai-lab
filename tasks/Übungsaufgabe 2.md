@@ -1,4 +1,6 @@
-# Ü 2.2 — Chance-Erweiterungen: Notiz-Feld
+# Übungsaufgabe 2
+
+# Chance-Erweiterungen: Notiz-Feld & Badge
 
 **Umfang:** mittel · **Bereiche:** Datenbank + Backend + Frontend · **Dauer:** ~40 Min
 
@@ -11,6 +13,8 @@ Notiz-Feld (z. B. für Protokoll-Auszüge wie „Kunde braucht noch
 Budget-Freigabe"). Die Änderung geht durch den kompletten Stack:
 Schema → Service → DTO → Form → Detail.
 
+**Phasen-Badges (Frontend):** Die Phase wird in Liste und Detail bislang als reiner Text angezeigt. Wir rendern sie als farbigen Bootstrap-Badge, damit der Status auf einen Blick erkennbar ist.
+
 Gute Aufgabe, um zu zeigen, wie Claude `db-coder`, `be-coder` und `fe-coder` Subagents 
 parallel orchestriert.
 
@@ -21,16 +25,19 @@ auswählen und dann folgenden Prompt ausführen, der den
 `/project:plan-and-do` Skill aufruft. 
 
 ```
-/project:plan-and-do Eine Erweiterungen für Chance.
+/project:plan-and-do Zwei Erweiterungen für Chance.
 Erstellen keinen PR und pushe nicht - du hast bei diesem Repo nicht
-die Rechte dazu. Schreibe keine Tests, die den Browser automatisieren,
-und mache nur eine statt drei Review-Runden. Aktualisiere am Schluss
-auch nicht die Specs und Subagents.
+die Rechte dazu. Schreibe keine Tests und mache nur eine statt drei
+Review-Runden. Aktualisiere am Schluss auch nicht die Specs und Subagents.
+Überspring die PRD und schreibe direkt einen Plan.
 
 Chance bekommt ein neues, optionales Notiz-Feld für freien, mehrzeiligen
 Text (bis 2000 Zeichen). Im Formular ist es eine dreizeilige Textarea,
 auf der Detailseite wird die Notiz mit erhaltenen Zeilenumbrüchen
 angezeigt. In der Liste taucht die Notiz nicht auf.
+
+Auf der Chancen-Detailseite sind die Phasen als farbige Badge angezeigt.
+Zege auch in der Tabelle Chancen als farbige Badges.
 ```
 
 Wenn der Skill fragt, ob eine PRD erstellt werden soll, dann bitte ablehnen.
