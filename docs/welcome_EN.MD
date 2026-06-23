@@ -9,7 +9,7 @@
 
 ## What You Need to Get Started
 
-- **AI subscription**: Claude (Claude.com) or GitHub Copilot
+- **Claude Code**: The workshop tasks use **Claude Code** (requires a Claude subscription at Claude.com). All slash commands (`/plan-and-do`, `/review`, etc.) are Claude Code–specific.
 - **Node.js & npm**: For running the project
   - **Windows:** During Node.js installation, check the **"Automatically install the necessary tools. [...]"** checkbox — this installs build tools (Python, Visual Studio Build Tools) required for native modules.
   - **Windows:** If you encounter permission issues (scripts cannot be executed), run in PowerShell:
@@ -85,7 +85,10 @@ Playwright-MCP allows AI to interact with your running application directly in t
 
 ## Full Documentation
 
-For detailed architecture, API specs, and coding conventions: **[system specifications](./specs/SPECS.md)**
+| Document | Content |
+|----------|---------|
+| [CHEATSHEET-CLAUDE-CODE.md](./CHEATSHEET-CLAUDE-CODE.md) | Claude Code cheat sheet for beginners |
+| [System specifications](./specs/SPECS.md) | Detailed architecture, API specs, coding conventions |
 
 ---
 
