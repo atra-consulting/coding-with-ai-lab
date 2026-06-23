@@ -1,4 +1,4 @@
-# 1 — CSV-Export für Firmenliste
+# Ü 1 — CSV-Export für Firmenliste
 
 **Umfang:** gering · **Bereiche:** Frontend · **Dauer:** ~20 Min
 
@@ -10,7 +10,8 @@ CSV-Datei mit korrektem `Content-Type` und UTF-8-BOM für Excel-Kompatibilität.
 
 ## Prompt
 
-Mit <Tab> in den Plan-Modus schalten (steht ganz unten links) und dann diesen Prompt einkopieren:
+Mit <Tab> in den Plan-Modus schalten (steht ganz unten links). Mit `/model` Sonnet
+auswählen und dann diesen Prompt ausführen:
 
 ```
 CSV-Export für die Firmenliste. Über der Firmen-Liste erscheint ein Button

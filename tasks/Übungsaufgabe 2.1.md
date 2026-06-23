@@ -36,10 +36,12 @@ hochladen kann. Die Werke sollen sortierbar und löschbar sein, und zu jedem
 Werk soll man eine Beschreibung hinzufügen können. Design: Mache ein
 modernes und seriöses Design (nicht zu verspielt), welches die abstrakte
 Kunst des Künstlers gut zur Geltung bringt. Daten: Füge 3 Werke zur
-Datenbank hinzu, die gleich auf der Landingpage angezeigt werden sollen.
-Füge auch Informationen zum Künstler, mit einem Bild. Falls etwas unklar
-ist, frage nicht, sondern entscheide Du. Das ist ein One-Shot-Projekt,
-und ich akzzeptier Fehler von Dir! Schreibe keine Tests.
+Datenbank hinzu, die gleich auf der Landingpage angezeigt werden sollen, 
+und 4 mehr, die ich auch noch sehen kann. Füge auch Informationen zum 
+Künstler, mit einem Bild. Falls etwas unklar ist, frage nicht, sondern 
+entscheide Du. Das ist ein One-Shot-Projekt, und ich akzzeptier Fehler
+von Dir! Schreibe keine Tests. Sage mir am Schluss, wie ich die Seite
+starten kann und wie ich sie beenden kann.
 ```
 
 ## Erwartetes Ergebnis

@@ -1,53 +1,42 @@
-# 2.2 — Chance-Erweiterungen: Phasen-Badges + Notiz-Feld
+# Ü 2.2 — Chance-Erweiterungen: Notiz-Feld
 
 **Umfang:** mittel · **Bereiche:** Datenbank + Backend + Frontend · **Dauer:** ~40 Min
 
 ## Ziel
 
-Zwei komplementäre Erweiterungen für die Entität `Chance` in einem Durchlauf:
+Eine Erweiterungen für die Entität `Chance` in einem Durchlauf:
 
-1. **Phasen-Badges (Frontend):** Die Phase wird in Liste und Detail bislang
-   als reiner Text angezeigt. Wir rendern sie als farbigen Bootstrap-Badge,
-   damit der Status auf einen Blick erkennbar ist:
-   - `NEU` → blau (primary)
-   - `QUALIFIZIERT` → hellblau (info)
-   - `ANGEBOT` → gelb (warning)
-   - `VERHANDLUNG` → dunkelgrau (secondary)
-   - `GEWONNEN` → grün (success)
-   - `VERLOREN` → rot (danger)
-2. **Notiz-Feld (Full-Stack):** Chancen bekommen ein freies, mehrzeiliges
-   Notiz-Feld (z. B. für Protokoll-Auszüge wie „Kunde braucht noch
-   Budget-Freigabe"). Die Änderung geht durch den kompletten Stack:
-   Schema → Service → DTO → Form → Detail.
+**Notiz-Feld (Full-Stack):** Chancen bekommen ein freies, mehrzeiliges
+Notiz-Feld (z. B. für Protokoll-Auszüge wie „Kunde braucht noch
+Budget-Freigabe"). Die Änderung geht durch den kompletten Stack:
+Schema → Service → DTO → Form → Detail.
 
 Gute Aufgabe, um zu zeigen, wie Claude `db-coder`, `be-coder` und `fe-coder` Subagents 
-parallel orchestriert und gleichzeitig eine rein visuelle Frontend-Änderung bündelt.
+parallel orchestriert.
 
 ## Prompt
 
-Claude starten und mit Tein den Auto-Modus schalten. Dann folgenden Prompt ausführen, der den `/project:plan-and-do` Skill aufruft.
+Claude starten und mit Tab den Auto-Modus schalten. Mit `/model` Sonnet
+auswählen und dann folgenden Prompt ausführen, der den
+`/project:plan-and-do` Skill aufruft. 
 
 ```
-/project:plan-and-do Zwei Erweiterungen für Chance in einem Durchlauf.
+/project:plan-and-do Eine Erweiterungen für Chance.
+Erstellen keinen PR und pushe nicht - du hast bei diesem Repo nicht
+die Rechte dazu. Schreibe keine Tests, die den Browser automatisieren,
+und mache nur eine statt drei Review-Runden. Aktualisiere am Schluss
+auch nicht die Specs und Subagents.
 
-Teil 1: In der Chancen-Liste und auf der Chancen-Detailseite
-die Phase nicht mehr als Text, sondern als farbigen Badge anzeigen.
-
-Teil 2: Chance bekommt ein neues, optionales Notiz-Feld für freien,
-mehrzeiligen Text (bis 2000 Zeichen). Im Formular ist es eine dreizeilige
-Textarea, auf der Detailseite wird die Notiz mit erhaltenen Zeilenumbrüchen
+Chance bekommt ein neues, optionales Notiz-Feld für freien, mehrzeiligen
+Text (bis 2000 Zeichen). Im Formular ist es eine dreizeilige Textarea,
+auf der Detailseite wird die Notiz mit erhaltenen Zeilenumbrüchen
 angezeigt. In der Liste taucht die Notiz nicht auf.
 ```
 
+Wenn der Skill fragt, ob eine PRD erstellt werden soll, dann bitte ablehnen.
+
 ## Erwartetes Ergebnis
 
-### Teil 1 — Phasen-Badges
-- `chance-list.component`: ag-Grid `cellRenderer` oder `cellClassRules` zeigt
-  `<span class="badge bg-success">GEWONNEN</span>` etc.
-- `chance-detail.component`: gleiche Badge-Darstellung.
-- Gemeinsame Helper-Funktion oder Pipe für das Farb-Mapping (DRY).
-
-### Teil 2 — Notiz-Feld
 - Neue Spalte `notes TEXT` in der `chance`-Tabelle.
 - Drizzle-Schema + Migration konsistent.
 - Backend akzeptiert und liefert `notes`.
@@ -58,10 +47,6 @@ angezeigt. In der Liste taucht die Notiz nicht auf.
 
 | Problem | Lösung |
 |---------|--------|
-| Badge wird als Text `<span>…</span>` angezeigt | ag-Grid rendert HTML nicht per Default. `cellRenderer` als Funktion nutzen, die Element zurückgibt, **oder** Angular-Template-Renderer. |
-| Badges zu klein / zu groß | Bootstrap-Klasse `badge` erzeugt kleine Badges. Bei Bedarf zusätzlich `fs-6` oder custom CSS. |
-| Farbe stimmt nicht mit Enum-Wert überein | Enum-Werte in `frontend/src/app/core/models/chance.model.ts` prüfen — Groß-/Kleinschreibung. |
-| Pipe wird nicht erkannt | Standalone-Pipe muss in `imports: [...]` der Komponente eingetragen sein. |
 | „no such column: notes" beim Laden | Migration lief nicht. App-Restart hilft meist, sonst `./start.sh --reset-db`. |
 | Validation schlägt fehl, obwohl Feld leer | Feld ist als optional gedacht. Im Zod-Schema: `z.string().max(2000).optional().nullable()`. |
 | Zeilenumbrüche im Detail verschwinden | CSS `white-space: pre-wrap` auf das Detail-Element setzen. |
