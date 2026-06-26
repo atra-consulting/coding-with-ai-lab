@@ -2,7 +2,7 @@
   "version": 1,
   "task_key": "DOCUMENT-BUSINESS-DOMAIN",
   "status": "in_progress",
-  "current_step": "6.4",
+  "current_step": "7.5",
   "started": "2026-06-26T00:00:00Z",
   "updated": "2026-06-26T00:00:00Z",
   "config": {
@@ -14,15 +14,15 @@
     "branch_name": "document-business-domain",
     "original_branch": "main",
     "docs_folder": "docs",
-    "workflow_scope": null,
-    "keep_files": null
+    "workflow_scope": "review",
+    "keep_files": false
   },
   "discovery": {
     "agents_available": true,
     "writer_agents": ["ba-writer"],
     "coding_agents": ["be-coder", "db-coder", "fe-coder", "ui-designer", "python-coder", "shell-coder", "skill-coder", "be-test-coder", "fe-test-coder"],
     "review_agents": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer", "python-reviewer", "shell-reviewer", "skill-reviewer", "be-test-reviewer", "fe-test-reviewer"],
-    "test_command": null,
+    "test_command": "bash docs/tests/verify-domain-docs.sh (doc verification; no code tests)",
     "youtrack_available": false,
     "youtrack_mcp": null,
     "youtrack_on_start": null,
@@ -31,7 +31,7 @@
   "artifacts": {
     "prd_skipped": false,
     "prd_file": "docs/prds/PRD-DOCUMENT-BUSINESS-DOMAIN.md",
-    "plan_file": null,
+    "plan_file": "docs/plans/PLAN-DOCUMENT-BUSINESS-DOMAIN.md",
     "pr_url": null
   },
   "completed_steps": []
