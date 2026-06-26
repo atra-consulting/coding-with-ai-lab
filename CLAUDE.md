@@ -105,10 +105,11 @@ The `python-*`, `shell-*`, and `skill-*` agents are general tooling agents — t
 
 ## Specifications
 
-Full system specs: [`docs/specs/SPECS.md`](docs/specs/SPECS.md) — root index plus six per-area specs (7 files total). Each subagent in `.claude/agents/` has a `## Specifications` reading list naming its primary spec plus secondary specs.
+Full system specs: [`docs/specs/SPECS.md`](docs/specs/SPECS.md) — root index, one business-domain doc ([`DOMAIN.md`](docs/specs/DOMAIN.md)), plus six per-area specs (8 files total). Each subagent in `.claude/agents/` has a `## Specifications` reading list naming its primary spec plus secondary specs.
 
 | Spec | Scope | Primary for |
 |------|-------|-------------|
+| [`DOMAIN.md`](docs/specs/DOMAIN.md) | Business domain: entity meaning, relationships, delete behavior, sales pipeline, roles (no schema) | All 18 domain-bound agents (every agent except the `python-*`, `shell-*`, `skill-*` tooling agents) |
 | [`SPECS.md`](docs/specs/SPECS.md) | Root index, architecture, tech stack, domain model, seed data | ba-writer, ba-reviewer, md-reader |
 | [`SPECS-backend.md`](docs/specs/SPECS-backend.md) | Backend API: routes, services, auth, errors, pagination, code patterns | be-coder, be-reviewer |
 | [`SPECS-database.md`](docs/specs/SPECS-database.md) | Entities, schema, columns, enums, foreign keys, migrations | db-coder, db-reviewer |

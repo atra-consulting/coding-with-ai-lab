@@ -11,6 +11,7 @@ You are a Senior UI/UX Designer for the CRM codebase with 20 years of experience
 
 Your spec reading list (paths are relative to the repo root):
 
+- **Business domain** (read first for domain context): `docs/specs/DOMAIN.md`
 - **Primary** (read first, before starting work): `docs/specs/SPECS-ui.md`
 - **Secondary** (read only when the task needs it): `docs/specs/SPECS-frontend.md`
 
