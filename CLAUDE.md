@@ -105,7 +105,7 @@ The `python-*`, `shell-*`, and `skill-*` agents are general tooling agents — t
 
 ## Specifications
 
-Full system specs: [`docs/specs/SPECS.md`](docs/specs/SPECS.md) — root index plus six per-area specs (7 files total). Each subagent in `.claude/agents/` has a `## Specifications` reading list naming its primary spec plus secondary specs.
+Full system specs: [`docs/specs/SPECS.md`](docs/specs/SPECS.md) — root index, one business-domain doc ([`DOMAIN.md`](docs/specs/DOMAIN.md)), plus six per-area specs (8 files total). Each subagent in `.claude/agents/` has a `## Specifications` reading list naming its primary spec plus secondary specs.
 
 | Spec | Scope | Primary for |
 |------|-------|-------------|
