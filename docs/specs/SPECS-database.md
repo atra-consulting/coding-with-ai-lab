@@ -122,7 +122,7 @@ Cascade deletes to: Person, Abteilung, Adresse, Aktivitaet, Chance.
 | createdAt | text | NOT NULL, default `datetime('now')` |
 | updatedAt | text | NOT NULL, default `datetime('now')` |
 
-Cascade deletes to: Adresse.
+Cascade deletes to: Adresse, Aktivitaet.
 
 ### Abteilung
 
