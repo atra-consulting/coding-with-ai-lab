@@ -2,7 +2,7 @@
   "version": 1,
   "task_key": "DOCUMENT-BUSINESS-DOMAIN",
   "status": "in_progress",
-  "current_step": "4.5",
+  "current_step": "6.4",
   "started": "2026-06-26T00:00:00Z",
   "updated": "2026-06-26T00:00:00Z",
   "config": {
@@ -29,8 +29,8 @@
     "youtrack_on_resolve": null
   },
   "artifacts": {
-    "prd_skipped": null,
-    "prd_file": null,
+    "prd_skipped": false,
+    "prd_file": "docs/prds/PRD-DOCUMENT-BUSINESS-DOMAIN.md",
     "plan_file": null,
     "pr_url": null
   },
