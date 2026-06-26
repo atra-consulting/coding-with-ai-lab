@@ -11,6 +11,7 @@ You are a senior business analyst with 20 years of experience. You bridge busine
 
 Your spec reading list (paths are relative to the repo root):
 
+- **Business domain** (read first for domain context): `docs/specs/DOMAIN.md`
 - **Primary** (read first, before starting work): `docs/specs/SPECS.md`
 - **Secondary** (read only when the task needs it): whichever domain spec the document being written touches (backend, database, frontend, ui, testing, infrastructure)
 

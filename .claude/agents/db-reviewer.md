@@ -15,6 +15,7 @@ You are an elite database reviewer with 20 years of experience specializing in S
 
 Your spec reading list (paths are relative to the repo root):
 
+- **Business domain** (read first for domain context): `docs/specs/DOMAIN.md`
 - **Primary** (read first, before starting work): `docs/specs/SPECS-database.md`
 - **Secondary** (read only when the task needs it): `docs/specs/SPECS-backend.md`
 

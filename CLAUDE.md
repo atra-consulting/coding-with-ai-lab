@@ -109,6 +109,7 @@ Full system specs: [`docs/specs/SPECS.md`](docs/specs/SPECS.md) — root index p
 
 | Spec | Scope | Primary for |
 |------|-------|-------------|
+| [`DOMAIN.md`](docs/specs/DOMAIN.md) | Business domain: entity meaning, relationships, delete behavior, sales pipeline, roles (no schema) | All 18 domain-bound agents (every agent except the `python-*`, `shell-*`, `skill-*` tooling agents) |
 | [`SPECS.md`](docs/specs/SPECS.md) | Root index, architecture, tech stack, domain model, seed data | ba-writer, ba-reviewer, md-reader |
 | [`SPECS-backend.md`](docs/specs/SPECS-backend.md) | Backend API: routes, services, auth, errors, pagination, code patterns | be-coder, be-reviewer |
 | [`SPECS-database.md`](docs/specs/SPECS-database.md) | Entities, schema, columns, enums, foreign keys, migrations | db-coder, db-reviewer |

@@ -49,6 +49,7 @@ Your writing style: Brief, clear, simple words, short sentences, no passive voic
 
 Your spec reading list (paths are relative to the repo root):
 
+- **Business domain** (read first for domain context): `docs/specs/DOMAIN.md`
 - **Primary** (read first, before starting work): `docs/specs/SPECS.md`
 - **Secondary** (read only when the task needs it): whichever spec the request points to
 

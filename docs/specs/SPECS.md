@@ -67,6 +67,7 @@ Full-Stack-CRM-Anwendung. Node.js/TypeScript-Backend mit Angular-Frontend.
 
 | Dokument | Inhalt |
 |----------|--------|
+| [DOMAIN.md](DOMAIN.md) | Geschäftsdomäne (Business Domain): Bedeutung der Entities, Beziehungen, Lösch-Verhalten, Verkaufs-Pipeline, Rollen — fachlich, kein Schema |
 | [SPECS-backend.md](SPECS-backend.md) | CRM-Backend-API: Routen, Services, Auth, Fehlerbehandlung, Pagination, Code-Muster |
 | [SPECS-database.md](SPECS-database.md) | Datenbank: Entities, Schema, Spalten, Enums, Foreign Keys, Migrationen |
 | [SPECS-frontend.md](SPECS-frontend.md) | Angular-Frontend: Architektur, Routing, Auth, Guards, Models, Services, Komponenten |
