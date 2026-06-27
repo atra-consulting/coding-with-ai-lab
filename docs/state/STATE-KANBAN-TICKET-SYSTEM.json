@@ -16,8 +16,8 @@
     "is_git_repo": true,
     "workflow_scope": "full",
     "pr_prefix": "feat:",
-    "pr_exists": false,
-    "pr_url": null
+    "pr_exists": true,
+    "pr_url": "https://github.com/atra-consulting/coding-with-ai-lab/pull/95"
   },
   "discovery": {
     "agents_available": true,
