@@ -135,7 +135,7 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
                     type="button"
                     class="btn btn-outline-primary"
                     (click)="addComment(true)"
-                    [disabled]="savingComment || ticket.owner !== 'HUMAN' || (commentForm.controls.body.value ?? '').trim().length === 0"
+                    [disabled]="savingComment || ticket.owner !== 'HUMAN' || commentForm.controls.body.value.trim().length === 0"
                     title="Kommentar senden und Ticket an KI übergeben"
                   >
                     @if (savingComment && handingBack) {
