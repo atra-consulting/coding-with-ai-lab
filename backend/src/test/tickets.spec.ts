@@ -374,20 +374,27 @@ test.describe('GET /api/tickets/next', () => {
   });
 
   test('second call returns next distinct TODO+AI ticket', async () => {
-    // After first call in previous test, ticket 1 is IN_PROGRESS. Next is ticket 2.
+    // This test depends on the previous test having claimed ticket 1 (IN_PROGRESS).
+    // The suite uses beforeAll (not beforeEach), so state persists between tests.
+    // After reset: ids 1-6,8,10,12 are TODO+AI ordered by createdAt ASC.
+    // First test claimed id=1. This call must claim id=2 (next oldest).
     const resp = await agent.get('/api/tickets/next');
     expect(resp.status()).toBe(200);
     const body = await resp.json() as Ticket;
+    // Seed order: ticket 2 is the second-oldest TODO+AI ticket after ticket 1 is claimed.
     expect(body.id).toBe(2);
     expect(body.status).toBe('IN_PROGRESS');
   });
 
   test('type=CHORE filter claims a CHORE ticket', async () => {
-    // Tickets 8 and 10 are TODO+AI+CHORE. Oldest is ticket 8.
+    // Reset first to guarantee a clean slate independent of prior claims in this suite.
+    // After reset: tickets 8 and 10 are TODO+AI+CHORE. Oldest is ticket 8.
+    await resetTickets(admin);
     const resp = await agent.get('/api/tickets/next?type=CHORE');
     expect(resp.status()).toBe(200);
     const body = await resp.json() as Ticket;
     expect(body.type).toBe('CHORE');
+    expect(body.id).toBe(8); // oldest CHORE ticket by createdAt
     expect(body.status).toBe('IN_PROGRESS');
   });
 
@@ -458,6 +465,14 @@ test.describe('POST /api/tickets/:id/done', () => {
     await test.step('resolvedAt is set', () => {
       expect(typeof body.resolvedAt).toBe('string');
       expect((body.resolvedAt as string).length).toBeGreaterThan(0);
+    });
+
+    // Side-effect: re-fetch and confirm persisted fields match mutation response
+    const persisted = await (await admin.get(`/api/tickets/${claimed.id}`)).json() as Ticket;
+    await test.step('persisted status is DONE', () => { expect(persisted.status).toBe('DONE'); });
+    await test.step('persisted solution is DONE', () => { expect(persisted.solution).toBe('DONE'); });
+    await test.step('persisted resolvedAt matches response', () => {
+      expect(persisted.resolvedAt).toBe(body.resolvedAt);
     });
   });
 
@@ -543,6 +558,17 @@ test.describe('POST /api/tickets/:id/ask', () => {
     await test.step('owner is HUMAN', () => { expect(body.owner).toBe('HUMAN'); });
     await test.step('AGENT comment with question is in the thread', () => {
       const agentComment = body.comments.find(
+        (c) => c.author === 'AGENT' && c.body === 'What format should the output be?',
+      );
+      expect(agentComment).toBeDefined();
+    });
+
+    // Side-effect: re-fetch and confirm persisted fields match mutation response
+    const persisted = await (await admin.get(`/api/tickets/${claimed.id}`)).json() as Ticket;
+    await test.step('persisted status is ON_HOLD', () => { expect(persisted.status).toBe('ON_HOLD'); });
+    await test.step('persisted owner is HUMAN', () => { expect(persisted.owner).toBe('HUMAN'); });
+    await test.step('persisted AGENT comment present', () => {
+      const agentComment = persisted.comments.find(
         (c) => c.author === 'AGENT' && c.body === 'What format should the output be?',
       );
       expect(agentComment).toBeDefined();
@@ -696,6 +722,11 @@ test.describe('Answer/handback flow: claim → ask → answer → re-claim', () 
       expect(reclaimed.status).toBe('IN_PROGRESS');
     });
 
+    await test.step('re-claimed pickedUpAt is a non-empty string', () => {
+      expect(typeof reclaimed.pickedUpAt).toBe('string');
+      expect((reclaimed.pickedUpAt as string).length).toBeGreaterThan(0);
+    });
+
     await test.step('full comment thread returned oldest-first', () => {
       expect(reclaimed.comments.length).toBeGreaterThanOrEqual(2);
       // First comment should be the AGENT question
@@ -743,6 +774,14 @@ test.describe('POST /api/tickets/:id/wont-do', () => {
       expect(typeof body.resolvedAt).toBe('string');
       expect((body.resolvedAt as string).length).toBeGreaterThan(0);
     });
+
+    // Side-effect: re-fetch and confirm persisted fields match mutation response
+    const persisted = await (await admin.get('/api/tickets/7')).json() as Ticket;
+    await test.step('persisted status is DONE', () => { expect(persisted.status).toBe('DONE'); });
+    await test.step('persisted solution is WONT_DO', () => { expect(persisted.solution).toBe('WONT_DO'); });
+    await test.step('persisted resolvedAt matches response', () => {
+      expect(persisted.resolvedAt).toBe(body.resolvedAt);
+    });
   });
 
   test('wont-do with optional comment → HUMAN comment stored', async () => {
@@ -758,10 +797,12 @@ test.describe('POST /api/tickets/:id/wont-do', () => {
     expect(humanComment).toBeDefined();
   });
 
-  test('wont-do on owner=AI ticket → 409', async () => {
+  test('wont-do on owner=AI ticket → 409 with status field in error body', async () => {
     // Ticket 1 is TODO+AI after reset
     const resp = await admin.post('/api/tickets/1/wont-do', { data: {} });
     expect(resp.status()).toBe(409);
+    const body = await resp.json() as ErrorBody;
+    expect(body.status).toBe(409);
   });
 
   test('wont-do on already-DONE ticket → 409', async () => {
@@ -809,6 +850,11 @@ test.describe('PATCH /api/tickets/:id/status', () => {
     expect(body.status).toBe('IN_PROGRESS');
     expect(body.owner).toBe('AI'); // owner never changed
     expect(body.solution).toBeNull();
+
+    // Side-effect: re-fetch and confirm persisted status
+    const persisted = await (await admin.get('/api/tickets/1')).json() as Ticket;
+    expect(persisted.status).toBe('IN_PROGRESS');
+    expect(persisted.owner).toBe('AI');
   });
 
   test('move into DONE → status=DONE, solution=DONE, resolvedAt set', async () => {
@@ -886,6 +932,11 @@ test.describe('PATCH /api/tickets/:id/owner', () => {
     expect(body.owner).toBe('HUMAN');
     expect(body.status).toBe('TODO'); // status unchanged
     expect(body.solution).toBeNull();
+
+    // Side-effect: re-fetch and confirm persisted owner
+    const persisted = await (await admin.get('/api/tickets/1')).json() as Ticket;
+    expect(persisted.owner).toBe('HUMAN');
+    expect(persisted.status).toBe('TODO');
   });
 
   test('flip HUMAN → AI: owner changes', async () => {
@@ -1011,6 +1062,17 @@ test.describe('GET /api/tickets', () => {
     });
     await test.step('size is a positive integer', () => {
       expect(body.size).toBeGreaterThan(0);
+    });
+    await test.step('totalPages is a positive integer', () => {
+      expect(body.totalPages).toBeGreaterThan(0);
+    });
+    await test.step('last reflects whether this is the last page', () => {
+      // With 12 elements on one page (default size >= 12), last should be true
+      expect(typeof body.last).toBe('boolean');
+      // If all fit on first page, last === true
+      if (body.totalElements <= body.size) {
+        expect(body.last).toBe(true);
+      }
     });
   });
 
@@ -1429,5 +1491,54 @@ test.describe('Validation — bad enum values', () => {
     expect(resp.status()).toBe(400);
     const body = await resp.json() as ErrorBody;
     expect(typeof body.fieldErrors).toBe('object');
+  });
+});
+
+// ─── Suite: POST /:id/comments with handBackToAi:false ───────────────────────
+
+test.describe('POST /:id/comments — handBackToAi:false leaves status/owner unchanged', () => {
+  let admin: APIRequestContext;
+
+  test.beforeEach(async () => {
+    admin = await loginCtx('admin', 'admin123');
+    await resetTickets(admin);
+  });
+
+  test.afterEach(async () => {
+    await admin.dispose();
+  });
+
+  test('comment on ON_HOLD/owner=HUMAN ticket with handBackToAi:false → status and owner unchanged', async () => {
+    // Ticket 7 is ON_HOLD+HUMAN after reset
+    const before = await (await admin.get('/api/tickets/7')).json() as Ticket;
+    const commentCountBefore = before.comments.length;
+
+    const resp = await admin.post('/api/tickets/7/comments', {
+      data: { body: 'Still looking into this.', handBackToAi: false },
+    });
+
+    await test.step('response is 200', () => { expect(resp.status()).toBe(200); });
+
+    const body = await resp.json() as Ticket;
+
+    await test.step('status remains ON_HOLD', () => { expect(body.status).toBe('ON_HOLD'); });
+    await test.step('owner remains HUMAN', () => { expect(body.owner).toBe('HUMAN'); });
+    await test.step('comment count increased by 1', () => {
+      expect(body.comments.length).toBe(commentCountBefore + 1);
+    });
+    await test.step('new comment is from HUMAN with correct body', () => {
+      const newComment = body.comments.find(
+        (c) => c.author === 'HUMAN' && c.body === 'Still looking into this.',
+      );
+      expect(newComment).toBeDefined();
+    });
+
+    // Side-effect: re-fetch and confirm status/owner persisted unchanged
+    const persisted = await (await admin.get('/api/tickets/7')).json() as Ticket;
+    await test.step('persisted status is still ON_HOLD', () => { expect(persisted.status).toBe('ON_HOLD'); });
+    await test.step('persisted owner is still HUMAN', () => { expect(persisted.owner).toBe('HUMAN'); });
+    await test.step('persisted comment count matches', () => {
+      expect(persisted.comments.length).toBe(commentCountBefore + 1);
+    });
   });
 });
