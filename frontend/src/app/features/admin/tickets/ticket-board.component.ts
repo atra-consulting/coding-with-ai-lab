@@ -19,9 +19,6 @@ import {
   faSpinner,
   faCircleCheck,
   faClock,
-  faBug,
-  faStar,
-  faWrench,
   faRobot,
   faUser,
   faGripVertical,
@@ -192,7 +189,7 @@ import { TicketCreateComponent } from './ticket-create.component';
                 <div class="ticket-drag-handle" cdkDragHandle (click)="$event.stopPropagation()">
                   <fa-icon [icon]="faGripVertical" />
                 </div>
-                <div class="ticket-body-click" (click)="navigateToDetail(ticket.id)">
+                <div class="ticket-body-click" role="button" tabindex="0" (click)="navigateToDetail(ticket.id)" (keydown.enter)="navigateToDetail(ticket.id)" (keydown.space)="$event.preventDefault(); navigateToDetail(ticket.id)">
                   <div class="ticket-title">{{ ticket.title }}</div>
                   <div class="ticket-badges mt-2">
                     <span [class]="typeBadgeClass(ticket.type)">{{ typeLabel(ticket.type) }}</span>
@@ -234,7 +231,7 @@ import { TicketCreateComponent } from './ticket-create.component';
                 <div class="ticket-drag-handle" cdkDragHandle (click)="$event.stopPropagation()">
                   <fa-icon [icon]="faGripVertical" />
                 </div>
-                <div class="ticket-body-click" (click)="navigateToDetail(ticket.id)">
+                <div class="ticket-body-click" role="button" tabindex="0" (click)="navigateToDetail(ticket.id)" (keydown.enter)="navigateToDetail(ticket.id)" (keydown.space)="$event.preventDefault(); navigateToDetail(ticket.id)">
                   <div class="ticket-title">{{ ticket.title }}</div>
                   <div class="ticket-badges mt-2">
                     <span [class]="typeBadgeClass(ticket.type)">{{ typeLabel(ticket.type) }}</span>
@@ -276,7 +273,7 @@ import { TicketCreateComponent } from './ticket-create.component';
                 <div class="ticket-drag-handle" cdkDragHandle (click)="$event.stopPropagation()">
                   <fa-icon [icon]="faGripVertical" />
                 </div>
-                <div class="ticket-body-click" (click)="navigateToDetail(ticket.id)">
+                <div class="ticket-body-click" role="button" tabindex="0" (click)="navigateToDetail(ticket.id)" (keydown.enter)="navigateToDetail(ticket.id)" (keydown.space)="$event.preventDefault(); navigateToDetail(ticket.id)">
                   <div class="ticket-title">{{ ticket.title }}</div>
                   <div class="ticket-badges mt-2">
                     <span [class]="typeBadgeClass(ticket.type)">{{ typeLabel(ticket.type) }}</span>
@@ -318,7 +315,7 @@ import { TicketCreateComponent } from './ticket-create.component';
                 <div class="ticket-drag-handle" cdkDragHandle (click)="$event.stopPropagation()">
                   <fa-icon [icon]="faGripVertical" />
                 </div>
-                <div class="ticket-body-click" (click)="navigateToDetail(ticket.id)">
+                <div class="ticket-body-click" role="button" tabindex="0" (click)="navigateToDetail(ticket.id)" (keydown.enter)="navigateToDetail(ticket.id)" (keydown.space)="$event.preventDefault(); navigateToDetail(ticket.id)">
                   <div class="ticket-title">{{ ticket.title }}</div>
                   <div class="ticket-badges mt-2">
                     <span [class]="typeBadgeClass(ticket.type)">{{ typeLabel(ticket.type) }}</span>
@@ -636,9 +633,6 @@ export class TicketBoardComponent implements OnInit {
   readonly faClock = faClock;
   readonly faCircleCheck = faCircleCheck;
   readonly faComment = faComment;
-  readonly faBug = faBug;
-  readonly faStar = faStar;
-  readonly faWrench = faWrench;
   readonly faRobot = faRobot;
   readonly faUser = faUser;
   readonly faGripVertical = faGripVertical;
@@ -652,7 +646,7 @@ export class TicketBoardComponent implements OnInit {
       )
       .subscribe({
         next: (s) => (this.summary = s),
-        error: () => {},
+        error: () => console.warn('Ticket-Zusammenfassung konnte nicht geladen werden.'),
       });
 
     this.loadBoard();

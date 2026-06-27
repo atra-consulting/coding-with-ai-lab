@@ -10,7 +10,6 @@ import {
   faRobot,
   faUser,
   faComment,
-  faExchangeAlt,
   faBan,
 } from '@fortawesome/free-solid-svg-icons';
 import { Ticket, TicketComment } from '../../../core/models/ticket.model';
@@ -136,7 +135,7 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
                     type="button"
                     class="btn btn-outline-primary"
                     (click)="addComment(true)"
-                    [disabled]="savingComment || ticket.owner !== 'HUMAN' || commentForm.controls.body.value.trim().length === 0"
+                    [disabled]="savingComment || ticket.owner !== 'HUMAN' || (commentForm.controls.body.value ?? '').trim().length === 0"
                     title="Kommentar senden und Ticket an KI übergeben"
                   >
                     @if (savingComment && handingBack) {
@@ -341,7 +340,6 @@ export class TicketDetailComponent implements OnInit {
   readonly faRobot = faRobot;
   readonly faUser = faUser;
   readonly faComment = faComment;
-  readonly faExchangeAlt = faExchangeAlt;
   readonly faBan = faBan;
 
   commentForm = this.fb.nonNullable.group({
