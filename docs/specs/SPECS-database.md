@@ -29,7 +29,42 @@ Migration approach: plain `CREATE TABLE IF NOT EXISTS` statements. Run on every 
 
 ## Tables
 
-The database contains six core domain tables — `firma`, `abteilung`, `person`, `adresse`, `aktivitaet`, `chance` — plus operational tables: `agent_task` (autonomous task sources), `cron_run` (cron run history), and `sessions` (server-side session store).
+The database contains six core domain tables — `firma`, `abteilung`, `person`, `adresse`, `aktivitaet`, `chance` — plus operational tables: `agent_task` (autonomous task sources), `ticket` + `ticket_comment` (Kanban ticket system), `cron_run` (cron run history), and `sessions` (server-side session store).
+
+### Ticket (`ticket`)
+
+Kanban work items with an owner and status lifecycle. Created by admins or seeded by `backend/src/seed/ticketSeed.ts`. Agent picks up via `GET /api/tickets/next`; admin manages via `/api/tickets` routes.
+
+| Column | SQLite Type | Constraints |
+|--------|-------------|-------------|
+| id | integer | PK, autoIncrement |
+| owner | text | NOT NULL, default `HUMAN` — `TICKET_OWNER` enum |
+| type | text | NOT NULL — `TICKET_TYPE` enum |
+| title | text | NOT NULL |
+| body | text | NOT NULL |
+| status | text | NOT NULL, default `TODO` — `TICKET_STATUS` enum |
+| solution | text | nullable — `TICKET_SOLUTION` enum; set on `status=DONE` |
+| pickedUpAt | text | nullable — ISO-8601, set when status → `IN_PROGRESS` |
+| resolvedAt | text | nullable — ISO-8601, set when status → `DONE` |
+| createdAt | text | NOT NULL, default `datetime('now')` |
+| updatedAt | text | NOT NULL, default `datetime('now')` |
+
+No FKs. Indexes: `idx_ticket_status_owner_createdAt (status, owner, createdAt)`, `idx_ticket_type_status (type, status)`.
+
+### TicketComment (`ticket_comment`)
+
+Comments on tickets. Author is either `AGENT` (question or closing note from the AI) or `HUMAN` (admin answer). Cascade-deleted when the parent ticket is deleted.
+
+| Column | SQLite Type | Constraints |
+|--------|-------------|-------------|
+| id | integer | PK, autoIncrement |
+| ticketId | integer | NOT NULL, FK → ticket(id) CASCADE DELETE |
+| author | text | NOT NULL — `TICKET_COMMENT_AUTHOR` enum |
+| authorName | text | nullable — display name (e.g. `"Claude Code"`) |
+| body | text | NOT NULL |
+| createdAt | text | NOT NULL, default `datetime('now')` |
+
+Index: `idx_ticket_comment_ticketId (ticketId)`.
 
 ### CronRun (`cron_run`)
 
@@ -196,6 +231,11 @@ Stored as plain `text` in SQLite. Validated by Zod on write. Defined in `backend
 | AktivitaetTyp | ANRUF, EMAIL, MEETING, NOTIZ, AUFGABE |
 | AgentTaskSource | EMAIL, GITHUB_ISSUE, APP_LOG, ERROR_REPORT |
 | AgentTaskStatus | OPEN, IN_PROGRESS, DONE, REJECTED |
+| TicketOwner | AI, HUMAN |
+| TicketType | FEATURE, BUG, CHORE |
+| TicketStatus | TODO, IN_PROGRESS, ON_HOLD, DONE |
+| TicketSolution | DONE, WONT_DO |
+| TicketCommentAuthor | HUMAN, AGENT |
 
 ## Indexes
 
@@ -220,3 +260,6 @@ All indexes are created in `backend/src/config/migrate.ts` via `CREATE INDEX IF 
 | idx_agent_task_source_status | agent_task | source, status |
 | idx_cron_run_startedAt | cron_run | startedAt DESC |
 | idx_cron_run_job_startedAt | cron_run | job, startedAt DESC |
+| idx_ticket_status_owner_createdAt | ticket | status, owner, createdAt |
+| idx_ticket_type_status | ticket | type, status |
+| idx_ticket_comment_ticketId | ticket_comment | ticketId |
