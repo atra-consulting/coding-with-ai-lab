@@ -1542,3 +1542,121 @@ test.describe('POST /:id/comments — handBackToAi:false leaves status/owner unc
     });
   });
 });
+
+// ─── Suite: POST /:id/comments handBackToAi guard ────────────────────────────
+
+test.describe('POST /:id/comments — handBackToAi guard (only ON_HOLD+HUMAN allowed)', () => {
+  let admin: APIRequestContext;
+
+  test.beforeEach(async () => {
+    admin = await loginCtx('admin', 'admin123');
+    await resetTickets(admin);
+  });
+
+  test.afterEach(async () => {
+    await admin.dispose();
+  });
+
+  test('handBackToAi:true on a DONE ticket → 409, ticket stays DONE', async () => {
+    // Create a fresh ticket (HUMAN+TODO), then drag it to DONE via PATCH /status
+    const createResp = await admin.post('/api/tickets', {
+      data: { type: 'BUG', title: 'Will be done', body: 'To be resolved.' },
+    });
+    expect(createResp.status()).toBe(201);
+    const created = await createResp.json() as Ticket;
+    const ticketId = created.id;
+
+    // Move to DONE
+    const doneResp = await admin.patch(`/api/tickets/${ticketId}/status`, {
+      data: { status: 'DONE' },
+    });
+    expect(doneResp.status()).toBe(200);
+
+    // Attempt hand-back — must be rejected
+    const resp = await admin.post(`/api/tickets/${ticketId}/comments`, {
+      data: { body: 'Trying to resurrect.', handBackToAi: true },
+    });
+
+    await test.step('response is 409', () => { expect(resp.status()).toBe(409); });
+
+    // Confirm ticket is still DONE (not resurrected to TODO)
+    const persisted = await (await admin.get(`/api/tickets/${ticketId}`)).json() as Ticket;
+    await test.step('ticket status is still DONE', () => { expect(persisted.status).toBe('DONE'); });
+    // POST /api/tickets creates owner=HUMAN; PATCH /status never changes owner
+    await test.step('ticket owner is still HUMAN (unchanged)', () => { expect(persisted.owner).toBe('HUMAN'); });
+  });
+
+  test('handBackToAi:true on a TODO ticket (owner=HUMAN) → 409', async () => {
+    // Create ticket: starts as HUMAN+TODO
+    const createResp = await admin.post('/api/tickets', {
+      data: { type: 'FEATURE', title: 'Human TODO', body: 'Not on hold.' },
+    });
+    expect(createResp.status()).toBe(201);
+    const created = await createResp.json() as Ticket;
+    const ticketId = created.id;
+
+    // Verify it is TODO+HUMAN
+    expect(created.status).toBe('TODO');
+    expect(created.owner).toBe('HUMAN');
+
+    // Attempt hand-back on a TODO ticket — must be rejected (not ON_HOLD)
+    const resp = await admin.post(`/api/tickets/${ticketId}/comments`, {
+      data: { body: 'Hand back attempt on TODO.', handBackToAi: true },
+    });
+
+    await test.step('response is 409', () => { expect(resp.status()).toBe(409); });
+
+    // Ticket must remain untouched
+    const persisted = await (await admin.get(`/api/tickets/${ticketId}`)).json() as Ticket;
+    await test.step('ticket status is still TODO', () => { expect(persisted.status).toBe('TODO'); });
+    await test.step('ticket owner is still HUMAN', () => { expect(persisted.owner).toBe('HUMAN'); });
+  });
+
+  test('lifecycle: claim → ask → ON_HOLD+HUMAN → handBackToAi:true → TODO+AI (happy path still works)', async () => {
+    // Step 1: claim a TODO+AI ticket
+    const agent = await agentCtx();
+    const claimResp = await agent.get('/api/tickets/next');
+    expect(claimResp.status()).toBe(200);
+    const claimed = await claimResp.json() as Ticket;
+    const ticketId = claimed.id;
+
+    // Step 2: ask → ON_HOLD+HUMAN
+    const askResp = await agent.post(`/api/tickets/${ticketId}/ask`, {
+      data: { question: 'Which approach do you prefer?' },
+    });
+    expect(askResp.status()).toBe(200);
+    const afterAsk = await askResp.json() as Ticket;
+    expect(afterAsk.status).toBe('ON_HOLD');
+    expect(afterAsk.owner).toBe('HUMAN');
+
+    // Step 3: human answers with handBackToAi:true — must succeed (guard passes)
+    const answerResp = await admin.post(`/api/tickets/${ticketId}/comments`, {
+      data: { body: 'Use approach B.', handBackToAi: true },
+    });
+
+    await test.step('response is 200', () => { expect(answerResp.status()).toBe(200); });
+
+    const afterHandback = await answerResp.json() as Ticket;
+
+    await test.step('status is TODO after handback', () => { expect(afterHandback.status).toBe('TODO'); });
+    await test.step('owner is AI after handback', () => { expect(afterHandback.owner).toBe('AI'); });
+    await test.step('solution is cleared', () => { expect(afterHandback.solution).toBeNull(); });
+
+    await agent.dispose();
+  });
+
+  test('plain comment WITHOUT handBackToAi works on any status (TODO, DONE)', async () => {
+    // Ticket 1 is TODO+AI after reset — plain comment must work
+    const resp1 = await admin.post('/api/tickets/1/comments', {
+      data: { body: 'Note on TODO ticket.' },
+    });
+    await test.step('plain comment on TODO → 200', () => { expect(resp1.status()).toBe(200); });
+
+    // Move ticket 1 to DONE, then add another plain comment
+    await admin.patch('/api/tickets/1/status', { data: { status: 'DONE' } });
+    const resp2 = await admin.post('/api/tickets/1/comments', {
+      data: { body: 'Note on DONE ticket.' },
+    });
+    await test.step('plain comment on DONE → 200', () => { expect(resp2.status()).toBe(200); });
+  });
+});

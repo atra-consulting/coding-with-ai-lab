@@ -518,6 +518,7 @@ export const ticketService = {
   /**
    * Human answers (admin). Inserts a HUMAN comment.
    * If handBackToAi: also set status=TODO, owner=AI, clear solution+resolvedAt.
+   * Guard: handBackToAi is only allowed when ticket is ON_HOLD+HUMAN.
    * All in one batch.
    */
   async addComment(
@@ -525,8 +526,16 @@ export const ticketService = {
     body: string,
     handBackToAi?: boolean,
   ): Promise<TicketDTO> {
-    // Verify ticket exists first
-    await this.findById(id);
+    // Verify ticket exists first (throws 404 if missing)
+    const ticket = await this.findById(id);
+
+    if (handBackToAi) {
+      if (ticket.status !== 'ON_HOLD' || ticket.owner !== 'HUMAN') {
+        throw new ConflictError(
+          `Ticket ${id} kann nicht an die KI übergeben werden (nicht im Status ON_HOLD).`,
+        );
+      }
+    }
 
     const now = new Date().toISOString();
 
