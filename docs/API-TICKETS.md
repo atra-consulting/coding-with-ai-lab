@@ -412,6 +412,48 @@ The three `ON_HOLD` + `HUMAN` tickets (7, 9, 11) each have a seeded `AGENT` comm
 
 ---
 
+## For skill authors
+
+A workshop skill drives this API as an agent. Use the **agent endpoints only** — the admin endpoints (`board`, `summary`, `create`, `status`, `owner`, `wont-do`, `comments`, `reset`) are for the human dashboard.
+
+**Auth.** Send the shared agent token on every call. Same token as the Agent Tasks API (`AGENT_API_TOKEN`):
+
+```
+Authorization: Bearer $AGENT_API_TOKEN
+# or:
+X-Agent-Token: $AGENT_API_TOKEN
+```
+
+**The three calls a skill needs:**
+
+| Step | Call | Notes |
+|------|------|-------|
+| Claim | `GET /api/tickets/next` | Optional `?type=FEATURE\|BUG\|CHORE`. Claims the oldest `TODO` ticket owned by `AI`, flips it to `IN_PROGRESS`. **`204` = queue empty, stop.** The response includes the full `comments` thread. |
+| Finish | `POST /api/tickets/:id/done` | Body `{ "comment"?: string }`. Only from `IN_PROGRESS`. Sets `solution=DONE`. |
+| Ask | `POST /api/tickets/:id/ask` | Body `{ "question": string }` (required). Hands the ticket to a human (`ON_HOLD`, owner→`HUMAN`). Posts the question as an `AGENT` comment. |
+
+**Loop shape:**
+
+```
+while GET /next returns 200:
+    read ticket + comments               # the thread carries any prior human answers
+    decide: can I finish, or must I ask?
+    if finish:  POST /:id/done {comment}
+    else:       POST /:id/ask  {question}   # then move on; a human answers later
+# 204 → nothing left to claim
+```
+
+**What's different from tasks** (see `docs/API-TASKS.md`):
+
+- **No `reject`.** A ticket is never thrown away. When you lack a decision, you `ask` — the ticket goes to a human and comes back to the `AI` queue once answered (with your question and their reply in the `comments` thread). Re-claim it later via `GET /next` and continue.
+- **`/next` takes no required parameter.** Tasks require `?source=`; tickets only have an optional `?type=`.
+- **Read the thread on every claim.** A re-claimed ticket carries the human's answer as the latest `HUMAN` comment. Don't re-ask what's already answered.
+- **You cannot resolve a ticket as "Won't Do".** That is a human-only action.
+
+**One token, two queues.** This API and the Agent Tasks API share `AGENT_API_TOKEN` and the same header scheme. A single skill can work both — pick the base path (`/api/tickets` vs `/api/agent-tasks`) and the matching verbs.
+
+---
+
 ## See also
 
 - `docs/prds/PRD-KANBAN-TICKET-SYSTEM.md` — full requirements and acceptance criteria.
