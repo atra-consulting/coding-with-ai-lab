@@ -1,4 +1,5 @@
-import { Component, inject } from '@angular/core';
+import { Component, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { TicketType } from '../../../core/models/ticket.model';
@@ -36,9 +37,16 @@ import { TicketService } from '../../../core/services/ticket.service';
             class="form-control"
             formControlName="title"
             placeholder="Kurze Beschreibung"
+            maxlength="200"
           />
           @if (form.controls.title.invalid && form.controls.title.touched) {
-            <div class="invalid-feedback d-block">Titel ist erforderlich.</div>
+            <div class="invalid-feedback d-block">
+              @if (form.controls.title.errors?.['required'] || form.controls.title.errors?.['minlength']) {
+                Titel ist erforderlich.
+              } @else if (form.controls.title.errors?.['maxlength']) {
+                Titel darf maximal 200 Zeichen lang sein.
+              }
+            </div>
           }
         </div>
         <div class="mb-3">
@@ -76,10 +84,11 @@ export class TicketCreateComponent {
   private fb = inject(FormBuilder);
   private ticketService = inject(TicketService);
   private activeModal = inject(NgbActiveModal);
+  private destroyRef = inject(DestroyRef);
 
   form = this.fb.nonNullable.group({
     type: ['FEATURE' as TicketType, Validators.required],
-    title: ['', [Validators.required, Validators.minLength(1)]],
+    title: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(200)]],
     body: ['', [Validators.required, Validators.minLength(1)]],
   });
 
@@ -94,16 +103,19 @@ export class TicketCreateComponent {
     this.saving = true;
     this.errorMessage = null;
     const { type, title, body } = this.form.getRawValue();
-    this.ticketService.create({ type, title, body }).subscribe({
-      next: (ticket) => {
-        this.saving = false;
-        this.activeModal.close(ticket);
-      },
-      error: () => {
-        this.saving = false;
-        this.errorMessage = 'Fehler beim Erstellen des Tickets.';
-      },
-    });
+    this.ticketService
+      .create({ type, title, body })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (ticket) => {
+          this.saving = false;
+          this.activeModal.close(ticket);
+        },
+        error: () => {
+          this.saving = false;
+          this.errorMessage = 'Fehler beim Erstellen des Tickets.';
+        },
+      });
   }
 
   dismiss(): void {

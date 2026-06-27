@@ -3,6 +3,7 @@ import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import {
   faArrowLeft,
@@ -16,6 +17,7 @@ import { Ticket, TicketComment } from '../../../core/models/ticket.model';
 import { TicketService } from '../../../core/services/ticket.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
+import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-ticket-detail',
@@ -132,7 +134,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
 
                   <button
                     type="button"
-                    class="btn btn-warning"
+                    class="btn btn-outline-primary"
                     (click)="addComment(true)"
                     [disabled]="savingComment || ticket.owner !== 'HUMAN' || commentForm.controls.body.value.trim().length === 0"
                     title="Kommentar senden und Ticket an KI übergeben"
@@ -143,7 +145,9 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
                     <fa-icon [icon]="faRobot" class="me-1" />Zurück an KI
                   </button>
                 </div>
-                @if (ticket.owner !== 'HUMAN') {
+                @if (ticket.owner === 'AI') {
+                  <div class="form-text text-muted mt-1">Die KI ist bereits Eigentümer.</div>
+                } @else if (ticket.owner !== 'HUMAN') {
                   <div class="form-text text-muted mt-1">"Zurück an KI" ist nur möglich, wenn der Eigentümer "Mensch" ist.</div>
                 }
               </form>
@@ -298,7 +302,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
         color: #fff;
       }
       .badge-owner-ai {
-        background-color: #264892;
+        background-color: #6f42c1;
         color: #fff;
       }
       .badge-owner-human {
@@ -319,6 +323,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
 export class TicketDetailComponent implements OnInit {
   private ticketService = inject(TicketService);
   private notification = inject(NotificationService);
+  private modalService = inject(NgbModal);
   private route = inject(ActivatedRoute);
   private fb = inject(FormBuilder);
   private destroyRef = inject(DestroyRef);
@@ -431,23 +436,32 @@ export class TicketDetailComponent implements OnInit {
 
   markWontDo(): void {
     if (!this.ticket) return;
-    if (!window.confirm('Dieses Ticket als "Wird nicht gemacht" markieren?')) return;
-    this.savingWontDo = true;
-
-    this.ticketService
-      .wontDo(this.ticket.id)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (updated) => {
-          this.ticket = updated;
-          this.savingWontDo = false;
-          this.notification.success('Ticket als "Wird nicht gemacht" markiert.');
-        },
-        error: () => {
-          this.savingWontDo = false;
-          this.notification.error('Fehler beim Schließen des Tickets.');
-        },
-      });
+    const ticketId = this.ticket.id;
+    const modalRef = this.modalService.open(ConfirmDialogComponent);
+    modalRef.componentInstance.title = 'Ticket schließen';
+    modalRef.componentInstance.message = 'Dieses Ticket als "Wird nicht gemacht" markieren?';
+    modalRef.componentInstance.confirmText = 'Wird nicht gemacht';
+    modalRef.componentInstance.confirmButtonClass = 'btn btn-danger';
+    modalRef.result.then(
+      () => {
+        this.savingWontDo = true;
+        this.ticketService
+          .wontDo(ticketId)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: (updated) => {
+              this.ticket = updated;
+              this.savingWontDo = false;
+              this.notification.success('Ticket als "Wird nicht gemacht" markiert.');
+            },
+            error: () => {
+              this.savingWontDo = false;
+              this.notification.error('Fehler beim Schließen des Tickets.');
+            },
+          });
+      },
+      () => {},
+    );
   }
 
   typeBadgeClass(type: string): string {

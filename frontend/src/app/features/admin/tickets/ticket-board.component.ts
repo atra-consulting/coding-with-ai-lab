@@ -1,9 +1,11 @@
 import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Subject, switchMap } from 'rxjs';
 import { Router } from '@angular/router';
 import {
   CdkDrag,
   CdkDragDrop,
+  CdkDragHandle,
   CdkDropList,
   CdkDropListGroup,
   transferArrayItem,
@@ -22,6 +24,7 @@ import {
   faWrench,
   faRobot,
   faUser,
+  faGripVertical,
 } from '@fortawesome/free-solid-svg-icons';
 import { Ticket, TicketStatus, TicketSummary } from '../../../core/models/ticket.model';
 import { TicketService } from '../../../core/services/ticket.service';
@@ -35,6 +38,7 @@ import { TicketCreateComponent } from './ticket-create.component';
     CdkDropListGroup,
     CdkDropList,
     CdkDrag,
+    CdkDragHandle,
     FaIconComponent,
     LoadingSpinnerComponent,
   ],
@@ -184,20 +188,25 @@ import { TicketCreateComponent } from './ticket-create.component';
             (cdkDropListDropped)="onDrop($event, 'TODO')"
           >
             @for (ticket of todo; track ticket.id) {
-              <div class="ticket-card" cdkDrag [cdkDragData]="ticket" (click)="navigateToDetail(ticket.id)">
-                <div class="ticket-title">{{ ticket.title }}</div>
-                <div class="ticket-badges mt-2">
-                  <span [class]="typeBadgeClass(ticket.type)">{{ typeLabel(ticket.type) }}</span>
-                  <span [class]="ownerBadgeClass(ticket.owner)" class="ms-1">
-                    <fa-icon [icon]="ticket.owner === 'AI' ? faRobot : faUser" class="me-1" />{{ ownerLabel(ticket.owner) }}
-                  </span>
+              <div class="ticket-card" cdkDrag [cdkDragData]="ticket">
+                <div class="ticket-drag-handle" cdkDragHandle (click)="$event.stopPropagation()">
+                  <fa-icon [icon]="faGripVertical" />
                 </div>
-                @if ((ticket.commentCount ?? 0) > 0) {
-                  <div class="ticket-comment-count mt-1">
-                    <fa-icon [icon]="faComment" class="me-1 text-muted" />
-                    <span class="small text-muted">{{ ticket.commentCount }}</span>
+                <div class="ticket-body-click" (click)="navigateToDetail(ticket.id)">
+                  <div class="ticket-title">{{ ticket.title }}</div>
+                  <div class="ticket-badges mt-2">
+                    <span [class]="typeBadgeClass(ticket.type)">{{ typeLabel(ticket.type) }}</span>
+                    <span [class]="ownerBadgeClass(ticket.owner)" class="ms-1">
+                      <fa-icon [icon]="ticket.owner === 'AI' ? faRobot : faUser" class="me-1" />{{ ownerLabel(ticket.owner) }}
+                    </span>
                   </div>
-                }
+                  @if ((ticket.commentCount ?? 0) > 0) {
+                    <div class="ticket-comment-count mt-1">
+                      <fa-icon [icon]="faComment" class="me-1 text-muted" />
+                      <span class="small text-muted">{{ ticket.commentCount }}</span>
+                    </div>
+                  }
+                </div>
               </div>
             }
             @if (todo.length === 0) {
@@ -221,20 +230,25 @@ import { TicketCreateComponent } from './ticket-create.component';
             (cdkDropListDropped)="onDrop($event, 'IN_PROGRESS')"
           >
             @for (ticket of inProgress; track ticket.id) {
-              <div class="ticket-card" cdkDrag [cdkDragData]="ticket" (click)="navigateToDetail(ticket.id)">
-                <div class="ticket-title">{{ ticket.title }}</div>
-                <div class="ticket-badges mt-2">
-                  <span [class]="typeBadgeClass(ticket.type)">{{ typeLabel(ticket.type) }}</span>
-                  <span [class]="ownerBadgeClass(ticket.owner)" class="ms-1">
-                    <fa-icon [icon]="ticket.owner === 'AI' ? faRobot : faUser" class="me-1" />{{ ownerLabel(ticket.owner) }}
-                  </span>
+              <div class="ticket-card" cdkDrag [cdkDragData]="ticket">
+                <div class="ticket-drag-handle" cdkDragHandle (click)="$event.stopPropagation()">
+                  <fa-icon [icon]="faGripVertical" />
                 </div>
-                @if ((ticket.commentCount ?? 0) > 0) {
-                  <div class="ticket-comment-count mt-1">
-                    <fa-icon [icon]="faComment" class="me-1 text-muted" />
-                    <span class="small text-muted">{{ ticket.commentCount }}</span>
+                <div class="ticket-body-click" (click)="navigateToDetail(ticket.id)">
+                  <div class="ticket-title">{{ ticket.title }}</div>
+                  <div class="ticket-badges mt-2">
+                    <span [class]="typeBadgeClass(ticket.type)">{{ typeLabel(ticket.type) }}</span>
+                    <span [class]="ownerBadgeClass(ticket.owner)" class="ms-1">
+                      <fa-icon [icon]="ticket.owner === 'AI' ? faRobot : faUser" class="me-1" />{{ ownerLabel(ticket.owner) }}
+                    </span>
                   </div>
-                }
+                  @if ((ticket.commentCount ?? 0) > 0) {
+                    <div class="ticket-comment-count mt-1">
+                      <fa-icon [icon]="faComment" class="me-1 text-muted" />
+                      <span class="small text-muted">{{ ticket.commentCount }}</span>
+                    </div>
+                  }
+                </div>
               </div>
             }
             @if (inProgress.length === 0) {
@@ -258,20 +272,25 @@ import { TicketCreateComponent } from './ticket-create.component';
             (cdkDropListDropped)="onDrop($event, 'ON_HOLD')"
           >
             @for (ticket of onHold; track ticket.id) {
-              <div class="ticket-card" cdkDrag [cdkDragData]="ticket" (click)="navigateToDetail(ticket.id)">
-                <div class="ticket-title">{{ ticket.title }}</div>
-                <div class="ticket-badges mt-2">
-                  <span [class]="typeBadgeClass(ticket.type)">{{ typeLabel(ticket.type) }}</span>
-                  <span [class]="ownerBadgeClass(ticket.owner)" class="ms-1">
-                    <fa-icon [icon]="ticket.owner === 'AI' ? faRobot : faUser" class="me-1" />{{ ownerLabel(ticket.owner) }}
-                  </span>
+              <div class="ticket-card" cdkDrag [cdkDragData]="ticket">
+                <div class="ticket-drag-handle" cdkDragHandle (click)="$event.stopPropagation()">
+                  <fa-icon [icon]="faGripVertical" />
                 </div>
-                @if ((ticket.commentCount ?? 0) > 0) {
-                  <div class="ticket-comment-count mt-1">
-                    <fa-icon [icon]="faComment" class="me-1 text-muted" />
-                    <span class="small text-muted">{{ ticket.commentCount }}</span>
+                <div class="ticket-body-click" (click)="navigateToDetail(ticket.id)">
+                  <div class="ticket-title">{{ ticket.title }}</div>
+                  <div class="ticket-badges mt-2">
+                    <span [class]="typeBadgeClass(ticket.type)">{{ typeLabel(ticket.type) }}</span>
+                    <span [class]="ownerBadgeClass(ticket.owner)" class="ms-1">
+                      <fa-icon [icon]="ticket.owner === 'AI' ? faRobot : faUser" class="me-1" />{{ ownerLabel(ticket.owner) }}
+                    </span>
                   </div>
-                }
+                  @if ((ticket.commentCount ?? 0) > 0) {
+                    <div class="ticket-comment-count mt-1">
+                      <fa-icon [icon]="faComment" class="me-1 text-muted" />
+                      <span class="small text-muted">{{ ticket.commentCount }}</span>
+                    </div>
+                  }
+                </div>
               </div>
             }
             @if (onHold.length === 0) {
@@ -295,25 +314,30 @@ import { TicketCreateComponent } from './ticket-create.component';
             (cdkDropListDropped)="onDrop($event, 'DONE')"
           >
             @for (ticket of done; track ticket.id) {
-              <div class="ticket-card" cdkDrag [cdkDragData]="ticket" (click)="navigateToDetail(ticket.id)">
-                <div class="ticket-title">{{ ticket.title }}</div>
-                <div class="ticket-badges mt-2">
-                  <span [class]="typeBadgeClass(ticket.type)">{{ typeLabel(ticket.type) }}</span>
-                  <span [class]="ownerBadgeClass(ticket.owner)" class="ms-1">
-                    <fa-icon [icon]="ticket.owner === 'AI' ? faRobot : faUser" class="me-1" />{{ ownerLabel(ticket.owner) }}
-                  </span>
-                  @if (ticket.solution) {
-                    <span [class]="solutionBadgeClass(ticket.solution)" class="ms-1">
-                      {{ solutionLabel(ticket.solution) }}
+              <div class="ticket-card" cdkDrag [cdkDragData]="ticket">
+                <div class="ticket-drag-handle" cdkDragHandle (click)="$event.stopPropagation()">
+                  <fa-icon [icon]="faGripVertical" />
+                </div>
+                <div class="ticket-body-click" (click)="navigateToDetail(ticket.id)">
+                  <div class="ticket-title">{{ ticket.title }}</div>
+                  <div class="ticket-badges mt-2">
+                    <span [class]="typeBadgeClass(ticket.type)">{{ typeLabel(ticket.type) }}</span>
+                    <span [class]="ownerBadgeClass(ticket.owner)" class="ms-1">
+                      <fa-icon [icon]="ticket.owner === 'AI' ? faRobot : faUser" class="me-1" />{{ ownerLabel(ticket.owner) }}
                     </span>
+                    @if (ticket.solution) {
+                      <span [class]="solutionBadgeClass(ticket.solution)" class="ms-1">
+                        {{ solutionLabel(ticket.solution) }}
+                      </span>
+                    }
+                  </div>
+                  @if ((ticket.commentCount ?? 0) > 0) {
+                    <div class="ticket-comment-count mt-1">
+                      <fa-icon [icon]="faComment" class="me-1 text-muted" />
+                      <span class="small text-muted">{{ ticket.commentCount }}</span>
+                    </div>
                   }
                 </div>
-                @if ((ticket.commentCount ?? 0) > 0) {
-                  <div class="ticket-comment-count mt-1">
-                    <fa-icon [icon]="faComment" class="me-1 text-muted" />
-                    <span class="small text-muted">{{ ticket.commentCount }}</span>
-                  </div>
-                }
               </div>
             }
             @if (done.length === 0) {
@@ -454,6 +478,11 @@ import { TicketCreateComponent } from './ticket-create.component';
         min-height: 150px;
       }
 
+      .column-body.cdk-drop-list-receiving {
+        background: rgba(38, 72, 146, 0.08);
+        border: 2px dashed #264892;
+      }
+
       .column-empty {
         text-align: center;
         color: #adb5bd;
@@ -466,12 +495,36 @@ import { TicketCreateComponent } from './ticket-create.component';
       .ticket-card {
         background: #fff;
         border-radius: 0.4rem;
-        padding: 0.75rem;
         margin-bottom: 0.5rem;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-        cursor: pointer;
         border: 1px solid #e9ecef;
         transition: box-shadow 0.15s ease;
+        display: flex;
+        align-items: flex-start;
+        gap: 0;
+        overflow: hidden;
+      }
+
+      .ticket-drag-handle {
+        flex: 0 0 auto;
+        padding: 0.75rem 0.5rem;
+        color: #adb5bd;
+        cursor: grab;
+        display: flex;
+        align-items: flex-start;
+        padding-top: 0.85rem;
+        touch-action: none;
+      }
+
+      .ticket-drag-handle:active {
+        cursor: grabbing;
+      }
+
+      .ticket-body-click {
+        flex: 1 1 auto;
+        padding: 0.75rem 0.75rem 0.75rem 0.25rem;
+        cursor: pointer;
+        min-width: 0;
       }
 
       .ticket-card:hover {
@@ -504,6 +557,11 @@ import { TicketCreateComponent } from './ticket-create.component';
         font-weight: 600;
         color: #212529;
         line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       .ticket-badges {
@@ -534,7 +592,7 @@ import { TicketCreateComponent } from './ticket-create.component';
 
       /* Owner badges */
       .owner-ai {
-        background-color: #264892;
+        background-color: #6f42c1;
         color: #fff;
       }
       .owner-human {
@@ -561,6 +619,8 @@ export class TicketBoardComponent implements OnInit {
   private router = inject(Router);
   private destroyRef = inject(DestroyRef);
 
+  private summaryTrigger$ = new Subject<void>();
+
   todo: Ticket[] = [];
   inProgress: Ticket[] = [];
   onHold: Ticket[] = [];
@@ -581,8 +641,20 @@ export class TicketBoardComponent implements OnInit {
   readonly faWrench = faWrench;
   readonly faRobot = faRobot;
   readonly faUser = faUser;
+  readonly faGripVertical = faGripVertical;
 
   ngOnInit(): void {
+    // Wire summary refreshes through switchMap so rapid drops cancel prior calls
+    this.summaryTrigger$
+      .pipe(
+        switchMap(() => this.ticketService.getSummary()),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (s) => (this.summary = s),
+        error: () => {},
+      });
+
     this.loadBoard();
   }
 
@@ -600,22 +672,12 @@ export class TicketBoardComponent implements OnInit {
           this.onHold = board.ON_HOLD;
           this.done = board.DONE;
           this.loading = false;
-          this.loadSummary();
+          this.summaryTrigger$.next();
         },
         error: () => {
           this.errorMessage = 'Fehler beim Laden des Boards.';
           this.loading = false;
         },
-      });
-  }
-
-  loadSummary(): void {
-    this.ticketService
-      .getSummary()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (s) => (this.summary = s),
-        error: () => {},
       });
   }
 
@@ -625,30 +687,34 @@ export class TicketBoardComponent implements OnInit {
     }
 
     const ticket: Ticket = event.item.data;
+    const originalStatus = ticket.status;
+    const originalSolution = ticket.solution;
     const sourceArray = event.previousContainer.data;
     const targetArray = event.container.data;
 
     // Optimistic update
     transferArrayItem(sourceArray, targetArray, event.previousIndex, event.currentIndex);
+    const movedTicket = targetArray[event.currentIndex];
+    if (targetStatus === 'DONE') {
+      movedTicket.solution = 'DONE';
+    } else {
+      movedTicket.solution = null;
+    }
+    movedTicket.status = targetStatus;
 
     this.ticketService
       .setStatus(ticket.id, targetStatus)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
-          // Update solution field in local array after move to/from DONE
-          const movedTicket = targetArray[event.currentIndex];
-          if (targetStatus === 'DONE') {
-            movedTicket.solution = 'DONE';
-          } else if (ticket.status === 'DONE') {
-            movedTicket.solution = null;
-          }
-          movedTicket.status = targetStatus;
-          this.loadSummary();
+          this.summaryTrigger$.next();
         },
         error: () => {
-          // Rollback
+          // Rollback: move card back and restore original state
           transferArrayItem(targetArray, sourceArray, event.currentIndex, event.previousIndex);
+          const rolledBack = sourceArray[event.previousIndex];
+          rolledBack.status = originalStatus;
+          rolledBack.solution = originalSolution;
           this.dropError = 'Fehler beim Verschieben des Tickets. Bitte versuche es erneut.';
           this.notification.error('Ticket konnte nicht verschoben werden.');
         },
