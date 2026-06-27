@@ -13,6 +13,14 @@ Two independent Claude-Code-in-CI agents. Both are documented in full in [`docs/
 
 Agent endpoints authenticate with `requireAgentToken` (`AGENT_API_TOKEN`); cron triggers with `requireCronAuth` (`CRON_SECRET` or admin session). See [`docs/API-TASKS.md`](docs/API-TASKS.md) for endpoint signatures, required secrets, and board mechanics.
 
+### Ticket System (Kanban, advanced workshop)
+
+A fake ticketing system for the software-factory training. Sits beside `agent-tasks`. Full docs in [`docs/API-TICKETS.md`](docs/API-TICKETS.md).
+
+- `ticket` + `ticket_comment` tables. Kanban board with four columns: `TODO`, `IN_PROGRESS`, `ON_HOLD`, `DONE`. Each ticket has an **owner** — `AI` or `HUMAN` (new tickets default to `HUMAN`). A coding agent works `AI` tickets; humans work the rest.
+- The agent claims (`GET /api/tickets/next`), finishes (`POST /:id/done`), or **asks a question** (`POST /:id/ask` → `ON_HOLD`, owner back to `HUMAN`, question posted as an `AGENT` comment). A human answers via `POST /:id/comments` with `handBackToAi` → back to `TODO`, owner `AI`. Comments form a thread.
+- Resolution: `done` sets `solution=DONE`; an admin can set `solution=WONT_DO` (`POST /:id/wont-do`, only on `owner=HUMAN` tickets). Agent endpoints use `requireAgentToken`; admin endpoints use `requireAuth` + `requireRole('ADMIN')`. Drag-and-drop admin board at `/admin/tickets`. Seeded with the 12 workshop specs; `POST /api/tickets/reset` re-seeds.
+
 ## Writing Style
 
 When writing Markdown (specs, plans, docs, reviews): as short & brief as possible. Short sentences. Simple words non-native speakers understand. No passive voice. Use sentence fragments.
