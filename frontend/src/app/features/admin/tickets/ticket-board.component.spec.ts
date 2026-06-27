@@ -344,6 +344,65 @@ describe('TicketBoardComponent — onDrop() success path', () => {
     resolver!(makeTicket(1, { status: 'IN_PROGRESS' }));
     tick();
   }));
+
+  it('sets solution to "DONE" on the moved card when dropping INTO the DONE column', fakeAsync(() => {
+    mockService.setStatus.and.returnValue(of(makeTicket(1, { status: 'DONE', solution: 'DONE' })));
+
+    const fixture = TestBed.createComponent(TicketBoardComponent);
+    const component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    const ticket = component.todo[0]; // starts with solution: null
+    expect(ticket.solution).toBeNull();
+
+    const dropEvent = {
+      previousContainer: { data: component.todo },
+      container: { data: component.done },
+      previousIndex: 0,
+      currentIndex: 0,
+      item: { data: ticket },
+    } as unknown as CdkDragDrop<Ticket[]>;
+
+    component.onDrop(dropEvent, 'DONE');
+    tick();
+
+    // After optimistic update the moved card in the done array has solution === 'DONE'
+    expect(component.done[0].solution).toBe('DONE');
+  }));
+
+  it('sets solution to null on the moved card when dropping OUT of the DONE column', fakeAsync(() => {
+    mockService.setStatus.and.returnValue(of(makeTicket(5, { status: 'TODO', solution: null })));
+
+    // Build a board that has a DONE ticket to drag out
+    const boardWithDone: TicketBoard = {
+      TODO: [],
+      IN_PROGRESS: [],
+      ON_HOLD: [],
+      DONE: [makeTicket(5, { status: 'DONE', solution: 'DONE' })],
+    };
+    mockService.getBoard.and.returnValue(of(boardWithDone));
+
+    const fixture = TestBed.createComponent(TicketBoardComponent);
+    const component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    const ticket = component.done[0]; // solution === 'DONE'
+    expect(ticket.solution).toBe('DONE');
+
+    const dropEvent = {
+      previousContainer: { data: component.done },
+      container: { data: component.todo },
+      previousIndex: 0,
+      currentIndex: 0,
+      item: { data: ticket },
+    } as unknown as CdkDragDrop<Ticket[]>;
+
+    component.onDrop(dropEvent, 'TODO');
+    tick();
+
+    // After optimistic update the moved card in todo has solution === null
+    expect(component.todo[0].solution).toBeNull();
+  }));
 });
 
 // ─── onDrop() — rollback on HTTP error ────────────────────────────────────────
@@ -395,13 +454,14 @@ describe('TicketBoardComponent — onDrop() error rollback', () => {
     expect(component.inProgress.length).toBe(initialInProgressLength);
   }));
 
-  it('restores the original status on the rolled-back card', fakeAsync(() => {
+  it('restores the original status and solution on the rolled-back card', fakeAsync(() => {
     const fixture = TestBed.createComponent(TicketBoardComponent);
     const component = fixture.componentInstance;
     fixture.detectChanges();
 
     const ticket = component.todo[0];
     const originalStatus = ticket.status; // 'TODO'
+    const originalSolution = ticket.solution; // null
 
     const dropEvent = {
       previousContainer: { data: component.todo },
@@ -416,6 +476,7 @@ describe('TicketBoardComponent — onDrop() error rollback', () => {
 
     // After rollback the ticket is back at index 0 in todo
     expect(component.todo[0].status).toBe(originalStatus);
+    expect(component.todo[0].solution).toBe(originalSolution);
   }));
 
   it('sets dropError message after failed drop', fakeAsync(() => {
@@ -464,6 +525,7 @@ describe('TicketBoardComponent — onDrop() error rollback', () => {
 // ─── Done column: solution badge ──────────────────────────────────────────────
 
 describe('TicketBoardComponent — Done column solution badge', () => {
+  let fixture: ComponentFixture<TicketBoardComponent>;
   let component: TicketBoardComponent;
 
   beforeEach(async () => {
@@ -481,7 +543,7 @@ describe('TicketBoardComponent — Done column solution badge', () => {
     mockService.getSummary.and.returnValue(of(MOCK_SUMMARY));
     await setupTestBed(mockService);
 
-    const fixture = TestBed.createComponent(TicketBoardComponent);
+    fixture = TestBed.createComponent(TicketBoardComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
@@ -502,10 +564,59 @@ describe('TicketBoardComponent — Done column solution badge', () => {
     expect(component.solutionLabel('WONT_DO')).toBe('Wird nicht gemacht');
   });
 
-  it('done column renders both solution badge labels', () => {
-    const text: string = document.body.textContent ?? '';
+  it('done column renders both solution badge labels within THIS component', () => {
+    // Scoped to fixture.nativeElement — not document.body — to prevent cross-test leakage.
+    const text: string = fixture.nativeElement.textContent ?? '';
     expect(text).toContain('Erledigt');
     expect(text).toContain('Wird nicht gemacht');
+  });
+});
+
+// ─── Solution badge absent on non-Done cards ──────────────────────────────────
+
+describe('TicketBoardComponent — solution badge absent on non-Done cards', () => {
+  let fixture: ComponentFixture<TicketBoardComponent>;
+
+  beforeEach(async () => {
+    // Board with only TODO / IN_PROGRESS / ON_HOLD tickets — all solution: null
+    const boardNoSolution: TicketBoard = {
+      TODO: [makeTicket(1), makeTicket(2)],
+      IN_PROGRESS: [makeTicket(3, { status: 'IN_PROGRESS' })],
+      ON_HOLD: [makeTicket(4, { status: 'ON_HOLD' })],
+      DONE: [],
+    };
+
+    const mockService = makeMockTicketService();
+    mockService.getBoard.and.returnValue(of(boardNoSolution));
+    mockService.getSummary.and.returnValue(of(MOCK_SUMMARY));
+    await setupTestBed(mockService);
+
+    fixture = TestBed.createComponent(TicketBoardComponent);
+    fixture.detectChanges();
+  });
+
+  it('does not render any solution badge for TODO tickets', () => {
+    const solutionBadges = fixture.nativeElement.querySelectorAll(
+      '[class*="solution-done"], [class*="solution-wontdo"]',
+    );
+    expect(solutionBadges.length).toBe(0);
+  });
+
+  it('does not render "Erledigt" solution label in the TODO column', () => {
+    // The word "Erledigt" appears in the KPI tile label — verify no solution BADGE text.
+    // Check that no element with a solution CSS class exists.
+    const badges: NodeListOf<Element> = fixture.nativeElement.querySelectorAll(
+      '.solution-done, .solution-wontdo',
+    );
+    expect(badges.length).toBe(0);
+  });
+
+  it('does not render "Wird nicht gemacht" solution label anywhere in the board columns', () => {
+    // This label only appears on WONT_DO solution badges — should be absent here.
+    const boardContainer: HTMLElement | null =
+      fixture.nativeElement.querySelector('.board-container');
+    expect(boardContainer).toBeTruthy();
+    expect(boardContainer!.textContent).not.toContain('Wird nicht gemacht');
   });
 });
 

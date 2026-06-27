@@ -347,6 +347,20 @@ describe('TicketDetailComponent — "Zurück an KI" (handBackToAi)', () => {
     expect(handBackBtn!.disabled).toBeTrue();
   });
 
+  it('"Zurück an KI" button is disabled when owner is HUMAN but comment body is empty', () => {
+    // owner === 'HUMAN' (humanTicket), body is empty by default
+    component.commentForm.controls.body.setValue('');
+    fixture.detectChanges();
+
+    const buttons: NodeListOf<HTMLButtonElement> = fixture.nativeElement.querySelectorAll('button');
+    const handBackBtn = Array.from(buttons).find((b) =>
+      b.textContent?.includes('Zurück an KI'),
+    );
+    expect(handBackBtn).toBeTruthy();
+    // Disabled because body.trim().length === 0, even though owner is HUMAN
+    expect(handBackBtn!.disabled).toBeTrue();
+  });
+
   it('shows the hint "Die KI ist bereits Eigentümer." when owner is AI', async () => {
     const aiTicket = makeTicket({ owner: 'AI' });
     mockService.getById.and.returnValue(of(aiTicket));
@@ -373,6 +387,53 @@ describe('TicketDetailComponent — "Zurück an KI" (handBackToAi)', () => {
     tick();
 
     expect(component.commentForm.controls.body.value).toBe('');
+  }));
+});
+
+// ─── addComment() — error path ────────────────────────────────────────────────
+
+describe('TicketDetailComponent — addComment() error path', () => {
+  let fixture: ComponentFixture<TicketDetailComponent>;
+  let component: TicketDetailComponent;
+
+  beforeEach(async () => {
+    const mockService = makeMockTicketService();
+    mockService.getById.and.returnValue(of(makeTicket({ owner: 'HUMAN', status: 'ON_HOLD' })));
+    mockService.addComment.and.returnValue(throwError(() => new Error('Server error')));
+
+    await TestBed.configureTestingModule({
+      imports: [TicketDetailComponent],
+      providers: [
+        provideRouter([]),
+        { provide: TicketService, useValue: mockService },
+        { provide: NotificationService, useValue: makeMockNotification() },
+        { provide: NgbModal, useValue: makeModalStub() },
+        { provide: ActivatedRoute, useValue: makeRoute('10') },
+      ],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(TicketDetailComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('sets commentError when addComment() service call fails', fakeAsync(() => {
+    component.commentForm.controls.body.setValue('Mein Kommentar');
+    component.addComment(false);
+    tick();
+
+    expect(component.commentError).toBe('Fehler beim Speichern des Kommentars.');
+  }));
+
+  it('renders .alert-danger with the German error message after addComment() fails', fakeAsync(() => {
+    component.commentForm.controls.body.setValue('Mein Kommentar');
+    component.addComment(false);
+    tick();
+    fixture.detectChanges();
+
+    const alert: HTMLElement = fixture.nativeElement.querySelector('.alert-danger');
+    expect(alert).toBeTruthy();
+    expect(alert.textContent).toContain('Fehler beim Speichern des Kommentars.');
   }));
 });
 
@@ -432,35 +493,45 @@ describe('TicketDetailComponent — "Won\'t Do" button', () => {
     expect(component.ticket?.solution).toBe('WONT_DO');
     expect(component.ticket?.status).toBe('DONE');
   }));
+});
 
-  it('does NOT call wontDo() when the confirm dialog is dismissed', fakeAsync(() => {
-    // Rebuild with a dismiss-modal stub
-    TestBed.resetTestingModule();
+// ─── "Won't Do" dismissed — separate describe to avoid TestBed.resetTestingModule inside fakeAsync ──
 
-    const mockServiceDismiss = makeMockTicketService();
-    mockServiceDismiss.getById.and.returnValue(of(humanOnHoldTicket));
-    mockServiceDismiss.wontDo.and.returnValue(
+describe('TicketDetailComponent — "Won\'t Do" dismissed modal', () => {
+  let component: TicketDetailComponent;
+  let mockService: jasmine.SpyObj<TicketService>;
+
+  const humanOnHoldTicket = makeTicket({ owner: 'HUMAN', status: 'ON_HOLD' });
+
+  beforeEach(async () => {
+    mockService = makeMockTicketService();
+    mockService.getById.and.returnValue(of(humanOnHoldTicket));
+    mockService.wontDo.and.returnValue(
       of({ ...humanOnHoldTicket, status: 'DONE', solution: 'WONT_DO' }),
     );
 
-    TestBed.configureTestingModule({
+    await TestBed.configureTestingModule({
       imports: [TicketDetailComponent],
       providers: [
         provideRouter([]),
-        { provide: TicketService, useValue: mockServiceDismiss },
+        { provide: TicketService, useValue: mockService },
         { provide: NotificationService, useValue: makeMockNotification() },
+        // Dismiss stub — modal promise rejects
         { provide: NgbModal, useValue: makeModalDismissStub() },
         { provide: ActivatedRoute, useValue: makeRoute('10') },
       ],
-    });
-    const fixture2 = TestBed.createComponent(TicketDetailComponent);
-    const component2 = fixture2.componentInstance;
-    fixture2.detectChanges();
+    }).compileComponents();
 
-    component2.markWontDo();
+    const fixture = TestBed.createComponent(TicketDetailComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('does NOT call wontDo() when the confirm dialog is dismissed', fakeAsync(() => {
+    component.markWontDo();
     tick(); // the promise rejects (dismissed)
 
-    expect(mockServiceDismiss.wontDo).not.toHaveBeenCalled();
+    expect(mockService.wontDo).not.toHaveBeenCalled();
   }));
 });
 
