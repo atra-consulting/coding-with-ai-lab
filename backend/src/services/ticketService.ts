@@ -10,7 +10,7 @@ import {
   type TicketStatus,
   type TicketSolution,
 } from '../db/schema/enums.js';
-import { seedTickets } from '../seed/ticketSeed.js';
+import { seedTickets, TICKET_SEED_COUNT } from '../seed/ticketSeed.js';
 
 // ─── DTOs ─────────────────────────────────────────────────────────────────────
 
@@ -225,124 +225,109 @@ export const ticketService = {
 
   /**
    * Mark ticket done (agent). Guard: status must be IN_PROGRESS.
-   * Optional closing AGENT comment inserted in one batch.
+   * Optional closing AGENT comment inserted after the guarded UPDATE succeeds.
    */
   async done(id: number, comment?: string): Promise<TicketDTO> {
     const now = new Date().toISOString();
 
-    if (comment !== undefined) {
-      const updateResult = await client.batch(
-        [
-          {
-            sql: `UPDATE ticket
-                  SET status = 'DONE', solution = 'DONE', resolvedAt = ?, updatedAt = ?
-                  WHERE id = ? AND status = 'IN_PROGRESS'
-                  RETURNING id`,
-            args: [now, now, id],
-          },
-          {
-            sql: `INSERT INTO ticket_comment (ticketId, author, authorName, body, createdAt)
-                  VALUES (?, 'AGENT', NULL, ?, ?)`,
-            args: [id, comment, now],
-          },
-        ],
-        'write',
+    // Step 1: guarded UPDATE alone
+    const result = await client.execute({
+      sql: `UPDATE ticket
+            SET status = 'DONE', solution = 'DONE', resolvedAt = ?, updatedAt = ?
+            WHERE id = ? AND status = 'IN_PROGRESS'`,
+      args: [now, now, id],
+    });
+
+    // Step 2: 0 rows → 404 if missing, 409 if wrong state
+    if (result.rowsAffected === 0) {
+      await this.findById(id); // throws NotFoundError 404 if missing
+      throw new ConflictError(
+        `Ticket ${id} ist nicht in Bearbeitung und kann nicht abgeschlossen werden`,
       );
-      if (updateResult[0].rows.length === 0) {
-        await this.findById(id); // throws 404 if missing
-        throw new ConflictError(
-          `Ticket ${id} ist nicht in Bearbeitung und kann nicht abgeschlossen werden`,
-        );
-      }
-    } else {
-      const result = await client.execute({
-        sql: `UPDATE ticket
-              SET status = 'DONE', solution = 'DONE', resolvedAt = ?, updatedAt = ?
-              WHERE id = ? AND status = 'IN_PROGRESS'`,
-        args: [now, now, id],
-      });
-      if (result.rowsAffected === 0) {
-        await this.findById(id); // throws 404 if missing
-        throw new ConflictError(
-          `Ticket ${id} ist nicht in Bearbeitung und kann nicht abgeschlossen werden`,
-        );
-      }
     }
 
+    // Step 3: UPDATE succeeded → insert comment if provided
+    if (comment !== undefined) {
+      await client.execute({
+        sql: `INSERT INTO ticket_comment (ticketId, author, authorName, body, createdAt)
+              VALUES (?, 'AGENT', NULL, ?, ?)`,
+        args: [id, comment, now],
+      });
+    }
+
+    // Step 4: return fresh ticket
     return this.findById(id);
   },
 
   /**
    * Hand ticket back to human with a question (agent).
    * Guard: status must be IN_PROGRESS.
-   * Batch: UPDATE status+owner + INSERT AGENT comment.
+   * Sequential: UPDATE first, then INSERT AGENT comment only on success.
    */
   async ask(id: number, question: string): Promise<TicketDTO> {
     const now = new Date().toISOString();
 
-    const results = await client.batch(
-      [
-        {
-          sql: `UPDATE ticket
-                SET status = 'ON_HOLD', owner = 'HUMAN', updatedAt = ?
-                WHERE id = ? AND status = 'IN_PROGRESS'
-                RETURNING id`,
-          args: [now, id],
-        },
-        {
-          sql: `INSERT INTO ticket_comment (ticketId, author, authorName, body, createdAt)
-                VALUES (?, 'AGENT', NULL, ?, ?)`,
-          args: [id, question, now],
-        },
-      ],
-      'write',
-    );
+    // Step 1: guarded UPDATE alone
+    const result = await client.execute({
+      sql: `UPDATE ticket
+            SET status = 'ON_HOLD', owner = 'HUMAN', updatedAt = ?
+            WHERE id = ? AND status = 'IN_PROGRESS'`,
+      args: [now, id],
+    });
 
-    if (results[0].rows.length === 0) {
-      await this.findById(id); // throws 404 if missing
+    // Step 2: 0 rows → 404 if missing, 409 if wrong state
+    if (result.rowsAffected === 0) {
+      await this.findById(id); // throws NotFoundError 404 if missing
       throw new ConflictError(
         `Ticket ${id} ist nicht in Bearbeitung und kann daher nicht auf Halten gesetzt werden`,
       );
     }
 
+    // Step 3: UPDATE succeeded → insert the AGENT question comment
+    await client.execute({
+      sql: `INSERT INTO ticket_comment (ticketId, author, authorName, body, createdAt)
+            VALUES (?, 'AGENT', NULL, ?, ?)`,
+      args: [id, question, now],
+    });
+
+    // Step 4: return fresh ticket
     return this.findById(id);
   },
 
   /**
    * Human-only resolution as Won't Do.
    * Guard: status != DONE AND owner = HUMAN.
-   * Batch: UPDATE + optional HUMAN comment.
+   * Sequential: UPDATE first, then INSERT HUMAN comment only on success.
    */
   async wontDo(id: number, comment?: string): Promise<TicketDTO> {
     const now = new Date().toISOString();
 
-    const stmts: { sql: string; args: (string | number | null)[] }[] = [
-      {
-        sql: `UPDATE ticket
-              SET status = 'DONE', solution = 'WONT_DO', resolvedAt = ?, updatedAt = ?
-              WHERE id = ? AND status != 'DONE' AND owner = 'HUMAN'
-              RETURNING id`,
-        args: [now, now, id],
-      },
-    ];
+    // Step 1: guarded UPDATE alone
+    const result = await client.execute({
+      sql: `UPDATE ticket
+            SET status = 'DONE', solution = 'WONT_DO', resolvedAt = ?, updatedAt = ?
+            WHERE id = ? AND status != 'DONE' AND owner = 'HUMAN'`,
+      args: [now, now, id],
+    });
 
+    // Step 2: 0 rows → 404 if missing, 409 if wrong state
+    if (result.rowsAffected === 0) {
+      await this.findById(id); // throws NotFoundError 404 if missing
+      throw new ConflictError(
+        `Ticket ${id} kann nicht als "Won't Do" markiert werden: entweder bereits erledigt oder nicht dem Menschen zugewiesen`,
+      );
+    }
+
+    // Step 3: UPDATE succeeded → insert comment if provided
     if (comment !== undefined) {
-      stmts.push({
+      await client.execute({
         sql: `INSERT INTO ticket_comment (ticketId, author, authorName, body, createdAt)
               VALUES (?, 'HUMAN', NULL, ?, ?)`,
         args: [id, comment, now],
       });
     }
 
-    const results = await client.batch(stmts, 'write');
-
-    if (results[0].rows.length === 0) {
-      await this.findById(id); // throws 404 if missing
-      throw new ConflictError(
-        `Ticket ${id} kann nicht als "Won't Do" markiert werden: entweder bereits erledigt oder nicht dem Menschen zugewiesen`,
-      );
-    }
-
+    // Step 4: return fresh ticket
     return this.findById(id);
   },
 
@@ -500,18 +485,18 @@ export const ticketService = {
     const now = new Date().toISOString();
 
     let sql: string;
-    let args: (string | null)[];
+    let args: (string | number | null)[];
 
     if (status === 'DONE') {
       sql = `UPDATE ticket
              SET status = ?, solution = 'DONE', resolvedAt = ?, updatedAt = ?
              WHERE id = ?`;
-      args = [status, now, now, String(id)];
+      args = [status, now, now, id];
     } else {
       sql = `UPDATE ticket
              SET status = ?, solution = NULL, resolvedAt = NULL, updatedAt = ?
              WHERE id = ?`;
-      args = [status, now, String(id)];
+      args = [status, now, id];
     }
 
     const result = await client.execute({ sql, args });
@@ -579,7 +564,7 @@ export const ticketService = {
       'write',
     );
     await seedTickets();
-    return 12; // matches TICKET_SEED.length in ticketSeed.ts
+    return TICKET_SEED_COUNT;
   },
 };
 

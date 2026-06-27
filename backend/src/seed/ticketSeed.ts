@@ -233,6 +233,8 @@ const TICKET_COMMENT_INSERT_SQL =
   `INSERT OR IGNORE INTO ticket_comment (id, ticketId, author, authorName, body, createdAt)` +
   ` VALUES (@id, @ticketId, @author, @authorName, @body, @createdAt)`;
 
+export const TICKET_SEED_COUNT = TICKET_SEED.length;
+
 export async function seedTickets(): Promise<void> {
   // First batch: all ticket rows (parent table)
   const ticketStmts = TICKET_SEED.map((row) => ({
