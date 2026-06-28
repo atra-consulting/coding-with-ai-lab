@@ -32,3 +32,18 @@ export const AGENT_TASK_STATUS = [
   'REJECTED',
 ] as const;
 export type AgentTaskStatus = (typeof AGENT_TASK_STATUS)[number];
+
+export const TICKET_OWNER = ['AI', 'HUMAN'] as const;
+export type TicketOwner = (typeof TICKET_OWNER)[number];
+
+export const TICKET_TYPE = ['FEATURE', 'BUG', 'CHORE'] as const;
+export type TicketType = (typeof TICKET_TYPE)[number];
+
+export const TICKET_STATUS = ['TODO', 'IN_PROGRESS', 'ON_HOLD', 'DONE'] as const;
+export type TicketStatus = (typeof TICKET_STATUS)[number];
+
+export const TICKET_SOLUTION = ['DONE', 'WONT_DO'] as const;
+export type TicketSolution = (typeof TICKET_SOLUTION)[number];
+
+export const TICKET_COMMENT_AUTHOR = ['HUMAN', 'AGENT'] as const;
+export type TicketCommentAuthor = (typeof TICKET_COMMENT_AUTHOR)[number];

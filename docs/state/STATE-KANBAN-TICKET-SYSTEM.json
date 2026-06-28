@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "task_key": "KANBAN-TICKET-SYSTEM",
+  "status": "completed",
+  "current_step": "13.2",
+  "started": "2026-06-26T20:00:23Z",
+  "updated": "2026-06-26T20:00:23Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Build a fake Kanban ticketing system for the Claude Code training software factory. Columns: To Do, In Progress, On Hold, Done. Copy and adapt the existing agent-tasks API (retrieve, mark done/skipped) to tickets, but with more states and more methods because Claude Code can ask a question (old GitHub 'Input needed' / 'Refinement needed' flow, renamed 'Ready for AI').",
+    "special_instructions": null,
+    "branch_name": "kanban-ticket-system-api",
+    "original_branch": "main",
+    "original_head": "210608671b8f81b06948734f9584bed09d9096e8",
+    "docs_folder": "docs",
+    "is_git_repo": true,
+    "workflow_scope": "full",
+    "pr_prefix": "feat:",
+    "pr_exists": true,
+    "pr_url": "https://github.com/atra-consulting/coding-with-ai-lab/pull/95"
+  },
+  "discovery": {
+    "agents_available": true,
+    "writer_agents": [],
+    "coding_agents": [],
+    "review_agents": [],
+    "test_coding_agents": [],
+    "test_review_agents": [],
+    "test_runner_agents": [],
+    "tooling_coding_agents": [],
+    "tooling_review_agents": [],
+    "test_command": "cd backend && npx playwright test ; cd frontend && npx ng test --configuration=ci"
+  },
+  "artifacts": {
+    "prd_skipped": false,
+    "prd_file": "docs/prds/PRD-KANBAN-TICKET-SYSTEM.md",
+    "plan_file": "docs/plans/PLAN-KANBAN-TICKET-SYSTEM.md"
+  },
+  "completed_steps": []
+}

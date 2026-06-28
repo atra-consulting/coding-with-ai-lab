@@ -326,8 +326,50 @@ A **second** autonomous agent, separate from the agent-task runner. It works aga
 
 ---
 
+## For skill authors
+
+A workshop skill drives this API as an agent. Use the **agent endpoints only** — the admin endpoints (`summary`, `reset`, list, detail) are for the human dashboard.
+
+**Auth.** Send the agent token on every call (`AGENT_API_TOKEN`). Same token and header scheme as the Tickets API:
+
+```
+Authorization: Bearer $AGENT_API_TOKEN
+# or:
+X-Agent-Token: $AGENT_API_TOKEN
+```
+
+**The three calls a skill needs:**
+
+| Step | Call | Notes |
+|------|------|-------|
+| Claim | `GET /api/agent-tasks/next?source=…` | **`source` is required** — one of `EMAIL`, `GITHUB_ISSUE`, `APP_LOG`, `ERROR_REPORT`. Claims the oldest `OPEN` task of that source, flips it to `IN_PROGRESS`. **`204` = none for that source.** |
+| Finish | `POST /api/agent-tasks/:id/done` | Body `{ "comment"?: string }`. From `IN_PROGRESS` → `DONE`. |
+| Reject | `POST /api/agent-tasks/:id/reject` | Body `{ "comment": string }` (required). From `IN_PROGRESS` → `REJECTED`. Use when the task is out of scope or not worth doing. |
+
+**Loop shape:**
+
+```
+for each source in [EMAIL, GITHUB_ISSUE, APP_LOG, ERROR_REPORT]:
+    while GET /next?source=<source> returns 200:
+        decide: solve or reject?
+        if solve:   POST /:id/done   {comment}
+        else:       POST /:id/reject {comment}
+    # 204 → this source is drained
+```
+
+**What's different from tickets** (see `docs/API-TICKETS.md`):
+
+- **Tasks are one-shot.** Claim, then either `done` or `reject` — no conversation. There is no "ask a question" path and no comment thread. If a task lacks information, you `reject` it (with a reason) rather than hand it back.
+- **`/next` requires `?source=`.** Tickets have no required parameter (only an optional `?type=`).
+- **Lifecycle is `OPEN → IN_PROGRESS → DONE | REJECTED`** — there is no `ON_HOLD` and no owner concept.
+
+**One token, two queues.** This API and the Tickets API share `AGENT_API_TOKEN` and the same header scheme. A single skill can work both — pick the base path (`/api/agent-tasks` vs `/api/tickets`) and the matching verbs.
+
+---
+
 ## See also
 
 - `docs/WORKSHOP-AUTONOMOUS-TASKS.md` — local testing, reset between runs, removing task-solution commits, solve-all script.
 - `docs/prds/PRD-AUTONOMOUS-TASK-SOURCES.md` — full requirements and acceptance criteria.
+- `docs/API-TICKETS.md` — Kanban ticket queue (separate system, adds the ask/answer conversation).
 - `.claude/prompts/agent-*.md` — the per-source prompts that call this API.

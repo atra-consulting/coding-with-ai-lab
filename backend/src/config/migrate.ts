@@ -1,5 +1,6 @@
 import { client } from './db.js';
 import { seedAgentTasks } from '../seed/agentTaskSeed.js';
+import { seedTickets } from '../seed/ticketSeed.js';
 
 export async function runMigrations(): Promise<void> {
   console.log('Running database migrations...');
@@ -114,6 +115,29 @@ export async function runMigrations(): Promise<void> {
       updatedAt   TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
+    CREATE TABLE IF NOT EXISTS ticket (
+      id          INTEGER PRIMARY KEY AUTOINCREMENT,
+      owner       TEXT NOT NULL DEFAULT 'HUMAN',
+      type        TEXT NOT NULL,
+      title       TEXT NOT NULL,
+      body        TEXT NOT NULL,
+      status      TEXT NOT NULL DEFAULT 'TODO',
+      solution    TEXT,
+      pickedUpAt  TEXT,
+      resolvedAt  TEXT,
+      createdAt   TEXT NOT NULL DEFAULT (datetime('now')),
+      updatedAt   TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS ticket_comment (
+      id          INTEGER PRIMARY KEY AUTOINCREMENT,
+      ticketId    INTEGER NOT NULL REFERENCES ticket(id) ON DELETE CASCADE,
+      author      TEXT NOT NULL,
+      authorName  TEXT,
+      body        TEXT NOT NULL,
+      createdAt   TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
     CREATE TABLE IF NOT EXISTS cron_run (
       id           INTEGER PRIMARY KEY AUTOINCREMENT,
       job          TEXT NOT NULL,
@@ -146,6 +170,9 @@ export async function runMigrations(): Promise<void> {
     CREATE INDEX IF NOT EXISTS idx_agent_task_source_status ON agent_task(source, status);
     CREATE INDEX IF NOT EXISTS idx_cron_run_startedAt ON cron_run(startedAt DESC);
     CREATE INDEX IF NOT EXISTS idx_cron_run_job_startedAt ON cron_run(job, startedAt DESC);
+    CREATE INDEX IF NOT EXISTS idx_ticket_status_owner_createdAt ON ticket(status, owner, createdAt);
+    CREATE INDEX IF NOT EXISTS idx_ticket_type_status ON ticket(type, status);
+    CREATE INDEX IF NOT EXISTS idx_ticket_comment_ticketId ON ticket_comment(ticketId);
   `);
 
   // Idempotent data seed: agent tasks are inserted on every deployment via
@@ -153,6 +180,7 @@ export async function runMigrations(): Promise<void> {
   // independent of the firma-empty guard in runDataMigration(). Existing rows
   // (e.g. DONE/REJECTED/IN_PROGRESS) are never overwritten.
   await seedAgentTasks();
+  await seedTickets();
 
   console.log('Database migrations complete.');
 }

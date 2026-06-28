@@ -24,4 +24,16 @@ export const ADMIN_ROUTES: Routes = [
     loadComponent: () =>
       import('./cron/cron-dashboard.component').then((m) => m.CronDashboardComponent),
   },
+  {
+    path: 'tickets',
+    canActivate: [roleGuard('ROLE_ADMIN')],
+    loadComponent: () =>
+      import('./tickets/ticket-board.component').then((m) => m.TicketBoardComponent),
+  },
+  {
+    path: 'tickets/:id',
+    canActivate: [roleGuard('ROLE_ADMIN')],
+    loadComponent: () =>
+      import('./tickets/ticket-detail.component').then((m) => m.TicketDetailComponent),
+  },
 ];

@@ -118,6 +118,33 @@ export const agentTask = sqliteTable('agent_task', {
   updatedAt: text('updatedAt').notNull().default(sql`(datetime('now'))`),
 });
 
+// ─── ticket ───────────────────────────────────────────────────────────────────
+export const ticket = sqliteTable('ticket', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  owner: text('owner').notNull().default('HUMAN'),
+  type: text('type').notNull(),
+  title: text('title').notNull(),
+  body: text('body').notNull(),
+  status: text('status').notNull().default('TODO'),
+  solution: text('solution'),
+  pickedUpAt: text('pickedUpAt'),
+  resolvedAt: text('resolvedAt'),
+  createdAt: text('createdAt').notNull().default(sql`(datetime('now'))`),
+  updatedAt: text('updatedAt').notNull().default(sql`(datetime('now'))`),
+});
+
+// ─── ticketComment ────────────────────────────────────────────────────────────
+export const ticketComment = sqliteTable('ticket_comment', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  ticketId: integer('ticketId')
+    .notNull()
+    .references(() => ticket.id, { onDelete: 'cascade' }),
+  author: text('author').notNull(),
+  authorName: text('authorName'),
+  body: text('body').notNull(),
+  createdAt: text('createdAt').notNull().default(sql`(datetime('now'))`),
+});
+
 // ─── cronRun ──────────────────────────────────────────────────────────────────
 export const cronRun = sqliteTable('cron_run', {
   id:           integer('id').primaryKey({ autoIncrement: true }),
