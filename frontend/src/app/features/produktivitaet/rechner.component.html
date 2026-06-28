@@ -106,7 +106,8 @@
           class="process-svg"
           viewBox="0 0 600 32"
           preserveAspectRatio="none"
-          [attr.aria-label]="p.titel + ': ' + (getProzessTotal(prozessIdx) | dauer)"
+          [attr.aria-labelledby]="'bar-title-' + prozessIdx"
+          [attr.aria-describedby]="'bar-desc-' + prozessIdx"
         >
           <title [id]="'bar-title-' + prozessIdx">{{ p.titel }}: {{ getProzessTotal(prozessIdx) | dauer }}</title>
           <desc [id]="'bar-desc-' + prozessIdx">
@@ -129,21 +130,34 @@
 
           @for (seg of getSegments(prozessIdx, 600); track seg.type + '-' + seg.index) {
             @if (seg.type === 'work') {
-              <rect
-                class="work-rect"
-                [attr.x]="seg.x"
-                y="0"
-                [attr.width]="seg.width"
-                height="32"
-                fill="#264892"
-                [attr.tabindex]="svgSnapshot().prozesse[prozessIdx].works[seg.index] === 0 ? -1 : 0"
-                role="button"
-                [attr.aria-label]="svgSnapshot().prozesse[prozessIdx].works[seg.index] === 0 ? null : getWorkAriaLabel(prozessIdx, seg.index)"
-                (click)="setFocusedStep(prozessIdx, seg.index)"
-                (keydown.enter)="setFocusedStep(prozessIdx, seg.index)"
-                (keydown.space)="$event.preventDefault(); setFocusedStep(prozessIdx, seg.index)"
-                (focus)="setFocusedStep(prozessIdx, seg.index)"
-              />
+              @if (svgSnapshot().prozesse[prozessIdx].works[seg.index] === 0) {
+                <rect
+                  class="work-rect"
+                  [attr.x]="seg.x"
+                  y="0"
+                  [attr.width]="seg.width"
+                  height="32"
+                  fill="#264892"
+                  tabindex="-1"
+                  aria-hidden="true"
+                />
+              } @else {
+                <rect
+                  class="work-rect"
+                  [attr.x]="seg.x"
+                  y="0"
+                  [attr.width]="seg.width"
+                  height="32"
+                  fill="#264892"
+                  tabindex="0"
+                  role="button"
+                  [attr.aria-label]="getWorkAriaLabel(prozessIdx, seg.index)"
+                  (click)="setFocusedStep(prozessIdx, seg.index)"
+                  (keydown.enter)="setFocusedStep(prozessIdx, seg.index)"
+                  (keydown.space)="$event.preventDefault(); setFocusedStep(prozessIdx, seg.index)"
+                  (focus)="setFocusedStep(prozessIdx, seg.index)"
+                />
+              }
               @if (seg.width >= 24) {
                 <text
                   [attr.x]="seg.x + seg.width / 2"
@@ -295,7 +309,7 @@
   <div class="card-body">
     <h5 class="card-title">Schritt-Zeiten</h5>
 
-    <ul id="schritt-zeiten-eingabe" ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs mb-3">
+    <ul id="schritt-zeiten-eingabe" ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs mb-3" tabindex="-1">
 
       <!-- Tab 1: Menschlich (23 steps) -->
       <li [ngbNavItem]="1">
