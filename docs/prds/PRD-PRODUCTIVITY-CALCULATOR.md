@@ -267,4 +267,4 @@ Commits:
 - `cac8bbe` fix: Rechner a11y review findings (ghost buttons, skip link, svg desc)
 - `50b0746` fix: move Rechner skip-link target to card-body
 
-PR: _added after PR creation._
+PR: https://github.com/atra-consulting/coding-with-ai-lab/pull/96
