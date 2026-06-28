@@ -16,6 +16,7 @@ import dashboardRouter from './routes/dashboard.js';
 import agentTasksRouter from './routes/agentTasks.js';
 import ticketsRouter from './routes/tickets.js';
 import cronRouter from './routes/cron.js';
+import szenarienRouter from './routes/szenario.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const { version } = JSON.parse(readFileSync(join(__dirname, '../package.json'), 'utf8')) as { version: string };
@@ -50,6 +51,7 @@ app.use('/api/dashboard', dashboardRouter);
 app.use('/api/agent-tasks', agentTasksRouter);
 app.use('/api/tickets', ticketsRouter);
 app.use('/api/cron', cronRouter);
+app.use('/api/szenarien', szenarienRouter);
 
 // Error handler MUST be last
 app.use(errorHandler);

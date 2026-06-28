@@ -77,6 +77,32 @@ export const ChanceCreateSchema = z.object({
 });
 export type ChanceCreateDTO = z.infer<typeof ChanceCreateSchema>;
 
+// ─── Szenario ─────────────────────────────────────────────────────────────────
+export const PROCESS_STEP_COUNTS = { human: 23, semiAutomated: 6, automated: 2 } as const;
+
+const DurationSchema = z
+  .number()
+  .int('Muss eine ganze Zahl sein')
+  .min(0, 'Darf nicht negativ sein')
+  .max(479520, 'Maximal 999 Tage');
+
+function prozessSchema(workCount: number) {
+  return z.object({
+    works: z.array(DurationSchema).length(workCount, `Genau ${workCount} Arbeitszeiten`),
+    waits: z
+      .array(DurationSchema)
+      .length(workCount - 1, `Genau ${workCount - 1} Wartezeiten`),
+  });
+}
+
+export const SzenarioSchema = z.object({
+  name: z.string().min(1, 'Name ist erforderlich'),
+  humanSteps: prozessSchema(PROCESS_STEP_COUNTS.human),
+  semiAutomatedSteps: prozessSchema(PROCESS_STEP_COUNTS.semiAutomated),
+  automatedSteps: prozessSchema(PROCESS_STEP_COUNTS.automated),
+});
+export type SzenarioCreateDTO = z.infer<typeof SzenarioSchema>;
+
 // ─── validate() helper ────────────────────────────────────────────────────────
 export function validate<T>(schema: z.ZodSchema<T>, data: unknown): T {
   const result = schema.safeParse(data);
