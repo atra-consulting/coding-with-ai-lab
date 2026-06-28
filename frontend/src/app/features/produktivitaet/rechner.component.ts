@@ -25,9 +25,9 @@ import { NotificationService } from '../../core/services/notification.service';
 import { SzenarioService } from '../../core/services/szenario.service';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
-import { DauerPipe } from '../../shared/pipes/dauer.pipe';
+import { DauerPipe, minutenZuDauer } from '../../shared/pipes/dauer.pipe';
 import { ZEITEINHEITEN, ZeitEinheit, einheitZuFaktor } from './einheit';
-import { computeComparisonBars, computeSegments } from './svg-util';
+import { computeComparisonBars, computeSegments, SvgSegment } from './svg-util';
 
 interface ProzessSnapshot {
   works: number[];
@@ -73,6 +73,61 @@ const DURATION_VALIDATORS = [
         margin-left: 1rem;
         border-left: 2px solid #dee2e6;
         padding-left: 0.75rem;
+      }
+      .viz-card {
+        overflow-x: hidden;
+      }
+      .process-bar-wrap {
+        margin-bottom: 1.25rem;
+      }
+      .process-bar-wrap:last-child {
+        margin-bottom: 0;
+      }
+      .bar-label-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 0.25rem;
+      }
+      .bar-title {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: #264892;
+      }
+      .bar-total {
+        font-size: 0.85rem;
+        color: #495057;
+      }
+      .process-svg {
+        display: block;
+        width: 100%;
+        height: 32px;
+        overflow: hidden;
+      }
+      .comparison-svg {
+        display: block;
+        width: 100%;
+        overflow: visible;
+      }
+      .step-detail-panel {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        padding: 0.5rem 0.75rem;
+        margin-top: 0.5rem;
+        font-size: 0.85rem;
+      }
+      .step-detail-panel dt {
+        font-weight: 600;
+        color: #264892;
+      }
+      .step-detail-panel dd {
+        color: #495057;
+        margin-bottom: 0.15rem;
+      }
+      .work-rect:focus-visible {
+        outline: 3px solid #264892;
+        outline-offset: 2px;
       }
     `,
   ],
@@ -408,6 +463,17 @@ export class RechnerComponent implements OnInit {
     );
   }
 
+  // Focused step per process (default: step index 0)
+  focusedStep = signal<number[]>([0, 0, 0]);
+
+  setFocusedStep(prozessIndex: number, stepIndex: number): void {
+    this.focusedStep.update((arr) => {
+      const copy = [...arr];
+      copy[prozessIndex] = stepIndex;
+      return copy;
+    });
+  }
+
   // Helper for the template
   getProzessTotal(index: number): number {
     return this.svgSnapshot().prozesse[index]?.total ?? 0;
@@ -418,8 +484,38 @@ export class RechnerComponent implements OnInit {
     return computeComparisonBars(totals, containerWidth);
   }
 
-  getSegments(prozessIndex: number, containerWidth: number) {
+  getSegments(prozessIndex: number, containerWidth: number): SvgSegment[] {
     const snap = this.svgSnapshot().prozesse[prozessIndex];
     return computeSegments(snap.works, snap.waits, containerWidth);
   }
+
+  /** Returns the detail text for the focused step of a process. */
+  getFocusedStepDetail(prozessIndex: number): { label: string; arbeitszeit: string; wartezeit: string | null } {
+    const snap = this.svgSnapshot().prozesse[prozessIndex];
+    const stepIdx = this.focusedStep()[prozessIndex] ?? 0;
+    const label = this.prozesse[prozessIndex]?.labels[stepIdx] ?? `Schritt ${stepIdx + 1}`;
+    const work = snap.works[stepIdx] ?? 0;
+    const wait = snap.waits[stepIdx] ?? null;
+    return {
+      label,
+      arbeitszeit: minutenZuDauer(work),
+      wartezeit: wait !== null ? minutenZuDauer(wait) : null,
+    };
+  }
+
+  /** Builds the aria-label for a work rect. */
+  getWorkAriaLabel(prozessIndex: number, stepIndex: number): string {
+    const snap = this.svgSnapshot().prozesse[prozessIndex];
+    const label = this.prozesse[prozessIndex]?.labels[stepIndex] ?? `Schritt ${stepIndex + 1}`;
+    const workMin = snap.works[stepIndex] ?? 0;
+    const waitMin = snap.waits[stepIndex] ?? null;
+    let s = `Schritt ${stepIndex + 1}: ${label}. Arbeitszeit: ${minutenZuDauer(workMin)}`;
+    if (waitMin !== null) {
+      s += `. Folgende Wartezeit: ${minutenZuDauer(waitMin)}`;
+    }
+    return s;
+  }
+
+  /** Readonly export so template can call minutenZuDauer() */
+  readonly formatDuration = minutenZuDauer;
 }
