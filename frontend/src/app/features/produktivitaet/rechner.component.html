@@ -306,10 +306,10 @@
 
 <!-- STEP INPUT TABS -->
 <div class="card">
-  <div class="card-body">
+  <div id="schritt-zeiten-eingabe" class="card-body" tabindex="-1">
     <h5 class="card-title">Schritt-Zeiten</h5>
 
-    <ul id="schritt-zeiten-eingabe" ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs mb-3" tabindex="-1">
+    <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs mb-3">
 
       <!-- Tab 1: Menschlich (23 steps) -->
       <li [ngbNavItem]="1">
