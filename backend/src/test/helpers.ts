@@ -5,6 +5,7 @@ import { request as playwrightRequest, type APIRequestContext } from '@playwrigh
 import { client } from '../config/db.js';
 import { runDataMigration } from '../seed/dataMigration.js';
 import { seedAgentTasks } from '../seed/agentTaskSeed.js';
+import { seedSzenario } from '../seed/szenarioSeed.js';
 
 // ---------------------------------------------------------------------------
 // Authentication
@@ -77,10 +78,14 @@ export async function resetDatabase(): Promise<void> {
       // agent_task has no FK dependents; must be cleared so re-seeding with
       // explicit ids 1-16 does not cause PRIMARY KEY conflicts.
       { sql: 'DELETE FROM agent_task', args: [] },
+      // szenario: no FK dependents; cleared so seedSzenario() can re-insert id=1.
+      { sql: 'DELETE FROM szenario', args: [] },
     ],
     'write'
   );
   await client.execute('PRAGMA foreign_keys = ON');
   await runDataMigration();
   await seedAgentTasks();
+  // Restore the Standard-Szenario (id=1) so any suite relying on it finds it.
+  await seedSzenario();
 }

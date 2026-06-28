@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { SzenarioService } from './szenario.service';
-import { Szenario, SzenarioCreate } from '../models/szenario.model';
+import { Szenario, SzenarioCreate, SzenarioUpdate } from '../models/szenario.model';
 
 describe('SzenarioService', () => {
   let service: SzenarioService;
@@ -25,6 +25,13 @@ describe('SzenarioService', () => {
 
   const mockCreate: SzenarioCreate = {
     name: 'Neues Szenario',
+    humanSteps: mockProzess,
+    semiAutomatedSteps: { works: [0, 5], waits: [240] },
+    automatedSteps: { works: [0, 20], waits: [240] },
+  };
+
+  const mockUpdate: SzenarioUpdate = {
+    name: 'Geändertes Szenario',
     humanSteps: mockProzess,
     semiAutomatedSteps: { works: [0, 5], waits: [240] },
     automatedSteps: { works: [0, 20], waits: [240] },
@@ -61,6 +68,21 @@ describe('SzenarioService', () => {
       httpMock.expectOne('/api/szenarien').flush([mockSzenario]);
 
       expect(received).toEqual([mockSzenario]);
+    });
+
+    it('propagates a 500 error to the subscriber error callback', () => {
+      let caughtError: unknown;
+      service.list().subscribe({
+        next: () => fail('expected an error, not a value'),
+        error: (err: unknown) => (caughtError = err),
+      });
+
+      httpMock.expectOne('/api/szenarien').flush(
+        { message: 'Internal Server Error' },
+        { status: 500, statusText: 'Server Error' },
+      );
+
+      expect(caughtError).toBeTruthy();
     });
   });
 
@@ -121,7 +143,7 @@ describe('SzenarioService', () => {
 
   describe('update()', () => {
     it('fires PUT to /api/szenarien/:id', () => {
-      service.update(1, mockCreate).subscribe();
+      service.update(1, mockUpdate).subscribe();
 
       const req = httpMock.expectOne('/api/szenarien/1');
       expect(req.request.method).toBe('PUT');
@@ -129,7 +151,7 @@ describe('SzenarioService', () => {
     });
 
     it('uses the correct numeric id in the URL', () => {
-      service.update(7, mockCreate).subscribe();
+      service.update(7, mockUpdate).subscribe();
 
       const req = httpMock.expectOne('/api/szenarien/7');
       expect(req.request.method).toBe('PUT');
@@ -137,17 +159,17 @@ describe('SzenarioService', () => {
     });
 
     it('sends the DTO as the request body', () => {
-      service.update(1, mockCreate).subscribe();
+      service.update(1, mockUpdate).subscribe();
 
       const req = httpMock.expectOne('/api/szenarien/1');
-      expect(req.request.body).toEqual(mockCreate);
+      expect(req.request.body).toEqual(mockUpdate);
       req.flush(mockSzenario);
     });
 
     it('emits the updated scenario returned by the server', () => {
       const updated: Szenario = { ...mockSzenario, name: 'Geändert' };
       let received: Szenario | undefined;
-      service.update(1, mockCreate).subscribe((r) => (received = r));
+      service.update(1, mockUpdate).subscribe((r) => (received = r));
 
       httpMock.expectOne('/api/szenarien/1').flush(updated);
 
@@ -170,6 +192,17 @@ describe('SzenarioService', () => {
       const req = httpMock.expectOne('/api/szenarien/5');
       expect(req.request.method).toBe('DELETE');
       req.flush(null);
+    });
+
+    it('observable completes after a successful delete', () => {
+      let completed = false;
+      service.delete(1).subscribe({
+        complete: () => (completed = true),
+      });
+
+      httpMock.expectOne('/api/szenarien/1').flush(null);
+
+      expect(completed).toBeTrue();
     });
   });
 });
