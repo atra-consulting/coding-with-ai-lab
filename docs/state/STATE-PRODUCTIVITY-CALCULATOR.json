@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "task_key": "PRODUCTIVITY-CALCULATOR",
+  "status": "in_progress",
+  "current_step": "3.3",
+  "started": "2026-06-28T00:00:00Z",
+  "updated": "2026-06-28T00:00:00Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Add a 'Productivity - Calculator' section that compares three ways of building software (human, fully-automatic, semi-automatic), visualizes the process (possibly with on-the-fly SVG), and lets users calculate cycle time from 'something happens' to 'deployed in production'.",
+    "special_instructions": "ASK ME IF YOU'RE NOT SURE!",
+    "branch_name": "productivity-calculator-cycle-time",
+    "original_branch": "main",
+    "original_head": "154d947b99ffade6a3bb75f4f85e82318c137611",
+    "docs_folder": "docs",
+    "is_git_repo": true,
+    "workflow_scope": null,
+    "pr_prefix": null,
+    "pr_exists": false,
+    "pr_url": null
+  },
+  "discovery": {
+    "agents_available": false,
+    "writer_agents": [],
+    "coding_agents": [],
+    "review_agents": [],
+    "test_coding_agents": [],
+    "test_review_agents": [],
+    "test_runner_agents": [],
+    "tooling_coding_agents": [],
+    "tooling_review_agents": [],
+    "test_command": null
+  },
+  "artifacts": {
+    "prd_skipped": null,
+    "prd_file": null,
+    "plan_file": null
+  },
+  "completed_steps": []
+}
