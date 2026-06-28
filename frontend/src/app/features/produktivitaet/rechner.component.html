@@ -7,7 +7,36 @@
   <div class="card-body">
     <h5 class="card-title">Prozessvergleich</h5>
 
+    <!-- Skip link: visible on focus, jumps to input area -->
+    <a
+      href="#schritt-zeiten-eingabe"
+      class="visually-hidden-focusable d-inline-block mb-2"
+    >Zur Eingabe springen</a>
+
+    <!-- Legend -->
+    <div class="d-flex align-items-center gap-3 mb-3" aria-hidden="true">
+      <span class="d-flex align-items-center gap-1">
+        <svg width="16" height="16" aria-hidden="true">
+          <rect width="16" height="16" fill="#264892" rx="2" />
+        </svg>
+        <span class="small">Arbeitszeit</span>
+      </span>
+      <span class="d-flex align-items-center gap-1">
+        <svg width="16" height="16" aria-hidden="true">
+          <defs>
+            <pattern id="legend-hatch" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
+              <rect width="8" height="8" fill="#fbe3de" />
+              <line x1="0" y1="0" x2="0" y2="8" stroke="#dc421e" stroke-width="3" />
+            </pattern>
+          </defs>
+          <rect width="16" height="16" fill="url(#legend-hatch)" rx="2" />
+        </svg>
+        <span class="small">Wartezeit</span>
+      </span>
+    </div>
+
     <!-- Comparison bar: shared scale, all three processes -->
+    @let bars = getComparisonBars(380);
     <svg
       class="comparison-svg mb-4"
       role="img"
@@ -38,7 +67,7 @@
         <rect
           x="0"
           [attr.y]="cmpIdx * 44 + 18"
-          [attr.width]="getComparisonBars(380)[cmpIdx].width"
+          [attr.width]="bars[cmpIdx].width"
           height="16"
           fill="#264892"
           rx="2"
@@ -75,11 +104,9 @@
 
         <svg
           class="process-svg"
-          role="img"
           viewBox="0 0 600 32"
           preserveAspectRatio="none"
-          [attr.aria-labelledby]="'bar-title-' + prozessIdx"
-          [attr.aria-describedby]="'bar-desc-' + prozessIdx"
+          [attr.aria-label]="p.titel + ': ' + (getProzessTotal(prozessIdx) | dauer)"
         >
           <title [id]="'bar-title-' + prozessIdx">{{ p.titel }}: {{ getProzessTotal(prozessIdx) | dauer }}</title>
           <desc [id]="'bar-desc-' + prozessIdx">
@@ -87,7 +114,7 @@
           </desc>
 
           <defs>
-            <!-- 45-degree hatch pattern for Wartezeit (color + pattern = greyscale-readable, WCAG 1.4.1) -->
+            <!-- 45-degree hatch pattern for Wartezeit: light background + red stripes (greyscale-distinct, WCAG 1.4.1) -->
             <pattern
               [id]="'hatch-wait-' + prozessIdx"
               patternUnits="userSpaceOnUse"
@@ -95,8 +122,8 @@
               height="8"
               patternTransform="rotate(45)"
             >
-              <rect width="8" height="8" fill="#dc421e" />
-              <line x1="0" y1="0" x2="0" y2="8" stroke="#fff" stroke-width="3" />
+              <rect width="8" height="8" fill="#fbe3de" />
+              <line x1="0" y1="0" x2="0" y2="8" stroke="#dc421e" stroke-width="3" />
             </pattern>
           </defs>
 
@@ -109,12 +136,12 @@
                 [attr.width]="seg.width"
                 height="32"
                 fill="#264892"
-                tabindex="0"
+                [attr.tabindex]="svgSnapshot().prozesse[prozessIdx].works[seg.index] === 0 ? -1 : 0"
                 role="button"
-                [attr.aria-label]="getWorkAriaLabel(prozessIdx, seg.index)"
+                [attr.aria-label]="svgSnapshot().prozesse[prozessIdx].works[seg.index] === 0 ? null : getWorkAriaLabel(prozessIdx, seg.index)"
                 (click)="setFocusedStep(prozessIdx, seg.index)"
                 (keydown.enter)="setFocusedStep(prozessIdx, seg.index)"
-                (keydown.space)="setFocusedStep(prozessIdx, seg.index)"
+                (keydown.space)="$event.preventDefault(); setFocusedStep(prozessIdx, seg.index)"
                 (focus)="setFocusedStep(prozessIdx, seg.index)"
               />
               @if (seg.width >= 24) {
@@ -155,7 +182,7 @@
         </svg>
 
         <!-- Persistent detail panel: focused/clicked step details (touch + keyboard accessible) -->
-        <div class="step-detail-panel" aria-live="polite">
+        <div class="step-detail-panel" role="region" aria-label="Schritt-Details" aria-live="polite">
           <dl class="mb-0">
             <dt>Schritt {{ focusedStep()[prozessIdx] + 1 }}: {{ getFocusedStepDetail(prozessIdx).label }}</dt>
             <dd>Arbeitszeit: {{ getFocusedStepDetail(prozessIdx).arbeitszeit }}</dd>
@@ -187,7 +214,7 @@
     <!-- Name input + save buttons -->
     <div class="row g-2 align-items-start mb-3">
       <div class="col-auto">
-        <label for="szenario-name" class="form-label">Name</label>
+        <label for="szenario-name" class="form-label">Szenario-Name</label>
         <input
           id="szenario-name"
           type="text"
@@ -201,14 +228,16 @@
         }
       </div>
       <div class="col-auto d-flex align-items-end gap-2" style="padding-top: 1.75rem">
-        <button
-          type="button"
-          class="btn btn-primary"
-          (click)="neuSpeichern()"
-          [disabled]="form.invalid || scenarioLoading()"
-        >
-          Neu speichern
-        </button>
+        @if (!geladenSzenario()) {
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="neuSpeichern()"
+            [disabled]="form.invalid || scenarioLoading()"
+          >
+            Neu erstellen
+          </button>
+        }
         @if (geladenSzenario()) {
           <button
             type="button"
@@ -224,7 +253,7 @@
             (click)="alsNeuSpeichern()"
             [disabled]="form.invalid || scenarioLoading()"
           >
-            Als neu speichern
+            Kopie speichern
           </button>
         }
       </div>
@@ -266,7 +295,7 @@
   <div class="card-body">
     <h5 class="card-title">Schritt-Zeiten</h5>
 
-    <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs mb-3">
+    <ul id="schritt-zeiten-eingabe" ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs mb-3">
 
       <!-- Tab 1: Menschlich (23 steps) -->
       <li [ngbNavItem]="1">
@@ -288,11 +317,13 @@
                       [formControl]="getValueCtrl(ctrl)"
                       min="0"
                       max="479520"
+                      [attr.aria-label]="prozesse[0].labels[$index] + ' – Arbeitszeit (Wert)'"
                       [attr.aria-describedby]="getValueCtrl(ctrl).invalid && getValueCtrl(ctrl).touched ? 'menschlich-work-err-' + $index : null"
                     />
                     <select
                       class="form-select w-auto"
                       [formControl]="getUnitCtrl(ctrl)"
+                      [attr.aria-label]="prozesse[0].labels[$index] + ' – Arbeitszeit (Einheit)'"
                     >
                       @for (einheit of zeiteinheiten; track einheit) {
                         <option [value]="einheit">{{ einheit }}</option>
@@ -317,11 +348,13 @@
                         [formControl]="getWaitValueCtrl('menschlich', $index)"
                         min="0"
                         max="479520"
+                        [attr.aria-label]="'Wartezeit nach Schritt ' + ($index + 1) + ' – (Wert)'"
                         [attr.aria-describedby]="getWaitValueCtrl('menschlich', $index).invalid && getWaitValueCtrl('menschlich', $index).touched ? 'menschlich-wait-err-' + $index : null"
                       />
                       <select
                         class="form-select w-auto"
                         [formControl]="getWaitUnitCtrl('menschlich', $index)"
+                        [attr.aria-label]="'Wartezeit nach Schritt ' + ($index + 1) + ' – (Einheit)'"
                       >
                         @for (einheit of zeiteinheiten; track einheit) {
                           <option [value]="einheit">{{ einheit }}</option>
@@ -360,11 +393,13 @@
                       [formControl]="getValueCtrl(ctrl)"
                       min="0"
                       max="479520"
+                      [attr.aria-label]="prozesse[1].labels[$index] + ' – Arbeitszeit (Wert)'"
                       [attr.aria-describedby]="getValueCtrl(ctrl).invalid && getValueCtrl(ctrl).touched ? 'halb-work-err-' + $index : null"
                     />
                     <select
                       class="form-select w-auto"
                       [formControl]="getUnitCtrl(ctrl)"
+                      [attr.aria-label]="prozesse[1].labels[$index] + ' – Arbeitszeit (Einheit)'"
                     >
                       @for (einheit of zeiteinheiten; track einheit) {
                         <option [value]="einheit">{{ einheit }}</option>
@@ -388,11 +423,13 @@
                         [formControl]="getWaitValueCtrl('halbautomatisch', $index)"
                         min="0"
                         max="479520"
+                        [attr.aria-label]="'Wartezeit nach Schritt ' + ($index + 1) + ' – (Wert)'"
                         [attr.aria-describedby]="getWaitValueCtrl('halbautomatisch', $index).invalid && getWaitValueCtrl('halbautomatisch', $index).touched ? 'halb-wait-err-' + $index : null"
                       />
                       <select
                         class="form-select w-auto"
                         [formControl]="getWaitUnitCtrl('halbautomatisch', $index)"
+                        [attr.aria-label]="'Wartezeit nach Schritt ' + ($index + 1) + ' – (Einheit)'"
                       >
                         @for (einheit of zeiteinheiten; track einheit) {
                           <option [value]="einheit">{{ einheit }}</option>
@@ -431,11 +468,13 @@
                       [formControl]="getValueCtrl(ctrl)"
                       min="0"
                       max="479520"
+                      [attr.aria-label]="prozesse[2].labels[$index] + ' – Arbeitszeit (Wert)'"
                       [attr.aria-describedby]="getValueCtrl(ctrl).invalid && getValueCtrl(ctrl).touched ? 'voll-work-err-' + $index : null"
                     />
                     <select
                       class="form-select w-auto"
                       [formControl]="getUnitCtrl(ctrl)"
+                      [attr.aria-label]="prozesse[2].labels[$index] + ' – Arbeitszeit (Einheit)'"
                     >
                       @for (einheit of zeiteinheiten; track einheit) {
                         <option [value]="einheit">{{ einheit }}</option>
@@ -459,11 +498,13 @@
                         [formControl]="getWaitValueCtrl('vollautomatisch', $index)"
                         min="0"
                         max="479520"
+                        [attr.aria-label]="'Wartezeit nach Schritt ' + ($index + 1) + ' – (Wert)'"
                         [attr.aria-describedby]="getWaitValueCtrl('vollautomatisch', $index).invalid && getWaitValueCtrl('vollautomatisch', $index).touched ? 'voll-wait-err-' + $index : null"
                       />
                       <select
                         class="form-select w-auto"
                         [formControl]="getWaitUnitCtrl('vollautomatisch', $index)"
+                        [attr.aria-label]="'Wartezeit nach Schritt ' + ($index + 1) + ' – (Einheit)'"
                       >
                         @for (einheit of zeiteinheiten; track einheit) {
                           <option [value]="einheit">{{ einheit }}</option>

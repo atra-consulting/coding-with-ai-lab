@@ -365,6 +365,10 @@ export class RechnerComponent implements OnInit {
   neuSpeichern(): void {
     if (this.form.invalid || this.scenarioLoading()) return;
     this.nameError = null;
+    if (!this.nameInput.trim()) {
+      this.nameError = 'Name ist erforderlich.';
+      return;
+    }
     const payload = this.formZuPayload();
     this.scenarioLoading.set(true);
     this.szenarioService.create(payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
@@ -414,6 +418,10 @@ export class RechnerComponent implements OnInit {
   alsNeuSpeichern(): void {
     if (this.form.invalid || this.scenarioLoading()) return;
     this.nameError = null;
+    if (!this.nameInput.trim()) {
+      this.nameError = 'Name ist erforderlich.';
+      return;
+    }
     const payload = this.formZuPayload();
     this.scenarioLoading.set(true);
     this.szenarioService.create(payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
