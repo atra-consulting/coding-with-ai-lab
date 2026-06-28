@@ -29,7 +29,7 @@ Migration approach: plain `CREATE TABLE IF NOT EXISTS` statements. Run on every 
 
 ## Tables
 
-The database contains six core domain tables — `firma`, `abteilung`, `person`, `adresse`, `aktivitaet`, `chance` — plus operational tables: `agent_task` (autonomous task sources), `ticket` + `ticket_comment` (Kanban ticket system), `cron_run` (cron run history), and `sessions` (server-side session store).
+The database contains six core domain tables — `firma`, `abteilung`, `person`, `adresse`, `aktivitaet`, `chance` — plus operational tables: `agent_task` (autonomous task sources), `ticket` + `ticket_comment` (Kanban ticket system), `cron_run` (cron run history), `sessions` (server-side session store), and `szenario` (Produktivität-Rechner saved scenarios).
 
 ### Ticket (`ticket`)
 
@@ -114,6 +114,22 @@ Autonomous task queue. Tasks arrive from four external sources and move through 
 | updatedAt | text | NOT NULL, default `datetime('now')` |
 
 No FKs. Indexes: `idx_agent_task_status_createdAt (status, createdAt)`, `idx_agent_task_source_status (source, status)`.
+
+### Szenario (`szenario`)
+
+Saved scenarios for the Produktivität → Rechner cycle-time calculator. Each scenario stores per-step durations for three software-delivery processes (human, semi-automated, fully-automated). Global/shared across all logged-in users. Seeded idempotently on startup via `INSERT OR IGNORE` with fixed id 1 ("Standard-Szenario", `backend/src/seed/szenarioSeed.ts`).
+
+| Column | SQLite Type | Constraints |
+|--------|-------------|-------------|
+| id | integer | PK, autoIncrement |
+| name | text | NOT NULL, UNIQUE |
+| humanSteps | text | NOT NULL, `CHECK (json_valid(...))` — JSON `{ works: number[23], waits: number[22] }` |
+| semiAutomatedSteps | text | NOT NULL, `CHECK (json_valid(...))` — JSON `{ works: number[6], waits: number[5] }` |
+| automatedSteps | text | NOT NULL, `CHECK (json_valid(...))` — JSON `{ works: number[2], waits: number[1] }` |
+| createdAt | text | NOT NULL, default `datetime('now')` |
+| updatedAt | text | NOT NULL, default `datetime('now')` |
+
+`works` are per-step active times (minutes); `waits` are the between-step delays (one fewer than steps). No FKs. Index: `idx_szenario_createdAt (createdAt DESC)`.
 
 ## Storage Rules
 
@@ -263,3 +279,4 @@ All indexes are created in `backend/src/config/migrate.ts` via `CREATE INDEX IF 
 | idx_ticket_status_owner_createdAt | ticket | status, owner, createdAt |
 | idx_ticket_type_status | ticket | type, status |
 | idx_ticket_comment_ticketId | ticket_comment | ticketId |
+| idx_szenario_createdAt | szenario | createdAt DESC |

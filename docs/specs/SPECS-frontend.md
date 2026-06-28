@@ -27,6 +27,7 @@ Visual design, colors, layout measurements, and AG Grid theming: `docs/specs/SPE
   /adressen                     → Adresse CRUD (no detail)
   /aktivitaeten                 → Aktivitaet CRUD (no detail)
   /chancen                      → Chance CRUD (list/detail/form)
+  /produktivitaet/rechner       → RechnerComponent (Produktivität cycle-time calculator)
   /admin                        → Admin subtree (roleGuard per route)
     /admin/agent-tasks          → AgentTasksDashboardComponent (roleGuard('ROLE_ADMIN'))
     /admin/agent-tasks/:id      → AgentTaskDetailComponent (roleGuard('ROLE_ADMIN'))
@@ -144,6 +145,10 @@ Three public components. No auth required. No backend calls — data posts direc
 **Form pattern**: ReactiveFormsModule + FormBuilder. Edit mode detected via route param `:id`. Loads existing data with `patchValue()`. Navigates to detail/list on submit.
 
 **Detail pattern**: Display fields, tabbed child lists (NgbNavModule), edit/delete buttons.
+
+### Produktivität → Rechner
+
+`features/produktivitaet/` — a standalone `RechnerComponent` at `/produktivitaet/rechner` (authGuard, all logged-in users). Compares three software-delivery processes (human/semi-automated/fully-automated) and computes end-to-end cycle time. Per-step **Arbeitszeit** + between-step **Wartezeit** inputs (reactive form: per process a `works` FormArray of N and a `waits` FormArray of N−1), live-recalculated (debounced) into a `computed` snapshot. Visualizations: a shared-scale comparison bar plus per-process step-flow SVG bars (work/wait segments distinguished by color **and** hatch pattern for greyscale/WCAG), generated on the fly via pure functions in `svg-util.ts`. Inputs grouped in tabs (NgbNav). Named scenarios persisted via `SzenarioService` → `/api/szenarien` (create/load/update/delete, `ConfirmDialogComponent` for delete). Duration formatting via the `dauer` pipe (8h workday). Sidebar: "Produktivität" section, item "Rechner" (`faCalculator`), no role required.
 
 ### Administration (Admin Routes)
 

@@ -253,4 +253,18 @@ High level only. Detail goes in the plan.
 
 ## Implementierung
 
-_Links to implementing commits and PRs will be added here after implementation._
+Implemented on branch `productivity-calculator-cycle-time`.
+
+Commits:
+- `c11265b` feat: szenario table, DDL, index and seed
+- `4e95e68` feat: szenario CRUD API and validation
+- `d92acb5` feat: Rechner frontend logic, models and service
+- `e24c614` feat: SVG process visualizations and styling
+- `d3236fc` fix: Rechner review findings (a11y, validation, perf)
+- `972069d` test: Rechner frontend tests
+- `910202d` test: szenario API tests
+- `b53c405` test: harden szenario tests (reset isolation, error path, delete completion)
+- `cac8bbe` fix: Rechner a11y review findings (ghost buttons, skip link, svg desc)
+- `50b0746` fix: move Rechner skip-link target to card-body
+
+PR: _added after PR creation._
