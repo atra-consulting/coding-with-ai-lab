@@ -159,6 +159,17 @@ export const cronRun = sqliteTable('cron_run', {
   error:        text('error'),
 });
 
+// ─── szenario ─────────────────────────────────────────────────────────────────
+export const szenario = sqliteTable('szenario', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  name: text('name').notNull().unique(),
+  humanSteps: text('humanSteps').notNull(),
+  semiAutomatedSteps: text('semiAutomatedSteps').notNull(),
+  automatedSteps: text('automatedSteps').notNull(),
+  createdAt: text('createdAt').notNull().default(sql`(datetime('now'))`),
+  updatedAt: text('updatedAt').notNull().default(sql`(datetime('now'))`),
+});
+
 // ─── sessions ─────────────────────────────────────────────────────────────────
 // DOCUMENTARY ONLY — the session store (middleware/libsqlSessionStore.ts) reads
 // and writes this table via raw client.execute() calls, not through Drizzle.

@@ -1,6 +1,7 @@
 import { client } from './db.js';
 import { seedAgentTasks } from '../seed/agentTaskSeed.js';
 import { seedTickets } from '../seed/ticketSeed.js';
+import { seedSzenario } from '../seed/szenarioSeed.js';
 
 export async function runMigrations(): Promise<void> {
   console.log('Running database migrations...');
@@ -150,6 +151,16 @@ export async function runMigrations(): Promise<void> {
       githubRunUrl TEXT,
       error        TEXT
     );
+
+    CREATE TABLE IF NOT EXISTS szenario (
+      id                 INTEGER PRIMARY KEY AUTOINCREMENT,
+      name               TEXT NOT NULL UNIQUE,
+      humanSteps         TEXT NOT NULL CHECK (json_valid(humanSteps)),
+      semiAutomatedSteps TEXT NOT NULL CHECK (json_valid(semiAutomatedSteps)),
+      automatedSteps     TEXT NOT NULL CHECK (json_valid(automatedSteps)),
+      createdAt          TEXT NOT NULL DEFAULT (datetime('now')),
+      updatedAt          TEXT NOT NULL DEFAULT (datetime('now'))
+    );
   `);
 
   await client.executeMultiple(`
@@ -173,6 +184,7 @@ export async function runMigrations(): Promise<void> {
     CREATE INDEX IF NOT EXISTS idx_ticket_status_owner_createdAt ON ticket(status, owner, createdAt);
     CREATE INDEX IF NOT EXISTS idx_ticket_type_status ON ticket(type, status);
     CREATE INDEX IF NOT EXISTS idx_ticket_comment_ticketId ON ticket_comment(ticketId);
+    CREATE INDEX IF NOT EXISTS idx_szenario_createdAt ON szenario(createdAt DESC);
   `);
 
   // Idempotent data seed: agent tasks are inserted on every deployment via
@@ -181,6 +193,7 @@ export async function runMigrations(): Promise<void> {
   // (e.g. DONE/REJECTED/IN_PROGRESS) are never overwritten.
   await seedAgentTasks();
   await seedTickets();
+  await seedSzenario();
 
   console.log('Database migrations complete.');
 }
