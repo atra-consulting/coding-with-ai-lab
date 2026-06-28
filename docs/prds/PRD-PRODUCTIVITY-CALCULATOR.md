@@ -86,7 +86,7 @@ All logged-in users. No admin role required.
 
 ## Decisions (confirmed with the user — do NOT re-open)
 
-- **D1 — Per-step durations.** Each step has its own Arbeitszeit (work) and Wartezeit (wait). Total cycle time = sum of all steps' (work + wait).
+- **D1 — Per-step work, between-step waits.** Each step has an Arbeitszeit (work time). Between two consecutive steps there is a Wartezeit (wait time) — time passes during the handoff. N steps → N work values + **(N−1)** wait values. There is **no** Wartezeit before the first step or after the last step. Total cycle time = sum of all Arbeitszeiten + sum of all Wartezeiten. (Clarified by the user after the first draft.)
 - **D2 — German UI.** All labels, buttons, validation, step text in German.
 - **D3 — Backend persistence.** Named scenarios saved to the backend (CRUD). Calculation and SVG stay client-side.
 - **D4 — Placement.** New sidebar section "Produktivität" with item "Rechner" at `/produktivitaet/rechner`, for all logged-in users (`authGuard`).
@@ -94,7 +94,7 @@ All logged-in users. No admin role required.
 - **D6 — Display format.** "Xd Yh Zm" using the 8-hour workday. Drop leading zero units; always keep at least one unit. `0` → `"0m"`. Examples: `1440` → `"3d"`, `90` → `"1h 30m"`, `30` → `"30m"`, `510` → `"1d 30m"`. Days are work-days.
 - **D7 — Scenario ownership.** Scenarios are global / shared across all logged-in users (the app has 3 hardcoded users). Any user can create, load, update, delete any scenario.
 - **D8 — Seed scenario.** Seed one "Standard-Szenario" (fixed id 1, `INSERT OR IGNORE`) from `runMigrations()` so the page shows numbers on first load. Deleting it is allowed; it reappears on the next startup (acceptable — it is a demo default, not user data).
-- **D9 — Storage shape.** Per-step durations stored as JSON text columns, one per process. Step counts are fixed (23 / 6 / 2). No child table.
+- **D9 — Storage shape.** Per-process durations stored as JSON text columns, one per process. Each column holds `{ "works": number[N], "waits": number[N-1] }` in minutes. Lengths fixed: works 23 / 6 / 2, waits 22 / 5 / 1. No child table.
 - **D10 — SVG scale.** Two visualizations: (a) a **comparison bar** with a shared scale across all three totals (dramatic contrast), and (b) **per-process bars** that each fill their container width to show internal work/wait composition.
 - **D11 — Input layout.** Visualizations always on top. Step inputs below in **tabs**, one per process.
 
@@ -110,8 +110,8 @@ Acceptance: All visualizations appear and update live.
 **[REQ-VIS-002] Comparison bar (shared scale).** One stacked/grouped bar area shows the three process totals on a single shared scale. The longest process sets the scale; shorter ones render proportionally (may be small).
 Acceptance: Bar lengths are proportional to each process's total minutes against the largest total. Numeric total (D6 format) shown next to each bar.
 
-**[REQ-VIS-003] Per-process bars.** Each process renders its own horizontal step-flow bar that fills the available container width. Each step has two adjacent segments: Arbeitszeit and Wartezeit. Segment width is proportional to its share of that process's total.
-Acceptance: Within one process, segment widths sum to the full bar width; widths reflect input values.
+**[REQ-VIS-003] Per-process bars.** Each process renders its own horizontal step-flow bar that fills the available container width. Segments alternate: Arbeitszeit (step 1), Wartezeit (gap 1→2), Arbeitszeit (step 2), … ending on the last step's Arbeitszeit. The bar **starts and ends with a work segment** — no leading or trailing wait segment. Segment width is proportional to its share of that process's total.
+Acceptance: Within one process, segment widths sum to the full bar width; first and last segments are Arbeitszeit; there are N work segments and N−1 wait segments.
 
 **[REQ-VIS-004] Work vs wait must not rely on color alone (WCAG 1.4.1).** Arbeitszeit and Wartezeit segments differ by BOTH fill color AND a second cue: a fill pattern/hatch, or an inline "A"/"W" text marker when the segment is wide enough.
 Acceptance: Distinguishable in greyscale.
@@ -127,11 +127,11 @@ Acceptance: Total equals the sum of that process's step work + wait times.
 
 ### Per-Step Time Input
 
-**[REQ-INP-001]** Each step has two editable numeric fields — Arbeitszeit and Wartezeit — plus a shared unit dropdown (Minuten / Stunden / Tage) per field (per D5).
-Acceptance: Both values contribute to cycle time. Number fields are compact (≈80px); dropdown auto width.
+**[REQ-INP-001]** Each step has one editable Arbeitszeit field (number + unit dropdown Minuten / Stunden / Tage, per D5). Each gap between two consecutive steps has one editable Wartezeit field (number + unit). So a process with N steps has N Arbeitszeit fields and N−1 Wartezeit fields.
+Acceptance: All work and wait values contribute to cycle time. Number fields are compact (≈80px); dropdown auto width.
 
-**[REQ-INP-002]** Step 1 ("Auslöser") may have Arbeitszeit = 0. It can carry a Wartezeit.
-Acceptance: Work = 0 on step 1 is valid; no validation error.
+**[REQ-INP-002]** Step 1 ("Auslöser") may have Arbeitszeit = 0. There is no Wartezeit before step 1 and none after the last step (D1).
+Acceptance: Work = 0 on step 1 is valid; no validation error. The UI shows no wait input before step 1 or after the last step.
 
 **[REQ-INP-003]** Unit conversion: Minuten = ×1, Stunden = ×60, Tage = ×480 (8h workday). Normalise to minutes before saving.
 Acceptance: "2 Tage" → 960 min; "1 Stunde" → 60 min.
@@ -189,10 +189,10 @@ High level only. Detail goes in the plan.
 
 **Backend**
 - New `szenario` table — Drizzle schema in `db/schema/schema.ts` + raw DDL in `config/migrate.ts` (inside the existing `executeMultiple` block). Columns: `id INTEGER PRIMARY KEY AUTOINCREMENT`, `name TEXT NOT NULL UNIQUE`, `humanSteps TEXT NOT NULL`, `semiAutomatedSteps TEXT NOT NULL`, `automatedSteps TEXT NOT NULL`, `createdAt TEXT NOT NULL`, `updatedAt TEXT NOT NULL`. Add `CHECK (json_valid(...))` on each JSON column and `CREATE INDEX idx_szenario_createdAt`.
-- Each JSON column = a JSON array of `{ workMin, waitMin }` with fixed length (23 / 6 / 2).
-- `szenarioService.ts` — list, getById, create, update, delete. Async `@libsql/client`. Sets `updatedAt = new Date().toISOString()` explicitly on create and update. Serialises arrays to JSON strings.
+- Each JSON column = `{ "works": number[], "waits": number[] }` — `works` length 23 / 6 / 2, `waits` length 22 / 5 / 1 (waits sit between steps; see D1/D9).
+- `szenarioService.ts` — list, getById, create, update, delete. Async `@libsql/client`. Sets `updatedAt = new Date().toISOString()` explicitly on create and update. Serialises the works/waits objects to JSON strings.
 - `routes/szenario.ts` — mounted at `/api/szenarien` in `app.ts` (before `errorHandler`), guarded by `requireAuth`. Handlers wrapped in `asyncHandler`. Errors use the standard `{ status, message, timestamp, fieldErrors }` shape.
-- Zod schemas `SzenarioCreateSchema` / `SzenarioUpdateSchema` in `utils/validation.ts`: validate name (non-empty, unique enforced via DB), and each process array (exact length, items `{ workMin: int ≥0 ≤479520, waitMin: int ≥0 ≤479520 }`). Define a `PROCESS_STEP_COUNTS` constant.
+- Zod schemas `SzenarioCreateSchema` / `SzenarioUpdateSchema` in `utils/validation.ts`: validate name (non-empty, unique enforced via DB), and each process object `{ works, waits }` — `works` exact length (23/6/2), `waits` exact length (22/5/1), every entry int 0..479520. Define a `PROCESS_STEP_COUNTS` constant (works count) from which the waits count (count−1) derives.
 - Seed `szenarioSeed.ts` (`INSERT OR IGNORE`, fixed id 1) called from `runMigrations()` after the ticket seed.
 
 **Frontend**
@@ -204,9 +204,10 @@ High level only. Detail goes in the plan.
 - Default step labels (German, above) and default durations (below) live as a frontend constant so the page renders before any scenario loads.
 
 **Default durations (seed + frontend default)**
-- First step ("Auslöser"): work 0, wait 240 min (4h) in every process.
-- Human steps: small work (60–240 min), larger wait (240 min–3 days) to show queue dominance.
-- The exact default table is fixed in the plan; both the frontend constant and the backend seed use the same values.
+- First step ("Auslöser"): Arbeitszeit 0 in every process. No Wartezeit before it.
+- The first Wartezeit (gap step 1→2) carries the initial reaction delay (~240 min).
+- Human steps: small work (15–240 min), larger waits between steps (240 min–several days) to show queue dominance.
+- The exact default `works[]` / `waits[]` arrays are fixed in the plan; the frontend default constant and the backend seed use the identical values.
 
 ---
 

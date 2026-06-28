@@ -2,7 +2,7 @@
   "version": 1,
   "task_key": "PRODUCTIVITY-CALCULATOR",
   "status": "in_progress",
-  "current_step": "6.4",
+  "current_step": "7.5",
   "started": "2026-06-28T00:00:00Z",
   "updated": "2026-06-28T00:00:00Z",
   "config": {
@@ -14,8 +14,8 @@
     "original_head": "154d947b99ffade6a3bb75f4f85e82318c137611",
     "docs_folder": "docs",
     "is_git_repo": true,
-    "workflow_scope": null,
-    "pr_prefix": null,
+    "workflow_scope": "full",
+    "pr_prefix": "feat:",
     "pr_exists": false,
     "pr_url": null
   },
@@ -29,12 +29,12 @@
     "test_runner_agents": [],
     "tooling_coding_agents": [],
     "tooling_review_agents": [],
-    "test_command": null
+    "test_command": "backend: cd backend && npx playwright test | frontend: cd frontend && npx ng test"
   },
   "artifacts": {
     "prd_skipped": false,
     "prd_file": "docs/prds/PRD-PRODUCTIVITY-CALCULATOR.md",
-    "plan_file": null
+    "plan_file": "docs/plans/PLAN-PRODUCTIVITY-CALCULATOR.md"
   },
   "discovery_extra": {
     "decisions": {
