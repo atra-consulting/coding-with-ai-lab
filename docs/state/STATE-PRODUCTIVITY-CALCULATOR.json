@@ -2,7 +2,7 @@
   "version": 1,
   "task_key": "PRODUCTIVITY-CALCULATOR",
   "status": "in_progress",
-  "current_step": "3.3",
+  "current_step": "6.4",
   "started": "2026-06-28T00:00:00Z",
   "updated": "2026-06-28T00:00:00Z",
   "config": {
@@ -32,9 +32,16 @@
     "test_command": null
   },
   "artifacts": {
-    "prd_skipped": null,
-    "prd_file": null,
+    "prd_skipped": false,
+    "prd_file": "docs/prds/PRD-PRODUCTIVITY-CALCULATOR.md",
     "plan_file": null
+  },
+  "discovery_extra": {
+    "decisions": {
+      "time_model": "per-step durations (work + wait per step, all three processes)",
+      "language": "German UI",
+      "persistence": "save named scenarios to backend (table + API)"
+    }
   },
   "completed_steps": []
 }
