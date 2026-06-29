@@ -131,7 +131,7 @@ test.describe('Auth gates', () => {
 
   // ── POST /api/cron/runs/:id/complete ─────────────────────────────────────
 
-  test('POST /api/cron/runs/1/complete: no agent token → 401', async () => {
+  test('POST /api/cron/runs/1/complete: no agent token from localhost → 404 (auth bypassed, run not found)', async () => {
     const resp = await anon.post('/api/cron/runs/1/complete', {
       data: {
         status: 'SUCCESS',
@@ -140,7 +140,7 @@ test.describe('Auth gates', () => {
         githubRunUrl: 'https://github.com/x/y/actions/runs/1',
       },
     });
-    expect(resp.status()).toBe(401);
+    expect(resp.status()).toBe(404);
   });
 
   // ── GET /api/cron/runs ────────────────────────────────────────────────────

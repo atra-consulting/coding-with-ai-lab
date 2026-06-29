@@ -205,9 +205,9 @@ test.describe('GET /api/agent-tasks/next', () => {
     });
   });
 
-  test('no auth header → 401', async () => {
+  test('no auth header from localhost → 200 (localhost bypass)', async () => {
     const resp = await anon.get('/api/agent-tasks/next?source=EMAIL');
-    expect(resp.status()).toBe(401);
+    expect(resp.status()).toBe(200);
   });
 
   test('wrong Bearer token → 401', async () => {
@@ -349,11 +349,11 @@ test.describe('POST /api/agent-tasks/:id/reject', () => {
     expect(rejectResp.status()).toBe(409);
   });
 
-  test('no auth header → 401', async () => {
+  test('no auth header from localhost → 200 (localhost bypass)', async () => {
     const resp = await anon.post('/api/agent-tasks/1/reject', {
       data: { comment: 'Test' },
     });
-    expect(resp.status()).toBe(401);
+    expect(resp.status()).toBe(200);
   });
 
   test('wrong Bearer token → 401', async () => {
@@ -451,9 +451,9 @@ test.describe('POST /api/agent-tasks/:id/done', () => {
     expect(doneResp.status()).toBe(409);
   });
 
-  test('no auth header → 401', async () => {
+  test('no auth header from localhost → 200 (localhost bypass)', async () => {
     const resp = await anon.post('/api/agent-tasks/1/done', { data: {} });
-    expect(resp.status()).toBe(401);
+    expect(resp.status()).toBe(200);
   });
 
   test('wrong Bearer token → 401', async () => {

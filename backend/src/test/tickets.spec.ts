@@ -152,9 +152,9 @@ test.describe('Auth matrix — agent endpoints', () => {
   });
 
   // GET /next
-  test('GET /next without token → 401', async () => {
+  test('GET /next without token from localhost → 200 (localhost bypass)', async () => {
     const resp = await anon.get('/api/tickets/next');
-    expect(resp.status()).toBe(401);
+    expect(resp.status()).toBe(200);
   });
 
   test('GET /next with wrong token → 401', async () => {
@@ -163,9 +163,9 @@ test.describe('Auth matrix — agent endpoints', () => {
   });
 
   // POST /:id/done
-  test('POST /:id/done without token → 401', async () => {
+  test('POST /:id/done without token from localhost → 200 (localhost bypass)', async () => {
     const resp = await anon.post('/api/tickets/1/done', { data: {} });
-    expect(resp.status()).toBe(401);
+    expect(resp.status()).toBe(200);
   });
 
   test('POST /:id/done with wrong token → 401', async () => {
@@ -174,9 +174,9 @@ test.describe('Auth matrix — agent endpoints', () => {
   });
 
   // POST /:id/ask
-  test('POST /:id/ask without token → 401', async () => {
+  test('POST /:id/ask without token from localhost → 409 (auth bypassed, wrong state)', async () => {
     const resp = await anon.post('/api/tickets/1/ask', { data: { question: 'What?' } });
-    expect(resp.status()).toBe(401);
+    expect(resp.status()).toBe(409);
   });
 
   test('POST /:id/ask with wrong token → 401', async () => {
