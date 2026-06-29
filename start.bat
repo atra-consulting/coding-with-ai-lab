@@ -17,6 +17,11 @@ if not "%~1"=="--reset-db" (
     exit /b 1
 )
 :args_done
+if not "%~2"=="" (
+    echo Usage: %~nx0 [--reset-db]
+    echo   --reset-db      Delete local SQLite database ^(will be recreated with seed data^)
+    exit /b 1
+)
 
 :: --- Prerequisite checks ---
 
@@ -30,10 +35,19 @@ if errorlevel 1 (
 )
 
 :: Check Node.js version is 20.19+
-for /f "tokens=1 delims=v" %%n in ('node --version') do set "NODE_VERSION=%%n"
+for /f %%n in ('node --version') do set "NODE_VERSION=%%n"
+set "NODE_VERSION=%NODE_VERSION:v=%"
 for /f "tokens=1,2 delims=." %%a in ("%NODE_VERSION%") do (
     set "NODE_MAJOR=%%a"
     set "NODE_MINOR=%%b"
+)
+if not defined NODE_MAJOR (
+    echo ERROR: Could not determine Node.js version.
+    exit /b 1
+)
+if not defined NODE_MINOR (
+    echo ERROR: Could not determine Node.js version.
+    exit /b 1
 )
 set "NODE_OK=true"
 if %NODE_MAJOR% LSS 20 set "NODE_OK=false"
@@ -93,37 +107,27 @@ if not exist "node_modules\.bin\tsx.cmd" (
     call npm install
 )
 
-:: Ensure the native better-sqlite3 binary matches the current Node version.
-:: (After a Node major upgrade, the cached .node file is compiled against the
-:: old ABI and throws ERR_DLOPEN_FAILED on boot.)
-node -e "require('better-sqlite3')" >nul 2>&1
-if errorlevel 1 (
-    echo better-sqlite3 binary mismatch with Node %NODE_VERSION%, rebuilding...
-    call npm rebuild better-sqlite3
-)
-
 start "CRM-Backend" /b cmd /c "npx tsx --watch src/index.ts"
 cd /d "%ROOT_DIR%"
 
 :: Wait for backend to be ready
 echo Waiting for backend to start...
-set "BACKEND_READY=false"
-for /l %%i in (1,1,60) do (
-    if "!BACKEND_READY!"=="false" (
-        curl -s -o nul -w "%%{http_code}" "http://localhost:%BACKEND_PORT%/api/health" 2>nul | findstr "200" >nul 2>&1
-        if not errorlevel 1 (
-            echo Backend is ready!
-            set "BACKEND_READY=true"
-        ) else (
-            timeout /t 1 /nobreak >nul
-        )
-    )
-)
-if "%BACKEND_READY%"=="false" (
+set "BACKEND_TRIES=0"
+:wait_backend
+set /a BACKEND_TRIES+=1
+if %BACKEND_TRIES% GTR 60 (
     echo ERROR: Backend failed to start within 60 seconds
     call :cleanup
     exit /b 1
 )
+curl -s -o nul -w "%%{http_code}" "http://localhost:%BACKEND_PORT%/api/health" 2>nul | findstr "200" >nul 2>&1
+if not errorlevel 1 (
+    echo Backend is ready!
+    goto :backend_ready
+)
+timeout /t 1 /nobreak >nul
+goto :wait_backend
+:backend_ready
 
 :: --- Frontend ---
 
@@ -150,23 +154,22 @@ cd /d "%ROOT_DIR%"
 
 :: Wait for frontend to bind (ng serve initial compile can take 30-60s)
 echo Waiting for frontend to be ready...
-set "FRONTEND_READY=false"
-for /l %%i in (1,1,120) do (
-    if "!FRONTEND_READY!"=="false" (
-        netstat -ano | findstr /c:":%FRONTEND_PORT% " | findstr "LISTENING" >nul 2>&1
-        if not errorlevel 1 (
-            echo Frontend is ready!
-            set "FRONTEND_READY=true"
-        ) else (
-            timeout /t 1 /nobreak >nul
-        )
-    )
-)
-if "%FRONTEND_READY%"=="false" (
+set "FRONTEND_TRIES=0"
+:wait_frontend
+set /a FRONTEND_TRIES+=1
+if %FRONTEND_TRIES% GTR 120 (
     echo ERROR: Frontend failed to start within 120 seconds
     call :cleanup
     exit /b 1
 )
+netstat -ano | findstr /c:":%FRONTEND_PORT% " | findstr "LISTENING" >nul 2>&1
+if not errorlevel 1 (
+    echo Frontend is ready!
+    goto :frontend_ready
+)
+timeout /t 1 /nobreak >nul
+goto :wait_frontend
+:frontend_ready
 
 echo.
 echo === CRM Application Started ===
