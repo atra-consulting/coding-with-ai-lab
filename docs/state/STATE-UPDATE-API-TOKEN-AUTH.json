@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "task_key": "UPDATE-API-TOKEN-AUTH",
+  "status": "in_progress",
+  "current_step": "3.3",
+  "started": "2026-06-29T21:56:00.000Z",
+  "updated": "2026-06-29T21:56:00.000Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Update the API of tasks and tickets (docs/API-TASKS.md and docs/API-TICKETS.md) so that all methods work with the API token in backend/.env",
+    "special_instructions": null,
+    "branch_name": "update-api-token-auth-docs",
+    "original_branch": "main",
+    "original_head": "03ae6c83d9243cda3ad657fa14d9860057bce65b",
+    "docs_folder": "docs",
+    "is_git_repo": true,
+    "workflow_scope": null,
+    "pr_prefix": null,
+    "pr_exists": false,
+    "pr_url": null
+  },
+  "discovery": {
+    "agents_available": true,
+    "writer_agents": ["ba-writer"],
+    "coding_agents": ["be-coder", "db-coder", "fe-coder", "ui-designer"],
+    "review_agents": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer"],
+    "test_coding_agents": ["be-test-coder", "fe-test-coder"],
+    "test_review_agents": ["be-test-reviewer", "fe-test-reviewer"],
+    "test_runner_agents": ["be-test-runner", "fe-test-runner"],
+    "tooling_coding_agents": ["python-coder", "shell-coder", "skill-coder"],
+    "tooling_review_agents": ["python-reviewer", "shell-reviewer", "skill-reviewer"],
+    "test_command": null
+  },
+  "artifacts": {
+    "prd_skipped": null,
+    "prd_file": null,
+    "plan_file": null
+  },
+  "completed_steps": []
+}
