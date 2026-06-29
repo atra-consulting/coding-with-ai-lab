@@ -58,7 +58,7 @@ X-Agent-Token: <AGENT_API_TOKEN>
 - The server compares it to the `AGENT_API_TOKEN` env var using SHA-256 + constant-time `timingSafeEqual`.
 - If `AGENT_API_TOKEN` is **unset/empty**, every agent endpoint returns **401** (no default token).
 - Missing or wrong token → **401**.
-- **Localhost bypass:** Set `AGENT_AUTH_ALLOW_LOOPBACK=1` in `backend/.env`. Requests from `127.0.0.1`, `::1`, or `::ffff:127.0.0.1` with no token header then skip validation. Requests with proxy-forwarding headers (`X-Forwarded-For`, `X-Real-IP`, `Forwarded`) are never bypassed. Local development only — never set in production.
+- **Localhost bypass:** Set `AGENT_AUTH_ALLOW_LOOPBACK=1` in `backend/.env`. Requests from `127.0.0.1`, `::1`, or `::ffff:127.0.0.1` with no `Authorization` or `X-Agent-Token` header then skip validation. Requests with proxy-forwarding headers (`X-Forwarded-For`, `X-Real-IP`, `Forwarded`) are never bypassed. Local development only — never set in production.
 - Locally the backend auto-loads `backend/.env`; in CI set it as a GitHub Actions secret.
 
 **Local setup** (run from repo root):

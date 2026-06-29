@@ -219,6 +219,8 @@ test.describe('GET /api/agent-tasks/next', () => {
 
   test('no token + X-Forwarded-For header from localhost → 401 (bypass refused, proxy header present)', async () => {
     // Even from loopback, the bypass is refused when a forwarding header is present.
+    // No resetDatabase() needed: requireAgentToken fires before any DB query,
+    // so 401 is returned regardless of whether tasks remain.
     const proxyCtx = await playwrightRequest.newContext({
       baseURL: BASE_URL,
       extraHTTPHeaders: { 'X-Forwarded-For': '10.0.0.1' },
