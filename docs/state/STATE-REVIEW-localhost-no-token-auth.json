@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "branch": "localhost-no-token-auth",
+  "main_branch": "b585e939bf5feec4f0f0b46b16064d67b3df9ac7",
+  "docs_folder": "docs",
+  "special_instructions": null,
+  "review_agents_available": true,
+  "fix_agents_available": true,
+  "all_reviewers": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer"],
+  "all_coders": ["be-coder", "db-coder", "fe-coder", "ui-designer"],
+  "all_designers": ["ui-designer"],
+  "changed_files": [
+    "backend/.env.example",
+    "backend/src/middleware/agentAuth.ts",
+    "backend/src/test/agentTasks.spec.ts",
+    "backend/src/test/cron.spec.ts",
+    "backend/src/test/globalSetup.ts",
+    "backend/src/test/tickets.spec.ts",
+    "docs/API-TASKS.md",
+    "docs/API-TICKETS.md",
+    "docs/plans/PLAN-LOCALHOST-NO-TOKEN-AUTH.md",
+    "docs/state/STATE-LOCALHOST-NO-TOKEN-AUTH.json"
+  ],
+  "dry_run_mode": false,
+  "started": "2026-06-29T00:00:00.000Z"
+}
