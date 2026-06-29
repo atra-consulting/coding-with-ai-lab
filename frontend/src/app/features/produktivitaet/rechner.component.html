@@ -1,0 +1,545 @@
+<div class="page-header">
+  <h2>Rechner</h2>
+</div>
+
+<!-- VISUALIZATION CARD -->
+<div class="card mb-4 viz-card">
+  <div class="card-body">
+    <h5 class="card-title">Prozessvergleich</h5>
+
+    <!-- Skip link: visible on focus, jumps to input area -->
+    <a
+      href="#schritt-zeiten-eingabe"
+      class="visually-hidden-focusable d-inline-block mb-2"
+    >Zur Eingabe springen</a>
+
+    <!-- Legend -->
+    <div class="d-flex align-items-center gap-3 mb-3" aria-hidden="true">
+      <span class="d-flex align-items-center gap-1">
+        <svg width="16" height="16" aria-hidden="true">
+          <rect width="16" height="16" fill="#264892" rx="2" />
+        </svg>
+        <span class="small">Arbeitszeit</span>
+      </span>
+      <span class="d-flex align-items-center gap-1">
+        <svg width="16" height="16" aria-hidden="true">
+          <defs>
+            <pattern id="legend-hatch" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
+              <rect width="8" height="8" fill="#fbe3de" />
+              <line x1="0" y1="0" x2="0" y2="8" stroke="#dc421e" stroke-width="3" />
+            </pattern>
+          </defs>
+          <rect width="16" height="16" fill="url(#legend-hatch)" rx="2" />
+        </svg>
+        <span class="small">Wartezeit</span>
+      </span>
+    </div>
+
+    <!-- Comparison bar: shared scale, all three processes -->
+    @let bars = getComparisonBars(380);
+    <svg
+      class="comparison-svg mb-4"
+      role="img"
+      [attr.viewBox]="'0 0 500 ' + (prozesse.length * 44)"
+      preserveAspectRatio="xMidYMid meet"
+      aria-labelledby="cmp-title"
+      aria-describedby="cmp-desc"
+    >
+      <title id="cmp-title">Prozessvergleich</title>
+      <desc id="cmp-desc">
+        Menschlich: {{ getProzessTotal(0) | dauer }};
+        Halbautomatisch: {{ getProzessTotal(1) | dauer }};
+        Vollautomatisch: {{ getProzessTotal(2) | dauer }}
+      </desc>
+
+      @for (p of prozesse; track $index) {
+        @let cmpIdx = $index;
+        <!-- grey track -->
+        <rect
+          x="0"
+          [attr.y]="cmpIdx * 44 + 18"
+          width="380"
+          height="16"
+          fill="#dedede"
+          rx="2"
+        />
+        <!-- filled bar proportional to max total -->
+        <rect
+          x="0"
+          [attr.y]="cmpIdx * 44 + 18"
+          [attr.width]="bars[cmpIdx].width"
+          height="16"
+          fill="#264892"
+          rx="2"
+        />
+        <!-- process name label -->
+        <text
+          x="0"
+          [attr.y]="cmpIdx * 44 + 13"
+          font-size="12"
+          font-family="sans-serif"
+          fill="#264892"
+          font-weight="600"
+        >{{ p.titel }}</text>
+        <!-- D6 total label (right of bar) -->
+        <text
+          x="388"
+          [attr.y]="cmpIdx * 44 + 30"
+          font-size="11"
+          font-family="sans-serif"
+          fill="#495057"
+          text-anchor="start"
+        >{{ getProzessTotal(cmpIdx) | dauer }}</text>
+      }
+    </svg>
+
+    <!-- Per-process segment bars -->
+    @for (p of prozesse; track $index) {
+      @let prozessIdx = $index;
+      <div class="process-bar-wrap">
+        <div class="bar-label-row">
+          <span class="bar-title">{{ p.titel }}</span>
+          <span class="bar-total">{{ getProzessTotal(prozessIdx) | dauer }}</span>
+        </div>
+
+        <svg
+          class="process-svg"
+          viewBox="0 0 600 32"
+          preserveAspectRatio="none"
+          [attr.aria-labelledby]="'bar-title-' + prozessIdx"
+          [attr.aria-describedby]="'bar-desc-' + prozessIdx"
+        >
+          <title [id]="'bar-title-' + prozessIdx">{{ p.titel }}: {{ getProzessTotal(prozessIdx) | dauer }}</title>
+          <desc [id]="'bar-desc-' + prozessIdx">
+            Prozessbalken für {{ p.titel }} mit {{ p.stepCount }} Schritten. Gesamtdauer: {{ getProzessTotal(prozessIdx) | dauer }}.
+          </desc>
+
+          <defs>
+            <!-- 45-degree hatch pattern for Wartezeit: light background + red stripes (greyscale-distinct, WCAG 1.4.1) -->
+            <pattern
+              [id]="'hatch-wait-' + prozessIdx"
+              patternUnits="userSpaceOnUse"
+              width="8"
+              height="8"
+              patternTransform="rotate(45)"
+            >
+              <rect width="8" height="8" fill="#fbe3de" />
+              <line x1="0" y1="0" x2="0" y2="8" stroke="#dc421e" stroke-width="3" />
+            </pattern>
+          </defs>
+
+          @for (seg of getSegments(prozessIdx, 600); track seg.type + '-' + seg.index) {
+            @if (seg.type === 'work') {
+              @if (svgSnapshot().prozesse[prozessIdx].works[seg.index] === 0) {
+                <rect
+                  class="work-rect"
+                  [attr.x]="seg.x"
+                  y="0"
+                  [attr.width]="seg.width"
+                  height="32"
+                  fill="#264892"
+                  tabindex="-1"
+                  aria-hidden="true"
+                />
+              } @else {
+                <rect
+                  class="work-rect"
+                  [attr.x]="seg.x"
+                  y="0"
+                  [attr.width]="seg.width"
+                  height="32"
+                  fill="#264892"
+                  tabindex="0"
+                  role="button"
+                  [attr.aria-label]="getWorkAriaLabel(prozessIdx, seg.index)"
+                  (click)="setFocusedStep(prozessIdx, seg.index)"
+                  (keydown.enter)="setFocusedStep(prozessIdx, seg.index)"
+                  (keydown.space)="$event.preventDefault(); setFocusedStep(prozessIdx, seg.index)"
+                  (focus)="setFocusedStep(prozessIdx, seg.index)"
+                />
+              }
+              @if (seg.width >= 24) {
+                <text
+                  [attr.x]="seg.x + seg.width / 2"
+                  y="21"
+                  font-size="11"
+                  font-family="sans-serif"
+                  fill="#fff"
+                  text-anchor="middle"
+                  pointer-events="none"
+                  aria-hidden="true"
+                >A</text>
+              }
+            } @else {
+              <rect
+                [attr.x]="seg.x"
+                y="0"
+                [attr.width]="seg.width"
+                height="32"
+                [attr.fill]="'url(#hatch-wait-' + prozessIdx + ')'"
+                aria-hidden="true"
+              />
+              @if (seg.width >= 24) {
+                <text
+                  [attr.x]="seg.x + seg.width / 2"
+                  y="21"
+                  font-size="11"
+                  font-family="sans-serif"
+                  fill="#fff"
+                  text-anchor="middle"
+                  pointer-events="none"
+                  aria-hidden="true"
+                >W</text>
+              }
+            }
+          }
+        </svg>
+
+        <!-- Persistent detail panel: focused/clicked step details (touch + keyboard accessible) -->
+        <div class="step-detail-panel" role="region" aria-label="Schritt-Details" aria-live="polite">
+          <dl class="mb-0">
+            <dt>Schritt {{ focusedStep()[prozessIdx] + 1 }}: {{ getFocusedStepDetail(prozessIdx).label }}</dt>
+            <dd>Arbeitszeit: {{ getFocusedStepDetail(prozessIdx).arbeitszeit }}</dd>
+            @if (getFocusedStepDetail(prozessIdx).wartezeit !== null) {
+              <dd>Folgende Wartezeit: {{ getFocusedStepDetail(prozessIdx).wartezeit }}</dd>
+            }
+          </dl>
+        </div>
+      </div>
+    }
+
+  </div>
+</div>
+
+<!-- SCENARIO CONTROLS CARD -->
+<div class="card mb-4">
+  <div class="card-body">
+    <h5 class="card-title">Szenarien</h5>
+
+    <!-- Loaded scenario indicator -->
+    <div class="mb-3">
+      @if (geladenSzenario()) {
+        <span class="badge bg-primary me-2">Geladen: {{ geladenSzenario()!.name }}</span>
+      } @else {
+        <span class="text-muted fst-italic">Kein Szenario geladen</span>
+      }
+    </div>
+
+    <!-- Name input + save buttons -->
+    <div class="row g-2 align-items-start mb-3">
+      <div class="col-auto">
+        <label for="szenario-name" class="form-label">Szenario-Name</label>
+        <input
+          id="szenario-name"
+          type="text"
+          class="form-control"
+          [(ngModel)]="nameInput"
+          placeholder="Szenario-Name"
+          [attr.aria-describedby]="nameError ? 'name-error' : null"
+        />
+        @if (nameError) {
+          <div id="name-error" class="text-danger small mt-1">{{ nameError }}</div>
+        }
+      </div>
+      <div class="col-auto d-flex align-items-end gap-2" style="padding-top: 1.75rem">
+        @if (!geladenSzenario()) {
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="neuSpeichern()"
+            [disabled]="form.invalid || scenarioLoading()"
+          >
+            Neu erstellen
+          </button>
+        }
+        @if (geladenSzenario()) {
+          <button
+            type="button"
+            class="btn btn-outline-primary"
+            (click)="aktualisieren()"
+            [disabled]="form.invalid || scenarioLoading()"
+          >
+            Aktualisieren
+          </button>
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            (click)="alsNeuSpeichern()"
+            [disabled]="form.invalid || scenarioLoading()"
+          >
+            Kopie speichern
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Scenario list -->
+    @if (scenarioLoading()) {
+      <app-loading-spinner />
+    } @else if (szenarien().length === 0) {
+      <p class="text-muted">Keine Szenarien gespeichert.</p>
+    } @else {
+      <ul class="list-group">
+        @for (s of szenarien(); track s.id) {
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <button
+              type="button"
+              class="btn btn-link p-0 text-start"
+              (click)="ladeScenario(s)"
+            >
+              {{ s.name }}
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-danger btn-sm"
+              (click)="loeschen(s)"
+              [disabled]="scenarioLoading()"
+            >
+              Löschen
+            </button>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+</div>
+
+<!-- STEP INPUT TABS -->
+<div class="card">
+  <div id="schritt-zeiten-eingabe" class="card-body" tabindex="-1">
+    <h5 class="card-title">Schritt-Zeiten</h5>
+
+    <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs mb-3">
+
+      <!-- Tab 1: Menschlich (23 steps) -->
+      <li [ngbNavItem]="1">
+        <button ngbNavLink>Menschlich ({{ prozesse[0].stepCount }})</button>
+        <ng-template ngbNavContent>
+          <form [formGroup]="form">
+            <div formGroupName="menschlich">
+              @for (ctrl of getWorksArray('menschlich').controls; track $index) {
+                <!-- Work step row -->
+                <div class="mb-2">
+                  <div class="step-row">
+                    <span class="step-label fw-semibold">
+                      {{ $index + 1 }}. {{ prozesse[0].labels[$index] }}
+                    </span>
+                    <span class="text-muted small">Arbeitszeit:</span>
+                    <input
+                      type="number"
+                      class="form-control input-number"
+                      [formControl]="getValueCtrl(ctrl)"
+                      min="0"
+                      max="479520"
+                      [attr.aria-label]="prozesse[0].labels[$index] + ' – Arbeitszeit (Wert)'"
+                      [attr.aria-describedby]="getValueCtrl(ctrl).invalid && getValueCtrl(ctrl).touched ? 'menschlich-work-err-' + $index : null"
+                    />
+                    <select
+                      class="form-select w-auto"
+                      [formControl]="getUnitCtrl(ctrl)"
+                      [attr.aria-label]="prozesse[0].labels[$index] + ' – Arbeitszeit (Einheit)'"
+                    >
+                      @for (einheit of zeiteinheiten; track einheit) {
+                        <option [value]="einheit">{{ einheit }}</option>
+                      }
+                    </select>
+                    @if (getValueCtrl(ctrl).invalid && getValueCtrl(ctrl).touched) {
+                      <div [id]="'menschlich-work-err-' + $index" class="text-danger small">
+                        Wert muss zwischen 0 und 479.520 liegen.
+                      </div>
+                    }
+                  </div>
+                </div>
+
+                <!-- Wait row after this step (only if not last) -->
+                @if ($index < getWaitsArray('menschlich').controls.length) {
+                  <div class="mb-2">
+                    <div class="wait-row">
+                      <span class="text-muted small">Wartezeit nach Schritt {{ $index + 1 }}:</span>
+                      <input
+                        type="number"
+                        class="form-control input-number"
+                        [formControl]="getWaitValueCtrl('menschlich', $index)"
+                        min="0"
+                        max="479520"
+                        [attr.aria-label]="'Wartezeit nach Schritt ' + ($index + 1) + ' – (Wert)'"
+                        [attr.aria-describedby]="getWaitValueCtrl('menschlich', $index).invalid && getWaitValueCtrl('menschlich', $index).touched ? 'menschlich-wait-err-' + $index : null"
+                      />
+                      <select
+                        class="form-select w-auto"
+                        [formControl]="getWaitUnitCtrl('menschlich', $index)"
+                        [attr.aria-label]="'Wartezeit nach Schritt ' + ($index + 1) + ' – (Einheit)'"
+                      >
+                        @for (einheit of zeiteinheiten; track einheit) {
+                          <option [value]="einheit">{{ einheit }}</option>
+                        }
+                      </select>
+                      @if (getWaitValueCtrl('menschlich', $index).invalid && getWaitValueCtrl('menschlich', $index).touched) {
+                        <div [id]="'menschlich-wait-err-' + $index" class="text-danger small">
+                          Wert muss zwischen 0 und 479.520 liegen.
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              }
+            </div>
+          </form>
+        </ng-template>
+      </li>
+
+      <!-- Tab 2: Halbautomatisch (6 steps) -->
+      <li [ngbNavItem]="2">
+        <button ngbNavLink>Halbautomatisch ({{ prozesse[1].stepCount }})</button>
+        <ng-template ngbNavContent>
+          <form [formGroup]="form">
+            <div formGroupName="halbautomatisch">
+              @for (ctrl of getWorksArray('halbautomatisch').controls; track $index) {
+                <div class="mb-2">
+                  <div class="step-row">
+                    <span class="step-label fw-semibold">
+                      {{ $index + 1 }}. {{ prozesse[1].labels[$index] }}
+                    </span>
+                    <span class="text-muted small">Arbeitszeit:</span>
+                    <input
+                      type="number"
+                      class="form-control input-number"
+                      [formControl]="getValueCtrl(ctrl)"
+                      min="0"
+                      max="479520"
+                      [attr.aria-label]="prozesse[1].labels[$index] + ' – Arbeitszeit (Wert)'"
+                      [attr.aria-describedby]="getValueCtrl(ctrl).invalid && getValueCtrl(ctrl).touched ? 'halb-work-err-' + $index : null"
+                    />
+                    <select
+                      class="form-select w-auto"
+                      [formControl]="getUnitCtrl(ctrl)"
+                      [attr.aria-label]="prozesse[1].labels[$index] + ' – Arbeitszeit (Einheit)'"
+                    >
+                      @for (einheit of zeiteinheiten; track einheit) {
+                        <option [value]="einheit">{{ einheit }}</option>
+                      }
+                    </select>
+                    @if (getValueCtrl(ctrl).invalid && getValueCtrl(ctrl).touched) {
+                      <div [id]="'halb-work-err-' + $index" class="text-danger small">
+                        Wert muss zwischen 0 und 479.520 liegen.
+                      </div>
+                    }
+                  </div>
+                </div>
+
+                @if ($index < getWaitsArray('halbautomatisch').controls.length) {
+                  <div class="mb-2">
+                    <div class="wait-row">
+                      <span class="text-muted small">Wartezeit nach Schritt {{ $index + 1 }}:</span>
+                      <input
+                        type="number"
+                        class="form-control input-number"
+                        [formControl]="getWaitValueCtrl('halbautomatisch', $index)"
+                        min="0"
+                        max="479520"
+                        [attr.aria-label]="'Wartezeit nach Schritt ' + ($index + 1) + ' – (Wert)'"
+                        [attr.aria-describedby]="getWaitValueCtrl('halbautomatisch', $index).invalid && getWaitValueCtrl('halbautomatisch', $index).touched ? 'halb-wait-err-' + $index : null"
+                      />
+                      <select
+                        class="form-select w-auto"
+                        [formControl]="getWaitUnitCtrl('halbautomatisch', $index)"
+                        [attr.aria-label]="'Wartezeit nach Schritt ' + ($index + 1) + ' – (Einheit)'"
+                      >
+                        @for (einheit of zeiteinheiten; track einheit) {
+                          <option [value]="einheit">{{ einheit }}</option>
+                        }
+                      </select>
+                      @if (getWaitValueCtrl('halbautomatisch', $index).invalid && getWaitValueCtrl('halbautomatisch', $index).touched) {
+                        <div [id]="'halb-wait-err-' + $index" class="text-danger small">
+                          Wert muss zwischen 0 und 479.520 liegen.
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              }
+            </div>
+          </form>
+        </ng-template>
+      </li>
+
+      <!-- Tab 3: Vollautomatisch (2 steps) -->
+      <li [ngbNavItem]="3">
+        <button ngbNavLink>Vollautomatisch ({{ prozesse[2].stepCount }})</button>
+        <ng-template ngbNavContent>
+          <form [formGroup]="form">
+            <div formGroupName="vollautomatisch">
+              @for (ctrl of getWorksArray('vollautomatisch').controls; track $index) {
+                <div class="mb-2">
+                  <div class="step-row">
+                    <span class="step-label fw-semibold">
+                      {{ $index + 1 }}. {{ prozesse[2].labels[$index] }}
+                    </span>
+                    <span class="text-muted small">Arbeitszeit:</span>
+                    <input
+                      type="number"
+                      class="form-control input-number"
+                      [formControl]="getValueCtrl(ctrl)"
+                      min="0"
+                      max="479520"
+                      [attr.aria-label]="prozesse[2].labels[$index] + ' – Arbeitszeit (Wert)'"
+                      [attr.aria-describedby]="getValueCtrl(ctrl).invalid && getValueCtrl(ctrl).touched ? 'voll-work-err-' + $index : null"
+                    />
+                    <select
+                      class="form-select w-auto"
+                      [formControl]="getUnitCtrl(ctrl)"
+                      [attr.aria-label]="prozesse[2].labels[$index] + ' – Arbeitszeit (Einheit)'"
+                    >
+                      @for (einheit of zeiteinheiten; track einheit) {
+                        <option [value]="einheit">{{ einheit }}</option>
+                      }
+                    </select>
+                    @if (getValueCtrl(ctrl).invalid && getValueCtrl(ctrl).touched) {
+                      <div [id]="'voll-work-err-' + $index" class="text-danger small">
+                        Wert muss zwischen 0 und 479.520 liegen.
+                      </div>
+                    }
+                  </div>
+                </div>
+
+                @if ($index < getWaitsArray('vollautomatisch').controls.length) {
+                  <div class="mb-2">
+                    <div class="wait-row">
+                      <span class="text-muted small">Wartezeit nach Schritt {{ $index + 1 }}:</span>
+                      <input
+                        type="number"
+                        class="form-control input-number"
+                        [formControl]="getWaitValueCtrl('vollautomatisch', $index)"
+                        min="0"
+                        max="479520"
+                        [attr.aria-label]="'Wartezeit nach Schritt ' + ($index + 1) + ' – (Wert)'"
+                        [attr.aria-describedby]="getWaitValueCtrl('vollautomatisch', $index).invalid && getWaitValueCtrl('vollautomatisch', $index).touched ? 'voll-wait-err-' + $index : null"
+                      />
+                      <select
+                        class="form-select w-auto"
+                        [formControl]="getWaitUnitCtrl('vollautomatisch', $index)"
+                        [attr.aria-label]="'Wartezeit nach Schritt ' + ($index + 1) + ' – (Einheit)'"
+                      >
+                        @for (einheit of zeiteinheiten; track einheit) {
+                          <option [value]="einheit">{{ einheit }}</option>
+                        }
+                      </select>
+                      @if (getWaitValueCtrl('vollautomatisch', $index).invalid && getWaitValueCtrl('vollautomatisch', $index).touched) {
+                        <div [id]="'voll-wait-err-' + $index" class="text-danger small">
+                          Wert muss zwischen 0 und 479.520 liegen.
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              }
+            </div>
+          </form>
+        </ng-template>
+      </li>
+
+    </ul>
+
+    <div [ngbNavOutlet]="nav"></div>
+  </div>
+</div>

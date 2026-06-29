@@ -118,6 +118,18 @@ Standard CRUD. Default sort: `datum,DESC`. Allowed sort fields: `datum`, `typ`, 
 
 Standard CRUD. Default sort: `createdAt,DESC`. Allowed sort fields: `titel`, `wert`, `phase`, `wahrscheinlichkeit`, `erwartetesDatum`, `createdAt`, `updatedAt`. Params: `search` (optional, case-insensitive substring match on `titel`), `phase` (optional enum filter), `page`, `size`, `sort`.
 
+### Szenarien (`/api/szenarien`)
+
+Saved scenarios for the Produktivität-Rechner cycle-time calculator. All routes `requireAuth` (any logged-in user). Each process body is `{ works: number[], waits: number[] }` (waits length = works length − 1); durations are integer minutes, validated by `SzenarioSchema` (Zod) in `utils/validation.ts`.
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/szenarien` | requireAuth | List all scenarios (`createdAt DESC`) |
+| GET | `/api/szenarien/:id` | requireAuth | Single scenario (404 if missing) |
+| POST | `/api/szenarien` | requireAuth | Create → 201. Duplicate `name` → 409 |
+| PUT | `/api/szenarien/:id` | requireAuth | Update (404 if missing; duplicate name → 409) |
+| DELETE | `/api/szenarien/:id` | requireAuth | Delete → 204 |
+
 ### Agent Tasks (`/api/agent-tasks`)
 
 Manages the autonomous-agent work queue. Lifecycle: `OPEN → IN_PROGRESS → DONE | REJECTED`.
@@ -277,7 +289,7 @@ src/
 
 Middleware order in `app.ts`: CORS → JSON body parser → session → routes → error handler.
 
-Mounted routers (10): `/api/auth`, `/api/firmen`, `/api/personen`, `/api/abteilungen`, `/api/adressen`, `/api/aktivitaeten`, `/api/chancen`, `/api/dashboard`, `/api/agent-tasks`, `/api/cron`. Plus `/api/health` (inline, public).
+Mounted routers: `/api/auth`, `/api/firmen`, `/api/personen`, `/api/abteilungen`, `/api/adressen`, `/api/aktivitaeten`, `/api/chancen`, `/api/dashboard`, `/api/agent-tasks`, `/api/cron`, `/api/tickets`, `/api/szenarien`. Plus `/api/health` (inline, public).
 
 ## Exception Handling
 

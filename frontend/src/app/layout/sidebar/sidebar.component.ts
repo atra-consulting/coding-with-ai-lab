@@ -3,7 +3,10 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import {
+  faAngleDoubleLeft,
+  faAngleDoubleRight,
   faBuilding,
+  faCalculator,
   faCalendarCheck,
   faChartLine,
   faClipboardList,
@@ -14,8 +17,6 @@ import {
   faSitemap,
   faTachometerAlt,
   faUsers,
-  faAngleDoubleLeft,
-  faAngleDoubleRight,
 } from '@fortawesome/free-solid-svg-icons';
 import { LayoutService } from '../../core/services/layout.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -70,6 +71,12 @@ export class SidebarComponent {
       items: [
         { label: 'Chancen', route: '/chancen', icon: faChartLine },
         { label: 'Aktivitäten', route: '/aktivitaeten', icon: faCalendarCheck },
+      ],
+    },
+    {
+      title: 'Produktivität',
+      items: [
+        { label: 'Rechner', route: '/produktivitaet/rechner', icon: faCalculator },
       ],
     },
     {

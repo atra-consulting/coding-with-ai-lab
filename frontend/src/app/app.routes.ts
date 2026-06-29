@@ -60,6 +60,13 @@ export const routes: Routes = [
         loadChildren: () => import('./features/chance/chance.routes').then((m) => m.CHANCE_ROUTES),
       },
       {
+        path: 'produktivitaet',
+        loadChildren: () =>
+          import('./features/produktivitaet/produktivitaet.routes').then(
+            (m) => m.PRODUKTIVITAET_ROUTES,
+          ),
+      },
+      {
         path: 'admin',
         loadChildren: () =>
           import('./features/admin/admin.routes').then((m) => m.ADMIN_ROUTES),
