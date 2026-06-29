@@ -292,6 +292,14 @@ test.describe('GET /api/agent-tasks/:id', () => {
     await wrong.dispose();
   });
 
+  test('USER session with X-Forwarded-For (loopback bypass disabled) → 403', async () => {
+    // Simulates a non-loopback request: bypass fires only when no forwarding header is present.
+    const resp = await user.get('/api/agent-tasks/1', {
+      headers: { 'X-Forwarded-For': '10.0.0.1' },
+    });
+    expect(resp.status()).toBe(403);
+  });
+
   test('unknown id → 404', async () => {
     const resp = await agent.get('/api/agent-tasks/99999');
     expect(resp.status()).toBe(404);
