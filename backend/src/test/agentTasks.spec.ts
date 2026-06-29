@@ -216,6 +216,20 @@ test.describe('GET /api/agent-tasks/next', () => {
     const resp = await wrong.get('/api/agent-tasks/next?source=EMAIL');
     expect(resp.status()).toBe(401);
   });
+
+  test('no token + X-Forwarded-For header from localhost → 401 (bypass refused, proxy header present)', async () => {
+    // Even from loopback, the bypass is refused when a forwarding header is present.
+    const proxyCtx = await playwrightRequest.newContext({
+      baseURL: BASE_URL,
+      extraHTTPHeaders: { 'X-Forwarded-For': '10.0.0.1' },
+    });
+    try {
+      const resp = await proxyCtx.get('/api/agent-tasks/next?source=EMAIL');
+      expect(resp.status()).toBe(401);
+    } finally {
+      await proxyCtx.dispose();
+    }
+  });
 });
 
 // ---------------------------------------------------------------------------
