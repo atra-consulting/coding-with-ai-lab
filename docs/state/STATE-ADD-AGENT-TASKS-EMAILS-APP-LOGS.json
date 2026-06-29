@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "task_key": "ADD-AGENT-TASKS-EMAILS-APP-LOGS",
+  "status": "in_progress",
+  "current_step": "4.5",
+  "started": "2026-06-30T00:00:00.000Z",
+  "updated": "2026-06-30T00:00:00.000Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Add new agent tasks for Customer Emails and Application Logs categories that have not been done yet",
+    "special_instructions": null,
+    "ticket_id": null,
+    "ticket_url": null,
+    "branch_name": "add-agent-tasks-emails-app-logs",
+    "original_branch": "fix/start-bat-windows-compatibility",
+    "docs_folder": "docs",
+    "workflow_scope": null,
+    "keep_files": null
+  },
+  "discovery": {
+    "agents_available": true,
+    "writer_agents": ["ba-writer"],
+    "coding_agents": ["be-coder", "fe-coder", "db-coder"],
+    "review_agents": ["be-reviewer", "fe-reviewer", "db-reviewer"],
+    "test_command": null,
+    "youtrack_available": false,
+    "youtrack_mcp": null,
+    "youtrack_on_start": null,
+    "youtrack_on_resolve": null
+  },
+  "artifacts": {
+    "prd_skipped": true,
+    "prd_file": null,
+    "plan_file": null,
+    "pr_url": null
+  },
+  "completed_steps": []
+}
