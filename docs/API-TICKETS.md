@@ -80,7 +80,7 @@ X-Agent-Token: <AGENT_API_TOKEN>
 - Compared against `AGENT_API_TOKEN` env var via SHA-256 + constant-time `timingSafeEqual`.
 - If `AGENT_API_TOKEN` is **unset/empty**, every agent endpoint returns **401**.
 - Missing or wrong token → **401**.
-- **Localhost bypass:** Requests from `127.0.0.1` or `::1` with no token header skip token validation. Use for local development without setting `AGENT_API_TOKEN`.
+- **Localhost bypass:** Set `AGENT_AUTH_ALLOW_LOOPBACK=1` in `backend/.env`. Requests from `127.0.0.1` or `::1` with no token header then skip validation. Local development only — never set in production.
 - Locally the backend auto-loads `backend/.env`; in CI set it as a GitHub Actions secret.
 
 **Local setup** (run from repo root):

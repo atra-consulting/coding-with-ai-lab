@@ -9,16 +9,18 @@ export function requireAgentToken(req: Request, _res: Response, next: NextFuncti
     return;
   }
 
-  const remoteAddress = req.socket?.remoteAddress ?? '';
-  const localhostAddresses = ['127.0.0.1', '::1', '::ffff:127.0.0.1'];
-  const hasAuthHeader = !!req.headers['authorization'] || !!req.headers['x-agent-token'];
-  // Refuse bypass if a forwarding header is present — a same-host reverse proxy
-  // would appear as 127.0.0.1 on the socket while forwarding a remote client.
-  const hasForwardingHeader =
-    !!req.headers['x-forwarded-for'] || !!req.headers['x-real-ip'] || !!req.headers['forwarded'];
-  if (localhostAddresses.includes(remoteAddress) && !hasAuthHeader && !hasForwardingHeader) {
-    next();
-    return;
+  if (process.env['AGENT_AUTH_ALLOW_LOOPBACK'] === '1') {
+    const remoteAddress = req.socket?.remoteAddress ?? '';
+    const localhostAddresses = ['127.0.0.1', '::1', '::ffff:127.0.0.1'];
+    const hasAuthHeader = !!req.headers['authorization'] || !!req.headers['x-agent-token'];
+    // Refuse bypass when a proxy forwarding header is present — a same-host
+    // reverse proxy would appear as 127.0.0.1 on the socket.
+    const hasForwardingHeader =
+      !!req.headers['x-forwarded-for'] || !!req.headers['x-real-ip'] || !!req.headers['forwarded'];
+    if (localhostAddresses.includes(remoteAddress) && !hasAuthHeader && !hasForwardingHeader) {
+      next();
+      return;
+    }
   }
 
   let incomingToken: string | undefined;

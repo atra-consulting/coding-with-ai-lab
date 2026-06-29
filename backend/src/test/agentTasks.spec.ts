@@ -206,6 +206,8 @@ test.describe('GET /api/agent-tasks/next', () => {
   });
 
   test('no auth header from localhost → 200 (localhost bypass)', async () => {
+    // Prior tests exhaust all EMAIL tasks; reset so one is available.
+    await resetDatabase();
     const resp = await anon.get('/api/agent-tasks/next?source=EMAIL');
     expect(resp.status()).toBe(200);
   });
