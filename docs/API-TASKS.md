@@ -43,7 +43,7 @@ status:  OPEN ──(GET /next)──▶ IN_PROGRESS ──(POST /done)──▶
 
 ## Authentication
 
-Two distinct schemes — they never overlap.
+Two main schemes. `GET /:id` accepts all three (see below).
 
 ### Agent token (machine endpoints: `/next`, `/:id/reject`, `/:id/done`)
 
@@ -74,7 +74,7 @@ cp backend/.env.example backend/.env
 set -a && source backend/.env && set +a
 ```
 
-### Admin session (admin endpoints: `/`, `/summary`, `/reset`; also accepted on `/:id`)
+### Admin session (admin endpoints: `/`, `/summary`, `/reset`)
 
 Standard browser session cookie + role `ADMIN` (`requireAuth` + `requireRole('ADMIN')`).
 
@@ -354,11 +354,12 @@ Authorization: Bearer $AGENT_API_TOKEN
 X-Agent-Token: $AGENT_API_TOKEN
 ```
 
-**The three calls a skill needs:**
+**The calls a skill needs:**
 
 | Step | Call | Notes |
 |------|------|-------|
 | Claim | `GET /api/agent-tasks/next?source=…` | **`source` is required** — one of `EMAIL`, `GITHUB_ISSUE`, `APP_LOG`, `ERROR_REPORT`. Claims the oldest `OPEN` task of that source, flips it to `IN_PROGRESS`. **`204` = none for that source.** |
+| Read | `GET /api/agent-tasks/:id` | Re-read a task by id. Accepts agent token or loopback bypass. |
 | Finish | `POST /api/agent-tasks/:id/done` | Body `{ "comment"?: string }`. From `IN_PROGRESS` → `DONE`. |
 | Reject | `POST /api/agent-tasks/:id/reject` | Body `{ "comment": string }` (required). From `IN_PROGRESS` → `REJECTED`. Use when the task is out of scope or not worth doing. |
 

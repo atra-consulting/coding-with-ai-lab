@@ -61,8 +61,9 @@ export function requireAgentTokenOrAdminSession(
 ): void {
   const configuredToken = process.env['AGENT_API_TOKEN'];
 
-  // Loopback bypass — same rules as requireAgentToken
-  if (process.env['AGENT_AUTH_ALLOW_LOOPBACK'] === '1') {
+  // Loopback bypass — gated on configuredToken being set, matching requireAgentToken.
+  // Prevents accidental open access if AGENT_AUTH_ALLOW_LOOPBACK=1 is left on without a token.
+  if (configuredToken && process.env['AGENT_AUTH_ALLOW_LOOPBACK'] === '1') {
     const remoteAddress = req.socket?.remoteAddress ?? '';
     const localhostAddresses = ['127.0.0.1', '::1', '::ffff:127.0.0.1'];
     const hasAuthHeader = !!req.headers['authorization'] || !!req.headers['x-agent-token'];
@@ -74,7 +75,8 @@ export function requireAgentTokenOrAdminSession(
     }
   }
 
-  // Agent token
+  // Agent token — if a token header is present and wrong, reject immediately.
+  // Do not fall through to session so a bad token is never silently ignored.
   if (configuredToken) {
     let incomingToken: string | undefined;
     const authHeader = req.headers['authorization'];
@@ -93,11 +95,13 @@ export function requireAgentTokenOrAdminSession(
         next();
         return;
       }
+      next(new UnauthorizedError('Ungültiger Agent-Token'));
+      return;
     }
   }
 
   // Admin session
-  const userId = req.session?.userId;
+  const userId = req.session.userId;
   if (userId) {
     const user = findById(userId);
     if (user) {

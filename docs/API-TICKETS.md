@@ -65,7 +65,7 @@ Same fields as ticket, but `comments` is replaced by `commentCount: number`.
 
 ## Authentication
 
-Two distinct schemes.
+Two main schemes. `GET /:id` accepts all three (see below).
 
 ### Agent token (machine endpoints: `/next`, `/:id/done`, `/:id/ask`)
 
@@ -96,7 +96,7 @@ cp backend/.env.example backend/.env
 set -a && source backend/.env && set +a
 ```
 
-### Admin session (all other endpoints; also accepted on `/:id`)
+### Admin session (all other endpoints)
 
 Standard browser session cookie + role `ADMIN` (`requireAuth` + `requireRole('ADMIN')`).
 
@@ -441,11 +441,12 @@ Authorization: Bearer $AGENT_API_TOKEN
 X-Agent-Token: $AGENT_API_TOKEN
 ```
 
-**The three calls a skill needs:**
+**The calls a skill needs:**
 
 | Step | Call | Notes |
 |------|------|-------|
 | Claim | `GET /api/tickets/next` | Optional `?type=FEATURE\|BUG\|CHORE`. Claims the oldest `TODO` ticket owned by `AI`, flips it to `IN_PROGRESS`. **`204` = queue empty, stop.** The response includes the full `comments` thread. |
+| Read | `GET /api/tickets/:id` | Re-read a ticket by id (full ticket + comments). Accepts agent token or loopback bypass. |
 | Finish | `POST /api/tickets/:id/done` | Body `{ "comment"?: string }`. Only from `IN_PROGRESS`. Sets `solution=DONE`. |
 | Ask | `POST /api/tickets/:id/ask` | Body `{ "question": string }` (required). Hands the ticket to a human (`ON_HOLD`, owner→`HUMAN`). Posts the question as an `AGENT` comment. |
 
