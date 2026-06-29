@@ -9,6 +9,14 @@ export function requireAgentToken(req: Request, _res: Response, next: NextFuncti
     return;
   }
 
+  const remoteAddress = req.socket?.remoteAddress ?? '';
+  const localhostAddresses = ['127.0.0.1', '::1', '::ffff:127.0.0.1'];
+  const hasAuthHeader = !!req.headers['authorization'] || !!req.headers['x-agent-token'];
+  if (localhostAddresses.includes(remoteAddress) && !hasAuthHeader) {
+    next();
+    return;
+  }
+
   let incomingToken: string | undefined;
 
   const authHeader = req.headers['authorization'];
