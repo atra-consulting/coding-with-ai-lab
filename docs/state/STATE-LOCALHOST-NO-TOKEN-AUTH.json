@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "task_key": "LOCALHOST-NO-TOKEN-AUTH",
+  "status": "in_progress",
+  "current_step": "7.5",
+  "started": "2026-06-29T00:00:00.000Z",
+  "updated": "2026-06-29T00:00:00.000Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Update the authentication for the agent tasks and tickets APIs so they work without an API token when accessed from localhost.",
+    "special_instructions": null,
+    "branch_name": "localhost-no-token-auth",
+    "original_branch": "main",
+    "original_head": "b585e939bf5feec4f0f0b46b16064d67b3df9ac7",
+    "docs_folder": "docs",
+    "is_git_repo": true,
+    "workflow_scope": null,
+    "pr_prefix": null,
+    "pr_exists": false,
+    "pr_url": null
+  },
+  "discovery": {
+    "agents_available": true,
+    "writer_agents": ["ba-writer"],
+    "coding_agents": ["be-coder", "db-coder", "fe-coder", "ui-designer"],
+    "review_agents": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer"],
+    "test_coding_agents": ["be-test-coder", "fe-test-coder"],
+    "test_review_agents": ["be-test-reviewer", "fe-test-reviewer"],
+    "test_runner_agents": ["be-test-runner", "fe-test-runner"],
+    "tooling_coding_agents": ["python-coder", "shell-coder", "skill-coder"],
+    "tooling_review_agents": ["python-reviewer", "shell-reviewer", "skill-reviewer"],
+    "test_command": "cd backend && npx playwright test"
+  },
+  "artifacts": {
+    "prd_skipped": true,
+    "prd_file": null,
+    "plan_file": "docs/plans/PLAN-LOCALHOST-NO-TOKEN-AUTH.md"
+  },
+  "completed_steps": ["1", "2", "3", "4", "5", "7.1", "7.2", "7.3", "7.4"]
+}

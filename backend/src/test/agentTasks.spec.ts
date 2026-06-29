@@ -205,14 +205,32 @@ test.describe('GET /api/agent-tasks/next', () => {
     });
   });
 
-  test('no auth header → 401', async () => {
+  test('no auth header from localhost → 200 (localhost bypass)', async () => {
+    // Prior tests exhaust all EMAIL tasks; reset so one is available.
+    await resetDatabase();
     const resp = await anon.get('/api/agent-tasks/next?source=EMAIL');
-    expect(resp.status()).toBe(401);
+    expect(resp.status()).toBe(200);
   });
 
   test('wrong Bearer token → 401', async () => {
     const resp = await wrong.get('/api/agent-tasks/next?source=EMAIL');
     expect(resp.status()).toBe(401);
+  });
+
+  test('no token + X-Forwarded-For header from localhost → 401 (bypass refused, proxy header present)', async () => {
+    // Even from loopback, the bypass is refused when a forwarding header is present.
+    // No resetDatabase() needed: requireAgentToken fires before any DB query,
+    // so 401 is returned regardless of whether tasks remain.
+    const proxyCtx = await playwrightRequest.newContext({
+      baseURL: BASE_URL,
+      extraHTTPHeaders: { 'X-Forwarded-For': '10.0.0.1' },
+    });
+    try {
+      const resp = await proxyCtx.get('/api/agent-tasks/next?source=EMAIL');
+      expect(resp.status()).toBe(401);
+    } finally {
+      await proxyCtx.dispose();
+    }
   });
 });
 
@@ -349,11 +367,11 @@ test.describe('POST /api/agent-tasks/:id/reject', () => {
     expect(rejectResp.status()).toBe(409);
   });
 
-  test('no auth header → 401', async () => {
+  test('no auth header from localhost → 200 (localhost bypass)', async () => {
     const resp = await anon.post('/api/agent-tasks/1/reject', {
       data: { comment: 'Test' },
     });
-    expect(resp.status()).toBe(401);
+    expect(resp.status()).toBe(200);
   });
 
   test('wrong Bearer token → 401', async () => {
@@ -451,9 +469,9 @@ test.describe('POST /api/agent-tasks/:id/done', () => {
     expect(doneResp.status()).toBe(409);
   });
 
-  test('no auth header → 401', async () => {
+  test('no auth header from localhost → 200 (localhost bypass)', async () => {
     const resp = await anon.post('/api/agent-tasks/1/done', { data: {} });
-    expect(resp.status()).toBe(401);
+    expect(resp.status()).toBe(200);
   });
 
   test('wrong Bearer token → 401', async () => {

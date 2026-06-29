@@ -152,9 +152,9 @@ test.describe('Auth matrix — agent endpoints', () => {
   });
 
   // GET /next
-  test('GET /next without token → 401', async () => {
+  test('GET /next without token from localhost → 200 (localhost bypass)', async () => {
     const resp = await anon.get('/api/tickets/next');
-    expect(resp.status()).toBe(401);
+    expect(resp.status()).toBe(200);
   });
 
   test('GET /next with wrong token → 401', async () => {
@@ -162,21 +162,25 @@ test.describe('Auth matrix — agent endpoints', () => {
     expect(resp.status()).toBe(401);
   });
 
-  // POST /:id/done
-  test('POST /:id/done without token → 401', async () => {
-    const resp = await anon.post('/api/tickets/1/done', { data: {} });
-    expect(resp.status()).toBe(401);
+  // POST /:id/done — use ticket 2 (still TODO+AI; ticket 1 was claimed by GET /next above)
+  test('POST /:id/done without token from localhost → 409 (auth bypassed, ticket not IN_PROGRESS)', async () => {
+    // Ticket 2 is still TODO (only ticket 1 was claimed by the GET /next test).
+    // 409 confirms auth was bypassed and the business-state guard fired.
+    const resp = await anon.post('/api/tickets/2/done', { data: {} });
+    expect(resp.status()).toBe(409);
   });
 
   test('POST /:id/done with wrong token → 401', async () => {
-    const resp = await wrong.post('/api/tickets/1/done', { data: {} });
+    const resp = await wrong.post('/api/tickets/2/done', { data: {} });
     expect(resp.status()).toBe(401);
   });
 
-  // POST /:id/ask
-  test('POST /:id/ask without token → 401', async () => {
+  // POST /:id/ask — ticket 1 is now IN_PROGRESS (claimed by GET /next above)
+  test('POST /:id/ask without token from localhost → 200 (auth bypassed, ticket IN_PROGRESS)', async () => {
+    // Ticket 1 is IN_PROGRESS after the GET /next test claimed it.
+    // 200 confirms auth was bypassed and the endpoint is reachable.
     const resp = await anon.post('/api/tickets/1/ask', { data: { question: 'What?' } });
-    expect(resp.status()).toBe(401);
+    expect(resp.status()).toBe(200);
   });
 
   test('POST /:id/ask with wrong token → 401', async () => {

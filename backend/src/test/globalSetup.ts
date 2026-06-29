@@ -53,6 +53,7 @@ export default async function globalSetup(): Promise<() => Promise<void>> {
     NODE_ENV: 'test',
     PORT: '7070',
     AGENT_API_TOKEN: TEST_AGENT_TOKEN,
+    AGENT_AUTH_ALLOW_LOOPBACK: '1',
   };
 
   // Pass Turso credentials through when running against a remote DB (e.g. CI).
