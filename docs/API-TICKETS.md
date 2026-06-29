@@ -80,6 +80,20 @@ X-Agent-Token: <AGENT_API_TOKEN>
 - Compared against `AGENT_API_TOKEN` env var via SHA-256 + constant-time `timingSafeEqual`.
 - If `AGENT_API_TOKEN` is **unset/empty**, every agent endpoint returns **401**.
 - Missing or wrong token → **401**.
+- Locally the backend auto-loads `backend/.env`; in CI set it as a GitHub Actions secret.
+
+**Local setup** (run from repo root):
+
+```bash
+# 1. Create backend/.env from the template
+cp backend/.env.example backend/.env
+
+# 2. Set your token — open backend/.env and replace the placeholder:
+#    AGENT_API_TOKEN=your-secret-token-here  →  AGENT_API_TOKEN=<your-actual-token>
+
+# 3. Export vars in your shell so the curl examples below work
+set -a && source backend/.env && set +a
+```
 
 ### Admin session (all other endpoints)
 
