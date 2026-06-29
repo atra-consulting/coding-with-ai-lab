@@ -14,8 +14,8 @@
     "original_head": "03ae6c83d9243cda3ad657fa14d9860057bce65b",
     "docs_folder": "docs",
     "is_git_repo": true,
-    "workflow_scope": null,
-    "pr_prefix": null,
+    "workflow_scope": "full",
+    "pr_prefix": "docs:",
     "pr_exists": false,
     "pr_url": null
   },
