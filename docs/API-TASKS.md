@@ -74,7 +74,7 @@ cp backend/.env.example backend/.env
 set -a && source backend/.env && set +a
 ```
 
-### Admin session (admin endpoints: `/`, `/:id`, `/summary`, `/reset`)
+### Admin session (admin endpoints: `/`, `/summary`, `/reset`; also accepted on `/:id`)
 
 Standard browser session cookie + role `ADMIN` (`requireAuth` + `requireRole('ADMIN')`).
 
@@ -181,14 +181,16 @@ Sets every task back to `OPEN` and clears `comment`, `pickedUpAt`, `resolvedAt`.
 
 ---
 
-### GET `/api/agent-tasks/:id` — one task (admin)
-**Auth:** admin session.
+### GET `/api/agent-tasks/:id` — one task
+**Auth:** loopback bypass · agent token · admin session (first match wins).
 
 | Result | Meaning |
 |--------|---------|
 | `200` + task | found |
 | `404` | no task with that id |
-| `401` / `403` | not logged in / not admin |
+| `401` / `403` | not authenticated / not admin |
+
+Skills and agents can call this endpoint on localhost without any token when `AGENT_AUTH_ALLOW_LOOPBACK=1`. In production, send the agent token or use an admin session.
 
 ---
 

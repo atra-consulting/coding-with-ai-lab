@@ -96,7 +96,7 @@ cp backend/.env.example backend/.env
 set -a && source backend/.env && set +a
 ```
 
-### Admin session (all other endpoints)
+### Admin session (all other endpoints; also accepted on `/:id`)
 
 Standard browser session cookie + role `ADMIN` (`requireAuth` + `requireRole('ADMIN')`).
 
@@ -240,14 +240,16 @@ All tickets grouped by status. Each column sorted by `createdAt ASC`. Tickets in
 
 ---
 
-### GET `/api/tickets/:id` — one ticket (admin)
-**Auth:** admin session. Returns the full ticket including the `comments` array.
+### GET `/api/tickets/:id` — one ticket
+**Auth:** loopback bypass · agent token · admin session (first match wins). Returns the full ticket including the `comments` array.
 
 | Result | Meaning |
 |--------|---------|
 | `200` + ticket | found |
 | `404` | no ticket with that id |
-| `401` / `403` | not logged in / not admin |
+| `401` / `403` | not authenticated / not admin |
+
+Skills and agents can call this endpoint on localhost without any token when `AGENT_AUTH_ALLOW_LOOPBACK=1`. In production, send the agent token or use an admin session.
 
 ---
 

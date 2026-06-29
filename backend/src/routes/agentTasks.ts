@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { requireAuth, requireRole } from '../middleware/auth.js';
-import { requireAgentToken } from '../middleware/agentAuth.js';
+import { requireAgentToken, requireAgentTokenOrAdminSession } from '../middleware/agentAuth.js';
 import { agentTaskService } from '../services/agentTaskService.js';
 import { parsePaginationParams, parseSort } from '../utils/pagination.js';
 import { validate } from '../utils/validation.js';
@@ -88,8 +88,7 @@ router.post(
 // GET /api/agent-tasks/:id
 router.get(
   '/:id',
-  requireAuth,
-  requireRole('ADMIN'),
+  requireAgentTokenOrAdminSession,
   asyncHandler(async (req: Request, res: Response) => {
     const id = parseInt(req.params['id'] as string, 10);
     res.json(await agentTaskService.findById(id));
