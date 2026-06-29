@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "branch": "agent-task-unauth-endpoint",
+  "main_branch": "4d6fdaf700fdb7e2728a2a7c639e613322423e51",
+  "docs_folder": "docs",
+  "special_instructions": null,
+  "review_agents_available": true,
+  "fix_agents_available": true,
+  "all_reviewers": ["be-reviewer", "db-reviewer", "ba-reviewer"],
+  "all_coders": ["be-coder", "db-coder"],
+  "all_designers": [],
+  "changed_files": [
+    "backend/src/middleware/agentAuth.ts",
+    "backend/src/routes/agentTasks.ts",
+    "backend/src/routes/tickets.ts",
+    "backend/src/test/tickets.spec.ts",
+    "docs/API-TASKS.md",
+    "docs/API-TICKETS.md",
+    "docs/plans/PLAN-AGENT-TASK-UNAUTH-ENDPOINT.md",
+    "docs/state/STATE-AGENT-TASK-UNAUTH-ENDPOINT.json"
+  ],
+  "dry_run_mode": false,
+  "started": "2026-06-30T00:00:00.000Z"
+}

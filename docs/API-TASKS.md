@@ -43,7 +43,7 @@ status:  OPEN ──(GET /next)──▶ IN_PROGRESS ──(POST /done)──▶
 
 ## Authentication
 
-Two distinct schemes — they never overlap.
+Two main schemes. `GET /:id` accepts all three (see below).
 
 ### Agent token (machine endpoints: `/next`, `/:id/reject`, `/:id/done`)
 
@@ -74,7 +74,7 @@ cp backend/.env.example backend/.env
 set -a && source backend/.env && set +a
 ```
 
-### Admin session (admin endpoints: `/`, `/:id`, `/summary`, `/reset`)
+### Admin session (admin endpoints: `/`, `/summary`, `/reset`)
 
 Standard browser session cookie + role `ADMIN` (`requireAuth` + `requireRole('ADMIN')`).
 
@@ -181,14 +181,16 @@ Sets every task back to `OPEN` and clears `comment`, `pickedUpAt`, `resolvedAt`.
 
 ---
 
-### GET `/api/agent-tasks/:id` — one task (admin)
-**Auth:** admin session.
+### GET `/api/agent-tasks/:id` — one task
+**Auth:** loopback bypass · agent token · admin session (first match wins).
 
 | Result | Meaning |
 |--------|---------|
 | `200` + task | found |
 | `404` | no task with that id |
-| `401` / `403` | not logged in / not admin |
+| `401` / `403` | not authenticated / not admin |
+
+Skills and agents can call this endpoint on localhost without any token when `AGENT_AUTH_ALLOW_LOOPBACK=1`. In production, send the agent token or use an admin session.
 
 ---
 
@@ -352,11 +354,12 @@ Authorization: Bearer $AGENT_API_TOKEN
 X-Agent-Token: $AGENT_API_TOKEN
 ```
 
-**The three calls a skill needs:**
+**The calls a skill needs:**
 
 | Step | Call | Notes |
 |------|------|-------|
 | Claim | `GET /api/agent-tasks/next?source=…` | **`source` is required** — one of `EMAIL`, `GITHUB_ISSUE`, `APP_LOG`, `ERROR_REPORT`. Claims the oldest `OPEN` task of that source, flips it to `IN_PROGRESS`. **`204` = none for that source.** |
+| Read | `GET /api/agent-tasks/:id` | Re-read a task by id. Accepts agent token or loopback bypass. |
 | Finish | `POST /api/agent-tasks/:id/done` | Body `{ "comment"?: string }`. From `IN_PROGRESS` → `DONE`. |
 | Reject | `POST /api/agent-tasks/:id/reject` | Body `{ "comment": string }` (required). From `IN_PROGRESS` → `REJECTED`. Use when the task is out of scope or not worth doing. |
 

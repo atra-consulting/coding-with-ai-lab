@@ -65,7 +65,7 @@ Same fields as ticket, but `comments` is replaced by `commentCount: number`.
 
 ## Authentication
 
-Two distinct schemes.
+Two main schemes. `GET /:id` accepts all three (see below).
 
 ### Agent token (machine endpoints: `/next`, `/:id/done`, `/:id/ask`)
 
@@ -240,14 +240,16 @@ All tickets grouped by status. Each column sorted by `createdAt ASC`. Tickets in
 
 ---
 
-### GET `/api/tickets/:id` — one ticket (admin)
-**Auth:** admin session. Returns the full ticket including the `comments` array.
+### GET `/api/tickets/:id` — one ticket
+**Auth:** loopback bypass · agent token · admin session (first match wins). Returns the full ticket including the `comments` array.
 
 | Result | Meaning |
 |--------|---------|
 | `200` + ticket | found |
 | `404` | no ticket with that id |
-| `401` / `403` | not logged in / not admin |
+| `401` / `403` | not authenticated / not admin |
+
+Skills and agents can call this endpoint on localhost without any token when `AGENT_AUTH_ALLOW_LOOPBACK=1`. In production, send the agent token or use an admin session.
 
 ---
 
@@ -439,11 +441,12 @@ Authorization: Bearer $AGENT_API_TOKEN
 X-Agent-Token: $AGENT_API_TOKEN
 ```
 
-**The three calls a skill needs:**
+**The calls a skill needs:**
 
 | Step | Call | Notes |
 |------|------|-------|
 | Claim | `GET /api/tickets/next` | Optional `?type=FEATURE\|BUG\|CHORE`. Claims the oldest `TODO` ticket owned by `AI`, flips it to `IN_PROGRESS`. **`204` = queue empty, stop.** The response includes the full `comments` thread. |
+| Read | `GET /api/tickets/:id` | Re-read a ticket by id (full ticket + comments). Accepts agent token or loopback bypass. |
 | Finish | `POST /api/tickets/:id/done` | Body `{ "comment"?: string }`. Only from `IN_PROGRESS`. Sets `solution=DONE`. |
 | Ask | `POST /api/tickets/:id/ask` | Body `{ "question": string }` (required). Hands the ticket to a human (`ON_HOLD`, owner→`HUMAN`). Posts the question as an `AGENT` comment. |
 

@@ -235,6 +235,78 @@ test.describe('GET /api/agent-tasks/next', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Suite: GET /api/agent-tasks/:id
+// ---------------------------------------------------------------------------
+
+test.describe('GET /api/agent-tasks/:id', () => {
+  let agent: APIRequestContext;
+  let anon: APIRequestContext;
+  let admin: APIRequestContext;
+  let user: APIRequestContext;
+
+  test.beforeEach(async () => {
+    await resetDatabase();
+    agent = await agentCtx();
+    anon = await anonCtx();
+    admin = await loginCtx('admin', 'admin123');
+    user = await loginCtx('user', 'test123');
+  });
+
+  test.afterEach(async () => {
+    await agent.dispose();
+    await anon.dispose();
+    await admin.dispose();
+    await user.dispose();
+  });
+
+  test('agent token → 200 with task body', async () => {
+    const resp = await agent.get('/api/agent-tasks/1');
+    expect(resp.status()).toBe(200);
+    const body = await resp.json() as AgentTaskDTO;
+    expect(body.id).toBe(1);
+    expect(typeof body.source).toBe('string');
+    expect(typeof body.title).toBe('string');
+  });
+
+  test('admin session → 200 with task body', async () => {
+    const resp = await admin.get('/api/agent-tasks/1');
+    expect(resp.status()).toBe(200);
+    const body = await resp.json() as AgentTaskDTO;
+    expect(body.id).toBe(1);
+  });
+
+  test('no token from localhost → 200 (loopback bypass)', async () => {
+    const resp = await anon.get('/api/agent-tasks/1');
+    expect(resp.status()).toBe(200);
+  });
+
+  test('USER role from localhost → 200 (loopback bypass, no auth header)', async () => {
+    const resp = await user.get('/api/agent-tasks/1');
+    expect(resp.status()).toBe(200);
+  });
+
+  test('wrong token → 401', async () => {
+    const wrong = await wrongTokenCtx();
+    const resp = await wrong.get('/api/agent-tasks/1');
+    expect(resp.status()).toBe(401);
+    await wrong.dispose();
+  });
+
+  test('USER session with X-Forwarded-For (loopback bypass disabled) → 403', async () => {
+    // Simulates a non-loopback request: bypass fires only when no forwarding header is present.
+    const resp = await user.get('/api/agent-tasks/1', {
+      headers: { 'X-Forwarded-For': '10.0.0.1' },
+    });
+    expect(resp.status()).toBe(403);
+  });
+
+  test('unknown id → 404', async () => {
+    const resp = await agent.get('/api/agent-tasks/99999');
+    expect(resp.status()).toBe(404);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Suite: POST /api/agent-tasks/:id/reject
 // ---------------------------------------------------------------------------
 
