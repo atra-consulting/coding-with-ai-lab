@@ -66,8 +66,8 @@ X-Agent-Token: <AGENT_API_TOKEN>
 # 1. Create backend/.env from the template
 cp backend/.env.example backend/.env
 
-# 2. Fill in your token
-echo "AGENT_API_TOKEN=your-secret-token" >> backend/.env
+# 2. Set your token — open backend/.env and replace the placeholder:
+#    AGENT_API_TOKEN=your-secret-token-here  →  AGENT_API_TOKEN=<your-actual-token>
 
 # 3. Export vars in your shell so the curl examples below work
 set -a && source backend/.env && set +a
