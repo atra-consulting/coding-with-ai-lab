@@ -2,9 +2,9 @@
   "version": 1,
   "task_key": "ADD-SEARCH-AKTIVITAETEN",
   "status": "in_progress",
-  "current_step": "4.5",
+  "current_step": "7.6",
   "started": "2026-06-30T15:36:20Z",
-  "updated": "2026-06-30T15:36:50Z",
+  "updated": "2026-06-30T15:38:00Z",
   "config": {
     "input_mode": "freeform",
     "user_description": "GET /api/aktivitaeten does not support text search by subject. Add an optional search query parameter to GET /api/aktivitaeten and implement a WHERE LOWER(ak.subject) LIKE LOWER('%' || ? || '%') clause in aktivitaetService.findAll, following the same pattern already used in firmaService.findAll.",
@@ -14,8 +14,8 @@
     "original_head": "a12f2b8e71633f90e9ebdfa6884cd6de8df75acc",
     "docs_folder": "docs",
     "is_git_repo": true,
-    "workflow_scope": null,
-    "pr_prefix": null,
+    "workflow_scope": "full",
+    "pr_prefix": "feat",
     "pr_exists": false,
     "pr_url": null
   },
@@ -29,12 +29,12 @@
     "test_runner_agents": ["be-test-runner", "fe-test-runner"],
     "tooling_coding_agents": ["python-coder", "shell-coder", "skill-coder"],
     "tooling_review_agents": ["python-reviewer", "shell-reviewer", "skill-reviewer"],
-    "test_command": null
+    "test_command": "cd backend && npx playwright test"
   },
   "artifacts": {
     "prd_skipped": true,
     "prd_file": null,
-    "plan_file": null
+    "plan_file": "docs/plans/PLAN-ADD-SEARCH-AKTIVITAETEN.md"
   },
-  "completed_steps": ["1", "2", "3", "4"]
+  "completed_steps": ["1", "2", "3", "4", "5", "7"]
 }
