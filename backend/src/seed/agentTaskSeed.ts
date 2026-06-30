@@ -244,7 +244,7 @@ const AGENT_TASK_SEED: AgentTaskSeedRow[] = [
     body: 'GET /api/firmen, GET /api/personen, and GET /api/chancen all accept a search query parameter that filters results with a LIKE query. GET /api/adressen has no equivalent: adresseService.findAll in backend/src/services/adresseService.ts (line 80) accepts only page, size, and sort — no search parameter — and the route handler in backend/src/routes/adressen.ts never reads a search query param. Users cannot search for an address by city name. Add an optional search query parameter to GET /api/adressen and implement a WHERE LOWER(a.city) LIKE LOWER(\'%\' || ? || \'%\') clause in adresseService.findAll, following the same pattern already used in firmaService.findAll.',
     status: 'OPEN',
     comment: null,
-    metadata: '{"stackTrace":"Feature absent: no search param on GET /api/adressen\\n    at adresseService.findAll (backend/src/services/adresseService.ts:80)","environment":"production"}',
+    metadata: '{"stackTrace":"Feature absent: no search param on GET /api/adressen\\n    at adresseService.findAll (backend/src/services/adresseService.ts)","environment":"production"}',
     pickedUpAt: null,
     resolvedAt: null,
     createdAt: '2026-06-13T09:00:00.000Z',
