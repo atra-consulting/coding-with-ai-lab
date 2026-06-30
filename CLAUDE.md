@@ -1,5 +1,9 @@
 # CLAUDE.md
 
+## Current Branch
+
+Working branch: `test-advanced-2026-06-30`. DO NOT PUSH any changes. DO NOT create a PR.
+
 ## Project
 
 Full-stack CRM application. Node.js/TypeScript (Express + Drizzle ORM + libSQL/SQLite via `@libsql/client`) backend, Angular 21 frontend. German domain model: Firma, Person, Abteilung, Adresse, Aktivitaet, Chance. Local SQLite file at `backend/data/crmdb.sqlite`; production runs on Turso cloud when `TURSO_DATABASE_URL` is set. Authentication via hardcoded users (`backend/src/config/users.ts`, bcrypt-hashed passwords), session-based and persisted to the `sessions` table (`LibsqlSessionStore`). 3 users: admin/admin123 (ADMIN), user/test123 (USER), demo/demo1234 (ADMIN). Enforcement is role-based via `requireRole('ADMIN')`; users also carry a `permissions` array, but no `requirePermission` middleware is wired up.
@@ -102,6 +106,7 @@ Frontend (8+ files): Model interface → Service → Route file → List/Detail/
 | fe-test-runner | Execute frontend Karma suite, report pass/fail | test-runner |
 | python-coder | Cross-platform Python scripts and data analysis (tooling, not app code) | coding |
 | python-reviewer | Review Python for correctness, portability, and external-data handling | review |
+| requirements-reviewer | Review requirements, user stories, PRDs, and feature specs for gaps and quality | review |
 | shell-coder | Cross-platform shell scripts (macOS / Linux / WSL) | coding |
 | shell-reviewer | Review shell scripts for portability, hangs, and safety | review |
 | skill-coder | Create and update Claude Code skills and subagents | coding |
