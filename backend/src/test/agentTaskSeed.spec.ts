@@ -2,13 +2,13 @@
  * Playwright tests for the idempotent agent-task seeder.
  *
  * Verifies that `seedAgentTasks()` (backend/src/seed/agentTaskSeed.ts):
- *   1. Uses INSERT OR IGNORE — running it twice yields exactly 18 rows, no
+ *   1. Uses INSERT OR IGNORE — running it twice yields exactly 22 rows, no
  *      duplicates, no throw.
  *   2. Seeds successfully even when `firma` already has rows (fixes the
  *      Vercel bug where the old guard blocked seeding on a non-empty DB).
  *   3. Does NOT overwrite rows that were mutated after the initial seed
  *      (INSERT OR IGNORE leaves existing rows untouched).
- *   4. (Optional) Seeds correct per-source counts: 4 rows each for EMAIL/GITHUB_ISSUE/APP_LOG, 6 rows for ERROR_REPORT.
+ *   4. (Optional) Seeds correct per-source counts: 6 rows for EMAIL, 4 for GITHUB_ISSUE, 6 for APP_LOG, 6 for ERROR_REPORT.
  *
  * Test isolation notes
  * --------------------
@@ -17,7 +17,7 @@
  * - We use `test.describe.serial` to guarantee internal ordering within this
  *   file (cases depend on prior state).
  * - `afterAll` restores a clean seeded state (DELETE + seedAgentTasks) so
- *   other suites that rely on 18 OPEN tasks (e.g. agentTasks.spec.ts) find
+ *   other suites that rely on 22 OPEN tasks (e.g. agentTasks.spec.ts) find
  *   the DB in the expected shape.  Those suites call resetDatabase() in their
  *   own beforeAll, so this is belt-and-suspenders.
  */
@@ -55,23 +55,23 @@ test.describe.serial('seedAgentTasks — idempotent seeder', () => {
   // -------------------------------------------------------------------------
   // Case 1: Idempotent re-run
   // -------------------------------------------------------------------------
-  test('idempotent re-run: seeds 18 rows, second call does not duplicate or throw', async () => {
+  test('idempotent re-run: seeds 22 rows, second call does not duplicate or throw', async () => {
     await test.step('delete all agent_task rows', async () => {
       await client.execute('DELETE FROM agent_task');
       const count = await countRows('agent_task');
       expect(count).toBe(0);
     });
 
-    await test.step('first seedAgentTasks() call inserts 18 rows', async () => {
+    await test.step('first seedAgentTasks() call inserts 22 rows', async () => {
       await seedAgentTasks();
       const count = await countRows('agent_task');
-      expect(count).toBe(18);
+      expect(count).toBe(22);
     });
 
-    await test.step('second seedAgentTasks() call does not throw and still yields 18 rows', async () => {
+    await test.step('second seedAgentTasks() call does not throw and still yields 22 rows', async () => {
       await seedAgentTasks();
       const count = await countRows('agent_task');
-      expect(count).toBe(18);
+      expect(count).toBe(22);
     });
   });
 
@@ -90,10 +90,10 @@ test.describe.serial('seedAgentTasks — idempotent seeder', () => {
       expect(count).toBe(0);
     });
 
-    await test.step('seedAgentTasks() with non-empty firma → still inserts 18 rows', async () => {
+    await test.step('seedAgentTasks() with non-empty firma → still inserts 22 rows', async () => {
       await seedAgentTasks();
       const count = await countRows('agent_task');
-      expect(count).toBe(18);
+      expect(count).toBe(22);
     });
   });
 
@@ -105,7 +105,7 @@ test.describe.serial('seedAgentTasks — idempotent seeder', () => {
       // idempotent — safe to call even if rows exist
       await seedAgentTasks();
       const count = await countRows('agent_task');
-      expect(count).toBe(18);
+      expect(count).toBe(22);
     });
 
     await test.step('mutate id=1: set status to DONE', async () => {
@@ -126,9 +126,9 @@ test.describe.serial('seedAgentTasks — idempotent seeder', () => {
       expect(status).toBe('DONE');
     });
 
-    await test.step('total row count is still 18', async () => {
+    await test.step('total row count is still 22', async () => {
       const count = await countRows('agent_task');
-      expect(count).toBe(18);
+      expect(count).toBe(22);
     });
   });
 
@@ -142,9 +142,9 @@ test.describe.serial('seedAgentTasks — idempotent seeder', () => {
     });
 
     const sourceCounts: Record<string, number> = {
-      EMAIL: 4,
+      EMAIL: 6,
       GITHUB_ISSUE: 4,
-      APP_LOG: 4,
+      APP_LOG: 6,
       ERROR_REPORT: 6,
     };
 

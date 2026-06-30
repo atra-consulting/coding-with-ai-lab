@@ -20,10 +20,10 @@
  * check is required for that path.
  *
  * Fixture ids (from fixture.json):
- *   EMAIL        → ids 1-4
+ *   EMAIL        → ids 1-4, 17-18
  *   GITHUB_ISSUE → ids 5-8
- *   APP_LOG      → ids 9-12
- *   ERROR_REPORT → ids 13-18
+ *   APP_LOG      → ids 9-12, 19-20
+ *   ERROR_REPORT → ids 13-16, 21-22
  */
 import { test, expect, request as playwrightRequest, type APIRequestContext } from '@playwright/test';
 import { resetDatabase, loginCtx } from './helpers.js';
@@ -577,7 +577,7 @@ test.describe('GET /api/agent-tasks', () => {
     await agent.dispose();
   });
 
-  test('admin session → 200 with valid pagination shape and 18 total tasks', async () => {
+  test('admin session → 200 with valid pagination shape and 22 total tasks', async () => {
     const resp = await admin.get('/api/agent-tasks');
 
     await test.step('status 200', () => {
@@ -590,8 +590,8 @@ test.describe('GET /api/agent-tasks', () => {
       expect(Array.isArray(body.content)).toBe(true);
     });
 
-    await test.step('totalElements is 18 (fixture seed count)', () => {
-      expect(body.totalElements).toBe(18);
+    await test.step('totalElements is 22 (fixture seed count)', () => {
+      expect(body.totalElements).toBe(22);
     });
 
     await test.step('number is 0 (first page, 0-indexed)', () => {
@@ -790,8 +790,8 @@ test.describe('POST /api/agent-tasks/reset', () => {
       expect(typeof resetBody.reset).toBe('number');
     });
 
-    await test.step('reset count equals total tasks (18)', () => {
-      expect(resetBody.reset).toBe(18);
+    await test.step('reset count equals total tasks (22)', () => {
+      expect(resetBody.reset).toBe(22);
     });
 
     // After reset, all tasks should be OPEN
