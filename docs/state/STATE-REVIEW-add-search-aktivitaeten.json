@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "branch": "add-search-aktivitaeten",
+  "main_branch": "a12f2b8e71633f90e9ebdfa6884cd6de8df75acc",
+  "docs_folder": "docs",
+  "special_instructions": null,
+  "review_agents_available": true,
+  "fix_agents_available": true,
+  "all_reviewers": ["be-reviewer", "fe-reviewer", "db-reviewer", "ui-reviewer", "ba-reviewer"],
+  "all_coders": ["be-coder", "fe-coder", "db-coder", "ui-designer"],
+  "all_designers": ["ui-designer"],
+  "changed_files": [
+    "backend/src/routes/aktivitaeten.ts",
+    "backend/src/services/aktivitaetService.ts",
+    "backend/src/test/aktivitaeten-search.spec.ts",
+    "docs/plans/PLAN-ADD-SEARCH-AKTIVITAETEN.md",
+    "docs/state/STATE-ADD-SEARCH-AKTIVITAETEN.json"
+  ],
+  "dry_run_mode": false,
+  "started": "2026-06-30T15:42:00Z"
+}
