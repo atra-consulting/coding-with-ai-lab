@@ -28,7 +28,9 @@ router.get(
       'DESC',
       'aktivitaet',
     );
-    res.json(await aktivitaetService.findAll(page, size, sort));
+    const firmaIdRaw = parseInt(req.query['firmaId'] as string, 10);
+    const firmaId = isNaN(firmaIdRaw) || firmaIdRaw <= 0 ? undefined : firmaIdRaw;
+    res.json(await aktivitaetService.findAll(page, size, sort, firmaId));
   }),
 );
 

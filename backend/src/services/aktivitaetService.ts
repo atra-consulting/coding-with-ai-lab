@@ -1,3 +1,4 @@
+import type { InValue } from '@libsql/client';
 import { client } from '../config/db.js';
 import { NotFoundError } from '../utils/errors.js';
 import { buildPage, type PageResult, type SortParams } from '../utils/pagination.js';
@@ -64,17 +65,27 @@ const BASE_QUERY = `
 `;
 
 export const aktivitaetService = {
-  async findAll(page: number, size: number, sort: SortParams): Promise<PageResult<AktivitaetDTO>> {
+  async findAll(page: number, size: number, sort: SortParams, firmaId?: number): Promise<PageResult<AktivitaetDTO>> {
+    const conditions: string[] = [];
+    const params: InValue[] = [];
+
+    if (firmaId !== undefined) {
+      conditions.push('ak.firmaId = ?');
+      params.push(firmaId);
+    }
+
+    const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
     const countResult = await client.execute({
-      sql: 'SELECT COUNT(*) AS cnt FROM aktivitaet',
-      args: [],
+      sql: `SELECT COUNT(*) AS cnt FROM aktivitaet ak${where ? ' ' + where : ''}`,
+      args: [...params],
     });
     const countRow = countResult.rows[0] as unknown as { cnt: number };
     const total = Number(countRow.cnt);
 
     const rowsResult = await client.execute({
-      sql: `${BASE_QUERY} ORDER BY ak.${sort.field} ${sort.direction} LIMIT ? OFFSET ?`,
-      args: [size, page * size],
+      sql: `${BASE_QUERY} ${where} ORDER BY ak.${sort.field} ${sort.direction} LIMIT ? OFFSET ?`,
+      args: [...params, size, page * size],
     });
     const rows = rowsResult.rows as unknown as AktivitaetRow[];
 
