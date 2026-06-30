@@ -168,6 +168,7 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
                   class="btn btn-outline-primary w-100"
                   (click)="toggleOwner()"
                   [disabled]="savingOwner"
+                  [title]="ticket.owner === 'HUMAN' ? 'Eigentümer auf KI setzen und Status auf Zu erledigen zurücksetzen' : 'Eigentümer auf Mensch setzen'"
                 >
                   @if (savingOwner) {
                     <span class="spinner-border spinner-border-sm me-1" role="status"></span>
@@ -416,10 +417,11 @@ export class TicketDetailComponent implements OnInit {
     if (!this.ticket) return;
     const newOwner = this.ticket.owner === 'AI' ? 'HUMAN' : 'AI';
     const ticketId = this.ticket.id;
+    const originalStatus = this.ticket.status;
     this.savingOwner = true;
 
     const request$ =
-      newOwner === 'AI'
+      newOwner === 'AI' && originalStatus !== 'DONE' && originalStatus !== 'TODO'
         ? this.ticketService
             .setOwner(ticketId, newOwner)
             .pipe(switchMap(() => this.ticketService.setStatus(ticketId, 'TODO')))
@@ -429,7 +431,11 @@ export class TicketDetailComponent implements OnInit {
       next: (updated) => {
         this.ticket = updated;
         this.savingOwner = false;
-        this.notification.success(`Eigentümer auf "${newOwner === 'AI' ? 'KI' : 'Mensch'}" gesetzt.`);
+        const message =
+          newOwner === 'AI' && originalStatus !== 'DONE' && originalStatus !== 'TODO'
+            ? 'Eigentümer auf "KI" gesetzt und Status auf "Zu erledigen" zurückgesetzt.'
+            : `Eigentümer auf "${newOwner === 'AI' ? 'KI' : 'Mensch'}" gesetzt.`;
+        this.notification.success(message);
       },
       error: () => {
         this.savingOwner = false;
