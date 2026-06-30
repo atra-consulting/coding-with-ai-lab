@@ -206,6 +206,8 @@ describe('ChanceListComponent', () => {
     it('should show displayedWert / totalWert separated by / when filter is active', () => {
       mockChanceService.listAll.and.returnValue(of([makeChance({ wert: 5000 })]));
       fixture.detectChanges();
+      // Simulate filter state directly — updateCounts() requires a real gridApi which
+      // is not available in unit tests. The second detectChanges() triggers re-rendering.
       component.isFilterActive = true;
       component.displayedWert = 2000;
       fixture.detectChanges();
