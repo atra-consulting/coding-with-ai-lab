@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "task_key": "ADD-CHANCEN-PHASE-FILTER",
+  "status": "in_progress",
+  "current_step": "4.5",
+  "started": "2026-06-30T14:44:38.000Z",
+  "updated": "2026-06-30T14:45:00.000Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Add an optional phase query parameter to GET /api/chancen endpoint",
+    "special_instructions": "Headless run: full workflow, skip PRD, keep planning files, auto-continue all checkpoints",
+    "branch_name": "add-chancen-phase-filter",
+    "original_branch": "filter-persons-department",
+    "original_head": "b71c533d81f9a7d1790e6fc6a962a7845d647d55",
+    "docs_folder": "docs",
+    "is_git_repo": true,
+    "workflow_scope": null,
+    "pr_prefix": null,
+    "pr_exists": false,
+    "pr_url": null
+  },
+  "discovery": {
+    "agents_available": true,
+    "writer_agents": ["ba-writer"],
+    "coding_agents": ["be-coder", "fe-coder", "ui-designer"],
+    "review_agents": ["be-reviewer", "fe-reviewer", "db-reviewer", "ui-reviewer"],
+    "test_coding_agents": ["be-test-coder", "fe-test-coder"],
+    "test_review_agents": ["be-test-reviewer", "fe-test-reviewer"],
+    "test_runner_agents": ["be-test-runner", "fe-test-runner"],
+    "tooling_coding_agents": ["python-coder", "shell-coder", "skill-coder"],
+    "tooling_review_agents": ["python-reviewer", "shell-reviewer", "skill-reviewer"],
+    "test_command": null
+  },
+  "artifacts": {
+    "prd_skipped": null,
+    "prd_file": null,
+    "plan_file": null
+  },
+  "completed_steps": ["2", "3", "4"]
+}
