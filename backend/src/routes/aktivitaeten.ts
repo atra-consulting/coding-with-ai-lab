@@ -1,9 +1,11 @@
 import { Router, Request, Response } from 'express';
+import { AKTIVITAET_TYP, type AktivitaetTyp } from '../db/schema/enums.js';
 import { requireAuth } from '../middleware/auth.js';
 import { aktivitaetService } from '../services/aktivitaetService.js';
 import { parsePaginationParams, parseSort } from '../utils/pagination.js';
 import { validate, AktivitaetCreateSchema } from '../utils/validation.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
+import { ValidationError } from '../utils/errors.js';
 
 const router = Router();
 
@@ -30,7 +32,12 @@ router.get(
     );
     const firmaIdRaw = parseInt(req.query['firmaId'] as string, 10);
     const firmaId = isNaN(firmaIdRaw) || firmaIdRaw <= 0 ? undefined : firmaIdRaw;
-    res.json(await aktivitaetService.findAll(page, size, sort, firmaId));
+    const typRaw = req.query['typ'] as string | undefined;
+    if (typRaw !== undefined && !(AKTIVITAET_TYP as readonly string[]).includes(typRaw)) {
+      throw new ValidationError('Ungültiger typ-Wert', { typ: `Erlaubte Werte: ${AKTIVITAET_TYP.join(', ')}` });
+    }
+    const typ = typRaw as AktivitaetTyp | undefined;
+    res.json(await aktivitaetService.findAll(page, size, sort, firmaId, typ));
   }),
 );
 

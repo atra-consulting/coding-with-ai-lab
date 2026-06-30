@@ -1,5 +1,6 @@
 import type { InValue } from '@libsql/client';
 import { client } from '../config/db.js';
+import { type AktivitaetTyp } from '../db/schema/enums.js';
 import { NotFoundError } from '../utils/errors.js';
 import { buildPage, type PageResult, type SortParams } from '../utils/pagination.js';
 import type { AktivitaetCreateDTO } from '../utils/validation.js';
@@ -65,13 +66,18 @@ const BASE_QUERY = `
 `;
 
 export const aktivitaetService = {
-  async findAll(page: number, size: number, sort: SortParams, firmaId?: number): Promise<PageResult<AktivitaetDTO>> {
+  async findAll(page: number, size: number, sort: SortParams, firmaId?: number, typ?: AktivitaetTyp): Promise<PageResult<AktivitaetDTO>> {
     const conditions: string[] = [];
     const params: InValue[] = [];
 
     if (firmaId !== undefined) {
       conditions.push('ak.firmaId = ?');
       params.push(firmaId);
+    }
+
+    if (typ !== undefined) {
+      conditions.push('ak.typ = ?');
+      params.push(typ);
     }
 
     const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
