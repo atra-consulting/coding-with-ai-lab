@@ -11,8 +11,7 @@ WIr brauchen einen Skill, der Tickets abarbeiten kann. Wenn Anforderungen unklar
 Claude Code starten und mit mehrmaligem "Shift"-"Tab" in den Auto-Modus gehen (wird links unten angezeigt). Mit `/model` Sonnet auswählen. Dann diesen Prompt eingeben:
 
 ```
-/project:plan-and-do Schreibe den /do-factory-semi-automatic Projekt-Skill, so wie er in der
-Datei ""@tasks/advanced/Skill für Übungsaufgabe 4.md" beschrieben ist.
+/project:plan-and-do Schreibe den /do-factory-semi-automatic Projekt-Skill, so wie er in der Datei "@tasks/advanced/Skill für Übungsaufgabe 4.md" beschrieben ist. Pushe nicht auf remote and lege keinen PR an.
 ```
 
 Claude Code läuft durch den Prozess und erstellt den Skill. Dabei kommen die  `skill-writer` und `skill-reviewer` Subagenten zum Einsatz.
