@@ -12,7 +12,7 @@ Claude Code starten und mit mehrmaligem "Shift"-"Tab" in den Auto-Modus gehen (w
 
 ```
 /project:plan-and-do Schreibe den /do-factory-automatic Projekt-Skill, so wie er in der
-Datei ""@tasks/advanced/Skill für Übungsaufgabe 2.md" beschrieben ist. Pushe nicht auf remote and lege keinen PR an.
+Datei ""@tasks/advanced/Skill für Übungsaufgabe 2.md" beschrieben ist. Pushe nicht auf remote and lege keinen PR an. Lies dieUmgebungsvariablen aus "backend/.env" und setzte sie, bevor der Skill die Anwendungs-APIs nutzt.
 ```
 
 Claude Code läuft durch den Prozess und erstellt den Skill. Dabei kommen die  `skill-writer` und `skill-reviewer` Subagenten zum Einsatz.
