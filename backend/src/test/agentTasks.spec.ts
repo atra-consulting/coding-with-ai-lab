@@ -149,12 +149,12 @@ test.describe('GET /api/agent-tasks/next', () => {
     });
   });
 
-  test('repeated calls return distinct EMAIL tasks; after all 4 claimed → 204', async () => {
-    // Reset so we start fresh with 4 OPEN EMAIL tasks (ids 1-4)
+  test('repeated calls return distinct EMAIL tasks; after all 6 claimed → 204', async () => {
+    // Reset so we start fresh with 6 OPEN EMAIL tasks
     await resetDatabase();
 
     const ids: number[] = [];
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 6; i++) {
       const resp = await agent.get('/api/agent-tasks/next?source=EMAIL');
 
       await test.step(`call ${i + 1} returns 200`, () => {
@@ -165,14 +165,14 @@ test.describe('GET /api/agent-tasks/next', () => {
       ids.push(body.id);
     }
 
-    await test.step('all 4 ids are distinct', () => {
+    await test.step('all 6 ids are distinct', () => {
       const unique = new Set(ids);
-      expect(unique.size).toBe(4);
+      expect(unique.size).toBe(6);
     });
 
-    // 5th call: no OPEN EMAIL tasks remain → 204
+    // 7th call: no OPEN EMAIL tasks remain → 204
     const exhaustedResp = await agent.get('/api/agent-tasks/next?source=EMAIL');
-    await test.step('5th call returns 204 (no content)', () => {
+    await test.step('7th call returns 204 (no content)', () => {
       expect(exhaustedResp.status()).toBe(204);
     });
   });
@@ -714,9 +714,9 @@ test.describe('GET /api/agent-tasks/summary', () => {
       expect(sources).toContain('ERROR_REPORT');
     });
 
-    await test.step('fresh DB: OPEN counts match seed (ERROR_REPORT has 6, others have 4)', () => {
+    await test.step('fresh DB: OPEN counts match seed (GITHUB_ISSUE has 4, others have 6)', () => {
       for (const entry of body) {
-        const expectedOpen = entry.source === 'ERROR_REPORT' ? 6 : 4;
+        const expectedOpen = entry.source === 'GITHUB_ISSUE' ? 4 : 6;
         expect(entry.openCount).toBe(expectedOpen);
         expect(entry.inProgressCount).toBe(0);
         expect(entry.doneCount).toBe(0);
@@ -799,9 +799,9 @@ test.describe('POST /api/agent-tasks/reset', () => {
     expect(postSummaryResp.status()).toBe(200);
     const postSummary = await postSummaryResp.json() as SummaryDTO[];
 
-    await test.step('after reset: OPEN counts match seed (ERROR_REPORT has 6, others have 4)', () => {
+    await test.step('after reset: OPEN counts match seed (GITHUB_ISSUE has 4, others have 6)', () => {
       for (const entry of postSummary) {
-        const expectedOpen = entry.source === 'ERROR_REPORT' ? 6 : 4;
+        const expectedOpen = entry.source === 'GITHUB_ISSUE' ? 4 : 6;
         expect(entry.openCount).toBe(expectedOpen);
         expect(entry.inProgressCount).toBe(0);
         expect(entry.doneCount).toBe(0);
