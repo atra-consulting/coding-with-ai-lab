@@ -1,10 +1,10 @@
 {
   "version": 1,
   "task_key": "ADD-SEARCH-AKTIVITAETEN",
-  "status": "in_progress",
-  "current_step": "7.6",
+  "status": "completed",
+  "current_step": "13",
   "started": "2026-06-30T15:36:20Z",
-  "updated": "2026-06-30T15:38:00Z",
+  "updated": "2026-06-30T15:55:00Z",
   "config": {
     "input_mode": "freeform",
     "user_description": "GET /api/aktivitaeten does not support text search by subject. Add an optional search query parameter to GET /api/aktivitaeten and implement a WHERE LOWER(ak.subject) LIKE LOWER('%' || ? || '%') clause in aktivitaetService.findAll, following the same pattern already used in firmaService.findAll.",
@@ -36,5 +36,5 @@
     "prd_file": null,
     "plan_file": "docs/plans/PLAN-ADD-SEARCH-AKTIVITAETEN.md"
   },
-  "completed_steps": ["1", "2", "3", "4", "5", "7"]
+  "completed_steps": ["1", "2", "3", "4", "5", "7", "8", "9", "10", "11", "12", "13"]
 }
