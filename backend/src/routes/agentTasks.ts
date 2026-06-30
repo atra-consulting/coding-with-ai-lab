@@ -63,6 +63,16 @@ router.post(
   }),
 );
 
+// POST /api/agent-tasks/:id/start
+router.post(
+  '/:id/start',
+  requireAgentToken,
+  asyncHandler(async (req: Request, res: Response) => {
+    const id = parseInt(req.params['id'] as string, 10);
+    res.json(await agentTaskService.start(id));
+  }),
+);
+
 // POST /api/agent-tasks/:id/reject
 router.post(
   '/:id/reject',
