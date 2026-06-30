@@ -1,0 +1,1 @@
+Task 1 rejected. The `phone` column is already displayed in the company list at `firma-list.component.ts:38` — the described problem doesn't exist in the current code. The rejection comment tells the requester exactly what was found and what to check.
