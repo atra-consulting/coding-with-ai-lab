@@ -2,7 +2,7 @@
 name: "project:do-factory-automatic"
 description: "Autonomous task runner: claims the next agent task, judges build-or-reject via requirements-reviewer, runs plan-and-do unattended, marks the task done. One task per run. Headless — never waits for input."
 argument-hint: "[task-id]"
-version: 1.0.0
+version: 1.1.0
 last-modified: 2026-06-30
 allowed-tools:
   - Bash
@@ -56,7 +56,19 @@ curl -s -w '\n%{http_code}' \
   "${BASE_URL}/api/agent-tasks/<ID>"
 ```
 
-- HTTP 200 → parse JSON. Extract `id`, `title`, `body`, `metadata`. Go to Step 2.
+- HTTP 200 → parse JSON. Extract `id`, `title`, `body`, `metadata`. Then call:
+
+```bash
+curl -s -w '\n%{http_code}' \
+  -X POST \
+  -H "Authorization: Bearer $AGENT_API_TOKEN" \
+  "${BASE_URL}/api/agent-tasks/<task_id>/start"
+```
+
+  - HTTP 200 → continue to Step 2.
+  - HTTP 409 → print `Aufgabe <task_id> ist bereits in Bearbeitung oder abgeschlossen.` and stop.
+  - Any other code → print `Fehler beim Starten der Aufgabe: HTTP <code>` and stop.
+
 - HTTP 404 → print `Aufgabe nicht gefunden.` and stop.
 - Any other code → print `Fehler beim Laden der Aufgabe: HTTP <code>` and stop.
 
@@ -99,11 +111,18 @@ The subagent must return one of:
 - `VERDICT: BUILD` — with brief rationale.
 - `VERDICT: REJECT` — with a specific, actionable reason (exactly what is missing or unclear so a human can correct the request).
 
+Append this instruction verbatim to the prompt sent to the subagent:
+
+> End your response with exactly one of these two lines as the final line:
+> `VERDICT: BUILD`
+> `VERDICT: REJECT`
+> No other text after the verdict line. Do not use emoji or markdown formatting for the verdict.
+
 Wait for the subagent to finish. Read its output.
 
 If the verdict is `VERDICT: BUILD` → Go to Step 3b.
 If the verdict is `VERDICT: REJECT` → Go to Step 3a.
-If the subagent output is ambiguous or missing a verdict → treat as `VERDICT: REJECT`. Reason: "Anforderungsprüfung hat kein eindeutiges Ergebnis geliefert."
+If the subagent output is ambiguous or missing a verdict → treat as `VERDICT: REJECT`. Reason: "Anforderungsprüfung konnte kein klares Ergebnis liefern. Bitte Aufgabe präzisieren und erneut einreichen."
 
 ---
 
@@ -121,9 +140,11 @@ curl -s -X POST \
 
 Use the subagent's specific reason verbatim. Generic reasons like "unklar" are not acceptable.
 
-Print: `Aufgabe <task_id> abgelehnt: <reason>`
+Check the HTTP response:
+- HTTP 200 → print `Aufgabe <task_id> abgelehnt: <reason>` and stop.
+- Any other code → print `Fehler beim Ablehnen der Aufgabe: HTTP <code>` and stop.
 
-Stop. Do NOT continue to Step 3b or Step 4.
+Do NOT continue to Step 3b or Step 4.
 
 ---
 
@@ -165,9 +186,11 @@ curl -s -X POST \
   "${BASE_URL}/api/agent-tasks/<task_id>/done"
 ```
 
-Print: `Aufgabe <task_id> abgeschlossen. PR: <pr_url>`
+Check the HTTP response:
+- HTTP 200 → print `Aufgabe <task_id> abgeschlossen. PR: <pr_url>` and stop.
+- Any other code → print `Fehler beim Abschließen der Aufgabe: HTTP <code>` and stop.
 
-Stop. One task per run.
+One task per run.
 
 ---
 
