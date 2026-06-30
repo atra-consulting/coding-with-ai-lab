@@ -131,7 +131,8 @@ If the subagent output is ambiguous or missing a verdict → treat as `VERDICT: 
 Call the reject endpoint:
 
 ```bash
-curl -s -X POST \
+curl -s -w '\n%{http_code}' \
+  -X POST \
   -H "Authorization: Bearer $AGENT_API_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"comment": "<EXACT REASON FROM SUBAGENT — what is missing or unclear so a human can correct the request>"}' \
@@ -179,7 +180,8 @@ If plan-and-do fails and cannot recover, go to Step 3a with a comment describing
 After plan-and-do completes and the PR exists:
 
 ```bash
-curl -s -X POST \
+curl -s -w '\n%{http_code}' \
+  -X POST \
   -H "Authorization: Bearer $AGENT_API_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"comment": "<SHORT SUMMARY OF WHAT WAS BUILT + PR LINK>"}' \
