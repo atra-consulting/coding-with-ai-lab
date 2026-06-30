@@ -6,6 +6,7 @@
  *   F-2  GET /api/aktivitaeten?firmaId=99999    — 200 with empty content (no activities for unknown firma)
  *   F-3  GET /api/aktivitaeten                  — no filter; baseline behaviour unaffected
  *   F-4  GET /api/aktivitaeten?firmaId=abc      — invalid (non-numeric) ignored; returns all
+ *   F-5  GET /api/aktivitaeten without session          — returns 401
  *
  * Fixture facts used (from backend/src/seed/fixture.json):
  *   - firmaId=1 has 3 activities (ids 26, 41, 74)
@@ -162,20 +163,6 @@ test('F-3: GET /api/aktivitaeten without firmaId returns all activities (baselin
 });
 
 // ---------------------------------------------------------------------------
-// F-5  Unauthenticated request returns 401
-// ---------------------------------------------------------------------------
-
-test('F-5: GET /api/aktivitaeten without session returns 401', async () => {
-  const resp = await anonCtx.get('/api/aktivitaeten', {
-    params: { firmaId: String(FIRMA_ID_WITH_ACTIVITIES) },
-  });
-
-  await test.step('status 401', () => {
-    expect(resp.status()).toBe(401);
-  });
-});
-
-// ---------------------------------------------------------------------------
 // F-4  firmaId=abc — invalid (non-numeric) treated as no filter
 // ---------------------------------------------------------------------------
 
@@ -201,5 +188,19 @@ test('F-4: GET /api/aktivitaeten?firmaId=abc ignores the invalid param and retur
   await test.step('totalElements with firmaId=abc matches baseline', () => {
     expect(bodyInvalid.totalElements).toBe(bodyBaseline.totalElements);
     expect(bodyInvalid.totalElements).toBe(TOTAL_AKTIVITAETEN);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// F-5  Unauthenticated request returns 401
+// ---------------------------------------------------------------------------
+
+test('F-5: GET /api/aktivitaeten without session returns 401', async () => {
+  const resp = await anonCtx.get('/api/aktivitaeten', {
+    params: { firmaId: String(FIRMA_ID_WITH_ACTIVITIES) },
+  });
+
+  await test.step('status 401', () => {
+    expect(resp.status()).toBe(401);
   });
 });
