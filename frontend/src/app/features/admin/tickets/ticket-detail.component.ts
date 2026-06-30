@@ -168,7 +168,7 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
                   class="btn btn-outline-primary w-100"
                   (click)="toggleOwner()"
                   [disabled]="savingOwner"
-                  [title]="ticket.owner === 'HUMAN' ? 'Eigentümer auf KI setzen und Status auf Zu erledigen zurücksetzen' : 'Eigentümer auf Mensch setzen'"
+                  [title]="toggleOwnerTitle"
                 >
                   @if (savingOwner) {
                     <span class="spinner-border spinner-border-sm me-1" role="status"></span>
@@ -420,8 +420,10 @@ export class TicketDetailComponent implements OnInit {
     const originalStatus = this.ticket.status;
     this.savingOwner = true;
 
+    const willResetStatus = newOwner === 'AI' && originalStatus !== 'DONE' && originalStatus !== 'TODO';
+
     const request$ =
-      newOwner === 'AI' && originalStatus !== 'DONE' && originalStatus !== 'TODO'
+      willResetStatus
         ? this.ticketService
             .setOwner(ticketId, newOwner)
             .pipe(switchMap(() => this.ticketService.setStatus(ticketId, 'TODO')))
@@ -432,16 +434,32 @@ export class TicketDetailComponent implements OnInit {
         this.ticket = updated;
         this.savingOwner = false;
         const message =
-          newOwner === 'AI' && originalStatus !== 'DONE' && originalStatus !== 'TODO'
+          willResetStatus
             ? 'Eigentümer auf "KI" gesetzt und Status auf "Zu erledigen" zurückgesetzt.'
             : `Eigentümer auf "${newOwner === 'AI' ? 'KI' : 'Mensch'}" gesetzt.`;
         this.notification.success(message);
       },
       error: () => {
         this.savingOwner = false;
-        this.notification.error('Fehler beim Ändern des Eigentümers.');
+        this.notification.error(
+          willResetStatus
+            ? 'Fehler beim Setzen des Status. Eigentümer wurde möglicherweise geändert.'
+            : 'Fehler beim Ändern des Eigentümers.',
+        );
+        this.loadTicket(ticketId);
       },
     });
+  }
+
+  get toggleOwnerTitle(): string {
+    if (!this.ticket) return '';
+    if (this.ticket.owner === 'HUMAN' && this.ticket.status !== 'DONE' && this.ticket.status !== 'TODO') {
+      return 'Eigentümer auf KI setzen und Status auf "Zu erledigen" zurücksetzen';
+    }
+    if (this.ticket.owner === 'HUMAN') {
+      return 'Eigentümer auf KI setzen';
+    }
+    return 'Eigentümer auf Mensch setzen';
   }
 
   markWontDo(): void {
