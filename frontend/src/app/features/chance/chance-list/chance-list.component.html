@@ -1,11 +1,15 @@
 <div class="page-header">
   <div>
     <h2>
-      Chancen@if (totalRows > 0) {: {{ isFilterActive ? displayedRows + '/' + totalRows : totalRows }}}
+      Chancen@if (totalRows > 0) {: {{ isFilterActive ? displayedRows + ' / ' + totalRows : totalRows }}}
     </h2>
     @if (totalRows > 0) {
-      <small class="text-muted">
-        Gesamtwert: {{ isFilterActive ? (displayedWert | eurCurrency) + ' / ' + (totalWert | eurCurrency) : (totalWert | eurCurrency) }}
+      <small class="text-muted d-block mt-1">
+        @if (isFilterActive) {
+          Gesamtwert: <span aria-label="Gefiltert {{ displayedWert | eurCurrency }} von {{ totalWert | eurCurrency }}">{{ displayedWert | eurCurrency }} / {{ totalWert | eurCurrency }}</span>
+        } @else {
+          Gesamtwert: {{ totalWert | eurCurrency }}
+        }
       </small>
     }
   </div>

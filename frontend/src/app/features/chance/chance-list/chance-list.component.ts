@@ -103,11 +103,15 @@ export class ChanceListComponent implements OnInit {
     if (this.gridApi) {
       this.displayedRows = this.gridApi.getDisplayedRowCount();
       this.isFilterActive = this.gridApi.isAnyFilterPresent();
-      let wertSum = 0;
-      this.gridApi.forEachNodeAfterFilter(node => {
-        wertSum += node.data?.wert ?? 0;
-      });
-      this.displayedWert = wertSum;
+      if (this.isFilterActive) {
+        let wertSum = 0;
+        this.gridApi.forEachNodeAfterFilter(node => {
+          wertSum += node.data?.wert ?? 0;
+        });
+        this.displayedWert = wertSum;
+      } else {
+        this.displayedWert = 0;
+      }
     }
     this.cdr.markForCheck();
   }
