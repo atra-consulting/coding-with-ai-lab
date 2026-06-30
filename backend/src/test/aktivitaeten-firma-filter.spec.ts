@@ -162,9 +162,26 @@ test('F-3: GET /api/aktivitaeten without firmaId returns all activities (baselin
 });
 
 // ---------------------------------------------------------------------------
+// F-5  Unauthenticated request returns 401
+// ---------------------------------------------------------------------------
+
+test('F-5: GET /api/aktivitaeten without session returns 401', async () => {
+  const resp = await anonCtx.get('/api/aktivitaeten', {
+    params: { firmaId: String(FIRMA_ID_WITH_ACTIVITIES) },
+  });
+
+  await test.step('status 401', () => {
+    expect(resp.status()).toBe(401);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // F-4  firmaId=abc — invalid (non-numeric) treated as no filter
 // ---------------------------------------------------------------------------
 
+// The route uses parseInt('abc') → NaN → falls back to undefined (no filter).
+// This is intentional lenient parsing (see aktivitaeten.ts:32).
+// If the API is ever changed to return 400 for non-numeric firmaId, update this test.
 test('F-4: GET /api/aktivitaeten?firmaId=abc ignores the invalid param and returns all activities', async () => {
   const respInvalid = await adminCtx.get('/api/aktivitaeten', {
     params: { firmaId: 'abc', size: '100' },
