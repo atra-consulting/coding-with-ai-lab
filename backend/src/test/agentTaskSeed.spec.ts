@@ -2,7 +2,7 @@
  * Playwright tests for the idempotent agent-task seeder.
  *
  * Verifies that `seedAgentTasks()` (backend/src/seed/agentTaskSeed.ts):
- *   1. Uses INSERT OR IGNORE — running it twice yields exactly 16 rows, no
+ *   1. Uses INSERT OR IGNORE — running it twice yields exactly 18 rows, no
  *      duplicates, no throw.
  *   2. Seeds successfully even when `firma` already has rows (fixes the
  *      Vercel bug where the old guard blocked seeding on a non-empty DB).
@@ -17,7 +17,7 @@
  * - We use `test.describe.serial` to guarantee internal ordering within this
  *   file (cases depend on prior state).
  * - `afterAll` restores a clean seeded state (DELETE + seedAgentTasks) so
- *   other suites that rely on 16 OPEN tasks (e.g. agentTasks.spec.ts) find
+ *   other suites that rely on 18 OPEN tasks (e.g. agentTasks.spec.ts) find
  *   the DB in the expected shape.  Those suites call resetDatabase() in their
  *   own beforeAll, so this is belt-and-suspenders.
  */
@@ -55,23 +55,23 @@ test.describe.serial('seedAgentTasks — idempotent seeder', () => {
   // -------------------------------------------------------------------------
   // Case 1: Idempotent re-run
   // -------------------------------------------------------------------------
-  test('idempotent re-run: seeds 16 rows, second call does not duplicate or throw', async () => {
+  test('idempotent re-run: seeds 18 rows, second call does not duplicate or throw', async () => {
     await test.step('delete all agent_task rows', async () => {
       await client.execute('DELETE FROM agent_task');
       const count = await countRows('agent_task');
       expect(count).toBe(0);
     });
 
-    await test.step('first seedAgentTasks() call inserts 16 rows', async () => {
+    await test.step('first seedAgentTasks() call inserts 18 rows', async () => {
       await seedAgentTasks();
       const count = await countRows('agent_task');
-      expect(count).toBe(16);
+      expect(count).toBe(18);
     });
 
-    await test.step('second seedAgentTasks() call does not throw and still yields 16 rows', async () => {
+    await test.step('second seedAgentTasks() call does not throw and still yields 18 rows', async () => {
       await seedAgentTasks();
       const count = await countRows('agent_task');
-      expect(count).toBe(16);
+      expect(count).toBe(18);
     });
   });
 
@@ -90,10 +90,10 @@ test.describe.serial('seedAgentTasks — idempotent seeder', () => {
       expect(count).toBe(0);
     });
 
-    await test.step('seedAgentTasks() with non-empty firma → still inserts 16 rows', async () => {
+    await test.step('seedAgentTasks() with non-empty firma → still inserts 18 rows', async () => {
       await seedAgentTasks();
       const count = await countRows('agent_task');
-      expect(count).toBe(16);
+      expect(count).toBe(18);
     });
   });
 
@@ -105,7 +105,7 @@ test.describe.serial('seedAgentTasks — idempotent seeder', () => {
       // idempotent — safe to call even if rows exist
       await seedAgentTasks();
       const count = await countRows('agent_task');
-      expect(count).toBe(16);
+      expect(count).toBe(18);
     });
 
     await test.step('mutate id=1: set status to DONE', async () => {
@@ -126,32 +126,37 @@ test.describe.serial('seedAgentTasks — idempotent seeder', () => {
       expect(status).toBe('DONE');
     });
 
-    await test.step('total row count is still 16', async () => {
+    await test.step('total row count is still 18', async () => {
       const count = await countRows('agent_task');
-      expect(count).toBe(16);
+      expect(count).toBe(18);
     });
   });
 
   // -------------------------------------------------------------------------
   // Case 4 (optional): All 4 sources present with exactly 4 rows each
   // -------------------------------------------------------------------------
-  test('clean seed: all 4 sources present with exactly 4 rows each', async () => {
+  test('clean seed: all 4 sources present with correct row counts', async () => {
     await test.step('delete all agent_task rows and re-seed cleanly', async () => {
       await client.execute('DELETE FROM agent_task');
       await seedAgentTasks();
     });
 
-    const sources = ['EMAIL', 'GITHUB_ISSUE', 'APP_LOG', 'ERROR_REPORT'];
+    const sourceCounts: Record<string, number> = {
+      EMAIL: 4,
+      GITHUB_ISSUE: 4,
+      APP_LOG: 4,
+      ERROR_REPORT: 6,
+    };
 
-    for (const source of sources) {
-      await test.step(`source ${source} has exactly 4 rows`, async () => {
+    for (const [source, expectedCount] of Object.entries(sourceCounts)) {
+      await test.step(`source ${source} has exactly ${expectedCount} rows`, async () => {
         const result = await client.execute({
           sql: 'SELECT COUNT(*) AS n FROM agent_task WHERE source = ?',
           args: [source],
         });
         const row = result.rows[0];
         if (!row) throw new Error(`No rows returned for source ${source}`);
-        expect(Number(row['n'])).toBe(4);
+        expect(Number(row['n'])).toBe(expectedCount);
       });
     }
   });
