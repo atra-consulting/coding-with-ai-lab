@@ -1,10 +1,10 @@
 {
   "version": 1,
   "task_key": "FILTER-PERSONS-DEPARTMENT",
-  "status": "in_progress",
-  "current_step": "7.5",
+  "status": "completed",
+  "current_step": "13",
   "started": "2026-06-30T14:23:05Z",
-  "updated": "2026-06-30T14:25:00Z",
+  "updated": "2026-06-30T14:27:00Z",
   "config": {
     "input_mode": "freeform",
     "user_description": "The persons list at `/personen` does not support filtering by department (Abteilung). Please add an `abteilungId` query parameter to `GET /api/personen` and wire a department dropdown filter to the frontend persons list page.",
@@ -36,5 +36,5 @@
     "prd_file": null,
     "plan_file": "docs/plans/PLAN-FILTER-PERSONS-DEPARTMENT.md"
   },
-  "completed_steps": ["1", "2", "3", "4", "5", "7"]
+  "completed_steps": ["1", "2", "3", "4", "5", "7", "8", "9", "10", "11", "12", "13"]
 }

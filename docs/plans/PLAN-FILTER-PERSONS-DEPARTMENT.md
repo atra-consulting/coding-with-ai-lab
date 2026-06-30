@@ -15,13 +15,13 @@ All requested changes already exist on `main`:
 - `personService.findAll()` already filters by `abteilungId` (service: `backend/src/services/personService.ts`)
 
 **Frontend**
-- `PersonService.getAll()` and `listAll()` already pass `abteilungId` to the API
+- `PersonService.listAll()` passes `abteilungId` to the API (component uses `listAll()`, not the paginated `getAll()`)
 - `PersonListComponent` has `selectedAbteilungId`, loads all departments on init, and calls `onDepartmentChange()` on selection
 - HTML template has a department dropdown wired via `[(ngModel)]` and `(ngModelChange)`
 
 **Tests**
 - Backend: `backend/src/test/personen-filter.spec.ts` — 6 test cases (F-1..F-6)
-- Frontend: `frontend/src/app/features/person/person-list/person-list.component.spec.ts` — 9 test cases
+- Frontend: `frontend/src/app/features/person/person-list/person-list.component.spec.ts` — 14 test cases
 
 ## Tasks
 
@@ -29,8 +29,8 @@ All requested changes already exist on `main`:
 - [x] Confirm backend route accepts `abteilungId` param — DONE (already exists)
 - [x] Confirm service filters correctly — DONE (already exists)
 - [x] Confirm frontend dropdown is wired — DONE (already exists)
-- [ ] Run backend tests to confirm they pass
-- [ ] Run frontend tests to confirm they pass
+- [x] Run backend tests to confirm they pass — DONE (6/6 pass)
+- [x] Run frontend tests to confirm they pass — DONE (14/14 pass)
 
 ### 2. No code changes needed
 All implementation and tests already exist on `main`.
