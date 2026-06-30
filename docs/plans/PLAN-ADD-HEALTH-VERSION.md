@@ -6,12 +6,12 @@
 ## Tasks
 
 ### 1. Verify Existing Implementation
-- [x] `backend/src/app.ts` already reads `version` from `package.json` (line 22) and includes it in the health response (line 39)
+- [x] `backend/src/app.ts` already reads `version` from `package.json` (line 23) and includes it in the health response (line 39)
 - [x] `backend/src/test/health.spec.ts` already has a complete test suite covering status, timestamp, and version fields
 
 ### 2. Verification
-- [ ] Run backend tests to confirm all health endpoint tests pass
-- [ ] Confirm response includes `{ status, timestamp, version }` as required
+- [x] Run backend tests to confirm all health endpoint tests pass
+- [x] Confirm response includes `{ status, timestamp, version }` as required
 
 ## Notes
 The feature requested by the log entry is already implemented. No code changes needed.
