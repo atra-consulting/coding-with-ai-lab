@@ -1,8 +1,8 @@
 {
   "version": 1,
   "task_key": "ADRESSEN-CITY-SEARCH",
-  "status": "in_progress",
-  "current_step": "4.5",
+  "status": "completed",
+  "current_step": "13.2",
   "started": "2026-06-30T12:50:00.000Z",
   "updated": "2026-06-30T12:50:00.000Z",
   "config": {
