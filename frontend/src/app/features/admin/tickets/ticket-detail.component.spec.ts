@@ -601,6 +601,9 @@ describe('TicketDetailComponent — toggleOwner()', () => {
     mockService = makeMockTicketService();
     mockService.getById.and.returnValue(of(humanTicket));
     mockService.setOwner.and.returnValue(of({ ...humanTicket, owner: 'AI' }));
+    // humanTicket has status ON_HOLD, so handing it to the AI also resets the
+    // status to TODO via setStatus(); the final ticket comes from this call.
+    mockService.setStatus.and.returnValue(of({ ...humanTicket, owner: 'AI', status: 'TODO' }));
 
     await TestBed.configureTestingModule({
       imports: [TicketDetailComponent],
