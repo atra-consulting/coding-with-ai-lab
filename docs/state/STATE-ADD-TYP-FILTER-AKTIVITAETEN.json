@@ -1,10 +1,10 @@
 {
   "version": 1,
   "task_key": "ADD-TYP-FILTER-AKTIVITAETEN",
-  "status": "in_progress",
-  "current_step": "7.5",
+  "status": "completed",
+  "current_step": "13.2",
   "started": "2026-06-30T15:11:42.000Z",
-  "updated": "2026-06-30T15:14:00.000Z",
+  "updated": "2026-06-30T15:20:00.000Z",
   "config": {
     "input_mode": "freeform",
     "user_description": "Add optional typ query parameter to GET /api/aktivitaeten with validation against allowed values ANRUF, EMAIL, MEETING, NOTIZ, AUFGABE",
@@ -36,5 +36,5 @@
     "prd_file": null,
     "plan_file": "docs/plans/PLAN-ADD-TYP-FILTER-AKTIVITAETEN.md"
   },
-  "completed_steps": ["1", "2", "3.3", "4", "5.1", "7.3", "7.4"]
+  "completed_steps": ["1", "2", "3.3", "4", "5.1", "7.3", "7.4", "8", "9", "10", "11", "12", "13"]
 }
