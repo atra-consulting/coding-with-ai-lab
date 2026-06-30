@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "branch": "factory-automatic-skill",
+  "main_branch": "4e5e9f43719c946ba9423bf636a532d5df49095c",
+  "docs_folder": "docs",
+  "special_instructions": null,
+  "review_agents_available": true,
+  "fix_agents_available": true,
+  "all_reviewers": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer"],
+  "all_coders": ["be-coder", "db-coder", "fe-coder"],
+  "all_designers": ["ui-designer"],
+  "changed_files": [".claude/skills/do-factory-automatic/SKILL.md", "docs/plans/PLAN-FACTORY-AUTOMATIC-SKILL.md", "docs/state/STATE-FACTORY-AUTOMATIC-SKILL.json", "backend/package-lock.json"],
+  "dry_run_mode": false,
+  "started": "2026-06-30T12:39:52Z"
+}
