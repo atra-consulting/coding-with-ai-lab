@@ -26,6 +26,22 @@ Dann lösche den Context mit `/clear` und rufe den Skill erneut auf, dieses Mal 
 
 Claude Code sollte diese Aufgabe jetzt korrekt abarbeiten.
 
+## Fehlerbehebung
+
+Der Skill braucht das Umgebungsvariable `AGENT_API_TOKEN`, um die API aufzurufen. Fehlt es, erscheint diese Meldung:
+
+```
+AGENT_API_TOKEN is not set. Please set it and re-run:
+```
+
+Lösung: Die Variable direkt vor dem Skill-Aufruf setzen. Beispiel mit Aufgabe 8:
+
+```
+export AGENT_API_TOKEN=test-secret-123 && /do-factory-automatic 8
+```
+
+Das `export` gilt nur für diese Terminal-Sitzung. Bei jedem neuen Terminal-Fenster muss es wiederholt werden.
+
 ## Erwartetes Ergebnis
 
 - Der Skill kann die erste Aufgabe nicht abarbeiten
