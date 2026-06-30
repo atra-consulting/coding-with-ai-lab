@@ -16,6 +16,27 @@ API-Referenz: `docs/API-TASKS.md` (lies den Abschnitt „For skill authors").
 
 Wenn dieser Skill mit einer Zahl als Parameter aufgerufen wird (z. B. `/process-next-task 14`), ist das eine Task-ID. Dann **Schritt 1 überspringen** und direkt mit dieser ID in Schritt 2 einsteigen — die Task per GET laden und verarbeiten. Keine „next"-Auswahl.
 
+## Schritt 0 — Umgebungsvariablen laden
+
+Bevor irgendein API-Aufruf erfolgt, Umgebungsvariablen aus `backend/.env` laden — falls die Datei vorhanden ist:
+
+```bash
+if [ -f backend/.env ]; then
+  set -a && source backend/.env && set +a
+fi
+```
+
+Danach prüfen, ob `AGENT_API_TOKEN` gesetzt ist:
+
+```bash
+if [ -z "$AGENT_API_TOKEN" ]; then
+  echo "Fehler: AGENT_API_TOKEN ist nicht gesetzt. Bitte die Variable in backend/.env oder in der Shell definieren."
+  exit 1
+fi
+```
+
+Ist `AGENT_API_TOKEN` nicht gesetzt, **sofort beenden**.
+
 ## Schritt 1 — Nächste Aufgabe beanspruchen
 
 *(Überspringen, wenn eine Task-ID als Parameter übergeben wurde.)*
