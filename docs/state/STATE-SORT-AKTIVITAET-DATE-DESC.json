@@ -2,9 +2,9 @@
   "version": 1,
   "task_key": "SORT-AKTIVITAET-DATE-DESC",
   "status": "in_progress",
-  "current_step": "4.5",
+  "current_step": "7.5",
   "started": "2026-06-30T13:39:20.000Z",
-  "updated": "2026-06-30T13:40:00.000Z",
+  "updated": "2026-06-30T13:45:00.000Z",
   "config": {
     "input_mode": "freeform",
     "user_description": "Change the default sort order of the activity list (Aktivitaet) to date descending",
@@ -14,8 +14,8 @@
     "original_head": "2fa847f5b8259b6913424fe7a69483613dd21a35",
     "docs_folder": "docs",
     "is_git_repo": true,
-    "workflow_scope": null,
-    "pr_prefix": null,
+    "workflow_scope": "full",
+    "pr_prefix": "feat:",
     "pr_exists": false,
     "pr_url": null
   },
@@ -29,12 +29,12 @@
     "test_runner_agents": ["be-test-runner", "fe-test-runner"],
     "tooling_coding_agents": ["python-coder", "shell-coder", "skill-coder"],
     "tooling_review_agents": ["python-reviewer", "shell-reviewer", "skill-reviewer"],
-    "test_command": null
+    "test_command": "cd backend && npx playwright test"
   },
   "artifacts": {
-    "prd_skipped": null,
+    "prd_skipped": true,
     "prd_file": null,
-    "plan_file": null
+    "plan_file": "docs/plans/PLAN-SORT-AKTIVITAET-DATE-DESC.md"
   },
-  "completed_steps": ["1", "2", "2.1", "3", "4"]
+  "completed_steps": ["1", "2", "2.1", "3", "4", "5", "7"]
 }
