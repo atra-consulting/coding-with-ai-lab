@@ -818,3 +818,124 @@ test.describe('POST /api/agent-tasks/reset', () => {
     expect(resp.status()).toBe(401);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Suite: POST /api/agent-tasks/:id/start
+// ---------------------------------------------------------------------------
+
+test.describe('POST /api/agent-tasks/:id/start', () => {
+  let agent: APIRequestContext;
+  let anon: APIRequestContext;
+  let wrong: APIRequestContext;
+
+  test.beforeEach(async () => {
+    await resetDatabase();
+    agent = await agentCtx();
+    anon = await anonCtx();
+    wrong = await wrongTokenCtx();
+  });
+
+  test.afterEach(async () => {
+    await agent.dispose();
+    await anon.dispose();
+    await wrong.dispose();
+  });
+
+  test('start an OPEN task → 200, status IN_PROGRESS, pickedUpAt is a non-null string', async () => {
+    const resp = await agent.post('/api/agent-tasks/1/start');
+
+    await test.step('status 200', () => {
+      expect(resp.status()).toBe(200);
+    });
+
+    const body = await resp.json() as AgentTaskDTO;
+
+    await test.step('status is IN_PROGRESS', () => {
+      expect(body.status).toBe('IN_PROGRESS');
+    });
+
+    await test.step('pickedUpAt is a non-empty string', () => {
+      expect(typeof body.pickedUpAt).toBe('string');
+      expect((body.pickedUpAt as string).length).toBeGreaterThan(0);
+    });
+
+    await test.step('id matches the requested task', () => {
+      expect(body.id).toBe(1);
+    });
+  });
+
+  test('start verifies the mutation persisted — re-fetch shows IN_PROGRESS', async () => {
+    const startResp = await agent.post('/api/agent-tasks/2/start');
+    expect(startResp.status()).toBe(200);
+
+    // Re-fetch via GET /:id (agent token allows this)
+    const getResp = await agent.get('/api/agent-tasks/2');
+    expect(getResp.status()).toBe(200);
+
+    const body = await getResp.json() as AgentTaskDTO;
+    expect(body.status).toBe('IN_PROGRESS');
+    expect(typeof body.pickedUpAt).toBe('string');
+  });
+
+  test('start an already IN_PROGRESS task → 409', async () => {
+    // Move task 1 to IN_PROGRESS via /start
+    const firstResp = await agent.post('/api/agent-tasks/1/start');
+    expect(firstResp.status()).toBe(200);
+
+    // Attempt to start the same task again
+    const secondResp = await agent.post('/api/agent-tasks/1/start');
+    expect(secondResp.status()).toBe(409);
+  });
+
+  test('start a DONE task → 409', async () => {
+    // Mark task 1 as DONE via the done endpoint
+    const doneResp = await agent.post('/api/agent-tasks/1/done', { data: {} });
+    expect(doneResp.status()).toBe(200);
+
+    // Attempt to start a DONE task
+    const startResp = await agent.post('/api/agent-tasks/1/start');
+    expect(startResp.status()).toBe(409);
+  });
+
+  test('start a REJECTED task → 409', async () => {
+    // Reject task 1 first
+    const rejectResp = await agent.post('/api/agent-tasks/1/reject', {
+      data: { comment: 'Rejecting before start attempt' },
+    });
+    expect(rejectResp.status()).toBe(200);
+
+    // Attempt to start the REJECTED task
+    const startResp = await agent.post('/api/agent-tasks/1/start');
+    expect(startResp.status()).toBe(409);
+  });
+
+  test('unknown id → 404', async () => {
+    const resp = await agent.post('/api/agent-tasks/99999/start');
+    expect(resp.status()).toBe(404);
+  });
+
+  test('no auth header from localhost → 200 (localhost bypass)', async () => {
+    // AGENT_AUTH_ALLOW_LOOPBACK is enabled by default (.env.example).
+    // Requests from localhost without a token are allowed through requireAgentToken.
+    const resp = await anon.post('/api/agent-tasks/1/start');
+    expect(resp.status()).toBe(200);
+  });
+
+  test('wrong Bearer token → 401', async () => {
+    const resp = await wrong.post('/api/agent-tasks/1/start');
+    expect(resp.status()).toBe(401);
+  });
+
+  test('no token + X-Forwarded-For header from localhost → 401 (bypass refused, proxy header present)', async () => {
+    const proxyCtx = await playwrightRequest.newContext({
+      baseURL: BASE_URL,
+      extraHTTPHeaders: { 'X-Forwarded-For': '10.0.0.1' },
+    });
+    try {
+      const resp = await proxyCtx.post('/api/agent-tasks/1/start');
+      expect(resp.status()).toBe(401);
+    } finally {
+      await proxyCtx.dispose();
+    }
+  });
+});
