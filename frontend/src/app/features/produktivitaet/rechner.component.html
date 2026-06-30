@@ -2,8 +2,216 @@
   <h2>Rechner</h2>
 </div>
 
+<!-- HERO: geführte Erzählung des heutigen (menschlichen) Prozesses -->
+<section class="hero-card card mb-4" aria-labelledby="hero-title">
+  <div class="card-body">
+    <p class="hero-eyebrow">Der heutige Prozess</p>
+    <h2 id="hero-title" class="hero-title">
+      Ein Ticket bis in Produktion:
+      <span class="hero-total">{{ heroGesamt() | dauer }}</span>
+    </h2>
+    <p class="hero-sub">
+      Von der Anfrage bis zum Deployment — durch die Hände von BA, zwei
+      Entwicklern und einem Tester.
+    </p>
+
+    <!-- Schritt 0: einfarbiger Gesamtbalken (verrät die Aufteilung noch nicht) -->
+    <svg
+      class="hero-solid-svg"
+      viewBox="0 0 100 10"
+      preserveAspectRatio="none"
+      role="img"
+      [attr.aria-label]="'Aufwand gesamt: ' + (heroGesamt() | dauer)"
+    >
+      <rect x="0" y="0" width="100" height="10" fill="#264892" />
+    </svg>
+    <div class="hero-solid-label">
+      <span>Aufwand gesamt</span>
+      <span>{{ heroGesamt() | dauer }}</span>
+    </div>
+
+    <!-- Schritt 1: Menschlich aufschlüsseln -->
+    @if (revealStep() < 1) {
+      <div class="hero-cta">
+        <button type="button" class="btn btn-primary" (click)="reveal(1)">
+          Was kostet wie viel Zeit? ↓
+        </button>
+      </div>
+    } @else {
+      <div class="hero-reveal">
+        <p class="hero-reveal-title">Was steckt wirklich drin?</p>
+        <div class="hero-legend" aria-hidden="true">
+          <span class="hero-chip hero-chip--work">Arbeit</span>
+          <span class="hero-chip hero-chip--wait">Warten</span>
+        </div>
+        <ng-container
+          [ngTemplateOutlet]="procBar"
+          [ngTemplateOutletContext]="{ $implicit: 0, ns: 'hero', shared: true }"
+        />
+        <p class="hero-why">
+          Überraschung: Von {{ heroGesamt() | dauer }} sind nur
+          <strong>{{ heroArbeit() | dauer }}</strong> echte Arbeit — gerade
+          einmal {{ heroArbeitPct() }}&nbsp;%. Die übrige Zeit liegt das Ticket
+          still und wartet auf die nächste Person: Refinement, Reviews, Tests,
+          Releases. Fahre über die Abschnitte, um jeden Schritt zu sehen.
+        </p>
+      </div>
+    }
+
+    <!-- Schritt 2: Halbautomatisch -->
+    @if (revealStep() >= 1) {
+      @if (revealStep() < 2) {
+        <div class="hero-cta">
+          <button type="button" class="btn btn-primary" (click)="reveal(2)">
+            Verbessere den Prozess (halbautomatisch) ↓
+          </button>
+        </div>
+      } @else {
+        <div class="hero-reveal">
+          <ng-container
+            [ngTemplateOutlet]="procBar"
+            [ngTemplateOutletContext]="{ $implicit: 1, ns: 'hero', shared: true }"
+          />
+        </div>
+      }
+    }
+
+    <!-- Schritt 3: Vollautomatisch -->
+    @if (revealStep() >= 2) {
+      @if (revealStep() < 3) {
+        <div class="hero-cta">
+          <button type="button" class="btn btn-primary" (click)="reveal(3)">
+            Vollautomatisch: Human in the Loop entfernen ↓
+          </button>
+        </div>
+      } @else {
+        <div class="hero-reveal">
+          <ng-container
+            [ngTemplateOutlet]="procBar"
+            [ngTemplateOutletContext]="{ $implicit: 2, ns: 'hero', shared: true }"
+          />
+          <div class="hero-goal">
+            <span class="hero-goal-label">Ziel</span>
+            <span>
+              Den Menschen so weit wie möglich aus der Schleife (Human in the
+              Loop) nehmen — jede entfernte Übergabe streicht eine Wartezeit. Aus
+              {{ heroGesamt() | dauer }} werden {{ getProzessTotal(2) | dauer }}.
+            </span>
+          </div>
+        </div>
+      }
+    }
+
+    <!-- Brücke / Scroll-Cue zum Bestand -->
+    <div class="hero-bridge">
+      <a
+        href="#prozessvergleich"
+        class="hero-scroll-link"
+        (click)="scrollToDetail($event)"
+        >Alle Details &amp; selbst durchrechnen ↓</a
+      >
+    </div>
+  </div>
+</section>
+
+<!-- Wiederverwendbarer Prozessbalken (Hero + Vergleich); ns = eindeutiges ID-Präfix, shared = gemeinsame Basis -->
+<ng-template #procBar let-prozessIdx let-ns="ns" let-shared="shared">
+  <div class="process-bar-wrap">
+    <div class="bar-label-row">
+      <span class="bar-title">{{ prozesse[prozessIdx].titel }}</span>
+      <span class="bar-meta">
+        <span class="bar-total">{{ getProzessTotal(prozessIdx) | dauer }}</span>
+        @if (shared) {
+          @if (prozessIdx === 0) {
+            <span class="bar-base">Basis</span>
+          } @else {
+            <span class="bar-saved">↓ {{ getGesparteZeit(prozessIdx) | dauer }} gespart</span>
+          }
+        }
+      </span>
+    </div>
+
+    <svg
+      class="process-svg"
+      viewBox="0 0 600 32"
+      preserveAspectRatio="none"
+      [attr.aria-labelledby]="'bar-title-' + ns + '-' + prozessIdx"
+      [attr.aria-describedby]="'bar-desc-' + ns + '-' + prozessIdx"
+    >
+      <title [id]="'bar-title-' + ns + '-' + prozessIdx">
+        {{ prozesse[prozessIdx].titel }}: {{ getProzessTotal(prozessIdx) | dauer }}
+      </title>
+      <desc [id]="'bar-desc-' + ns + '-' + prozessIdx">
+        Prozessbalken für {{ prozesse[prozessIdx].titel }} mit
+        {{ prozesse[prozessIdx].stepCount }} Schritten. Gesamtdauer:
+        {{ getProzessTotal(prozessIdx) | dauer }}.
+      </desc>
+
+      <defs>
+        <pattern
+          [id]="'hatch-wait-' + ns + '-' + prozessIdx"
+          patternUnits="userSpaceOnUse"
+          width="9"
+          height="9"
+          patternTransform="rotate(45)"
+        >
+          <rect width="9" height="9" fill="#f4e6d3" />
+          <line x1="0" y1="0" x2="0" y2="9" stroke="#cf944f" stroke-width="1.6" />
+        </pattern>
+      </defs>
+
+      @if (shared) {
+        <!-- Grau-Track = volle Basis (33d); ungenutzter Rest visualisiert die gesparte Zeit -->
+        <rect x="0" y="0" width="600" height="32" fill="#eef1f6" />
+      }
+
+      @for (seg of (shared ? getSharedSegments(prozessIdx, 600) : getSegments(prozessIdx, 600)); track seg.type + '-' + seg.index) {
+        @if (seg.type === 'work') {
+          @if (svgSnapshot().prozesse[prozessIdx].works[seg.index] === 0) {
+            <rect
+              [attr.x]="seg.x"
+              y="0"
+              [attr.width]="seg.width"
+              height="32"
+              fill="#264892"
+              aria-hidden="true"
+            />
+          } @else {
+            <rect
+              class="seg-rect"
+              [attr.x]="seg.x"
+              y="0"
+              [attr.width]="seg.width"
+              height="32"
+              fill="#264892"
+              tabindex="0"
+              [attr.aria-label]="getWorkAriaLabel(prozessIdx, seg.index)"
+              [ngbTooltip]="getWorkAriaLabel(prozessIdx, seg.index)"
+              container="body"
+            />
+          }
+        } @else if (seg.width > 0) {
+          <rect
+            class="seg-rect"
+            [attr.x]="seg.x"
+            y="0"
+            [attr.width]="seg.width"
+            height="32"
+            [attr.fill]="'url(#hatch-wait-' + ns + '-' + prozessIdx + ')'"
+            [ngbTooltip]="getWaitTooltip(prozessIdx, seg.index)"
+            container="body"
+            aria-hidden="true"
+          />
+        }
+      }
+    </svg>
+  </div>
+</ng-template>
+
+<!-- Detailbereich: anfangs ausgeblendet, erscheint per „Alle Details & selbst durchrechnen" -->
+@if (showDetails()) {
 <!-- VISUALIZATION CARD -->
-<div class="card mb-4 viz-card">
+<div id="prozessvergleich" class="card mb-4 viz-card" tabindex="-1">
   <div class="card-body">
     <h5 class="card-title">Prozessvergleich</h5>
 
@@ -24,9 +232,9 @@
       <span class="d-flex align-items-center gap-1">
         <svg width="16" height="16" aria-hidden="true">
           <defs>
-            <pattern id="legend-hatch" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
-              <rect width="8" height="8" fill="#fbe3de" />
-              <line x1="0" y1="0" x2="0" y2="8" stroke="#dc421e" stroke-width="3" />
+            <pattern id="legend-hatch" patternUnits="userSpaceOnUse" width="9" height="9" patternTransform="rotate(45)">
+              <rect width="9" height="9" fill="#f4e6d3" />
+              <line x1="0" y1="0" x2="0" y2="9" stroke="#cf944f" stroke-width="1.6" />
             </pattern>
           </defs>
           <rect width="16" height="16" fill="url(#legend-hatch)" rx="2" />
@@ -93,119 +301,12 @@
       }
     </svg>
 
-    <!-- Per-process segment bars -->
+    <!-- Per-process segment bars (geteiltes Template) -->
     @for (p of prozesse; track $index) {
-      @let prozessIdx = $index;
-      <div class="process-bar-wrap">
-        <div class="bar-label-row">
-          <span class="bar-title">{{ p.titel }}</span>
-          <span class="bar-total">{{ getProzessTotal(prozessIdx) | dauer }}</span>
-        </div>
-
-        <svg
-          class="process-svg"
-          viewBox="0 0 600 32"
-          preserveAspectRatio="none"
-          [attr.aria-labelledby]="'bar-title-' + prozessIdx"
-          [attr.aria-describedby]="'bar-desc-' + prozessIdx"
-        >
-          <title [id]="'bar-title-' + prozessIdx">{{ p.titel }}: {{ getProzessTotal(prozessIdx) | dauer }}</title>
-          <desc [id]="'bar-desc-' + prozessIdx">
-            Prozessbalken für {{ p.titel }} mit {{ p.stepCount }} Schritten. Gesamtdauer: {{ getProzessTotal(prozessIdx) | dauer }}.
-          </desc>
-
-          <defs>
-            <!-- 45-degree hatch pattern for Wartezeit: light background + red stripes (greyscale-distinct, WCAG 1.4.1) -->
-            <pattern
-              [id]="'hatch-wait-' + prozessIdx"
-              patternUnits="userSpaceOnUse"
-              width="8"
-              height="8"
-              patternTransform="rotate(45)"
-            >
-              <rect width="8" height="8" fill="#fbe3de" />
-              <line x1="0" y1="0" x2="0" y2="8" stroke="#dc421e" stroke-width="3" />
-            </pattern>
-          </defs>
-
-          @for (seg of getSegments(prozessIdx, 600); track seg.type + '-' + seg.index) {
-            @if (seg.type === 'work') {
-              @if (svgSnapshot().prozesse[prozessIdx].works[seg.index] === 0) {
-                <rect
-                  class="work-rect"
-                  [attr.x]="seg.x"
-                  y="0"
-                  [attr.width]="seg.width"
-                  height="32"
-                  fill="#264892"
-                  tabindex="-1"
-                  aria-hidden="true"
-                />
-              } @else {
-                <rect
-                  class="work-rect"
-                  [attr.x]="seg.x"
-                  y="0"
-                  [attr.width]="seg.width"
-                  height="32"
-                  fill="#264892"
-                  tabindex="0"
-                  role="button"
-                  [attr.aria-label]="getWorkAriaLabel(prozessIdx, seg.index)"
-                  (click)="setFocusedStep(prozessIdx, seg.index)"
-                  (keydown.enter)="setFocusedStep(prozessIdx, seg.index)"
-                  (keydown.space)="$event.preventDefault(); setFocusedStep(prozessIdx, seg.index)"
-                  (focus)="setFocusedStep(prozessIdx, seg.index)"
-                />
-              }
-              @if (seg.width >= 24) {
-                <text
-                  [attr.x]="seg.x + seg.width / 2"
-                  y="21"
-                  font-size="11"
-                  font-family="sans-serif"
-                  fill="#fff"
-                  text-anchor="middle"
-                  pointer-events="none"
-                  aria-hidden="true"
-                >A</text>
-              }
-            } @else {
-              <rect
-                [attr.x]="seg.x"
-                y="0"
-                [attr.width]="seg.width"
-                height="32"
-                [attr.fill]="'url(#hatch-wait-' + prozessIdx + ')'"
-                aria-hidden="true"
-              />
-              @if (seg.width >= 24) {
-                <text
-                  [attr.x]="seg.x + seg.width / 2"
-                  y="21"
-                  font-size="11"
-                  font-family="sans-serif"
-                  fill="#fff"
-                  text-anchor="middle"
-                  pointer-events="none"
-                  aria-hidden="true"
-                >W</text>
-              }
-            }
-          }
-        </svg>
-
-        <!-- Persistent detail panel: focused/clicked step details (touch + keyboard accessible) -->
-        <div class="step-detail-panel" role="region" aria-label="Schritt-Details" aria-live="polite">
-          <dl class="mb-0">
-            <dt>Schritt {{ focusedStep()[prozessIdx] + 1 }}: {{ getFocusedStepDetail(prozessIdx).label }}</dt>
-            <dd>Arbeitszeit: {{ getFocusedStepDetail(prozessIdx).arbeitszeit }}</dd>
-            @if (getFocusedStepDetail(prozessIdx).wartezeit !== null) {
-              <dd>Folgende Wartezeit: {{ getFocusedStepDetail(prozessIdx).wartezeit }}</dd>
-            }
-          </dl>
-        </div>
-      </div>
+      <ng-container
+        [ngTemplateOutlet]="procBar"
+        [ngTemplateOutletContext]="{ $implicit: $index, ns: 'cmp', shared: false }"
+      />
     }
 
   </div>
@@ -543,3 +644,4 @@
     <div [ngbNavOutlet]="nav"></div>
   </div>
 </div>
+}

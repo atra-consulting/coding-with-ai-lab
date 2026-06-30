@@ -7,6 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
 import {
   AbstractControl,
   FormArray,
@@ -17,7 +18,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
-import { NgbModal, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbNavModule, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 import { debounceTime } from 'rxjs/operators';
 import { DEFAULT_DURATIONS, PROZESSE } from '../../core/models/prozess-defaults';
 import { Szenario, SzenarioCreate } from '../../core/models/szenario.model';
@@ -48,7 +49,7 @@ const DURATION_VALIDATORS = [
 
 @Component({
   selector: 'app-rechner',
-  imports: [ReactiveFormsModule, FormsModule, NgbNavModule, LoadingSpinnerComponent, DauerPipe],
+  imports: [ReactiveFormsModule, FormsModule, NgbNavModule, NgbTooltipModule, NgTemplateOutlet, LoadingSpinnerComponent, DauerPipe],
   templateUrl: './rechner.component.html',
   styles: [
     `
@@ -98,6 +99,22 @@ const DURATION_VALIDATORS = [
         font-size: 0.85rem;
         color: #495057;
       }
+      .bar-meta {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 0.6rem;
+        white-space: nowrap;
+      }
+      .bar-saved {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #198754;
+      }
+      .bar-base {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: #6c757d;
+      }
       .process-svg {
         display: block;
         width: 100%;
@@ -109,25 +126,159 @@ const DURATION_VALIDATORS = [
         width: 100%;
         overflow: visible;
       }
-      .step-detail-panel {
-        background: #f8f9fa;
-        border: 1px solid #dee2e6;
-        border-radius: 0.375rem;
-        padding: 0.5rem 0.75rem;
-        margin-top: 0.5rem;
-        font-size: 0.85rem;
-      }
-      .step-detail-panel dt {
-        font-weight: 600;
-        color: #264892;
-      }
-      .step-detail-panel dd {
-        color: #495057;
-        margin-bottom: 0.15rem;
-      }
-      .work-rect:focus-visible {
+      .seg-rect:focus-visible {
         outline: 3px solid #264892;
         outline-offset: 2px;
+      }
+      .seg-rect {
+        cursor: pointer;
+      }
+
+      /* ── Hero ── */
+      .hero-card {
+        background: linear-gradient(135deg, #f4f7ff 0%, #ffffff 62%);
+        border: 1px solid #d7e0f5;
+      }
+      .hero-eyebrow {
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: #6b7a99;
+        margin-bottom: 0.35rem;
+      }
+      .hero-title {
+        font-size: clamp(1.5rem, 3vw, 2.2rem);
+        font-weight: 700;
+        line-height: 1.2;
+        color: #1b2a52;
+        margin-bottom: 0.4rem;
+      }
+      .hero-total {
+        color: #264892;
+        white-space: nowrap;
+      }
+      .hero-sub {
+        color: #495057;
+        max-width: 60ch;
+        margin-bottom: 1.25rem;
+      }
+      .hero-solid-svg {
+        display: block;
+        width: 100%;
+        height: 44px;
+        border-radius: 6px;
+        overflow: hidden;
+      }
+      .hero-solid-label {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-top: 0.5rem;
+        font-weight: 600;
+        color: #1b2a52;
+      }
+      .hero-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem 1.25rem;
+        margin: 0.6rem 0 0.2rem;
+      }
+      .hero-cta {
+        margin-top: 1rem;
+      }
+      .hero-cta .btn {
+        font-weight: 600;
+      }
+      .hero-reveal {
+        margin-top: 1.1rem;
+        animation: heroReveal 0.35s ease both;
+      }
+      @keyframes heroReveal {
+        from {
+          opacity: 0;
+          transform: translateY(-6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .hero-reveal-title {
+        font-weight: 700;
+        color: #1b2a52;
+        margin-bottom: 0.5rem;
+      }
+      .hero-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+      .hero-chip::before {
+        content: '';
+        width: 14px;
+        height: 14px;
+        border-radius: 3px;
+        display: inline-block;
+      }
+      .hero-chip--work {
+        color: #264892;
+      }
+      .hero-chip--work::before {
+        background: #264892;
+      }
+      .hero-chip--wait {
+        color: #8a5d24;
+      }
+      .hero-chip--wait::before {
+        background: repeating-linear-gradient(
+          45deg,
+          #f4e6d3 0,
+          #f4e6d3 5px,
+          #cf944f 5px,
+          #cf944f 6.5px
+        );
+      }
+      .hero-why {
+        margin-top: 0.75rem;
+        color: #343a40;
+        max-width: 65ch;
+      }
+      .hero-goal {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.6rem;
+        margin-top: 1.3rem;
+        padding: 0.85rem 1rem;
+        background: #eef3ff;
+        border-left: 4px solid #264892;
+        border-radius: 0.375rem;
+        color: #1b2a52;
+      }
+      .hero-goal-label {
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        font-size: 0.8rem;
+        color: #264892;
+      }
+      .hero-bridge {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.35rem 0.9rem;
+        margin-top: 1.2rem;
+        font-weight: 600;
+        color: #1b2a52;
+      }
+      .hero-scroll-link {
+        color: #264892;
+        font-weight: 600;
+      }
+      #prozessvergleich {
+        scroll-margin-top: 1rem;
       }
     `,
   ],
@@ -138,6 +289,7 @@ export class RechnerComponent implements OnInit {
   private szenarioService = inject(SzenarioService);
   private modalService = inject(NgbModal);
   private notification = inject(NotificationService);
+  private document = inject(DOCUMENT);
 
   readonly prozesse = PROZESSE;
   readonly zeiteinheiten: ZeitEinheit[] = ZEITEINHEITEN;
@@ -190,6 +342,48 @@ export class RechnerComponent implements OnInit {
     );
     return { prozesse, maxTotal };
   });
+
+  // ── Hero: Fokus auf den heutigen (menschlichen) Prozess (live) ──
+  /** Summe der Arbeitszeit im menschlichen Prozess (Minuten). */
+  readonly heroArbeit = computed(() =>
+    this.menschlichWorks().reduce((s, v) => s + v, 0),
+  );
+  /** Summe der Wartezeit im menschlichen Prozess (Minuten). */
+  readonly heroWarten = computed(() =>
+    this.menschlichWaits().reduce((s, v) => s + v, 0),
+  );
+  /** Gesamtdauer des menschlichen Prozesses (Minuten). */
+  readonly heroGesamt = computed(() => this.heroArbeit() + this.heroWarten());
+  /** Arbeitsanteil in Prozent (0 bei leerem Prozess). */
+  readonly heroArbeitPct = computed(() => {
+    const g = this.heroGesamt();
+    return g > 0 ? Math.round((this.heroArbeit() / g) * 100) : 0;
+  });
+  /**
+   * Schrittweise Enthüllung im Hero:
+   * 0 = nur einfarbiger Gesamtbalken, 1 = Menschlich aufgeschlüsselt,
+   * 2 = Halbautomatisch ergänzt, 3 = Vollautomatisch ergänzt.
+   */
+  readonly revealStep = signal(0);
+
+  /** Detailbereich (Prozessvergleich, Szenarien, Schritt-Zeiten) ist anfangs ausgeblendet. */
+  readonly showDetails = signal(false);
+
+  /** Schaltet die Hero-Erzählung einen Schritt weiter. */
+  reveal(step: number): void {
+    this.revealStep.set(step);
+  }
+
+  /** Blendet den Detailbereich ein und scrollt nach dem Rendern sanft dorthin. */
+  scrollToDetail(event: Event): void {
+    event.preventDefault();
+    this.showDetails.set(true);
+    setTimeout(() => {
+      this.document
+        .getElementById('prozessvergleich')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
 
   form!: FormGroup;
 
@@ -471,17 +665,6 @@ export class RechnerComponent implements OnInit {
     );
   }
 
-  // Focused step per process (default: step index 0)
-  focusedStep = signal<number[]>([0, 0, 0]);
-
-  setFocusedStep(prozessIndex: number, stepIndex: number): void {
-    this.focusedStep.update((arr) => {
-      const copy = [...arr];
-      copy[prozessIndex] = stepIndex;
-      return copy;
-    });
-  }
-
   // Helper for the template
   getProzessTotal(index: number): number {
     return this.svgSnapshot().prozesse[index]?.total ?? 0;
@@ -497,21 +680,31 @@ export class RechnerComponent implements OnInit {
     return computeSegments(snap.works, snap.waits, containerWidth);
   }
 
-  /** Returns the detail text for the focused step of a process. */
-  getFocusedStepDetail(prozessIndex: number): { label: string; arbeitszeit: string; wartezeit: string | null } {
+  /**
+   * Segmente auf gemeinsamer Basis: Menschlich (Index 0) füllt die volle Breite,
+   * die anderen Prozesse sind proportional kürzer. Der ungenutzte Rest = gesparte Zeit.
+   */
+  getSharedSegments(prozessIndex: number, fullWidth: number): SvgSegment[] {
+    const base = this.getProzessTotal(0);
+    const total = this.getProzessTotal(prozessIndex);
+    const scaledWidth = base > 0 ? fullWidth * (total / base) : 0;
     const snap = this.svgSnapshot().prozesse[prozessIndex];
-    const stepIdx = this.focusedStep()[prozessIndex] ?? 0;
-    const label = this.prozesse[prozessIndex]?.labels[stepIdx] ?? `Schritt ${stepIdx + 1}`;
-    const work = snap.works[stepIdx] ?? 0;
-    const wait = snap.waits[stepIdx] ?? null;
-    return {
-      label,
-      arbeitszeit: minutenZuDauer(work),
-      wartezeit: wait !== null ? minutenZuDauer(wait) : null,
-    };
+    return computeSegments(snap.works, snap.waits, scaledWidth);
   }
 
-  /** Builds the aria-label for a work rect. */
+  /** Gegenüber dem menschlichen Prozess (Basis) gesparte Zeit in Minuten. */
+  getGesparteZeit(prozessIndex: number): number {
+    return Math.max(0, this.getProzessTotal(0) - this.getProzessTotal(prozessIndex));
+  }
+
+  /** Tooltip text for a wait segment. */
+  getWaitTooltip(prozessIndex: number, stepIndex: number): string {
+    const snap = this.svgSnapshot().prozesse[prozessIndex];
+    const waitMin = snap.waits[stepIndex] ?? 0;
+    return `Wartezeit nach Schritt ${stepIndex + 1}: ${minutenZuDauer(waitMin)}`;
+  }
+
+  /** Builds the label/tooltip text for a work rect. */
   getWorkAriaLabel(prozessIndex: number, stepIndex: number): string {
     const snap = this.svgSnapshot().prozesse[prozessIndex];
     const label = this.prozesse[prozessIndex]?.labels[stepIndex] ?? `Schritt ${stepIndex + 1}`;
