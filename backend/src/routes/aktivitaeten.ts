@@ -33,10 +33,7 @@ router.get(
     const firmaIdRaw = parseInt(req.query['firmaId'] as string, 10);
     const firmaId = isNaN(firmaIdRaw) || firmaIdRaw <= 0 ? undefined : firmaIdRaw;
     const typRaw = req.query['typ'];
-    if (Array.isArray(typRaw)) {
-      throw new ValidationError('Ungültiger typ-Wert', { typ: 'Nur ein Wert erlaubt' });
-    }
-    const typStr = typRaw as string | undefined;
+    const typStr = typeof typRaw === 'string' ? typRaw : undefined;
     if (typStr !== undefined && !(AKTIVITAET_TYP as readonly string[]).includes(typStr)) {
       throw new ValidationError('Ungültiger typ-Wert', { typ: `Erlaubte Werte: ${AKTIVITAET_TYP.join(', ')}` });
     }
