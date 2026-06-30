@@ -45,11 +45,18 @@ All implementation and tests already exist on `main`.
 - F-5: abteilungId + search → both filters combine via AND
 - F-6: Unauthenticated → 401
 
-### Frontend (Jasmine/Karma)
-- Component creation
-- ngOnInit calls abteilungService.listAll()
-- ngOnInit populates abteilungen
-- ngOnInit calls personService.listAll()
-- Default selectedAbteilungId is null
-- onDepartmentChange() re-fetches persons
-- onDepartmentChange() passes correct abteilungId
+### Frontend (Jasmine/Karma) — 14 tests
+- should create the component
+- should call abteilungService.listAll() on init
+- should populate abteilungen from the listAll response
+- should call personService.listAll() on init
+- should call personService.listAll() with undefined when selectedAbteilungId is null
+- should default selectedAbteilungId to null
+- should default abteilungen to an empty array
+- should start with loading set to true before ngOnInit runs
+- should set loading to false after personService responds
+- should call personService.listAll() again when department changes
+- should pass selectedAbteilungId when a department is selected
+- should pass undefined (not null) when selectedAbteilungId is null
+- should pass abteilungId=1 when selectedAbteilungId is 1
+- should pass abteilungId=0 unchanged when selectedAbteilungId is 0
