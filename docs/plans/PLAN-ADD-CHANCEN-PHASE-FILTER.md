@@ -5,7 +5,7 @@
 
 ## Analysis
 
-The `phase` filter is **already implemented** on `main` (commit `855d98e`). No code changes needed.
+The `phase` filter is **already implemented** on `main` (via merge commit `2fa847f`, PR #110). No code changes needed.
 
 Implemented in:
 - `backend/src/routes/chancen.ts` — validates and passes `phase` query param
