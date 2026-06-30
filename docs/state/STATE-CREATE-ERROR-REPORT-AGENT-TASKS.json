@@ -14,8 +14,8 @@
     "branch_name": "create-error-report-agent-tasks",
     "original_branch": "main",
     "docs_folder": "docs",
-    "workflow_scope": null,
-    "keep_files": null
+    "workflow_scope": "create-pr",
+    "keep_files": false
   },
   "discovery": {
     "agents_available": true,
