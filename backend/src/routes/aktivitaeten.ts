@@ -38,7 +38,8 @@ router.get(
       throw new ValidationError('Ungültiger typ-Wert', { typ: `Erlaubte Werte: ${AKTIVITAET_TYP.join(', ')}` });
     }
     const typ = typStr as AktivitaetTyp | undefined;
-    res.json(await aktivitaetService.findAll(page, size, sort, firmaId, typ));
+    const search = typeof req.query['search'] === 'string' ? req.query['search'] : undefined;
+    res.json(await aktivitaetService.findAll(page, size, sort, firmaId, typ, search));
   }),
 );
 

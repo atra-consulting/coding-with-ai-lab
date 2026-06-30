@@ -66,7 +66,7 @@ const BASE_QUERY = `
 `;
 
 export const aktivitaetService = {
-  async findAll(page: number, size: number, sort: SortParams, firmaId?: number, typ?: AktivitaetTyp): Promise<PageResult<AktivitaetDTO>> {
+  async findAll(page: number, size: number, sort: SortParams, firmaId?: number, typ?: AktivitaetTyp, search?: string): Promise<PageResult<AktivitaetDTO>> {
     const conditions: string[] = [];
     const params: InValue[] = [];
 
@@ -78,6 +78,11 @@ export const aktivitaetService = {
     if (typ !== undefined) {
       conditions.push('ak.typ = ?');
       params.push(typ);
+    }
+
+    if (search !== undefined && search.trim() !== '') {
+      conditions.push("LOWER(ak.subject) LIKE LOWER('%' || ? || '%')");
+      params.push(search.trim());
     }
 
     const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
