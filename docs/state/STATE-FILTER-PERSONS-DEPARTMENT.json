@@ -2,9 +2,9 @@
   "version": 1,
   "task_key": "FILTER-PERSONS-DEPARTMENT",
   "status": "in_progress",
-  "current_step": "4.5",
+  "current_step": "7.5",
   "started": "2026-06-30T14:23:05Z",
-  "updated": "2026-06-30T14:23:40Z",
+  "updated": "2026-06-30T14:25:00Z",
   "config": {
     "input_mode": "freeform",
     "user_description": "The persons list at `/personen` does not support filtering by department (Abteilung). Please add an `abteilungId` query parameter to `GET /api/personen` and wire a department dropdown filter to the frontend persons list page.",
@@ -14,27 +14,27 @@
     "original_head": "b520b79385f960fcaea26dacd143796683fdfc7b",
     "docs_folder": "docs",
     "is_git_repo": true,
-    "workflow_scope": null,
-    "pr_prefix": null,
+    "workflow_scope": "full",
+    "pr_prefix": "feat",
     "pr_exists": false,
     "pr_url": null
   },
   "discovery": {
-    "agents_available": false,
-    "writer_agents": [],
-    "coding_agents": [],
-    "review_agents": [],
-    "test_coding_agents": [],
-    "test_review_agents": [],
-    "test_runner_agents": [],
-    "tooling_coding_agents": [],
-    "tooling_review_agents": [],
-    "test_command": null
+    "agents_available": true,
+    "writer_agents": ["ba-writer"],
+    "coding_agents": ["be-coder", "db-coder", "fe-coder", "ui-designer"],
+    "review_agents": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer"],
+    "test_coding_agents": ["be-test-coder", "fe-test-coder"],
+    "test_review_agents": ["be-test-reviewer", "fe-test-reviewer"],
+    "test_runner_agents": ["be-test-runner", "fe-test-runner"],
+    "tooling_coding_agents": ["python-coder", "shell-coder", "skill-coder"],
+    "tooling_review_agents": ["python-reviewer", "shell-reviewer", "skill-reviewer"],
+    "test_command": "cd backend && npx playwright test src/test/personen-filter.spec.ts"
   },
   "artifacts": {
-    "prd_skipped": null,
+    "prd_skipped": true,
     "prd_file": null,
-    "plan_file": null
+    "plan_file": "docs/plans/PLAN-FILTER-PERSONS-DEPARTMENT.md"
   },
-  "completed_steps": ["1", "2", "3", "4"]
+  "completed_steps": ["1", "2", "3", "4", "5", "7"]
 }
