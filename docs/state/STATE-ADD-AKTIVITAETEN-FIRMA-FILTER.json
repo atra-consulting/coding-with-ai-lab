@@ -32,7 +32,7 @@
     "test_command": "cd backend && npx playwright test"
   },
   "artifacts": {
-    "prd_skipped": null,
+    "prd_skipped": true,
     "prd_file": null,
     "plan_file": "docs/plans/PLAN-ADD-AKTIVITAETEN-FIRMA-FILTER.md"
   },
