@@ -178,4 +178,36 @@ describe('ChanceListComponent', () => {
       expect(el).toBeNull();
     });
   });
+
+  describe('displayedWert initial state', () => {
+    it('should default displayedWert to 0 before data loads', () => {
+      expect(component.displayedWert).toBe(0);
+    });
+  });
+
+  describe('template — Gesamtwert filter display', () => {
+    it('should show only total wert without a separator when filter is not active', () => {
+      mockChanceService.listAll.and.returnValue(of([makeChance({ wert: 1000 })]));
+      fixture.detectChanges();
+      fixture.detectChanges();
+
+      const el = fixture.debugElement.query(By.css('small.text-muted'));
+      expect(el).not.toBeNull();
+      expect(el.nativeElement.textContent).not.toContain('/');
+    });
+
+    it('should show displayedWert / totalWert separated by / when filter is active', () => {
+      mockChanceService.listAll.and.returnValue(of([makeChance({ wert: 5000 })]));
+      fixture.detectChanges();
+      component.isFilterActive = true;
+      component.displayedWert = 2000;
+      fixture.detectChanges();
+
+      const el = fixture.debugElement.query(By.css('small.text-muted'));
+      expect(el).not.toBeNull();
+      expect(el.nativeElement.textContent).toContain('/');
+      expect(el.nativeElement.textContent).toContain('2.000,00');
+      expect(el.nativeElement.textContent).toContain('5.000,00');
+    });
+  });
 });
