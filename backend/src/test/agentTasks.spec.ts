@@ -23,7 +23,7 @@
  *   EMAIL        → ids 1-4
  *   GITHUB_ISSUE → ids 5-8
  *   APP_LOG      → ids 9-12
- *   ERROR_REPORT → ids 13-16
+ *   ERROR_REPORT → ids 13-18
  */
 import { test, expect, request as playwrightRequest, type APIRequestContext } from '@playwright/test';
 import { resetDatabase, loginCtx } from './helpers.js';
@@ -577,7 +577,7 @@ test.describe('GET /api/agent-tasks', () => {
     await agent.dispose();
   });
 
-  test('admin session → 200 with valid pagination shape and 16 total tasks', async () => {
+  test('admin session → 200 with valid pagination shape and 18 total tasks', async () => {
     const resp = await admin.get('/api/agent-tasks');
 
     await test.step('status 200', () => {
@@ -590,8 +590,8 @@ test.describe('GET /api/agent-tasks', () => {
       expect(Array.isArray(body.content)).toBe(true);
     });
 
-    await test.step('totalElements is 16 (fixture seed count)', () => {
-      expect(body.totalElements).toBe(16);
+    await test.step('totalElements is 18 (fixture seed count)', () => {
+      expect(body.totalElements).toBe(18);
     });
 
     await test.step('number is 0 (first page, 0-indexed)', () => {
@@ -714,9 +714,10 @@ test.describe('GET /api/agent-tasks/summary', () => {
       expect(sources).toContain('ERROR_REPORT');
     });
 
-    await test.step('fresh DB: each source has 4 OPEN tasks and 0 otherwise', () => {
+    await test.step('fresh DB: OPEN counts match seed (ERROR_REPORT has 6, others have 4)', () => {
       for (const entry of body) {
-        expect(entry.openCount).toBe(4);
+        const expectedOpen = entry.source === 'ERROR_REPORT' ? 6 : 4;
+        expect(entry.openCount).toBe(expectedOpen);
         expect(entry.inProgressCount).toBe(0);
         expect(entry.doneCount).toBe(0);
         expect(entry.rejectedCount).toBe(0);
@@ -789,8 +790,8 @@ test.describe('POST /api/agent-tasks/reset', () => {
       expect(typeof resetBody.reset).toBe('number');
     });
 
-    await test.step('reset count equals total tasks (16)', () => {
-      expect(resetBody.reset).toBe(16);
+    await test.step('reset count equals total tasks (18)', () => {
+      expect(resetBody.reset).toBe(18);
     });
 
     // After reset, all tasks should be OPEN
@@ -798,9 +799,10 @@ test.describe('POST /api/agent-tasks/reset', () => {
     expect(postSummaryResp.status()).toBe(200);
     const postSummary = await postSummaryResp.json() as SummaryDTO[];
 
-    await test.step('after reset: all sources show 4 OPEN, 0 in other statuses', () => {
+    await test.step('after reset: OPEN counts match seed (ERROR_REPORT has 6, others have 4)', () => {
       for (const entry of postSummary) {
-        expect(entry.openCount).toBe(4);
+        const expectedOpen = entry.source === 'ERROR_REPORT' ? 6 : 4;
+        expect(entry.openCount).toBe(expectedOpen);
         expect(entry.inProgressCount).toBe(0);
         expect(entry.doneCount).toBe(0);
         expect(entry.rejectedCount).toBe(0);
