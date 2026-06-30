@@ -2,9 +2,9 @@
   "version": 1,
   "task_key": "ADD-HEALTH-VERSION",
   "status": "in_progress",
-  "current_step": "4.5",
+  "current_step": "7.6",
   "started": "2026-06-30T14:34:40.000Z",
-  "updated": "2026-06-30T14:35:00.000Z",
+  "updated": "2026-06-30T14:36:00.000Z",
   "config": {
     "input_mode": "freeform",
     "user_description": "The health check endpoint GET /api/health returns only { status, timestamp }. Monitoring tooling expects a version field so we can confirm which build is running. The backend package.json already declares \"version\": \"1.0.0\". Add a version field to the response object in backend/src/app.ts so the endpoint returns { status, timestamp, version } where version is read from the package.json version string.",
@@ -14,27 +14,27 @@
     "original_head": "58a3bca81dd8bd3513cda8789117b022b0b26a54",
     "docs_folder": "docs",
     "is_git_repo": true,
-    "workflow_scope": null,
-    "pr_prefix": null,
+    "workflow_scope": "full",
+    "pr_prefix": "fix:",
     "pr_exists": false,
     "pr_url": null
   },
   "discovery": {
-    "agents_available": false,
-    "writer_agents": [],
-    "coding_agents": [],
-    "review_agents": [],
-    "test_coding_agents": [],
-    "test_review_agents": [],
-    "test_runner_agents": [],
-    "tooling_coding_agents": [],
-    "tooling_review_agents": [],
-    "test_command": null
+    "agents_available": true,
+    "writer_agents": ["ba-writer"],
+    "coding_agents": ["be-coder", "db-coder", "fe-coder", "ui-designer"],
+    "review_agents": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer"],
+    "test_coding_agents": ["be-test-coder", "fe-test-coder"],
+    "test_review_agents": ["be-test-reviewer", "fe-test-reviewer"],
+    "test_runner_agents": ["be-test-runner", "fe-test-runner"],
+    "tooling_coding_agents": ["python-coder", "shell-coder", "skill-coder"],
+    "tooling_review_agents": ["python-reviewer", "shell-reviewer", "skill-reviewer"],
+    "test_command": "cd backend && npx playwright test"
   },
   "artifacts": {
-    "prd_skipped": null,
+    "prd_skipped": true,
     "prd_file": null,
-    "plan_file": null
+    "plan_file": "docs/plans/PLAN-ADD-HEALTH-VERSION.md"
   },
-  "completed_steps": ["1", "2", "3.3", "4"]
+  "completed_steps": ["1", "2", "3.3", "4", "5.1", "7"]
 }
