@@ -90,7 +90,7 @@ export const aktivitaetService = {
     const total = Number(countRow.cnt);
 
     const rowsResult = await client.execute({
-      sql: `${BASE_QUERY} ${where} ORDER BY ak.${sort.field} ${sort.direction} LIMIT ? OFFSET ?`,
+      sql: `${BASE_QUERY}${where ? ' ' + where : ''} ORDER BY ak.${sort.field} ${sort.direction} LIMIT ? OFFSET ?`,
       args: [...params, size, page * size],
     });
     const rows = rowsResult.rows as unknown as AktivitaetRow[];
