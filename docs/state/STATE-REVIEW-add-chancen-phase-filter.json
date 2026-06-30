@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "branch": "add-chancen-phase-filter",
+  "main_branch": "b71c533d81f9a7d1790e6fc6a962a7845d647d55",
+  "docs_folder": "docs",
+  "special_instructions": null,
+  "review_agents_available": true,
+  "fix_agents_available": true,
+  "all_reviewers": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer"],
+  "all_coders": ["be-coder", "db-coder", "fe-coder"],
+  "all_designers": ["ui-designer"],
+  "changed_files": [
+    "docs/plans/PLAN-ADD-CHANCEN-PHASE-FILTER.md",
+    "docs/state/STATE-ADD-CHANCEN-PHASE-FILTER.json",
+    "docs/state/STATE-REVIEW-filter-persons-department.json"
+  ],
+  "dry_run_mode": false,
+  "started": "2026-06-30T14:45:00.000Z"
+}

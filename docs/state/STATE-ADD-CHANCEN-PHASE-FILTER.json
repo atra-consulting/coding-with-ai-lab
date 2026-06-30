@@ -1,10 +1,10 @@
 {
   "version": 1,
   "task_key": "ADD-CHANCEN-PHASE-FILTER",
-  "status": "in_progress",
-  "current_step": "4.5",
+  "status": "completed",
+  "current_step": "13",
   "started": "2026-06-30T14:44:38.000Z",
-  "updated": "2026-06-30T14:45:00.000Z",
+  "updated": "2026-06-30T15:00:00.000Z",
   "config": {
     "input_mode": "freeform",
     "user_description": "Add an optional phase query parameter to GET /api/chancen endpoint",
@@ -14,27 +14,27 @@
     "original_head": "b71c533d81f9a7d1790e6fc6a962a7845d647d55",
     "docs_folder": "docs",
     "is_git_repo": true,
-    "workflow_scope": null,
-    "pr_prefix": null,
+    "workflow_scope": "full",
+    "pr_prefix": "feat",
     "pr_exists": false,
     "pr_url": null
   },
   "discovery": {
     "agents_available": true,
     "writer_agents": ["ba-writer"],
-    "coding_agents": ["be-coder", "fe-coder", "ui-designer"],
-    "review_agents": ["be-reviewer", "fe-reviewer", "db-reviewer", "ui-reviewer"],
+    "coding_agents": ["be-coder", "fe-coder", "ui-designer", "db-coder"],
+    "review_agents": ["be-reviewer", "fe-reviewer", "db-reviewer", "ui-reviewer", "ba-reviewer"],
     "test_coding_agents": ["be-test-coder", "fe-test-coder"],
     "test_review_agents": ["be-test-reviewer", "fe-test-reviewer"],
     "test_runner_agents": ["be-test-runner", "fe-test-runner"],
     "tooling_coding_agents": ["python-coder", "shell-coder", "skill-coder"],
     "tooling_review_agents": ["python-reviewer", "shell-reviewer", "skill-reviewer"],
-    "test_command": null
+    "test_command": "cd backend && npx playwright test src/test/chancen-phase-filter.spec.ts --reporter=line 2>&1"
   },
   "artifacts": {
-    "prd_skipped": null,
+    "prd_skipped": true,
     "prd_file": null,
-    "plan_file": null
+    "plan_file": "docs/plans/PLAN-ADD-CHANCEN-PHASE-FILTER.md"
   },
-  "completed_steps": ["2", "3", "4"]
+  "completed_steps": ["2", "3", "4", "5", "7", "8", "9", "10", "11", "12", "13"]
 }
