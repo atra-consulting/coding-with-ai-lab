@@ -1,4 +1,5 @@
 import { client } from '../config/db.js';
+import type { InValue } from '@libsql/client';
 import { NotFoundError } from '../utils/errors.js';
 import { buildPage, type PageResult, type SortParams } from '../utils/pagination.js';
 import type { AdresseCreateDTO } from '../utils/validation.js';
@@ -77,17 +78,22 @@ const BASE_QUERY = `
 `;
 
 export const adresseService = {
-  async findAll(page: number, size: number, sort: SortParams): Promise<PageResult<AdresseDTO>> {
+  async findAll(search: string | undefined, page: number, size: number, sort: SortParams): Promise<PageResult<AdresseDTO>> {
+    const where = search
+      ? `WHERE LOWER(a.city) LIKE LOWER('%' || ? || '%')`
+      : '';
+    const params: InValue[] = search ? [search] : [];
+
     const countResult = await client.execute({
-      sql: 'SELECT COUNT(*) AS cnt FROM adresse',
-      args: [],
+      sql: `SELECT COUNT(*) AS cnt FROM adresse a ${where}`,
+      args: [...params],
     });
     const countRow = countResult.rows[0] as unknown as { cnt: number };
     const total = Number(countRow.cnt);
 
     const rowsResult = await client.execute({
-      sql: `${BASE_QUERY} ORDER BY a.${sort.field} ${sort.direction} LIMIT ? OFFSET ?`,
-      args: [size, page * size],
+      sql: `${BASE_QUERY} ${where} ORDER BY a.${sort.field} ${sort.direction} LIMIT ? OFFSET ?`,
+      args: [...params, size, page * size],
     });
     const rows = rowsResult.rows as unknown as AdresseRow[];
 

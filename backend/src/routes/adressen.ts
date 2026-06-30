@@ -16,7 +16,7 @@ router.get(
   }),
 );
 
-// GET /api/adressen — paginated
+// GET /api/adressen — paginated + search
 router.get(
   '/',
   requireAuth,
@@ -28,7 +28,8 @@ router.get(
       'ASC',
       'adresse',
     );
-    res.json(await adresseService.findAll(page, size, sort));
+    const search = req.query['search'] as string | undefined;
+    res.json(await adresseService.findAll(search, page, size, sort));
   }),
 );
 
