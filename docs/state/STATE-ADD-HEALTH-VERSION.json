@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "task_key": "ADD-HEALTH-VERSION",
+  "status": "in_progress",
+  "current_step": "4.5",
+  "started": "2026-06-30T14:34:40.000Z",
+  "updated": "2026-06-30T14:35:00.000Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "The health check endpoint GET /api/health returns only { status, timestamp }. Monitoring tooling expects a version field so we can confirm which build is running. The backend package.json already declares \"version\": \"1.0.0\". Add a version field to the response object in backend/src/app.ts so the endpoint returns { status, timestamp, version } where version is read from the package.json version string.",
+    "special_instructions": null,
+    "branch_name": "filter-persons-department",
+    "original_branch": "filter-persons-department",
+    "original_head": "58a3bca81dd8bd3513cda8789117b022b0b26a54",
+    "docs_folder": "docs",
+    "is_git_repo": true,
+    "workflow_scope": null,
+    "pr_prefix": null,
+    "pr_exists": false,
+    "pr_url": null
+  },
+  "discovery": {
+    "agents_available": false,
+    "writer_agents": [],
+    "coding_agents": [],
+    "review_agents": [],
+    "test_coding_agents": [],
+    "test_review_agents": [],
+    "test_runner_agents": [],
+    "tooling_coding_agents": [],
+    "tooling_review_agents": [],
+    "test_command": null
+  },
+  "artifacts": {
+    "prd_skipped": null,
+    "prd_file": null,
+    "plan_file": null
+  },
+  "completed_steps": ["1", "2", "3.3", "4"]
+}
