@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "branch": "harden-env-vars-factory-skills",
+  "main_branch": "45553b989061f7ed72bf760ab609fbfbecbb3084",
+  "docs_folder": "docs",
+  "special_instructions": null,
+  "review_agents_available": true,
+  "fix_agents_available": false,
+  "all_reviewers": ["ba-reviewer"],
+  "all_coders": ["be-coder", "db-coder", "fe-coder"],
+  "all_designers": ["ui-designer"],
+  "changed_files": [
+    "docs/plans/PLAN-HARDEN-ENV-VARS-FACTORY-SKILLS.md",
+    "docs/state/STATE-HARDEN-ENV-VARS-FACTORY-SKILLS.json",
+    "tasks/advanced/Skill für Übungsaufgabe 2.md",
+    "tasks/advanced/Skill für Übungsaufgabe 4.md"
+  ],
+  "dry_run_mode": false,
+  "started": "2026-06-30T00:00:00.000Z"
+}

@@ -14,7 +14,32 @@ API-Referenz: `docs/API-TICKETS.md` (lies den Abschnitt „For skill authors").
 
 ## Parameter
 
-Wenn dieser Skill mit einer Zahl als Parameter aufgerufen wird (z. B. `/process-next-ticket 14`), ist das eine Ticket-ID. Dann **Schritt 1 überspringen**, das Ticket per GET laden, den `owner` prüfen (beides am Ende von Schritt 1), und danach mit Schritt 2 fortfahren. Keine „next"-Auswahl.
+Wenn dieser Skill mit einer Zahl als Parameter aufgerufen wird (z. B. `/process-next-ticket 14`), ist das eine Ticket-ID. Dann **Schritt 1 überspringen**, das Ticket per GET laden und den `owner` prüfen (wie am Ende von Schritt 1 beschrieben), und danach mit Schritt 2 fortfahren. Keine „next"-Auswahl.
+
+## Schritt 0 — Umgebungsvariablen laden
+
+*(Immer als erstes ausführen — auch wenn eine Ticket-ID als Parameter übergeben wurde.)*
+
+Umgebungsvariablen aus `backend/.env` laden — falls die Datei vorhanden ist (kann `AGENT_API_TOKEN` und `APP_BASE_URL` enthalten):
+
+```bash
+if [ -f backend/.env ]; then
+  set -a
+  source backend/.env
+  set +a
+fi
+```
+
+Danach prüfen, ob `AGENT_API_TOKEN` gesetzt ist:
+
+```bash
+if [ -z "$AGENT_API_TOKEN" ]; then
+  echo "Fehler: AGENT_API_TOKEN ist nicht gesetzt. Bitte die Variable in backend/.env oder in der Shell definieren."
+  exit 1
+fi
+```
+
+**Wichtig:** Wenn `AGENT_API_TOKEN` nach dem Laden leer oder ungesetzt ist, **sofort beenden** — keinen weiteren Schritt ausführen und keine API-Aufrufe machen.
 
 ## Schritt 1 — Nächstes Ticket beanspruchen
 
