@@ -8,13 +8,15 @@
  *   T-4  GET /api/aktivitaeten?search=ANGEBOT         — 14 results (case-insensitive match)
  *   T-5  GET /api/aktivitaeten                        — no search; baseline totalElements === 75
  *   T-6  GET /api/aktivitaeten?search=angebot (anon)  — 401
- *   T-7  GET /api/aktivitaeten?search=angebot&typ=ANRUF — fewer than 14 results, all subjects contain "angebot"
+ *   T-7  GET /api/aktivitaeten?search=angebot&typ=ANRUF — exactly 4 results, all subjects contain "angebot"
+ *   T-8  GET /api/aktivitaeten?search=               — empty string treated as no filter, 75 results
  *
  * Fixture facts (from backend/src/seed/fixture.json):
  *   - Total aktivitaeten: 75
  *   - Subjects containing "angebot" (case-insensitive): 14
  *   - Subjects containing "rechnung" (case-insensitive): 5
  *   - "xyzzy" matches 0 subjects
+ *   - angebot + typ=ANRUF: 4
  */
 import { test, expect, request as playwrightRequest } from '@playwright/test';
 import type { APIRequestContext } from '@playwright/test';
@@ -34,6 +36,9 @@ const ANGEBOT_COUNT = 14;
 
 /** Number of activities whose subject contains "rechnung" (case-insensitive). */
 const RECHNUNG_COUNT = 5;
+
+/** Number of activities matching both search=angebot and typ=ANRUF. */
+const ANGEBOT_ANRUF_COUNT = 4;
 
 // ---------------------------------------------------------------------------
 // Suite-level state
@@ -100,6 +105,10 @@ test('T-1: GET /api/aktivitaeten?search=angebot returns 14 activities with "ange
 
   await test.step('totalElements matches fixture angebot count', () => {
     expect(body.totalElements).toBe(ANGEBOT_COUNT);
+  });
+
+  await test.step('content length equals totalElements (all results fit in one page)', () => {
+    expect(body.content.length).toBe(ANGEBOT_COUNT);
   });
 
   await test.step('every returned subject contains "angebot" (case-insensitive)', () => {
@@ -179,6 +188,10 @@ test('T-4: GET /api/aktivitaeten?search=ANGEBOT returns 14 activities (case-inse
     expect(body.totalElements).toBe(ANGEBOT_COUNT);
   });
 
+  await test.step('content length equals totalElements (all results fit in one page)', () => {
+    expect(body.content.length).toBe(ANGEBOT_COUNT);
+  });
+
   await test.step('every returned subject contains "angebot" (case-insensitive)', () => {
     for (const ak of body.content) {
       expect(ak.subject.toLowerCase()).toContain('angebot');
@@ -224,7 +237,7 @@ test('T-6: GET /api/aktivitaeten?search=angebot without session returns 401', as
 // T-7  Combined search=angebot&typ=ANRUF — fewer results, all subjects contain "angebot"
 // ---------------------------------------------------------------------------
 
-test('T-7: GET /api/aktivitaeten?search=angebot&typ=ANRUF returns fewer than 14, all subjects contain "angebot"', async () => {
+test('T-7: GET /api/aktivitaeten?search=angebot&typ=ANRUF returns exactly 4 results, all subjects contain "angebot"', async () => {
   const resp = await adminCtx.get('/api/aktivitaeten', {
     params: { search: 'angebot', typ: 'ANRUF', size: '50' },
   });
@@ -235,8 +248,8 @@ test('T-7: GET /api/aktivitaeten?search=angebot&typ=ANRUF returns fewer than 14,
 
   const body = await resp.json() as PageResponse;
 
-  await test.step('totalElements is less than the angebot-only count (typ filter reduces results)', () => {
-    expect(body.totalElements).toBeLessThan(ANGEBOT_COUNT);
+  await test.step('totalElements equals the exact combined count (angebot + ANRUF)', () => {
+    expect(body.totalElements).toBe(ANGEBOT_ANRUF_COUNT);
   });
 
   await test.step('every returned subject contains "angebot" (case-insensitive)', () => {
@@ -249,5 +262,25 @@ test('T-7: GET /api/aktivitaeten?search=angebot&typ=ANRUF returns fewer than 14,
     for (const ak of body.content) {
       expect(ak.typ).toBe('ANRUF');
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T-8  search= (empty string) — treated as no filter, returns all 75
+// ---------------------------------------------------------------------------
+
+test('T-8: GET /api/aktivitaeten?search= (empty string) returns all activities (no filter)', async () => {
+  const resp = await adminCtx.get('/api/aktivitaeten', {
+    params: { search: '', size: '100' },
+  });
+
+  await test.step('status 200', () => {
+    expect(resp.status()).toBe(200);
+  });
+
+  const body = await resp.json() as PageResponse;
+
+  await test.step('totalElements equals the full fixture count of 75', () => {
+    expect(body.totalElements).toBe(TOTAL_AKTIVITAETEN);
   });
 });
