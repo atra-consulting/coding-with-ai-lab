@@ -1,16 +1,12 @@
 ---
 name: "project:do-factory-automatic"
 description: "Headless autonomous skill that claims the next agent task, judges build-or-reject, then rejects or builds it fully unattended via plan-and-do. Use in CI or headless claude -p runs."
-argument-hint: [task-id]
-version: 1.0.0
+argument-hint: "[task-id]"
+version: 1.0.1
 last-modified: 2026-06-30
 allowed-tools:
   - Read
-  - Bash(curl:*)
-  - Bash(git:*)
-  - Bash(source:*)
-  - Bash(set:*)
-  - Bash(echo:*)
+  - Bash
   - Task
   - Skill
 ---
@@ -36,6 +32,8 @@ Wenn der Skill mit einer Zahl aufgerufen wird (z. B. `/do-factory-automatic 14`)
 ## Schritt 0 — Umgebungsvariablen laden
 
 *(Immer zuerst ausführen — auch wenn eine Task-ID übergeben wurde.)*
+
+Alle Pfade sind relativ zum Projekt-Wurzelverzeichnis. Der Skill läuft aus dem Repo-Root.
 
 ```bash
 if [ -f backend/.env ]; then
@@ -111,7 +109,7 @@ Den **`requirements-reviewer`-Subagenten** via Task-Tool beauftragen. `title`, `
 
 Der Subagent prüft die Aufgabe zusätzlich gegen den echten Code. Wenn das beschriebene Problem im aktuellen Code nicht existiert, ist die Aufgabe abzulehnen.
 
-Der Subagent liefert ein klares Urteil: entweder **„gut genug zum Bauen"** oder **„ablehnen"** mit einem spezifischen, umsetzbaren Grund.
+Der Subagent liefert ein klares, binäres Urteil: entweder **„gut genug zum Bauen"** oder **„ablehnen"** mit einem spezifischen, umsetzbaren Grund. Kein vollständiger Review-Report — nur das Urteil plus Grund.
 
 Dem Urteil des Subagenten ohne Abweichung folgen.
 
@@ -153,11 +151,19 @@ Diese Daueranweisungen dem Aufruf voranstellen und auf JEDEN Checkpoint anwenden
 
 **Anpassung:** Der Skill erstellt keinen PR (Benutzeranforderung: kein Push, kein PR). Der Done-Kommentar enthält daher eine kurze Zusammenfassung des Gebauten plus den Branch-Namen — keinen PR-Link.
 
+Zuerst den Branch-Namen ermitteln, den `plan-and-do` angelegt hat:
+
+```bash
+BRANCH=$(git branch --show-current)
+```
+
+Dann die Aufgabe als erledigt markieren. `$BRANCH` in den Kommentar einsetzen:
+
 ```bash
 curl -s -X POST \
   -H "Authorization: Bearer $AGENT_API_TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"comment": "KURZE ZUSAMMENFASSUNG WAS GEBAUT WURDE + branch: <branch-name>"}' \
+  -d "{\"comment\": \"KURZE ZUSAMMENFASSUNG WAS GEBAUT WURDE + branch: $BRANCH\"}" \
   "${APP_BASE_URL:-http://localhost:7070}/api/agent-tasks/<id>/done"
 ```
 
