@@ -1547,6 +1547,142 @@ test.describe('POST /:id/comments — handBackToAi:false leaves status/owner unc
   });
 });
 
+// ─── Suite: POST /api/tickets/:id/start ──────────────────────────────────────
+
+test.describe('POST /api/tickets/:id/start', () => {
+  let agent: APIRequestContext;
+  let anon: APIRequestContext;
+  let wrong: APIRequestContext;
+  let admin: APIRequestContext;
+
+  test.beforeEach(async () => {
+    admin = await loginCtx('admin', 'admin123');
+    await resetTickets(admin);
+    agent = await agentCtx();
+    anon = await anonCtx();
+    wrong = await wrongTokenCtx();
+  });
+
+  test.afterEach(async () => {
+    await agent.dispose();
+    await anon.dispose();
+    await wrong.dispose();
+    await admin.dispose();
+  });
+
+  // ── Happy path ──────────────────────────────────────────────────────────────
+
+  test('TODO+AI ticket → 200, status=IN_PROGRESS, pickedUpAt set, comments array present', async () => {
+    // Ticket 1 is TODO+AI after reset
+    const resp = await agent.post('/api/tickets/1/start', { data: {} });
+
+    await test.step('status 200', () => { expect(resp.status()).toBe(200); });
+
+    const body = await resp.json() as Ticket;
+
+    await test.step('status is IN_PROGRESS', () => { expect(body.status).toBe('IN_PROGRESS'); });
+    await test.step('owner remains AI', () => { expect(body.owner).toBe('AI'); });
+    await test.step('pickedUpAt is a non-empty ISO string', () => {
+      expect(typeof body.pickedUpAt).toBe('string');
+      expect((body.pickedUpAt as string).length).toBeGreaterThan(0);
+    });
+    await test.step('comments is an array', () => {
+      expect(Array.isArray(body.comments)).toBe(true);
+    });
+    await test.step('solution is null', () => { expect(body.solution).toBeNull(); });
+    await test.step('resolvedAt is null', () => { expect(body.resolvedAt).toBeNull(); });
+
+    // Side-effect: re-fetch and confirm persisted state
+    const persisted = await (await admin.get('/api/tickets/1')).json() as Ticket;
+    await test.step('persisted status is IN_PROGRESS', () => {
+      expect(persisted.status).toBe('IN_PROGRESS');
+    });
+    await test.step('persisted pickedUpAt matches response', () => {
+      expect(persisted.pickedUpAt).toBe(body.pickedUpAt);
+    });
+  });
+
+  // ── 409 cases ───────────────────────────────────────────────────────────────
+
+  test('TODO+HUMAN ticket → 409 (wrong owner)', async () => {
+    // Create a new ticket — POST /api/tickets creates owner=HUMAN + status=TODO
+    const createResp = await admin.post('/api/tickets', {
+      data: { type: 'FEATURE', title: 'Human-owned ticket', body: 'Should not be startable.' },
+    });
+    expect(createResp.status()).toBe(201);
+    const created = await createResp.json() as Ticket;
+    expect(created.owner).toBe('HUMAN');
+    expect(created.status).toBe('TODO');
+
+    const resp = await agent.post(`/api/tickets/${created.id}/start`, { data: {} });
+    expect(resp.status()).toBe(409);
+  });
+
+  test('already IN_PROGRESS ticket → 409 (wrong status)', async () => {
+    // Claim ticket 1 via /next to put it IN_PROGRESS
+    const claimResp = await agent.get('/api/tickets/next');
+    expect(claimResp.status()).toBe(200);
+    const claimed = await claimResp.json() as Ticket;
+    expect(claimed.status).toBe('IN_PROGRESS');
+
+    // Now try /start on the same ticket — already IN_PROGRESS, not TODO
+    const resp = await agent.post(`/api/tickets/${claimed.id}/start`, { data: {} });
+    expect(resp.status()).toBe(409);
+  });
+
+  test('ON_HOLD+HUMAN ticket → 409', async () => {
+    // Ticket 7 is ON_HOLD+HUMAN after reset
+    const resp = await agent.post('/api/tickets/7/start', { data: {} });
+    expect(resp.status()).toBe(409);
+  });
+
+  test('ON_HOLD+AI ticket → 409 (status guard, independent of owner)', async () => {
+    // Move an AI-owned ticket to ON_HOLD via admin PATCH /status (preserves owner=AI)
+    const patchResp = await admin.patch('/api/tickets/1/status', { data: { status: 'ON_HOLD' } });
+    expect(patchResp.status()).toBe(200);
+    const patched = await patchResp.json() as Ticket;
+    expect(patched.owner).toBe('AI');
+    expect(patched.status).toBe('ON_HOLD');
+
+    // /start must reject: status is not TODO, even though owner=AI
+    const resp = await agent.post('/api/tickets/1/start', { data: {} });
+    expect(resp.status()).toBe(409);
+  });
+
+  test('DONE ticket → 409', async () => {
+    // Move ticket 1 to DONE via admin PATCH /status
+    const patchResp = await admin.patch('/api/tickets/1/status', { data: { status: 'DONE' } });
+    expect(patchResp.status()).toBe(200);
+
+    const resp = await agent.post('/api/tickets/1/start', { data: {} });
+    expect(resp.status()).toBe(409);
+  });
+
+  // ── Not found ───────────────────────────────────────────────────────────────
+
+  test('unknown id → 404', async () => {
+    const resp = await agent.post('/api/tickets/99999/start', { data: {} });
+    expect(resp.status()).toBe(404);
+  });
+
+  // ── Auth ────────────────────────────────────────────────────────────────────
+
+  test('no auth token from localhost → 200 (loopback bypass, ticket transitions to IN_PROGRESS)', async () => {
+    // AGENT_AUTH_ALLOW_LOOPBACK=1 is set in the test environment.
+    // Ticket 2 is TODO+AI after reset — use a ticket other than 1 to avoid collision.
+    const resp = await anon.post('/api/tickets/2/start', { data: {} });
+    // Auth bypass passes; business guard allows TODO+AI → IN_PROGRESS
+    expect(resp.status()).toBe(200);
+    const body = await resp.json() as Ticket;
+    expect(body.status).toBe('IN_PROGRESS');
+  });
+
+  test('wrong agent token → 401', async () => {
+    const resp = await wrong.post('/api/tickets/3/start', { data: {} });
+    expect(resp.status()).toBe(401);
+  });
+});
+
 // ─── Suite: POST /:id/comments handBackToAi guard ────────────────────────────
 
 test.describe('POST /:id/comments — handBackToAi guard (only ON_HOLD+HUMAN allowed)', () => {

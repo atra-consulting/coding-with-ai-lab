@@ -11,9 +11,9 @@ Source of truth: `backend/src/routes/tickets.ts` and `backend/src/services/ticke
 A ticket represents a unit of work. It has an **owner** (who acts on it next) and moves through a **status** lifecycle:
 
 ```
-status:  TODO ──(GET /next)──▶ IN_PROGRESS ──(POST /done)──▶ DONE (solution=DONE)
-                                           └──(POST /ask)───▶ ON_HOLD (owner→HUMAN)
-                                                              └──(POST /comments + handBackToAi)──▶ TODO (owner→AI)
+status:  TODO ──(GET /next OR POST /:id/start)──▶ IN_PROGRESS ──(POST /done)──▶ DONE (solution=DONE)
+                                                               └──(POST /ask)───▶ ON_HOLD (owner→HUMAN)
+                                                                                  └──(POST /comments + handBackToAi)──▶ TODO (owner→AI)
          (POST /wont-do)  DONE with solution=WONT_DO — owner must be HUMAN, status must not be DONE
          (POST /reset)    deletes all data and re-seeds 12 workshop tickets
 ```
@@ -67,7 +67,7 @@ Same fields as ticket, but `comments` is replaced by `commentCount: number`.
 
 Two main schemes. `GET /:id` accepts all three (see below).
 
-### Agent token (machine endpoints: `/next`, `/:id/done`, `/:id/ask`)
+### Agent token (machine endpoints: `/next`, `/:id/start`, `/:id/done`, `/:id/ask`)
 
 Send the shared secret in **either** header:
 
@@ -243,6 +243,8 @@ All tickets grouped by status. Each column sorted by `createdAt ASC`. Tickets in
 ### GET `/api/tickets/:id` — one ticket
 **Auth:** loopback bypass · agent token · admin session (first match wins). Returns the full ticket including the `comments` array.
 
+**Read-only.** Never changes status, owner, or any other field.
+
 | Result | Meaning |
 |--------|---------|
 | `200` + ticket | found |
@@ -250,6 +252,25 @@ All tickets grouped by status. Each column sorted by `createdAt ASC`. Tickets in
 | `401` / `403` | not authenticated / not admin |
 
 Skills and agents can call this endpoint on localhost without any token when `AGENT_AUTH_ALLOW_LOOPBACK=1`. In production, send the agent token or use an admin session.
+
+---
+
+### POST `/api/tickets/:id/start` — set ticket to in progress (agent)
+**Auth:** agent token.
+
+Explicitly transitions a `TODO` ticket with `owner=AI` to `IN_PROGRESS` (sets `pickedUpAt`). Use when you already know the ticket id and do not want to go through `/next`. The `/next` endpoint does the same transition automatically when it claims a ticket.
+
+| Result | Meaning |
+|--------|---------|
+| `200` + ticket | now IN_PROGRESS (includes `comments` array) |
+| `404` | no ticket with that id |
+| `409` | ticket is not TODO+AI (wrong status, wrong owner, or already IN_PROGRESS/DONE) |
+| `401` | bad/missing token |
+
+```bash
+curl -s -X POST -H "Authorization: Bearer $AGENT_API_TOKEN" \
+  "$APP_BASE_URL/api/tickets/3/start"
+```
 
 ---
 
@@ -367,8 +388,9 @@ Deletes all rows in `ticket_comment` and `ticket`, then re-seeds the 12 workshop
                     IN_PROGRESS                       ON_HOLD  (owner=HUMAN)
                          ▲                               ▲          │
             GET /next    │                 POST /ask     │          │ POST /comments
-           (owner=AI)    │                 (agent)       │          │ handBackToAi=true
-                         │                               │          │ owner→AI
+           OR /start     │                 (agent)       │          │ handBackToAi=true
+           (owner=AI)    │                               │          │ owner→AI
+                         │                               │          │
                         TODO  ◀──────────────────────────────────────┘
                      (owner=AI)
                         PATCH /status sets solution + resolvedAt on → DONE;
@@ -380,6 +402,7 @@ Deletes all rows in `ticket_comment` and `ticket`, then re-seeds the 12 workshop
 | Trigger | From | To | Side effects |
 |---------|------|----|-------------|
 | `GET /next` | `TODO` + `owner=AI` | `IN_PROGRESS` | sets `pickedUpAt` |
+| `POST /start` (agent) | `TODO` + `owner=AI` | `IN_PROGRESS` | sets `pickedUpAt` |
 | `POST /done` (agent) | `IN_PROGRESS` | `DONE` | `solution=DONE`, `resolvedAt` |
 | `POST /ask` (agent) | `IN_PROGRESS` | `ON_HOLD` | `owner→HUMAN`, AGENT comment |
 | `POST /comments` + `handBackToAi` (admin) | `ON_HOLD` + `owner=HUMAN` | `TODO` | `owner→AI`, `solution`/`resolvedAt` cleared, HUMAN comment |
@@ -446,6 +469,7 @@ X-Agent-Token: $AGENT_API_TOKEN
 | Step | Call | Notes |
 |------|------|-------|
 | Claim | `GET /api/tickets/next` | Optional `?type=FEATURE\|BUG\|CHORE`. Claims the oldest `TODO` ticket owned by `AI`, flips it to `IN_PROGRESS`. **`204` = queue empty, stop.** The response includes the full `comments` thread. |
+| Start | `POST /api/tickets/:id/start` | No body. From `TODO`+`owner=AI` → `IN_PROGRESS`. Use when you have the id but did not go through `/next`. Response includes full `comments` thread. |
 | Read | `GET /api/tickets/:id` | Re-read a ticket by id (full ticket + comments). Accepts agent token or loopback bypass. |
 | Finish | `POST /api/tickets/:id/done` | Body `{ "comment"?: string }`. Only from `IN_PROGRESS`. Sets `solution=DONE`. |
 | Ask | `POST /api/tickets/:id/ask` | Body `{ "question": string }` (required). Hands the ticket to a human (`ON_HOLD`, owner→`HUMAN`). Posts the question as an `AGENT` comment. |

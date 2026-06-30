@@ -193,6 +193,16 @@ router.patch(
   }),
 );
 
+// POST /api/tickets/:id/start  (agent)
+router.post(
+  '/:id/start',
+  requireAgentToken,
+  asyncHandler(async (req: Request, res: Response) => {
+    const id = parseInt(req.params['id'] as string, 10);
+    res.json(await ticketService.start(id));
+  }),
+);
+
 // POST /api/tickets/:id/done  (agent)
 router.post(
   '/:id/done',

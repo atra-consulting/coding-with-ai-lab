@@ -83,6 +83,21 @@ export const agentTaskService = {
     return toDTO(row);
   },
 
+  async start(id: number): Promise<AgentTaskDTO> {
+    const now = new Date().toISOString();
+    const result = await client.execute({
+      sql: `UPDATE agent_task SET status='IN_PROGRESS', pickedUpAt=?, updatedAt=? WHERE id=? AND status='OPEN'`,
+      args: [now, now, id],
+    });
+    if (result.rowsAffected === 0) {
+      await this.findById(id); // throws NotFoundError (404) if task doesn't exist
+      throw new ConflictError(
+        `AgentTask ${id} ist nicht im Status OPEN und kann nicht gestartet werden`,
+      );
+    }
+    return this.findById(id);
+  },
+
   async reject(id: number, comment: string): Promise<AgentTaskDTO> {
     const now = new Date().toISOString();
     const result = await client.execute({

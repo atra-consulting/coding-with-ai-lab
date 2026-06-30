@@ -12,7 +12,7 @@ A task (`agent_task` row) comes from one of four **sources** and moves through a
 
 ```
 source:  EMAIL | GITHUB_ISSUE | APP_LOG | ERROR_REPORT
-status:  OPEN ──(GET /next)──▶ IN_PROGRESS ──(POST /done)──▶ DONE
+status:  OPEN ──(GET /next OR POST /:id/start)──▶ IN_PROGRESS ──(POST /done)──▶ DONE
                                           └──(POST /reject)─▶ REJECTED
          (POST /reset re-arms every task back to OPEN)
 ```
@@ -45,7 +45,7 @@ status:  OPEN ──(GET /next)──▶ IN_PROGRESS ──(POST /done)──▶
 
 Two main schemes. `GET /:id` accepts all three (see below).
 
-### Agent token (machine endpoints: `/next`, `/:id/reject`, `/:id/done`)
+### Agent token (machine endpoints: `/next`, `/:id/start`, `/:id/reject`, `/:id/done`)
 
 Send the shared secret in **either** header:
 
@@ -184,6 +184,8 @@ Sets every task back to `OPEN` and clears `comment`, `pickedUpAt`, `resolvedAt`.
 ### GET `/api/agent-tasks/:id` — one task
 **Auth:** loopback bypass · agent token · admin session (first match wins).
 
+**Read-only.** Never changes status or any other field.
+
 | Result | Meaning |
 |--------|---------|
 | `200` + task | found |
@@ -191,6 +193,25 @@ Sets every task back to `OPEN` and clears `comment`, `pickedUpAt`, `resolvedAt`.
 | `401` / `403` | not authenticated / not admin |
 
 Skills and agents can call this endpoint on localhost without any token when `AGENT_AUTH_ALLOW_LOOPBACK=1`. In production, send the agent token or use an admin session.
+
+---
+
+### POST `/api/agent-tasks/:id/start` — set task to in progress (agent)
+**Auth:** agent token.
+
+Explicitly transitions an `OPEN` task to `IN_PROGRESS` (sets `pickedUpAt`). Use when you already know the task id and do not want to go through `/next`. The `/next` endpoint does the same transition automatically when it claims a task.
+
+| Result | Meaning |
+|--------|---------|
+| `200` + task | now IN_PROGRESS |
+| `404` | no task with that id |
+| `409` | task is not OPEN (already IN_PROGRESS, DONE, or REJECTED) |
+| `401` | bad/missing token |
+
+```bash
+curl -s -X POST -H "Authorization: Bearer $AGENT_API_TOKEN" \
+  "$APP_BASE_URL/api/agent-tasks/3/start"
+```
 
 ---
 
@@ -359,6 +380,7 @@ X-Agent-Token: $AGENT_API_TOKEN
 | Step | Call | Notes |
 |------|------|-------|
 | Claim | `GET /api/agent-tasks/next?source=…` | **`source` is required** — one of `EMAIL`, `GITHUB_ISSUE`, `APP_LOG`, `ERROR_REPORT`. Claims the oldest `OPEN` task of that source, flips it to `IN_PROGRESS`. **`204` = none for that source.** |
+| Start | `POST /api/agent-tasks/:id/start` | No body. From `OPEN` → `IN_PROGRESS`. Use when you have the id but did not go through `/next`. |
 | Read | `GET /api/agent-tasks/:id` | Re-read a task by id. Accepts agent token or loopback bypass. |
 | Finish | `POST /api/agent-tasks/:id/done` | Body `{ "comment"?: string }`. From `IN_PROGRESS` → `DONE`. |
 | Reject | `POST /api/agent-tasks/:id/reject` | Body `{ "comment": string }` (required). From `IN_PROGRESS` → `REJECTED`. Use when the task is out of scope or not worth doing. |

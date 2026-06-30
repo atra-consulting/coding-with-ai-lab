@@ -224,6 +224,33 @@ export const ticketService = {
   },
 
   /**
+   * Explicit claim by id (agent). Guard: status must be TODO AND owner must be AI.
+   * Use when you already know the ticket id and do not want to go through findNext.
+   */
+  async start(id: number): Promise<TicketDTO> {
+    const now = new Date().toISOString();
+
+    // Step 1: guarded UPDATE alone
+    const result = await client.execute({
+      sql: `UPDATE ticket
+            SET status = 'IN_PROGRESS', pickedUpAt = ?, updatedAt = ?
+            WHERE id = ? AND status = 'TODO' AND owner = 'AI'`,
+      args: [now, now, id],
+    });
+
+    // Step 2: 0 rows → 404 if missing, 409 if wrong state
+    if (result.rowsAffected === 0) {
+      await this.findById(id); // throws NotFoundError 404 if missing
+      throw new ConflictError(
+        `Ticket ${id} ist nicht im Status TODO+AI und kann nicht gestartet werden`,
+      );
+    }
+
+    // Step 3: return fresh ticket
+    return this.findById(id);
+  },
+
+  /**
    * Mark ticket done (agent). Guard: status must be IN_PROGRESS.
    * Optional closing AGENT comment inserted after the guarded UPDATE succeeds.
    */
