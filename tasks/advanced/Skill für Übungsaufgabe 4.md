@@ -95,14 +95,14 @@ Der Skill hat interaktive Checkpoints (`AskUserQuestion`), die NICHT beantwortet
 
 > Vollständig autonom und unbeaufsichtigt ausführen. Zu keinem Zeitpunkt `AskUserQuestion` aufrufen oder auf Eingaben warten. Diese Standardantworten auf jeden Checkpoint anwenden:
 > - Entscheidung zu Spezifikationen (PRD): **PRD überspringen**, direkt zum Plan.
-> - Plan-Freigabe: **„Approve, implement, review, and create PR"** (voller Workflow-Umfang).
+> - Plan-Freigabe: **„Approve, implement, and review"** (kein PR).
 > - Jeder Review-Befund-Checkpoint: **alle Korrekturen genehmigen**.
 > - Jeder andere Checkpoint oder Auswahl: **Continue** / die empfohlene Option wählen.
 > - Planungsdateien behalten. Niemals anhalten, um zu fragen. Niemals um Klärung bitten.
 > - Wenn du mitten im Bauen feststellst, dass eine echte Produktentscheidung fehlt, stoppe den Build und gehe zu Schritt 3a (den Menschen fragen), anstatt zu raten.
 > - Wenn Tests oder der Build scheitern und nicht automatisch nach einem vertretbaren Versuch behoben werden können, stoppe und frage den Menschen (Schritt 3a) mit den Fehlerdetails, anstatt zu hängen.
 
-`plan-and-do` bis zur Fertigstellung laufen lassen (umsetzen → testen → reviewen → PR).
+`plan-and-do` bis zur Fertigstellung laufen lassen (umsetzen → testen → reviewen). Keinen PR erstellen, nichts pushen.
 
 ## Schritt 4 — Ticket als erledigt markieren
 
