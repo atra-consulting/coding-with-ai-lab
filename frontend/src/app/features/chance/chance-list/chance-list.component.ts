@@ -33,6 +33,7 @@ export class ChanceListComponent implements OnInit {
   totalRows = 0;
   totalWert = 0;
   displayedRows = 0;
+  displayedWert = 0;
   isFilterActive = false;
 
   columnDefs: ColDef<Chance>[] = [
@@ -101,6 +102,11 @@ export class ChanceListComponent implements OnInit {
     if (this.gridApi) {
       this.displayedRows = this.gridApi.getDisplayedRowCount();
       this.isFilterActive = this.gridApi.isAnyFilterPresent();
+      let wertSum = 0;
+      this.gridApi.forEachNodeAfterFilter(node => {
+        wertSum += node.data?.wert ?? 0;
+      });
+      this.displayedWert = wertSum;
     }
     this.cdr.markForCheck();
   }
