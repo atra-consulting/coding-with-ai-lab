@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "branch": "filter-persons-department",
+  "main_branch": "b520b79385f960fcaea26dacd143796683fdfc7b",
+  "docs_folder": "docs",
+  "special_instructions": null,
+  "review_agents_available": true,
+  "fix_agents_available": true,
+  "all_reviewers": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer"],
+  "all_coders": ["be-coder", "db-coder", "fe-coder"],
+  "all_designers": ["ui-designer"],
+  "changed_files": [
+    "docs/plans/PLAN-FILTER-PERSONS-DEPARTMENT.md",
+    "docs/state/STATE-FILTER-PERSONS-DEPARTMENT.json"
+  ],
+  "dry_run_mode": false,
+  "started": "2026-06-30T14:26:00Z"
+}
