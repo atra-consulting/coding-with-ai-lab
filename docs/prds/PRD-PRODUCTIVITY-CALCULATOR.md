@@ -268,3 +268,20 @@ Commits:
 - `50b0746` fix: move Rechner skip-link target to card-body
 
 PR: https://github.com/atra-consulting/coding-with-ai-lab/pull/96
+
+### Erweiterung: geführte Hero-Erzählung & Einsparungs-Visualisierung (2026-06-30)
+
+Branch `rechner-hero-narrative`.
+
+Neue, didaktische Einstiegssektion oben auf `/produktivitaet/rechner`, die zum heutigen (menschlichen) Prozess hinführt:
+
+- **Schrittweise Enthüllung:** Start mit einfarbigem Gesamtbalken (33d 2h 40m). Buttons decken nacheinander auf: „Was kostet wie viel Zeit?" → Menschlich, „Verbessere den Prozess (halbautomatisch)" → Halbautomatisch, „Vollautomatisch: Human in the Loop entfernen" → Vollautomatisch.
+- **Gemeinsame Basis:** Die drei Hero-Balken teilen die 33d-Basis (Menschlich = volle Breite); gesparte Zeit rechts in Grün (success).
+- **Ziel:** „Den Menschen so weit wie möglich aus der Schleife (Human in the Loop) nehmen."
+- **Tooltips** statt unterem Detail-Panel zur Schrittanalyse (ngb-Tooltip auf den SVG-Segmenten).
+- **Ruhige Wartezeit-Optik:** dezente Ochre-Schraffur statt greller roter Streifen (gesamte Seite).
+- **Detailbereich on-demand:** Prozessvergleich, Szenarien und Schritt-Zeiten sind anfangs ausgeblendet und erscheinen per „Alle Details & selbst durchrechnen".
+
+Prozessbalken als wiederverwendbares `<ng-template>` (Hero + Vergleich); Hero auf gemeinsamer Basis, Vergleich auf Eigen-Skala.
+
+PR: _wird ergänzt_
