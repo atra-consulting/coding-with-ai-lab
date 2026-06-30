@@ -180,19 +180,26 @@ describe('ChanceListComponent', () => {
   });
 
   describe('displayedWert initial state', () => {
-    it('should default displayedWert to 0 before data loads', () => {
+    it('should remain 0 after data loads when no grid filter is active', () => {
+      mockChanceService.listAll.and.returnValue(of([makeChance({ wert: 3000 })]));
+      fixture.detectChanges();
+      // updateCounts() only runs when gridApi fires modelUpdated; without a real grid,
+      // displayedWert stays at its reset value of 0.
       expect(component.displayedWert).toBe(0);
     });
   });
 
+  // These tests drive component properties directly and assert template output only.
+  // AG Grid's modelUpdated-triggered updateCounts() path is not exercised here.
   describe('template — Gesamtwert filter display', () => {
-    it('should show only total wert without a separator when filter is not active', () => {
+    it('should show only total wert and the formatted amount when filter is not active', () => {
       mockChanceService.listAll.and.returnValue(of([makeChance({ wert: 1000 })]));
       fixture.detectChanges();
       fixture.detectChanges();
 
       const el = fixture.debugElement.query(By.css('small.text-muted'));
       expect(el).not.toBeNull();
+      expect(el.nativeElement.textContent).toContain('1.000,00');
       expect(el.nativeElement.textContent).not.toContain('/');
     });
 
