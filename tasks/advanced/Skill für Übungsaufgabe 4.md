@@ -65,9 +65,19 @@ curl -s -w '\n%{http_code}' \
   "${APP_BASE_URL:-http://localhost:7070}/api/tickets/<ID>"
 ```
 
-- HTTP `200` → JSON parsen. `id`, `title`, `body`, `owner` und das **`comments`**-Array behalten.
+- HTTP `200` → JSON parsen. `id`, `title`, `body`, `owner`, `status` und das **`comments`**-Array behalten.
   - Wenn `owner` nicht `"AI"` ist (auch wenn `null` oder leer): „Ticket <id>: owner=<owner> — Skill verarbeitet nur AI-Tickets. Ticket ignoriert, Durchlauf beendet." ausgeben und **beenden**.
-  - Sonst (`owner == "AI"`): Weiter zu Schritt 2.
+  - Wenn `status` nicht `"TODO"` ist: „Ticket <id>: status=<status> — Skill verarbeitet nur TODO-Tickets. Ticket ignoriert, Durchlauf beendet." ausgeben und **beenden**.
+  - Sonst (`owner == "AI"` und `status == "TODO"`): Ticket auf `IN_PROGRESS` setzen:
+
+    ```bash
+    START_CODE=$(curl -s -o /dev/null -w '%{http_code}' -X POST \
+      -H "Authorization: Bearer $AGENT_API_TOKEN" \
+      "${APP_BASE_URL:-http://localhost:7070}/api/tickets/<ID>/start")
+    ```
+
+    - HTTP `200` → Weiter zu Schritt 2.
+    - Jeder andere Code → „Fehler: /start für Ticket <id> lieferte HTTP $START_CODE. Durchlauf beendet." ausgeben und **beenden**.
 - HTTP `404` → „Ticket nicht gefunden." ausgeben und **beenden**.
 - Jeder andere Code → Fehler ausgeben und **beenden**.
 

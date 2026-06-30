@@ -66,7 +66,18 @@ curl -s -w '\n%{http_code}' \
   "${APP_BASE_URL:-http://localhost:7070}/api/agent-tasks/<ID>"
 ```
 
-- HTTP `200` → JSON parsen. `id`, `title`, `body`, `metadata` behalten. Weiter zu Schritt 2.
+- HTTP `200` → JSON parsen. `id`, `title`, `body`, `metadata`, `status` behalten.
+  - Wenn `status` nicht `"OPEN"` ist: „Aufgabe <id>: status=<status> — Skill verarbeitet nur OPEN-Aufgaben. Durchlauf beendet." ausgeben und **beenden**.
+  - Sonst (`status == "OPEN"`): Aufgabe auf `IN_PROGRESS` setzen:
+
+    ```bash
+    START_CODE=$(curl -s -o /dev/null -w '%{http_code}' -X POST \
+      -H "Authorization: Bearer $AGENT_API_TOKEN" \
+      "${APP_BASE_URL:-http://localhost:7070}/api/agent-tasks/<ID>/start")
+    ```
+
+    - HTTP `200` → Weiter zu Schritt 2.
+    - Jeder andere Code → „Fehler: /start für Aufgabe <id> lieferte HTTP $START_CODE. Durchlauf beendet." ausgeben und **beenden**.
 - HTTP `404` → „Aufgabe nicht gefunden." ausgeben und **beenden**.
 - Jeder andere Code → Fehler ausgeben und **beenden**.
 
