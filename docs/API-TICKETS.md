@@ -388,8 +388,9 @@ Deletes all rows in `ticket_comment` and `ticket`, then re-seeds the 12 workshop
                     IN_PROGRESS                       ON_HOLD  (owner=HUMAN)
                          ▲                               ▲          │
             GET /next    │                 POST /ask     │          │ POST /comments
-           (owner=AI)    │                 (agent)       │          │ handBackToAi=true
-                         │                               │          │ owner→AI
+           OR /start     │                 (agent)       │          │ handBackToAi=true
+           (owner=AI)    │                               │          │ owner→AI
+                         │                               │          │
                         TODO  ◀──────────────────────────────────────┘
                      (owner=AI)
                         PATCH /status sets solution + resolvedAt on → DONE;

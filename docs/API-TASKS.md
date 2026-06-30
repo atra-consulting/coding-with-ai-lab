@@ -12,7 +12,7 @@ A task (`agent_task` row) comes from one of four **sources** and moves through a
 
 ```
 source:  EMAIL | GITHUB_ISSUE | APP_LOG | ERROR_REPORT
-status:  OPEN ──(GET /next)──▶ IN_PROGRESS ──(POST /done)──▶ DONE
+status:  OPEN ──(GET /next OR POST /:id/start)──▶ IN_PROGRESS ──(POST /done)──▶ DONE
                                           └──(POST /reject)─▶ REJECTED
          (POST /reset re-arms every task back to OPEN)
 ```
