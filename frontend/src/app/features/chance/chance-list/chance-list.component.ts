@@ -77,6 +77,7 @@ export class ChanceListComponent implements OnInit {
   autoSizeStrategy: SizeColumnsToContentStrategy = { type: 'fitCellContents' };
 
   ngOnInit(): void {
+    this.displayedWert = 0;
     this.chanceService.listAll().subscribe({
       next: (data) => {
         this.rowData = data;
