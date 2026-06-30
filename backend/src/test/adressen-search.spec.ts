@@ -10,6 +10,7 @@
  *   CS-4  GET /api/adressen (no search)          — all addresses returned (>= created count)
  *   CS-5  GET /api/adressen?search=<nomatch>     — empty content, totalElements: 0
  *   CS-6  GET /api/adressen (anon)               — 401 Unauthorized
+ *   CS-7  GET /api/adressen?search=              — empty string behaves like no filter (>= 2 results)
  *
  * Cities used to avoid fixture collisions:
  *   "Zzxville" — full exact-match city (CS-1, CS-2, CS-3)
@@ -75,21 +76,33 @@ test.beforeAll(async () => {
   const resp1 = await adminCtx.post('/api/adressen', {
     data: { ...BASE_PAYLOAD, city: 'Zzxville' },
   });
+  expect(resp1.status()).toBe(201);
   const body1 = await resp1.json() as AdresseDTO;
   zzxvilleId = body1.id;
 
   const resp2 = await adminCtx.post('/api/adressen', {
     data: { ...BASE_PAYLOAD, city: 'Qqytown' },
   });
+  expect(resp2.status()).toBe(201);
   const body2 = await resp2.json() as AdresseDTO;
   qqytownId = body2.id;
 });
 
 test.afterAll(async () => {
-  // Clean up rows we created; errors are intentionally not swallowed so test
-  // failures surface clearly.
-  await adminCtx.delete(`/api/adressen/${zzxvilleId}`);
-  await adminCtx.delete(`/api/adressen/${qqytownId}`);
+  // Clean up rows we created; errors are not swallowed — a failed DELETE
+  // surfaces clearly. Guard against NaN in case beforeAll setup failed.
+  if (Number.isFinite(zzxvilleId)) {
+    const r1 = await adminCtx.delete(`/api/adressen/${zzxvilleId}`);
+    if (!r1.ok()) {
+      throw new Error(`afterAll: DELETE /api/adressen/${zzxvilleId} failed with status ${r1.status()}`);
+    }
+  }
+  if (Number.isFinite(qqytownId)) {
+    const r2 = await adminCtx.delete(`/api/adressen/${qqytownId}`);
+    if (!r2.ok()) {
+      throw new Error(`afterAll: DELETE /api/adressen/${qqytownId} failed with status ${r2.status()}`);
+    }
+  }
   await adminCtx.dispose();
   await anonCtx.dispose();
 });
@@ -137,8 +150,8 @@ test('CS-2: GET /api/adressen?search=zxvill matches Zzxville via substring', asy
 
   const body = await resp.json() as PageResponse;
 
-  await test.step('at least one result returned', () => {
-    expect(body.totalElements).toBeGreaterThanOrEqual(1);
+  await test.step('exactly one result returned (zxvill is unique to Zzxville)', () => {
+    expect(body.totalElements).toBe(1);
   });
 
   await test.step('every returned address city contains the fragment (case-insensitive)', () => {
@@ -243,4 +256,24 @@ test('CS-6: GET /api/adressen without session returns 401', async () => {
     params: { search: 'Zzxville' },
   });
   expect(resp.status()).toBe(401);
+});
+
+// ---------------------------------------------------------------------------
+// CS-7  Empty-string search — treated as no filter, returns all addresses
+// ---------------------------------------------------------------------------
+
+test('CS-7: GET /api/adressen?search= (empty string) returns all addresses (>= 2)', async () => {
+  const resp = await adminCtx.get('/api/adressen', {
+    params: { search: '', size: '200' },
+  });
+
+  await test.step('status 200', () => {
+    expect(resp.status()).toBe(200);
+  });
+
+  const body = await resp.json() as PageResponse;
+
+  await test.step('totalElements is at least 2 (empty string treated as no filter)', () => {
+    expect(body.totalElements).toBeGreaterThanOrEqual(2);
+  });
 });
