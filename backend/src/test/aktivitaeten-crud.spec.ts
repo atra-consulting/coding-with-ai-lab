@@ -66,6 +66,7 @@ test('GET /api/aktivitaeten/all returns 200 and is sorted datum descending', asy
   });
 
   await test.step('adjacent pairs are sorted datum descending', () => {
+    expect(body.length).toBeGreaterThan(1);
     for (let i = 0; i < body.length - 1; i++) {
       expect(body[i].datum >= body[i + 1].datum).toBe(true);
     }
@@ -112,12 +113,12 @@ test('GET /api/aktivitaeten returns 200 with valid pagination shape and default 
     expect(body.number).toBe(0);
   });
 
-  await test.step('first is boolean', () => {
-    expect(typeof body.first).toBe('boolean');
+  await test.step('first is true on page 0', () => {
+    expect(body.first).toBe(true);
   });
 
-  await test.step('last is boolean', () => {
-    expect(typeof body.last).toBe('boolean');
+  await test.step('last is false when there are multiple pages', () => {
+    expect(body.last).toBe(false);
   });
 
   await test.step('adjacent pairs in content are sorted datum descending', () => {
@@ -166,8 +167,8 @@ test('POST /api/aktivitaeten creates and returns 201', async () => {
     expect(body.subject).toBe('Test Aktivitaet Playwright');
   });
 
-  await test.step('body.datum is a string', () => {
-    expect(typeof body.datum).toBe('string');
+  await test.step('body.datum matches submitted value', () => {
+    expect(body.datum).toBe('2025-06-15T10:00:00.000Z');
   });
 
   await test.step('body.createdAt is a string', () => {
