@@ -25,7 +25,7 @@ The DB driver is `@libsql/client` (libSQL/Turso), not better-sqlite3. The API is
 | TypeScript enum arrays and types | `backend/src/db/schema/enums.ts` |
 | Migration statements (DDL) | `backend/src/config/migrate.ts` |
 
-Migration approach: plain `CREATE TABLE IF NOT EXISTS` statements. Run on every startup before CRM seed data is loaded. After DDL, `seedAgentTasks()` (`backend/src/seed/agentTaskSeed.ts`) inserts the 16 `agent_task` rows idempotently (INSERT OR IGNORE, fixed ids 1–16) — so agent tasks exist in every deployment including Vercel cold-starts.
+Migration approach: plain `CREATE TABLE IF NOT EXISTS` statements. Run on every startup before CRM seed data is loaded. After DDL, `seedAgentTasks()` (`backend/src/seed/agentTaskSeed.ts`) inserts the 18 `agent_task` rows idempotently (INSERT OR IGNORE, fixed ids 1–18) — so agent tasks exist in every deployment including Vercel cold-starts.
 
 ## Tables
 
@@ -97,7 +97,7 @@ Server-side session store. Written and read by `backend/src/middleware/libsqlSes
 
 ### AgentTask (`agent_task`)
 
-Autonomous task queue. Tasks arrive from four external sources and move through a defined lifecycle: `OPEN → IN_PROGRESS → DONE | REJECTED`. Seeded idempotently on every startup via `INSERT OR IGNORE` with fixed ids 1–16 (`backend/src/seed/agentTaskSeed.ts`).
+Autonomous task queue. Tasks arrive from four external sources and move through a defined lifecycle: `OPEN → IN_PROGRESS → DONE | REJECTED`. Seeded idempotently on every startup via `INSERT OR IGNORE` with fixed ids 1–18 (`backend/src/seed/agentTaskSeed.ts`).
 
 | Column | SQLite Type | Constraints |
 |--------|-------------|-------------|

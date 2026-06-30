@@ -23,7 +23,7 @@
  *   EMAIL        → ids 1-4
  *   GITHUB_ISSUE → ids 5-8
  *   APP_LOG      → ids 9-12
- *   ERROR_REPORT → ids 13-16
+ *   ERROR_REPORT → ids 13-18
  */
 import { test, expect, request as playwrightRequest, type APIRequestContext } from '@playwright/test';
 import { resetDatabase, loginCtx } from './helpers.js';

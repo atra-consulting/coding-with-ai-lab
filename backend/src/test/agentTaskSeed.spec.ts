@@ -8,7 +8,7 @@
  *      Vercel bug where the old guard blocked seeding on a non-empty DB).
  *   3. Does NOT overwrite rows that were mutated after the initial seed
  *      (INSERT OR IGNORE leaves existing rows untouched).
- *   4. (Optional) Seeds exactly 4 rows per source across all 4 known sources.
+ *   4. (Optional) Seeds correct per-source counts: 4 rows each for EMAIL/GITHUB_ISSUE/APP_LOG, 6 rows for ERROR_REPORT.
  *
  * Test isolation notes
  * --------------------
