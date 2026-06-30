@@ -121,10 +121,9 @@ test('GET /api/aktivitaeten returns 200 with valid pagination shape and default 
   });
 
   await test.step('adjacent pairs in content are sorted datum descending', () => {
-    if (body.content.length > 1) {
-      for (let i = 0; i < body.content.length - 1; i++) {
-        expect(body.content[i].datum >= body.content[i + 1].datum).toBe(true);
-      }
+    expect(body.content.length).toBeGreaterThan(1);
+    for (let i = 0; i < body.content.length - 1; i++) {
+      expect(body.content[i].datum >= body.content[i + 1].datum).toBe(true);
     }
   });
 });
@@ -257,6 +256,8 @@ test('DELETE /api/aktivitaeten/:id returns 204; subsequent GET returns 404', asy
   await test.step('subsequent GET returns 404', () => {
     expect(getResp.status()).toBe(404);
   });
+
+  createdId = undefined;
 });
 
 // ---------------------------------------------------------------------------
@@ -273,6 +274,7 @@ test('GET /api/aktivitaeten/99999 returns 404 with standard error body', async (
     status: number;
     message: string;
     timestamp: string;
+    fieldErrors: Record<string, unknown>;
   };
 
   await test.step('error body status field is 404', () => {
@@ -287,6 +289,11 @@ test('GET /api/aktivitaeten/99999 returns 404 with standard error body', async (
   await test.step('error body has non-empty timestamp', () => {
     expect(typeof body.timestamp).toBe('string');
     expect(body.timestamp.length).toBeGreaterThan(0);
+  });
+
+  await test.step('error body has fieldErrors object', () => {
+    expect(body.fieldErrors).not.toBeNull();
+    expect(typeof body.fieldErrors).toBe('object');
   });
 });
 
