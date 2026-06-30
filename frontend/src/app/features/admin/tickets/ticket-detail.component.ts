@@ -1,6 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { switchMap } from 'rxjs';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -414,22 +415,27 @@ export class TicketDetailComponent implements OnInit {
   toggleOwner(): void {
     if (!this.ticket) return;
     const newOwner = this.ticket.owner === 'AI' ? 'HUMAN' : 'AI';
+    const ticketId = this.ticket.id;
     this.savingOwner = true;
 
-    this.ticketService
-      .setOwner(this.ticket.id, newOwner)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (updated) => {
-          this.ticket = updated;
-          this.savingOwner = false;
-          this.notification.success(`Eigentümer auf "${newOwner === 'AI' ? 'KI' : 'Mensch'}" gesetzt.`);
-        },
-        error: () => {
-          this.savingOwner = false;
-          this.notification.error('Fehler beim Ändern des Eigentümers.');
-        },
-      });
+    const request$ =
+      newOwner === 'AI'
+        ? this.ticketService
+            .setOwner(ticketId, newOwner)
+            .pipe(switchMap(() => this.ticketService.setStatus(ticketId, 'TODO')))
+        : this.ticketService.setOwner(ticketId, newOwner);
+
+    request$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (updated) => {
+        this.ticket = updated;
+        this.savingOwner = false;
+        this.notification.success(`Eigentümer auf "${newOwner === 'AI' ? 'KI' : 'Mensch'}" gesetzt.`);
+      },
+      error: () => {
+        this.savingOwner = false;
+        this.notification.error('Fehler beim Ändern des Eigentümers.');
+      },
+    });
   }
 
   markWontDo(): void {
