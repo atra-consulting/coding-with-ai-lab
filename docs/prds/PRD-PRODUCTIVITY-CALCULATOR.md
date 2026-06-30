@@ -284,4 +284,4 @@ Neue, didaktische Einstiegssektion oben auf `/produktivitaet/rechner`, die zum h
 
 Prozessbalken als wiederverwendbares `<ng-template>` (Hero + Vergleich); Hero auf gemeinsamer Basis, Vergleich auf Eigen-Skala.
 
-PR: _wird ergänzt_
+PR: https://github.com/atra-consulting/coding-with-ai-lab/pull/107
