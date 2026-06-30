@@ -112,7 +112,7 @@ Standard CRUD. Default sort: `city,ASC`. Allowed sort fields: `city`, `postalCod
 
 ### Aktivitaeten (`/api/aktivitaeten`)
 
-Standard CRUD. Default sort: `datum,DESC`. Allowed sort fields: `datum`, `typ`, `subject`, `createdAt`, `updatedAt`. Params: `firmaId` (optional integer filter), `typ` (optional enum filter: `ANRUF`, `EMAIL`, `MEETING`, `NOTIZ`, `AUFGABE`; invalid value → 400), `page`, `size`, `sort`.
+Standard CRUD. Default sort: `datum,DESC`. Allowed sort fields: `datum`, `typ`, `subject`, `createdAt`, `updatedAt`. Params: `search` (optional, case-insensitive substring match on `subject`), `firmaId` (optional integer filter), `typ` (optional enum filter: `ANRUF`, `EMAIL`, `MEETING`, `NOTIZ`, `AUFGABE`; invalid value → 400), `page`, `size`, `sort`.
 
 ### Chancen (`/api/chancen`)
 
