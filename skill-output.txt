@@ -1,0 +1,1 @@
+Alle vier Quellen (`EMAIL`, `GITHUB_ISSUE`, `ERROR_REPORT`, `APP_LOG`) liefern HTTP 204 — keine offenen Aufgaben. Durchlauf beendet, keine weiteren Aktionen nötig.
