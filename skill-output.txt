@@ -1,0 +1,5 @@
+The retry succeeded — `EMAIL` now returns 204. All four sources (`EMAIL`, `GITHUB_ISSUE`, `ERROR_REPORT`, `APP_LOG`) report no open tasks (HTTP 204).
+
+**Keine offenen Aufgaben.**
+
+No task was claimed; nothing to build or reject this run.
