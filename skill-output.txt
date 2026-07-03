@@ -1,0 +1,3 @@
+Der EMAIL-500 war transient (wahrscheinlich ein Vercel Cold-Start-Fehler) — beim Retry kam 204. Alle vier Quellen (EMAIL, GITHUB_ISSUE, ERROR_REPORT, APP_LOG) liefern jetzt 204.
+
+**Keine offenen Aufgaben.** Durchlauf beendet — kein Task zu bearbeiten.
