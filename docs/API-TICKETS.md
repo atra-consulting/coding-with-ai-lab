@@ -8,15 +8,20 @@ Source of truth: `backend/src/routes/tickets.ts` and `backend/src/services/ticke
 
 ## Concepts
 
-A ticket represents a unit of work. It has an **owner** (who acts on it next) and moves through a **status** lifecycle:
+A ticket represents a unit of work. It has an **owner** (who acts on it next) and moves through a **status** lifecycle. `status` is a DB-level enum: `DEFINITION`, `TODO`, `IN_PROGRESS`, `ON_HOLD`, `DONE` (a `CHECK` constraint rejects any other value).
 
 ```
-status:  TODO ──(GET /next OR POST /:id/start)──▶ IN_PROGRESS ──(POST /done)──▶ DONE (solution=DONE)
+status:  DEFINITION ─(POST /:id/hand-to-ai)──▶ TODO (owner→AI)
+              │      └(PATCH /:id/status TODO)─▶ TODO (owner unchanged)
+              ▼
+         TODO ──(GET /next OR POST /:id/start)──▶ IN_PROGRESS ──(POST /done)──▶ DONE (solution=DONE)
                                                                └──(POST /ask)───▶ ON_HOLD (owner→HUMAN)
                                                                                   └──(POST /comments + handBackToAi)──▶ TODO (owner→AI)
          (POST /wont-do)  DONE with solution=WONT_DO — owner must be HUMAN, status must not be DONE
          (POST /reset)    deletes all data and re-seeds 12 workshop tickets
 ```
+
+New tickets start in **`DEFINITION`** — the intake/refinement column (leftmost on the board, shown as "Definition"). A human refines the ticket via the comment thread, then routes it: **hand to the AI** (`POST /:id/hand-to-ai` → `owner=AI`, `status=TODO`) or **move it to "Zu bereit"** keeping the human owner (`PATCH /:id/status` with `TODO`). Agents only ever claim `TODO`+`AI` tickets, so a `DEFINITION` ticket is never auto-claimed. The `TODO` column is labelled **"Zu bereit"** in the UI.
 
 ### Owner model and ask→answer→re-claim flow
 
@@ -205,6 +210,7 @@ All tickets grouped by status. Each column sorted by `createdAt ASC`. Tickets in
 
 ```json
 {
+  "DEFINITION":  [ /* ticket list items */ ],
   "TODO":        [ /* ticket list items */ ],
   "IN_PROGRESS": [ /* ticket list items */ ],
   "ON_HOLD":     [ /* ticket list items */ ],
@@ -224,7 +230,7 @@ All tickets grouped by status. Each column sorted by `createdAt ASC`. Tickets in
 
 ```json
 {
-  "byStatus":   { "TODO": 9, "IN_PROGRESS": 0, "ON_HOLD": 3, "DONE": 0 },
+  "byStatus":   { "DEFINITION": 0, "TODO": 9, "IN_PROGRESS": 0, "ON_HOLD": 3, "DONE": 0 },
   "byType":     { "FEATURE": 9, "BUG": 0, "CHORE": 3 },
   "byOwner":    { "AI": 9, "HUMAN": 3 },
   "bySolution": { "DONE": 0, "WONT_DO": 0 }
@@ -277,7 +283,7 @@ curl -s -X POST -H "Authorization: Bearer $AGENT_API_TOKEN" \
 ### POST `/api/tickets` — create (admin)
 **Auth:** admin session. **Body:** `{ "type": "FEATURE"|"BUG"|"CHORE", "title": "<string>", "body": "<string>" }`.
 
-Creates a ticket with `owner=HUMAN`, `status=TODO`, no comments.
+Creates a ticket with `owner=HUMAN`, `status=DEFINITION` (lands in the intake column), no comments.
 
 | Result | Meaning |
 |--------|---------|
@@ -337,6 +343,25 @@ Sets `status=DONE`, `solution=WONT_DO`, `resolvedAt`. Guard: `owner` must be `HU
 
 ---
 
+### POST `/api/tickets/:id/hand-to-ai` — route a Definition ticket to the AI queue (admin)
+**Auth:** admin session. No body.
+
+Sets `owner=AI`, `status=TODO`. Guard: ticket must be in `DEFINITION`. This is the **"An KI übergeben"** action on a Definition ticket — it makes the ticket claimable by the agent. To instead keep the human owner and just mark it ready ("Nach Bereit"), use `PATCH /:id/status` with `TODO`.
+
+| Result | Meaning |
+|--------|---------|
+| `200` + ticket | routed to AI (`owner=AI`, `status=TODO`) |
+| `404` | no ticket with that id |
+| `409` | ticket not in `DEFINITION` |
+| `401` / `403` | not logged in / not admin |
+
+```bash
+curl -s -X POST -b "JSESSIONID=$SESSION" \
+  "$APP_BASE_URL/api/tickets/3/hand-to-ai"
+```
+
+---
+
 ### POST `/api/tickets/:id/comments` — add human comment (admin)
 **Auth:** admin session. **Body:** `{ "body": "<non-empty string>", "handBackToAi": <optional boolean> }`.
 
@@ -393,6 +418,11 @@ Deletes all rows in `ticket_comment` and `ticket`, then re-seeds the 12 workshop
                          │                               │          │
                         TODO  ◀──────────────────────────────────────┘
                      (owner=AI)
+                         ▲
+                         │ POST /:id/hand-to-ai (owner→AI)
+                         │ OR PATCH /status → TODO (owner unchanged)
+                         │
+                     DEFINITION  ◀── new tickets start here (intake / "Definition")
                         PATCH /status sets solution + resolvedAt on → DONE;
                         clears them on exit from DONE.
 ```
@@ -401,6 +431,8 @@ Deletes all rows in `ticket_comment` and `ticket`, then re-seeds the 12 workshop
 
 | Trigger | From | To | Side effects |
 |---------|------|----|-------------|
+| `POST /:id/hand-to-ai` (admin) | `DEFINITION` | `TODO` | `owner→AI` |
+| `PATCH /:id/status → TODO` (admin) | `DEFINITION` | `TODO` | owner unchanged ("Nach Bereit") |
 | `GET /next` | `TODO` + `owner=AI` | `IN_PROGRESS` | sets `pickedUpAt` |
 | `POST /start` (agent) | `TODO` + `owner=AI` | `IN_PROGRESS` | sets `pickedUpAt` |
 | `POST /done` (agent) | `IN_PROGRESS` | `DONE` | `solution=DONE`, `resolvedAt` |
