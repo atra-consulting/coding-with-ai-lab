@@ -33,6 +33,7 @@ const MOCK_TICKET: Ticket = {
 };
 
 const MOCK_BOARD: TicketBoard = {
+  DEFINITION: [],
   TODO: [MOCK_TICKET],
   IN_PROGRESS: [],
   ON_HOLD: [],
@@ -40,7 +41,7 @@ const MOCK_BOARD: TicketBoard = {
 };
 
 const MOCK_SUMMARY: TicketSummary = {
-  byStatus: { TODO: 9, IN_PROGRESS: 0, ON_HOLD: 3, DONE: 0 },
+  byStatus: { DEFINITION: 0, TODO: 9, IN_PROGRESS: 0, ON_HOLD: 3, DONE: 0 },
   byType: { FEATURE: 9, BUG: 1, CHORE: 2 },
   byOwner: { AI: 9, HUMAN: 3 },
   bySolution: { DONE: 0, WONT_DO: 0 },
@@ -313,6 +314,32 @@ describe('TicketService', () => {
       });
 
       expect(received?.owner).toBe('HUMAN');
+    });
+  });
+
+  // ─── handToAi() ────────────────────────────────────────────────────────────
+
+  describe('handToAi()', () => {
+    it('fires POST to /api/tickets/:id/hand-to-ai', () => {
+      service.handToAi(10).subscribe();
+
+      const req = httpMock.expectOne('/api/tickets/10/hand-to-ai');
+      expect(req.request.method).toBe('POST');
+      req.flush({ ...MOCK_TICKET, status: 'TODO', owner: 'AI' });
+    });
+
+    it('emits the updated ticket from the server', () => {
+      let received: Ticket | undefined;
+      service.handToAi(10).subscribe((r) => (received = r));
+
+      httpMock.expectOne('/api/tickets/10/hand-to-ai').flush({
+        ...MOCK_TICKET,
+        status: 'TODO',
+        owner: 'AI',
+      });
+
+      expect(received?.status).toBe('TODO');
+      expect(received?.owner).toBe('AI');
     });
   });
 

@@ -9,11 +9,12 @@
  *   POST /api/tickets/:id/wont-do     — owner=HUMAN only, 409 on owner=AI
  *   PATCH /api/tickets/:id/status     — drag-drop semantics, solution management
  *   PATCH /api/tickets/:id/owner      — flip owner only
- *   POST /api/tickets                 — create defaults
- *   GET  /api/tickets                 — paginated list + filters
+ *   POST /api/tickets                 — create defaults (status=DEFINITION, owner=HUMAN)
+ *   POST /api/tickets/:id/hand-to-ai  — DEFINITION → owner=AI, status=TODO (admin only)
+ *   GET  /api/tickets                 — paginated list + filters (incl. status=DEFINITION)
  *   GET  /api/tickets/:id             — detail with comments
- *   GET  /api/tickets/board           — four-column board with commentCount
- *   GET  /api/tickets/summary         — counts by status/type/owner/solution
+ *   GET  /api/tickets/board           — five-column board with commentCount (incl. DEFINITION)
+ *   GET  /api/tickets/summary         — counts by status/type/owner/solution (incl. DEFINITION)
  *   POST /api/tickets/reset           — deletes and reseeds 12 tickets
  *
  * Authorization matrix:
@@ -23,7 +24,8 @@
  * Seeded state (after POST /reset or fresh DB):
  *   Ids 1-12; 7,9,11 → ON_HOLD + owner=HUMAN + 1 AGENT comment each.
  *   Others (1-6,8,10,12) → TODO + owner=AI. Types: 8,10=CHORE, rest=FEATURE.
- *   All solution=null.
+ *   All solution=null. No seeded ticket starts in DEFINITION — only newly
+ *   created tickets (via POST /api/tickets) start there.
  */
 import { test, expect, request as playwrightRequest, type APIRequestContext } from '@playwright/test';
 import { loginCtx } from './helpers.js';
@@ -68,6 +70,7 @@ interface TicketListItem {
 }
 
 interface TicketBoard {
+  DEFINITION: TicketListItem[];
   TODO: TicketListItem[];
   IN_PROGRESS: TicketListItem[];
   ON_HOLD: TicketListItem[];
@@ -432,6 +435,35 @@ test.describe('GET /api/tickets/next', () => {
     // Next call must return 204, not one of the HUMAN tickets
     const resp = await agent.get('/api/tickets/next');
     expect(resp.status()).toBe(204);
+  });
+
+  test('DEFINITION tickets are never claimed by /next (only TODO+AI is claimable)', async () => {
+    await resetTickets(admin);
+
+    // Fresh ticket is HUMAN+DEFINITION, never TODO+AI.
+    const createResp = await admin.post('/api/tickets', {
+      data: { type: 'FEATURE', title: 'Should not be claimable', body: 'Still in DEFINITION.' },
+    });
+    expect(createResp.status()).toBe(201);
+    const created = await createResp.json() as Ticket;
+    expect(created.status).toBe('DEFINITION');
+
+    // Drain all 9 seeded TODO+AI tickets.
+    for (let i = 0; i < 9; i++) {
+      const resp = await agent.get('/api/tickets/next');
+      expect(resp.status()).toBe(200);
+      const claimed = await resp.json() as Ticket;
+      expect(claimed.id).not.toBe(created.id);
+    }
+
+    // Next call must return 204 — the DEFINITION ticket must never surface here.
+    const resp = await agent.get('/api/tickets/next');
+    expect(resp.status()).toBe(204);
+
+    // The DEFINITION ticket is untouched.
+    const persisted = await (await admin.get(`/api/tickets/${created.id}`)).json() as Ticket;
+    expect(persisted.status).toBe('DEFINITION');
+    expect(persisted.owner).toBe('HUMAN');
   });
 });
 
@@ -913,6 +945,40 @@ test.describe('PATCH /api/tickets/:id/status', () => {
     const resp = await admin.patch('/api/tickets/99999/status', { data: { status: 'TODO' } });
     expect(resp.status()).toBe(404);
   });
+
+  test('"Nach Bereit": DEFINITION → TODO, owner unchanged', async () => {
+    // Fresh ticket starts as HUMAN+DEFINITION.
+    const createResp = await admin.post('/api/tickets', {
+      data: { type: 'FEATURE', title: 'Ready ticket', body: 'Should move to TODO.' },
+    });
+    expect(createResp.status()).toBe(201);
+    const created = await createResp.json() as Ticket;
+    expect(created.status).toBe('DEFINITION');
+    expect(created.owner).toBe('HUMAN');
+
+    const resp = await admin.patch(`/api/tickets/${created.id}/status`, { data: { status: 'TODO' } });
+    expect(resp.status()).toBe(200);
+    const body = await resp.json() as Ticket;
+
+    await test.step('status is TODO', () => { expect(body.status).toBe('TODO'); });
+    await test.step('owner is still HUMAN', () => { expect(body.owner).toBe('HUMAN'); });
+    await test.step('solution is null', () => { expect(body.solution).toBeNull(); });
+
+    // Side-effect: re-fetch and confirm persisted state
+    const persisted = await (await admin.get(`/api/tickets/${created.id}`)).json() as Ticket;
+    await test.step('persisted status is TODO', () => { expect(persisted.status).toBe('TODO'); });
+    await test.step('persisted owner is still HUMAN', () => { expect(persisted.owner).toBe('HUMAN'); });
+  });
+
+  test('drag any ticket back into DEFINITION (drop target) → status=DEFINITION', async () => {
+    // Ticket 1 is TODO+AI after reset. DEFINITION is a valid drop target for all columns.
+    const resp = await admin.patch('/api/tickets/1/status', { data: { status: 'DEFINITION' } });
+    expect(resp.status()).toBe(200);
+    const body = await resp.json() as Ticket;
+    expect(body.status).toBe('DEFINITION');
+    expect(body.owner).toBe('AI'); // owner never changed by PATCH /status
+    expect(body.solution).toBeNull();
+  });
 });
 
 // ─── Suite: PATCH /api/tickets/:id/owner ─────────────────────────────────────
@@ -981,7 +1047,7 @@ test.describe('POST /api/tickets', () => {
     await admin.dispose();
   });
 
-  test('create with valid payload → 201, owner=HUMAN, status=TODO, solution=null', async () => {
+  test('create with valid payload → 201, owner=HUMAN, status=DEFINITION, solution=null', async () => {
     const resp = await admin.post('/api/tickets', {
       data: { type: 'BUG', title: 'Test Bug Ticket', body: 'Reproduction steps here.' },
     });
@@ -991,7 +1057,7 @@ test.describe('POST /api/tickets', () => {
     const body = await resp.json() as Ticket;
 
     await test.step('owner defaults to HUMAN', () => { expect(body.owner).toBe('HUMAN'); });
-    await test.step('status defaults to TODO', () => { expect(body.status).toBe('TODO'); });
+    await test.step('status defaults to DEFINITION', () => { expect(body.status).toBe('DEFINITION'); });
     await test.step('solution is null', () => { expect(body.solution).toBeNull(); });
     await test.step('type is BUG', () => { expect(body.type).toBe('BUG'); });
     await test.step('title stored', () => { expect(body.title).toBe('Test Bug Ticket'); });
@@ -1028,6 +1094,91 @@ test.describe('POST /api/tickets', () => {
       data: { type: 'FEATURE', title: 'T' },
     });
     expect(resp.status()).toBe(400);
+  });
+});
+
+// ─── Suite: POST /api/tickets/:id/hand-to-ai ─────────────────────────────────
+
+test.describe('POST /api/tickets/:id/hand-to-ai', () => {
+  let admin: APIRequestContext;
+
+  test.beforeEach(async () => {
+    admin = await loginCtx('admin', 'admin123');
+    await resetTickets(admin);
+  });
+
+  test.afterEach(async () => {
+    await admin.dispose();
+  });
+
+  // ── Happy path ──────────────────────────────────────────────────────────────
+
+  test('DEFINITION ticket → 200, owner=AI, status=TODO', async () => {
+    const createResp = await admin.post('/api/tickets', {
+      data: { type: 'FEATURE', title: 'Hand to AI', body: 'Ready for the agent.' },
+    });
+    expect(createResp.status()).toBe(201);
+    const created = await createResp.json() as Ticket;
+    expect(created.status).toBe('DEFINITION');
+    expect(created.owner).toBe('HUMAN');
+
+    const resp = await admin.post(`/api/tickets/${created.id}/hand-to-ai`);
+
+    await test.step('status 200', () => { expect(resp.status()).toBe(200); });
+
+    const body = await resp.json() as Ticket;
+    await test.step('owner is AI', () => { expect(body.owner).toBe('AI'); });
+    await test.step('status is TODO', () => { expect(body.status).toBe('TODO'); });
+    await test.step('solution is null', () => { expect(body.solution).toBeNull(); });
+
+    // Side-effect: re-fetch and confirm persisted state
+    const persisted = await (await admin.get(`/api/tickets/${created.id}`)).json() as Ticket;
+    await test.step('persisted owner is AI', () => { expect(persisted.owner).toBe('AI'); });
+    await test.step('persisted status is TODO', () => { expect(persisted.status).toBe('TODO'); });
+  });
+
+  // ── 409 cases ───────────────────────────────────────────────────────────────
+
+  test('non-DEFINITION ticket (TODO+AI) → 409', async () => {
+    // Ticket 1 is TODO+AI after reset, not DEFINITION
+    const resp = await admin.post('/api/tickets/1/hand-to-ai');
+    expect(resp.status()).toBe(409);
+  });
+
+  test('ON_HOLD+HUMAN ticket → 409', async () => {
+    // Ticket 7 is ON_HOLD+HUMAN after reset
+    const resp = await admin.post('/api/tickets/7/hand-to-ai');
+    expect(resp.status()).toBe(409);
+  });
+
+  // ── Not found ───────────────────────────────────────────────────────────────
+
+  test('unknown id → 404', async () => {
+    const resp = await admin.post('/api/tickets/99999/hand-to-ai');
+    expect(resp.status()).toBe(404);
+  });
+
+  // ── Auth ────────────────────────────────────────────────────────────────────
+
+  test('without session → 401', async () => {
+    const anon = await anonCtx();
+    const resp = await anon.post('/api/tickets/1/hand-to-ai');
+    expect(resp.status()).toBe(401);
+    await anon.dispose();
+  });
+
+  test('with USER role → 403', async () => {
+    const userCtx = await loginCtx('user', 'test123');
+    const resp = await userCtx.post('/api/tickets/1/hand-to-ai');
+    expect(resp.status()).toBe(403);
+    await userCtx.dispose();
+  });
+
+  test('with agent token only (no session) → 401', async () => {
+    const agent = await agentCtx();
+    const resp = await agent.post('/api/tickets/1/hand-to-ai');
+    expect(resp.status()).toBe(401);
+    await agent.dispose();
   });
 });
 
@@ -1119,6 +1270,31 @@ test.describe('GET /api/tickets', () => {
     }
   });
 
+  test('filter by status=DEFINITION is accepted (200) and returns only DEFINITION tickets', async () => {
+    // No seeded ticket starts in DEFINITION — create one so the filter has a match.
+    const createResp = await admin.post('/api/tickets', {
+      data: { type: 'FEATURE', title: 'List Definition Ticket', body: 'Should be filterable.' },
+    });
+    expect(createResp.status()).toBe(201);
+    const created = await createResp.json() as Ticket;
+
+    const resp = await admin.get('/api/tickets?status=DEFINITION');
+    expect(resp.status()).toBe(200);
+    const body = await resp.json() as PageResult<TicketListItem>;
+
+    await test.step('totalElements is 1', () => {
+      expect(body.totalElements).toBe(1);
+    });
+    await test.step('all content items have status DEFINITION', () => {
+      for (const item of body.content) {
+        expect(item.status).toBe('DEFINITION');
+      }
+    });
+    await test.step('the created ticket is in the result', () => {
+      expect(body.content.some((item) => item.id === created.id)).toBe(true);
+    });
+  });
+
   test('invalid status param → 400 with fieldErrors.status', async () => {
     const resp = await admin.get('/api/tickets?status=BOGUS');
     await test.step('status 400', () => { expect(resp.status()).toBe(400); });
@@ -1197,13 +1373,17 @@ test.describe('GET /api/tickets/board', () => {
     await admin.dispose();
   });
 
-  test('returns all four column arrays with correct counts', async () => {
+  test('returns all five column arrays with correct counts', async () => {
     const resp = await admin.get('/api/tickets/board');
 
     await test.step('status 200', () => { expect(resp.status()).toBe(200); });
 
     const body = await resp.json() as TicketBoard;
 
+    await test.step('DEFINITION is empty (no seeded ticket starts there)', () => {
+      expect(Array.isArray(body.DEFINITION)).toBe(true);
+      expect(body.DEFINITION.length).toBe(0);
+    });
     await test.step('TODO has 9 tickets (1-6,8,10,12)', () => {
       expect(body.TODO.length).toBe(9);
     });
@@ -1216,6 +1396,21 @@ test.describe('GET /api/tickets/board', () => {
     await test.step('DONE is empty', () => {
       expect(body.DONE.length).toBe(0);
     });
+  });
+
+  test('a freshly created ticket appears in the DEFINITION column', async () => {
+    const createResp = await admin.post('/api/tickets', {
+      data: { type: 'FEATURE', title: 'Board Definition Ticket', body: 'Should land in DEFINITION.' },
+    });
+    expect(createResp.status()).toBe(201);
+    const created = await createResp.json() as Ticket;
+
+    const resp = await admin.get('/api/tickets/board');
+    expect(resp.status()).toBe(200);
+    const body = await resp.json() as TicketBoard;
+
+    const found = body.DEFINITION.find((t) => t.id === created.id);
+    expect(found).toBeDefined();
   });
 
   test('each ticket includes commentCount', async () => {
@@ -1273,11 +1468,16 @@ test.describe('GET /api/tickets/summary', () => {
 
     const body = await resp.json() as TicketSummary;
 
-    await test.step('byStatus has all four keys', () => {
+    await test.step('byStatus has all five keys', () => {
+      expect(typeof body.byStatus['DEFINITION']).toBe('number');
       expect(typeof body.byStatus['TODO']).toBe('number');
       expect(typeof body.byStatus['IN_PROGRESS']).toBe('number');
       expect(typeof body.byStatus['ON_HOLD']).toBe('number');
       expect(typeof body.byStatus['DONE']).toBe('number');
+    });
+
+    await test.step('byStatus.DEFINITION is 0 (no seeded ticket starts there)', () => {
+      expect(body.byStatus['DEFINITION']).toBe(0);
     });
 
     await test.step('byStatus.TODO is 9', () => {
@@ -1335,6 +1535,18 @@ test.describe('GET /api/tickets/summary', () => {
     await test.step('bySolution.WONT_DO is 0 on fresh seed', () => {
       expect(body.bySolution['WONT_DO']).toBe(0);
     });
+  });
+
+  test('byStatus.DEFINITION reflects a freshly created ticket', async () => {
+    const createResp = await admin.post('/api/tickets', {
+      data: { type: 'FEATURE', title: 'Summary Definition Ticket', body: 'Should count as DEFINITION.' },
+    });
+    expect(createResp.status()).toBe(201);
+
+    const resp = await admin.get('/api/tickets/summary');
+    expect(resp.status()).toBe(200);
+    const body = await resp.json() as TicketSummary;
+    expect(body.byStatus['DEFINITION']).toBe(1);
   });
 });
 
@@ -1605,14 +1817,23 @@ test.describe('POST /api/tickets/:id/start', () => {
   // ── 409 cases ───────────────────────────────────────────────────────────────
 
   test('TODO+HUMAN ticket → 409 (wrong owner)', async () => {
-    // Create a new ticket — POST /api/tickets creates owner=HUMAN + status=TODO
+    // Create a new ticket — POST /api/tickets creates owner=HUMAN + status=DEFINITION.
     const createResp = await admin.post('/api/tickets', {
       data: { type: 'FEATURE', title: 'Human-owned ticket', body: 'Should not be startable.' },
     });
     expect(createResp.status()).toBe(201);
     const created = await createResp.json() as Ticket;
     expect(created.owner).toBe('HUMAN');
-    expect(created.status).toBe('TODO');
+    expect(created.status).toBe('DEFINITION');
+
+    // Drive it to TODO via "Nach Bereit" — owner stays HUMAN.
+    const readyResp = await admin.patch(`/api/tickets/${created.id}/status`, {
+      data: { status: 'TODO' },
+    });
+    expect(readyResp.status()).toBe(200);
+    const ready = await readyResp.json() as Ticket;
+    expect(ready.owner).toBe('HUMAN');
+    expect(ready.status).toBe('TODO');
 
     const resp = await agent.post(`/api/tickets/${created.id}/start`, { data: {} });
     expect(resp.status()).toBe(409);
@@ -1698,7 +1919,7 @@ test.describe('POST /:id/comments — handBackToAi guard (only ON_HOLD+HUMAN all
   });
 
   test('handBackToAi:true on a DONE ticket → 409, ticket stays DONE', async () => {
-    // Create a fresh ticket (HUMAN+TODO), then drag it to DONE via PATCH /status
+    // Create a fresh ticket (HUMAN+DEFINITION), then drag it to DONE via PATCH /status
     const createResp = await admin.post('/api/tickets', {
       data: { type: 'BUG', title: 'Will be done', body: 'To be resolved.' },
     });
@@ -1727,7 +1948,7 @@ test.describe('POST /:id/comments — handBackToAi guard (only ON_HOLD+HUMAN all
   });
 
   test('handBackToAi:true on a TODO ticket (owner=HUMAN) → 409', async () => {
-    // Create ticket: starts as HUMAN+TODO
+    // Create ticket: starts as HUMAN+DEFINITION
     const createResp = await admin.post('/api/tickets', {
       data: { type: 'FEATURE', title: 'Human TODO', body: 'Not on hold.' },
     });
@@ -1735,9 +1956,19 @@ test.describe('POST /:id/comments — handBackToAi guard (only ON_HOLD+HUMAN all
     const created = await createResp.json() as Ticket;
     const ticketId = created.id;
 
-    // Verify it is TODO+HUMAN
-    expect(created.status).toBe('TODO');
+    expect(created.status).toBe('DEFINITION');
     expect(created.owner).toBe('HUMAN');
+
+    // Drive it to TODO via "Nach Bereit" — owner stays HUMAN.
+    const readyResp = await admin.patch(`/api/tickets/${ticketId}/status`, {
+      data: { status: 'TODO' },
+    });
+    expect(readyResp.status()).toBe(200);
+    const ready = await readyResp.json() as Ticket;
+
+    // Verify it is TODO+HUMAN
+    expect(ready.status).toBe('TODO');
+    expect(ready.owner).toBe('HUMAN');
 
     // Attempt hand-back on a TODO ticket — must be rejected (not ON_HOLD)
     const resp = await admin.post(`/api/tickets/${ticketId}/comments`, {

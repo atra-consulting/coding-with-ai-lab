@@ -34,6 +34,7 @@ function makeTicket(id: number, overrides: Partial<Ticket> = {}): Ticket {
 // Board factory — always returns fresh arrays to prevent cross-test mutation.
 function makeMockBoard(): TicketBoard {
   return {
+    DEFINITION: [makeTicket(0, { status: 'DEFINITION' })],
     TODO: [makeTicket(1), makeTicket(2)],
     IN_PROGRESS: [makeTicket(3, { status: 'IN_PROGRESS' })],
     ON_HOLD: [makeTicket(4, { status: 'ON_HOLD', owner: 'HUMAN' })],
@@ -42,7 +43,7 @@ function makeMockBoard(): TicketBoard {
 }
 
 const MOCK_SUMMARY: TicketSummary = {
-  byStatus: { TODO: 2, IN_PROGRESS: 1, ON_HOLD: 1, DONE: 1 },
+  byStatus: { DEFINITION: 1, TODO: 2, IN_PROGRESS: 1, ON_HOLD: 1, DONE: 1 },
   byType: { FEATURE: 5, BUG: 0, CHORE: 0 },
   byOwner: { AI: 4, HUMAN: 1 },
   bySolution: { DONE: 1, WONT_DO: 0 },
@@ -132,6 +133,11 @@ describe('TicketBoardComponent — board loading', () => {
     expect(component.loading).toBeFalse();
   });
 
+  it('populates the definition array from board.DEFINITION', () => {
+    expect(component.definition.length).toBe(1);
+    expect(component.definition[0].id).toBe(0);
+  });
+
   it('populates the todo array from board.TODO', () => {
     expect(component.todo.length).toBe(2);
     expect(component.todo[0].id).toBe(1);
@@ -167,6 +173,28 @@ describe('TicketBoardComponent — template rendering', () => {
 
     fixture = TestBed.createComponent(TicketBoardComponent);
     fixture.detectChanges();
+  });
+
+  it('renders a "Definition" column header', () => {
+    const header: HTMLElement = fixture.nativeElement.querySelector('.column-definition .column-title');
+    expect(header).toBeTruthy();
+    expect(header.textContent).toContain('Definition');
+  });
+
+  it('renders a DEFINITION ticket title in the Definition column', () => {
+    const definitionColumn: HTMLElement = fixture.nativeElement.querySelector('#list-DEFINITION');
+    expect(definitionColumn.textContent).toContain('Ticket 0');
+  });
+
+  it('renders the "Zu bereit" column header for the TODO column (renamed from "Zu erledigen")', () => {
+    const header: HTMLElement = fixture.nativeElement.querySelector('.column-todo .column-title');
+    expect(header).toBeTruthy();
+    expect(header.textContent).toContain('Zu bereit');
+  });
+
+  it('renders exactly 5 board columns', () => {
+    const columns = fixture.nativeElement.querySelectorAll('.board-column');
+    expect(columns.length).toBe(5);
   });
 
   it('renders a TODO ticket title in the board', () => {
@@ -375,6 +403,7 @@ describe('TicketBoardComponent — onDrop() success path', () => {
 
     // Build a board that has a DONE ticket to drag out
     const boardWithDone: TicketBoard = {
+      DEFINITION: [],
       TODO: [],
       IN_PROGRESS: [],
       ON_HOLD: [],
@@ -532,6 +561,7 @@ describe('TicketBoardComponent — Done column solution badge', () => {
     const doneTicket = makeTicket(5, { status: 'DONE', solution: 'DONE' });
     const wontDoTicket = makeTicket(6, { status: 'DONE', solution: 'WONT_DO', owner: 'HUMAN' });
     const boardWithDoneTickets: TicketBoard = {
+      DEFINITION: [],
       TODO: [],
       IN_PROGRESS: [],
       ON_HOLD: [],
@@ -580,6 +610,7 @@ describe('TicketBoardComponent — solution badge absent on non-Done cards', () 
   beforeEach(async () => {
     // Board with only TODO / IN_PROGRESS / ON_HOLD tickets — all solution: null
     const boardNoSolution: TicketBoard = {
+      DEFINITION: [],
       TODO: [makeTicket(1), makeTicket(2)],
       IN_PROGRESS: [makeTicket(3, { status: 'IN_PROGRESS' })],
       ON_HOLD: [makeTicket(4, { status: 'ON_HOLD' })],
