@@ -8,6 +8,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import {
   faArrowLeft,
+  faArrowRight,
   faRobot,
   faUser,
   faComment,
@@ -160,27 +161,60 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
           <div class="table-container">
             <h5 class="mb-3">Aktionen</h5>
 
-            <!-- Owner toggle -->
-            <div class="mb-3">
-              <label class="form-label fw-semibold">Eigentümer ändern</label>
-              <div>
-                <button
-                  class="btn btn-outline-primary w-100"
-                  (click)="toggleOwner()"
-                  [disabled]="savingOwner"
-                  [title]="toggleOwnerTitle"
-                >
-                  @if (savingOwner) {
-                    <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-                  }
-                  @if (ticket.owner === 'HUMAN') {
+            <!-- Definition actions -->
+            @if (ticket.status === 'DEFINITION') {
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Definition abschließen</label>
+                <div class="d-flex flex-column gap-2">
+                  <button
+                    class="btn btn-outline-primary w-100"
+                    (click)="handToAi()"
+                    [disabled]="savingHandToAi"
+                    title="Eigentümer auf KI setzen und Status auf &quot;Zu bereit&quot; setzen"
+                  >
+                    @if (savingHandToAi) {
+                      <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                    }
                     <fa-icon [icon]="faRobot" class="me-1" />An KI übergeben
-                  } @else {
-                    <fa-icon [icon]="faUser" class="me-1" />An Mensch übergeben
-                  }
-                </button>
+                  </button>
+                  <button
+                    class="btn btn-outline-secondary w-100"
+                    (click)="moveToReady()"
+                    [disabled]="savingMoveToReady"
+                    title="Status auf &quot;Zu bereit&quot; setzen, Eigentümer bleibt unverändert"
+                  >
+                    @if (savingMoveToReady) {
+                      <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                    }
+                    <fa-icon [icon]="faArrowRight" class="me-1" />Nach Bereit
+                  </button>
+                </div>
               </div>
-            </div>
+            }
+
+            <!-- Owner toggle -->
+            @if (ticket.status !== 'DEFINITION') {
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Eigentümer ändern</label>
+                <div>
+                  <button
+                    class="btn btn-outline-primary w-100"
+                    (click)="toggleOwner()"
+                    [disabled]="savingOwner"
+                    [title]="toggleOwnerTitle"
+                  >
+                    @if (savingOwner) {
+                      <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                    }
+                    @if (ticket.owner === 'HUMAN') {
+                      <fa-icon [icon]="faRobot" class="me-1" />An KI übergeben
+                    } @else {
+                      <fa-icon [icon]="faUser" class="me-1" />An Mensch übergeben
+                    }
+                  </button>
+                </div>
+              </div>
+            }
 
             <!-- Won't Do -->
             @if (ticket.owner === 'HUMAN' && ticket.status !== 'DONE') {
@@ -337,8 +371,11 @@ export class TicketDetailComponent implements OnInit {
   handingBack = false;
   savingOwner = false;
   savingWontDo = false;
+  savingHandToAi = false;
+  savingMoveToReady = false;
 
   readonly faArrowLeft = faArrowLeft;
+  readonly faArrowRight = faArrowRight;
   readonly faRobot = faRobot;
   readonly faUser = faUser;
   readonly faComment = faComment;
@@ -413,6 +450,48 @@ export class TicketDetailComponent implements OnInit {
       });
   }
 
+  handToAi(): void {
+    if (!this.ticket) return;
+    const ticketId = this.ticket.id;
+    this.savingHandToAi = true;
+
+    this.ticketService
+      .handToAi(ticketId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (updated) => {
+          this.ticket = updated;
+          this.savingHandToAi = false;
+          this.notification.success('Ticket an KI übergeben.');
+        },
+        error: () => {
+          this.savingHandToAi = false;
+          this.notification.error('Fehler beim Übergeben des Tickets an die KI.');
+        },
+      });
+  }
+
+  moveToReady(): void {
+    if (!this.ticket) return;
+    const ticketId = this.ticket.id;
+    this.savingMoveToReady = true;
+
+    this.ticketService
+      .setStatus(ticketId, 'TODO')
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (updated) => {
+          this.ticket = updated;
+          this.savingMoveToReady = false;
+          this.notification.success('Ticket nach Bereit verschoben.');
+        },
+        error: () => {
+          this.savingMoveToReady = false;
+          this.notification.error('Fehler beim Verschieben des Tickets.');
+        },
+      });
+  }
+
   toggleOwner(): void {
     if (!this.ticket) return;
     const newOwner = this.ticket.owner === 'AI' ? 'HUMAN' : 'AI';
@@ -435,7 +514,7 @@ export class TicketDetailComponent implements OnInit {
         this.savingOwner = false;
         const message =
           willResetStatus
-            ? 'Eigentümer auf "KI" gesetzt und Status auf "Zu erledigen" zurückgesetzt.'
+            ? 'Eigentümer auf "KI" gesetzt und Status auf "Zu bereit" zurückgesetzt.'
             : `Eigentümer auf "${newOwner === 'AI' ? 'KI' : 'Mensch'}" gesetzt.`;
         this.notification.success(message);
       },
@@ -454,7 +533,7 @@ export class TicketDetailComponent implements OnInit {
   get toggleOwnerTitle(): string {
     if (!this.ticket) return '';
     if (this.ticket.owner === 'HUMAN' && this.ticket.status !== 'DONE' && this.ticket.status !== 'TODO') {
-      return 'Eigentümer auf KI setzen und Status auf "Zu erledigen" zurücksetzen';
+      return 'Eigentümer auf KI setzen und Status auf "Zu bereit" zurücksetzen';
     }
     if (this.ticket.owner === 'HUMAN') {
       return 'Eigentümer auf KI setzen';
@@ -520,6 +599,8 @@ export class TicketDetailComponent implements OnInit {
 
   statusBadgeClass(status: string): string {
     switch (status) {
+      case 'DEFINITION':
+        return 'badge bg-info text-dark';
       case 'TODO':
         return 'badge bg-primary';
       case 'IN_PROGRESS':
@@ -535,8 +616,10 @@ export class TicketDetailComponent implements OnInit {
 
   statusLabel(status: string): string {
     switch (status) {
+      case 'DEFINITION':
+        return 'Definition';
       case 'TODO':
-        return 'Zu erledigen';
+        return 'Zu bereit';
       case 'IN_PROGRESS':
         return 'In Arbeit';
       case 'ON_HOLD':

@@ -1,5 +1,6 @@
 import { sqliteTable, integer, text, real } from 'drizzle-orm/sqlite-core';
 import { sql } from 'drizzle-orm';
+import { TICKET_STATUS } from './enums.js';
 
 // ─── firma ────────────────────────────────────────────────────────────────────
 export const firma = sqliteTable('firma', {
@@ -125,7 +126,7 @@ export const ticket = sqliteTable('ticket', {
   type: text('type').notNull(),
   title: text('title').notNull(),
   body: text('body').notNull(),
-  status: text('status').notNull().default('TODO'),
+  status: text('status', { enum: TICKET_STATUS }).notNull().default('DEFINITION'),
   solution: text('solution'),
   pickedUpAt: text('pickedUpAt'),
   resolvedAt: text('resolvedAt'),

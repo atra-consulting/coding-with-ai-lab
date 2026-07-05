@@ -54,6 +54,7 @@ export interface TicketListItemDTO {
 }
 
 export interface TicketBoardDTO {
+  DEFINITION: TicketListItemDTO[];
   TODO: TicketListItemDTO[];
   IN_PROGRESS: TicketListItemDTO[];
   ON_HOLD: TicketListItemDTO[];
@@ -63,7 +64,7 @@ export interface TicketBoardDTO {
 /**
  * TicketSummaryDTO shape:
  * {
- *   byStatus: { TODO, IN_PROGRESS, ON_HOLD, DONE },
+ *   byStatus: { DEFINITION, TODO, IN_PROGRESS, ON_HOLD, DONE },
  *   byType:   { FEATURE, BUG, CHORE },
  *   byOwner:  { AI, HUMAN },
  *   bySolution: { DONE, WONT_DO }   // counts only among resolved tickets
@@ -251,6 +252,33 @@ export const ticketService = {
   },
 
   /**
+   * Hand ticket to the AI (admin). Guard: status must be DEFINITION.
+   * On success: owner=AI, status=TODO. Ticket becomes claimable via findNext/start.
+   */
+  async handToAi(id: number): Promise<TicketDTO> {
+    const now = new Date().toISOString();
+
+    // Step 1: guarded UPDATE alone
+    const result = await client.execute({
+      sql: `UPDATE ticket
+            SET owner = 'AI', status = 'TODO', updatedAt = ?
+            WHERE id = ? AND status = 'DEFINITION'`,
+      args: [now, id],
+    });
+
+    // Step 2: 0 rows → 404 if missing, 409 if wrong state
+    if (result.rowsAffected === 0) {
+      await this.findById(id); // throws NotFoundError 404 if missing
+      throw new ConflictError(
+        `Ticket ${id} ist nicht im Status DEFINITION und kann nicht an die KI übergeben werden`,
+      );
+    }
+
+    // Step 3: return fresh ticket
+    return this.findById(id);
+  },
+
+  /**
    * Mark ticket done (agent). Guard: status must be IN_PROGRESS.
    * Optional closing AGENT comment inserted after the guarded UPDATE succeeds.
    */
@@ -414,12 +442,19 @@ export const ticketService = {
       args: [],
     });
 
-    const board: TicketBoardDTO = { TODO: [], IN_PROGRESS: [], ON_HOLD: [], DONE: [] };
+    const board: TicketBoardDTO = {
+      DEFINITION: [],
+      TODO: [],
+      IN_PROGRESS: [],
+      ON_HOLD: [],
+      DONE: [],
+    };
 
     for (const rawRow of result.rows) {
       const row = rawRow as unknown as TicketListRow;
       const item = toListItemDTO(row);
-      if (row.status === 'TODO') board.TODO.push(item);
+      if (row.status === 'DEFINITION') board.DEFINITION.push(item);
+      else if (row.status === 'TODO') board.TODO.push(item);
       else if (row.status === 'IN_PROGRESS') board.IN_PROGRESS.push(item);
       else if (row.status === 'ON_HOLD') board.ON_HOLD.push(item);
       else if (row.status === 'DONE') board.DONE.push(item);
@@ -462,7 +497,13 @@ export const ticketService = {
     }
 
     // Initialise with all known enum values at zero
-    const byStatus: Record<string, number> = { TODO: 0, IN_PROGRESS: 0, ON_HOLD: 0, DONE: 0 };
+    const byStatus: Record<string, number> = {
+      DEFINITION: 0,
+      TODO: 0,
+      IN_PROGRESS: 0,
+      ON_HOLD: 0,
+      DONE: 0,
+    };
     for (const r of statusResult.rows as unknown as CountRow[]) {
       if (r.status) byStatus[r.status] = Number(r.cnt);
     }
@@ -485,7 +526,7 @@ export const ticketService = {
     return { byStatus, byType, byOwner, bySolution };
   },
 
-  /** Create a new ticket (human-owned, TODO). */
+  /** Create a new ticket (human-owned, DEFINITION). */
   async create(data: {
     type: TicketType;
     title: string;
@@ -494,7 +535,7 @@ export const ticketService = {
     const now = new Date().toISOString();
     const result = await client.execute({
       sql: `INSERT INTO ticket (owner, type, title, body, status, solution, pickedUpAt, resolvedAt, createdAt, updatedAt)
-            VALUES ('HUMAN', ?, ?, ?, 'TODO', NULL, NULL, NULL, ?, ?)
+            VALUES ('HUMAN', ?, ?, ?, 'DEFINITION', NULL, NULL, NULL, ?, ?)
             RETURNING *`,
       args: [data.type, data.title, data.body, now, now],
     });

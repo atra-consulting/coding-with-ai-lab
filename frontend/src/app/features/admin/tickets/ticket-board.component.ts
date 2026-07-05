@@ -15,6 +15,7 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import {
   faClipboardList,
   faComment,
+  faFileLines,
   faPlus,
   faSpinner,
   faCircleCheck,
@@ -56,12 +57,23 @@ import { TicketCreateComponent } from './ticket-create.component';
       @if (summary) {
         <div class="row g-3 mb-4">
           <div class="col-6 col-xl-3">
+            <div class="card h-100 kpi-tile kpi-definition">
+              <div class="card-body d-flex align-items-center gap-3">
+                <span class="kpi-icon"><fa-icon [icon]="faFileLines" /></span>
+                <div>
+                  <div class="kpi-value">{{ summary.byStatus.DEFINITION }}</div>
+                  <div class="kpi-label">Definition</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 col-xl-3">
             <div class="card h-100 kpi-tile kpi-todo">
               <div class="card-body d-flex align-items-center gap-3">
                 <span class="kpi-icon"><fa-icon [icon]="faClipboardList" /></span>
                 <div>
                   <div class="kpi-value">{{ summary.byStatus.TODO }}</div>
-                  <div class="kpi-label">Zu erledigen</div>
+                  <div class="kpi-label">Zu bereit</div>
                 </div>
               </div>
             </div>
@@ -170,10 +182,52 @@ import { TicketCreateComponent } from './ticket-create.component';
 
       <!-- Kanban Board -->
       <div class="board-container" cdkDropListGroup>
+        <!-- Definition -->
+        <div class="board-column">
+          <div class="column-header column-definition">
+            <span class="column-title">Definition</span>
+            <span class="badge bg-secondary">{{ definition.length }}</span>
+          </div>
+          <div
+            class="column-body"
+            cdkDropList
+            id="list-DEFINITION"
+            [cdkDropListData]="definition"
+            [cdkDropListConnectedTo]="['list-TODO', 'list-IN_PROGRESS', 'list-ON_HOLD', 'list-DONE']"
+            (cdkDropListDropped)="onDrop($event, 'DEFINITION')"
+          >
+            @for (ticket of definition; track ticket.id) {
+              <div class="ticket-card" cdkDrag [cdkDragData]="ticket">
+                <div class="ticket-drag-handle" cdkDragHandle (click)="$event.stopPropagation()">
+                  <fa-icon [icon]="faGripVertical" />
+                </div>
+                <div class="ticket-body-click" role="button" tabindex="0" (click)="navigateToDetail(ticket.id)" (keydown.enter)="navigateToDetail(ticket.id)" (keydown.space)="$event.preventDefault(); navigateToDetail(ticket.id)">
+                  <div class="ticket-title">{{ ticket.title }}</div>
+                  <div class="ticket-badges mt-2">
+                    <span [class]="typeBadgeClass(ticket.type)">{{ typeLabel(ticket.type) }}</span>
+                    <span [class]="ownerBadgeClass(ticket.owner)" class="ms-1">
+                      <fa-icon [icon]="ticket.owner === 'AI' ? faRobot : faUser" class="me-1" />{{ ownerLabel(ticket.owner) }}
+                    </span>
+                  </div>
+                  @if ((ticket.commentCount ?? 0) > 0) {
+                    <div class="ticket-comment-count mt-1">
+                      <fa-icon [icon]="faComment" class="me-1 text-muted" />
+                      <span class="small text-muted">{{ ticket.commentCount }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+            @if (definition.length === 0) {
+              <div class="column-empty">Keine Tickets</div>
+            }
+          </div>
+        </div>
+
         <!-- To Do -->
         <div class="board-column">
           <div class="column-header column-todo">
-            <span class="column-title">Zu erledigen</span>
+            <span class="column-title">Zu bereit</span>
             <span class="badge bg-secondary">{{ todo.length }}</span>
           </div>
           <div
@@ -181,7 +235,7 @@ import { TicketCreateComponent } from './ticket-create.component';
             cdkDropList
             id="list-TODO"
             [cdkDropListData]="todo"
-            [cdkDropListConnectedTo]="['list-IN_PROGRESS', 'list-ON_HOLD', 'list-DONE']"
+            [cdkDropListConnectedTo]="['list-DEFINITION', 'list-IN_PROGRESS', 'list-ON_HOLD', 'list-DONE']"
             (cdkDropListDropped)="onDrop($event, 'TODO')"
           >
             @for (ticket of todo; track ticket.id) {
@@ -223,7 +277,7 @@ import { TicketCreateComponent } from './ticket-create.component';
             cdkDropList
             id="list-IN_PROGRESS"
             [cdkDropListData]="inProgress"
-            [cdkDropListConnectedTo]="['list-TODO', 'list-ON_HOLD', 'list-DONE']"
+            [cdkDropListConnectedTo]="['list-DEFINITION', 'list-TODO', 'list-ON_HOLD', 'list-DONE']"
             (cdkDropListDropped)="onDrop($event, 'IN_PROGRESS')"
           >
             @for (ticket of inProgress; track ticket.id) {
@@ -265,7 +319,7 @@ import { TicketCreateComponent } from './ticket-create.component';
             cdkDropList
             id="list-ON_HOLD"
             [cdkDropListData]="onHold"
-            [cdkDropListConnectedTo]="['list-TODO', 'list-IN_PROGRESS', 'list-DONE']"
+            [cdkDropListConnectedTo]="['list-DEFINITION', 'list-TODO', 'list-IN_PROGRESS', 'list-DONE']"
             (cdkDropListDropped)="onDrop($event, 'ON_HOLD')"
           >
             @for (ticket of onHold; track ticket.id) {
@@ -307,7 +361,7 @@ import { TicketCreateComponent } from './ticket-create.component';
             cdkDropList
             id="list-DONE"
             [cdkDropListData]="done"
-            [cdkDropListConnectedTo]="['list-TODO', 'list-IN_PROGRESS', 'list-ON_HOLD']"
+            [cdkDropListConnectedTo]="['list-DEFINITION', 'list-TODO', 'list-IN_PROGRESS', 'list-ON_HOLD']"
             (cdkDropListDropped)="onDrop($event, 'DONE')"
           >
             @for (ticket of done; track ticket.id) {
@@ -378,6 +432,13 @@ import { TicketCreateComponent } from './ticket-create.component';
         margin-top: 0.3rem;
       }
 
+      .kpi-definition {
+        border-left-color: #0dcaf0;
+      }
+      .kpi-definition .kpi-icon {
+        background: rgba(13, 202, 240, 0.14);
+        color: #0aa2c0;
+      }
       .kpi-todo {
         border-left-color: #264892;
       }
@@ -410,7 +471,7 @@ import { TicketCreateComponent } from './ticket-create.component';
       /* Board layout */
       .board-container {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(5, 1fr);
         gap: 1rem;
         align-items: start;
       }
@@ -449,6 +510,11 @@ import { TicketCreateComponent } from './ticket-create.component';
         letter-spacing: 0.04em;
       }
 
+      .column-definition {
+        background: rgba(13, 202, 240, 0.1);
+        border-bottom-color: #0dcaf0;
+        color: #0aa2c0;
+      }
       .column-todo {
         background: rgba(38, 72, 146, 0.08);
         border-bottom-color: #264892;
@@ -618,6 +684,7 @@ export class TicketBoardComponent implements OnInit {
 
   private summaryTrigger$ = new Subject<void>();
 
+  definition: Ticket[] = [];
   todo: Ticket[] = [];
   inProgress: Ticket[] = [];
   onHold: Ticket[] = [];
@@ -629,6 +696,7 @@ export class TicketBoardComponent implements OnInit {
 
   readonly faPlus = faPlus;
   readonly faClipboardList = faClipboardList;
+  readonly faFileLines = faFileLines;
   readonly faSpinner = faSpinner;
   readonly faClock = faClock;
   readonly faCircleCheck = faCircleCheck;
@@ -661,6 +729,7 @@ export class TicketBoardComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (board) => {
+          this.definition = board.DEFINITION;
           this.todo = board.TODO;
           this.inProgress = board.IN_PROGRESS;
           this.onHold = board.ON_HOLD;
