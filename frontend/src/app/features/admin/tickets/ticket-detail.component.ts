@@ -169,7 +169,7 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
                   <button
                     class="btn btn-outline-primary w-100"
                     (click)="handToAi()"
-                    [disabled]="savingHandToAi"
+                    [disabled]="savingHandToAi || savingMoveToReady"
                     title="Eigentümer auf KI setzen und Status auf &quot;Zu bereit&quot; setzen"
                   >
                     @if (savingHandToAi) {
@@ -180,7 +180,7 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
                   <button
                     class="btn btn-outline-secondary w-100"
                     (click)="moveToReady()"
-                    [disabled]="savingMoveToReady"
+                    [disabled]="savingHandToAi || savingMoveToReady"
                     title="Status auf &quot;Zu bereit&quot; setzen, Eigentümer bleibt unverändert"
                   >
                     @if (savingMoveToReady) {

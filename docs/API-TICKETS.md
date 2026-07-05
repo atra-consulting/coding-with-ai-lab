@@ -301,9 +301,9 @@ curl -s -X POST -H "Content-Type: application/json" \
 ---
 
 ### PATCH `/api/tickets/:id/status` — change status (admin)
-**Auth:** admin session. **Body:** `{ "status": "TODO"|"IN_PROGRESS"|"ON_HOLD"|"DONE" }`.
+**Auth:** admin session. **Body:** `{ "status": "DEFINITION"|"TODO"|"IN_PROGRESS"|"ON_HOLD"|"DONE" }`.
 
-Used for drag-drop on the Kanban board. Moving into `DONE` sets `solution=DONE` and `resolvedAt`. Moving out of `DONE` clears `solution` and `resolvedAt`. Never changes `owner`.
+Used for drag-drop on the Kanban board (all five columns are valid drop targets, including `DEFINITION`). Moving into `DONE` sets `solution=DONE` and `resolvedAt`. Moving out of `DONE` clears `solution` and `resolvedAt`. Never changes `owner` — so dragging a ticket into `TODO` this way keeps the current owner (this is the "Nach Bereit" action). To also set `owner=AI`, use `POST /:id/hand-to-ai`.
 
 | Result | Meaning |
 |--------|---------|

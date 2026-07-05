@@ -56,7 +56,7 @@ import { TicketCreateComponent } from './ticket-create.component';
       <!-- KPI Summary Cards -->
       @if (summary) {
         <div class="row g-3 mb-4">
-          <div class="col-6 col-xl-3">
+          <div class="col-6 col-xl">
             <div class="card h-100 kpi-tile kpi-definition">
               <div class="card-body d-flex align-items-center gap-3">
                 <span class="kpi-icon"><fa-icon [icon]="faFileLines" /></span>
@@ -67,7 +67,7 @@ import { TicketCreateComponent } from './ticket-create.component';
               </div>
             </div>
           </div>
-          <div class="col-6 col-xl-3">
+          <div class="col-6 col-xl">
             <div class="card h-100 kpi-tile kpi-todo">
               <div class="card-body d-flex align-items-center gap-3">
                 <span class="kpi-icon"><fa-icon [icon]="faClipboardList" /></span>
@@ -78,7 +78,7 @@ import { TicketCreateComponent } from './ticket-create.component';
               </div>
             </div>
           </div>
-          <div class="col-6 col-xl-3">
+          <div class="col-6 col-xl">
             <div class="card h-100 kpi-tile kpi-inprogress">
               <div class="card-body d-flex align-items-center gap-3">
                 <span class="kpi-icon"><fa-icon [icon]="faSpinner" /></span>
@@ -89,7 +89,7 @@ import { TicketCreateComponent } from './ticket-create.component';
               </div>
             </div>
           </div>
-          <div class="col-6 col-xl-3">
+          <div class="col-6 col-xl">
             <div class="card h-100 kpi-tile kpi-onhold">
               <div class="card-body d-flex align-items-center gap-3">
                 <span class="kpi-icon"><fa-icon [icon]="faClock" /></span>
@@ -100,7 +100,7 @@ import { TicketCreateComponent } from './ticket-create.component';
               </div>
             </div>
           </div>
-          <div class="col-6 col-xl-3">
+          <div class="col-6 col-xl">
             <div class="card h-100 kpi-tile kpi-done">
               <div class="card-body d-flex align-items-center gap-3">
                 <span class="kpi-icon"><fa-icon [icon]="faCircleCheck" /></span>
@@ -437,7 +437,7 @@ import { TicketCreateComponent } from './ticket-create.component';
       }
       .kpi-definition .kpi-icon {
         background: rgba(13, 202, 240, 0.14);
-        color: #0aa2c0;
+        color: #087990;
       }
       .kpi-todo {
         border-left-color: #264892;
@@ -474,6 +474,12 @@ import { TicketCreateComponent } from './ticket-create.component';
         grid-template-columns: repeat(5, 1fr);
         gap: 1rem;
         align-items: start;
+      }
+
+      @media (max-width: 1400px) {
+        .board-container {
+          grid-template-columns: repeat(3, 1fr);
+        }
       }
 
       @media (max-width: 1024px) {
@@ -513,7 +519,7 @@ import { TicketCreateComponent } from './ticket-create.component';
       .column-definition {
         background: rgba(13, 202, 240, 0.1);
         border-bottom-color: #0dcaf0;
-        color: #0aa2c0;
+        color: #087990;
       }
       .column-todo {
         background: rgba(38, 72, 146, 0.08);
