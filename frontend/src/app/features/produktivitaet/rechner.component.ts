@@ -28,6 +28,7 @@ import {
 } from '../../core/models/prozess-defaults';
 import {
   PROZESS_SZENARIO_FELD,
+  SzenarioProzessFeld,
   ProzessDauer,
   Szenario,
   SzenarioCreate,
@@ -383,21 +384,15 @@ export class RechnerComponent implements OnInit {
       groups.map((g) => Math.round((g.value ?? 0) * einheitZuFaktor(g.unit ?? 'Minuten')));
 
     const val = this.form.value;
-    const steps: Partial<Record<ProzessKey, ProzessDauer>> = {};
+    const steps = {} as Record<SzenarioProzessFeld, ProzessDauer>;
     for (const p of PROZESSE) {
-      steps[p.key] = {
+      steps[PROZESS_SZENARIO_FELD[p.key]] = {
         works: toMinutesArr(val[p.key].works),
         waits: toMinutesArr(val[p.key].waits),
       };
     }
 
-    return {
-      name: this.nameInput.trim(),
-      humanSteps: steps.menschlich as ProzessDauer,
-      agileKiSteps: steps.agileKi as ProzessDauer,
-      semiAutomatedSteps: steps.halbautomatisch as ProzessDauer,
-      automatedSteps: steps.vollautomatisch as ProzessDauer,
-    };
+    return { name: this.nameInput.trim(), ...steps };
   }
 
   neuSpeichern(): void {
