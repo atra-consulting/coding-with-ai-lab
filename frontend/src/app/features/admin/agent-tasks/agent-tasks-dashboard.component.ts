@@ -73,7 +73,7 @@ const ALL_SOURCES: AgentTaskSource[] = ['EMAIL', 'APP_LOG', 'ERROR_REPORT'];
       <app-agent-task-list />
     } @else {
       <div class="page-header">
-        <h2>Agent-Aufgaben</h2>
+        <h2>App-Feedback</h2>
         <button class="btn btn-outline-danger" (click)="resetAllTasks()">
           <fa-icon [icon]="faRotateLeft" class="me-2" />Alle Aufgaben zurücksetzen
         </button>
@@ -365,7 +365,7 @@ export class AgentTasksDashboardComponent implements OnInit {
   }
 
   resetAllTasks(): void {
-    if (!window.confirm('Alle Agent-Aufgaben auf OPEN zurücksetzen?')) {
+    if (!window.confirm('Alle App-Feedback-Einträge auf OPEN zurücksetzen?')) {
       return;
     }
     this.loading = true;

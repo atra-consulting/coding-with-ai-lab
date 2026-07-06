@@ -17,7 +17,7 @@ import { AgentTaskService } from '../../../core/services/agent-task.service';
       <div class="alert alert-danger" role="alert">{{ errorMessage }}</div>
     } @else if (task) {
       <div class="page-header">
-        <h2>Agent-Aufgabe #{{ task.id }}</h2>
+        <h2>App-Feedback #{{ task.id }}</h2>
         <a routerLink="/admin/agent-tasks" class="btn btn-sm btn-outline-secondary">Zurück</a>
       </div>
 

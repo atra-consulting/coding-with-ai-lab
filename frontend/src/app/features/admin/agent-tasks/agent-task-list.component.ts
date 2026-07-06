@@ -11,7 +11,7 @@ import { AgentTaskService } from '../../../core/services/agent-task.service';
   imports: [RouterLink, NgbPagination],
   template: `
     <div class="page-header">
-      <h2>Agent-Aufgaben{{ activeSource ? ' – ' + activeSource : '' }}</h2>
+      <h2>App-Feedback{{ activeSource ? ' – ' + activeSource : '' }}</h2>
       <a routerLink="/admin/agent-tasks" class="btn btn-sm btn-outline-secondary">Zurück</a>
     </div>
 
