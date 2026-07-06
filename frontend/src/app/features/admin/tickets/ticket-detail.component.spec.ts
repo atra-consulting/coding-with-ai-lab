@@ -185,10 +185,12 @@ describe('TicketDetailComponent — template rendering', () => {
     expect(text).toContain('CSV-Export für Firmenliste');
   });
 
-  it('renders the ticket body in a <pre> element', () => {
-    const pre: HTMLElement = fixture.nativeElement.querySelector('pre');
-    expect(pre).toBeTruthy();
-    expect(pre.textContent).toContain('Bitte CSV-Export implementieren.');
+  it('renders the ticket body as Markdown in a .markdown-body container', () => {
+    const md: HTMLElement = fixture.nativeElement.querySelector('.ticket-body.markdown-body');
+    expect(md).toBeTruthy();
+    // marked wraps plain text in a paragraph
+    expect(md.querySelector('p')).toBeTruthy();
+    expect(md.textContent).toContain('Bitte CSV-Export implementieren.');
   });
 
   it('renders both comments in the comment thread', () => {

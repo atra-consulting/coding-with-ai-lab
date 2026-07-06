@@ -15,6 +15,7 @@ import {
   faBan,
 } from '@fortawesome/free-solid-svg-icons';
 import { Ticket, TicketComment } from '../../../core/models/ticket.model';
+import { MarkdownPipe } from '../../../core/pipes/markdown.pipe';
 import { TicketService } from '../../../core/services/ticket.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
@@ -22,7 +23,7 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
 
 @Component({
   selector: 'app-ticket-detail',
-  imports: [RouterLink, ReactiveFormsModule, FaIconComponent, LoadingSpinnerComponent, DatePipe],
+  imports: [RouterLink, ReactiveFormsModule, FaIconComponent, LoadingSpinnerComponent, DatePipe, MarkdownPipe],
   template: `
     @if (loading) {
       <app-loading-spinner />
@@ -54,7 +55,7 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
               </div>
             </div>
 
-            <pre class="ticket-body">{{ ticket.body }}</pre>
+            <div class="ticket-body markdown-body" [innerHTML]="ticket.body | markdown"></div>
 
             <dl class="row mt-3 text-muted small">
               <dt class="col-sm-4">Erstellt</dt>
@@ -97,7 +98,7 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
                       </span>
                       <span class="comment-time text-muted small">{{ comment.createdAt | date:'dd.MM.yyyy HH:mm' }}</span>
                     </div>
-                    <div class="comment-body">{{ comment.body }}</div>
+                    <div class="comment-body markdown-body" [innerHTML]="comment.body | markdown"></div>
                   </div>
                 }
               </div>
@@ -273,12 +274,89 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
         background: #f8f9fa;
         border: 1px solid #e9ecef;
         border-radius: 0.4rem;
-        padding: 1rem;
-        font-family: inherit;
+        padding: 1rem 1.25rem;
         font-size: 0.9rem;
-        white-space: pre-wrap;
         overflow-wrap: anywhere;
         color: #212529;
+      }
+
+      /* Markdown rendering (ticket body + comments) */
+      .markdown-body {
+        overflow-wrap: anywhere;
+      }
+      .markdown-body > :first-child {
+        margin-top: 0;
+      }
+      .markdown-body > :last-child {
+        margin-bottom: 0;
+      }
+      .markdown-body h1,
+      .markdown-body h2,
+      .markdown-body h3,
+      .markdown-body h4 {
+        font-weight: 700;
+        line-height: 1.25;
+        margin: 1rem 0 0.5rem;
+      }
+      .markdown-body h1 {
+        font-size: 1.25rem;
+      }
+      .markdown-body h2 {
+        font-size: 1.1rem;
+      }
+      .markdown-body h3 {
+        font-size: 1rem;
+      }
+      .markdown-body h4 {
+        font-size: 0.92rem;
+      }
+      .markdown-body p {
+        margin: 0 0 0.6rem;
+      }
+      .markdown-body ul,
+      .markdown-body ol {
+        margin: 0 0 0.6rem;
+        padding-left: 1.4rem;
+      }
+      .markdown-body li {
+        margin-bottom: 0.2rem;
+      }
+      .markdown-body code {
+        background: rgba(175, 184, 193, 0.25);
+        padding: 0.1rem 0.35rem;
+        border-radius: 0.25rem;
+        font-size: 0.85em;
+      }
+      .markdown-body pre {
+        background: #f0f1f3;
+        border: 1px solid #e0e2e6;
+        border-radius: 0.4rem;
+        padding: 0.75rem 1rem;
+        overflow-x: auto;
+      }
+      .markdown-body pre code {
+        background: none;
+        padding: 0;
+        font-size: 0.85rem;
+      }
+      .markdown-body a {
+        color: #264892;
+        text-decoration: underline;
+      }
+      .markdown-body blockquote {
+        border-left: 3px solid #ced4da;
+        margin: 0 0 0.6rem;
+        padding-left: 0.8rem;
+        color: #6c757d;
+      }
+      .markdown-body table {
+        border-collapse: collapse;
+        margin-bottom: 0.6rem;
+      }
+      .markdown-body th,
+      .markdown-body td {
+        border: 1px solid #dee2e6;
+        padding: 0.3rem 0.6rem;
       }
 
       /* Comment thread */
@@ -318,7 +396,6 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
 
       .comment-body {
         font-size: 0.88rem;
-        white-space: pre-wrap;
         overflow-wrap: anywhere;
         color: #212529;
       }
