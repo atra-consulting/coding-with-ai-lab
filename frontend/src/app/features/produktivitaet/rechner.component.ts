@@ -46,7 +46,7 @@ import {
   feldWertZuMinuten,
   maxWertFuerEinheit,
 } from './einheit';
-import { computeComparisonBars, computeSegments, SvgSegment } from './svg-util';
+import { computeComparisonBars, computePieSlices, computeSegments, PieResult, SvgSegment } from './svg-util';
 
 interface ProzessSnapshot {
   works: number[];
@@ -139,6 +139,165 @@ function baueInitialeProzessDaten(): Record<ProzessKey, ProzessSnapshot> {
       }
       .seg-rect {
         cursor: pointer;
+      }
+
+      /* ── Balken/Flussdiagramm toggle (5.6) ── */
+      .view-toggle-btn {
+        min-height: 44px;
+        min-width: 44px;
+        padding: 0.5rem 1rem;
+      }
+
+      /* ── Pie charts (5.3/5.4) ── */
+      .pie-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2rem;
+        align-items: flex-start;
+      }
+      .pie-block {
+        flex: 1 1 220px;
+        max-width: 320px;
+        min-width: 200px;
+      }
+      .pie-caption {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: #264892;
+        margin-bottom: 0.5rem;
+      }
+      .pie-svg {
+        display: block;
+        width: 100%;
+        max-width: 200px;
+        height: auto;
+        margin: 0 auto 0.5rem;
+      }
+      .pie-note {
+        font-size: 0.78rem;
+        color: #495057;
+        font-style: italic;
+        margin-bottom: 0.5rem;
+      }
+      .pie-empty-label {
+        text-align: center;
+        color: #495057;
+        font-size: 0.85rem;
+        margin-bottom: 0.5rem;
+      }
+      .pie-legend {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        margin: 0;
+      }
+      .pie-legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+        flex-wrap: wrap;
+      }
+      .pie-legend-swatch {
+        flex: 0 0 auto;
+        width: 14px;
+        height: 14px;
+        border-radius: 3px;
+        border: 1px solid #495057;
+      }
+      .pie-legend-label {
+        font-weight: 600;
+        color: #212529;
+      }
+      .pie-legend-value {
+        color: #495057;
+      }
+
+      /* ── Flowchart (5.5) ── */
+      .flow-scroll {
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1.5rem;
+        /* width:0 + min-width:100% keeps this scroll container from bubbling its
+           wide, non-wrapping .flow-track content up through the block ancestors
+           (tab-pane/tab-content/card-body/card) into the app shell's flex layout
+           (.main-content is a flex item with flex-grow-1 and no min-width reset —
+           without this, its automatic minimum size would inherit the flow-track's
+           multi-thousand-pixel min-content width and blow out the whole page). */
+        width: 0;
+        min-width: 100%;
+        box-sizing: border-box;
+      }
+      .flow-track {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: stretch;
+        width: max-content;
+      }
+      .flow-box {
+        flex: 0 0 auto;
+        width: 160px;
+        min-height: 150px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 0.4rem;
+        padding: 0.65rem 0.5rem;
+        border: 1px solid #264892;
+        border-radius: 0.5rem;
+        background: #fff;
+      }
+      .flow-box:focus-visible {
+        outline: 3px solid #264892;
+        outline-offset: 2px;
+      }
+      .flow-box-nr {
+        flex: 0 0 auto;
+        width: 22px;
+        height: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: #e9edf7;
+        color: #264892;
+        font-weight: 700;
+        font-size: 0.75rem;
+      }
+      .flow-box-label {
+        font-size: 0.78rem;
+        text-align: center;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-height: 2.9em;
+      }
+      .flow-chip {
+        flex: 0 0 auto;
+        font-size: 0.72rem;
+        font-weight: 600;
+        border-radius: 1rem;
+        padding: 0.1rem 0.6rem;
+      }
+      .flow-chip-work {
+        background: #264892;
+        color: #fff;
+      }
+      .flow-chip-wait {
+        background: #cf944f;
+        color: #212529;
+      }
+      .flow-connector {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        align-self: center;
+        padding: 0 0.4rem;
+        color: #495057;
+        font-size: 1.1rem;
       }
     `,
   ],
@@ -592,4 +751,46 @@ export class RechnerComponent implements OnInit {
 
   /** Readonly export so template can call minutenZuDauer() */
   readonly formatDuration = minutenZuDauer;
+
+  // ── Pie chart wrappers (5.2–5.4) — thin adapters over the pure svg-util helper,
+  // mirroring the existing getSegments()/getComparisonBars() pattern. Templates
+  // cannot call bare imported functions or do arc trigonometry themselves, so the
+  // geometry (computePieSlices) is wrapped here and consumed read-only by the template. ──
+
+  /** Pie A input (all 4 tabs): Arbeit vs. Warten, 2 slices. */
+  getPieASlices(index: number): PieResult {
+    const { work, wait } = this.getWorkWaitTotals(index);
+    const arbeitsLabel = this.getArbeitszeitLabel(index);
+    return computePieSlices(
+      [
+        { key: 'work', value: work, color: '#264892', label: arbeitsLabel },
+        { key: 'wait', value: wait, color: '#cf944f', label: 'Wartezeit' },
+      ],
+      50,
+      50,
+      45,
+    );
+  }
+
+  /**
+   * Pie B input (menschlich + agileKi tabs only): role split of the work total, 3 slices.
+   * Returns an isEmpty result (no slices) for the two KI-only tabs so the template never
+   * has to deal with a nullable result — it simply never renders Pie B for those tabs.
+   */
+  getPieBSlices(index: number): PieResult {
+    const split = this.getRollenSplit(index);
+    if (!split) {
+      return { slices: [], isEmpty: true, isFullCircle: false };
+    }
+    return computePieSlices(
+      [
+        { key: 'ba', value: split.ba, color: '#6f42c1', label: 'BA' },
+        { key: 'dev', value: split.dev, color: '#0f766e', label: 'Dev' },
+        { key: 'tester', value: split.tester, color: '#9a6700', label: 'Tester' },
+      ],
+      50,
+      50,
+      45,
+    );
+  }
 }

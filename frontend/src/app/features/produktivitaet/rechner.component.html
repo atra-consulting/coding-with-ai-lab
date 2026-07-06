@@ -83,6 +83,78 @@
   </div>
 </ng-template>
 
+<!-- Legend shared by Pie A and Pie B: swatch + label + minutes (dauer pipe) + percent, always visible. -->
+<ng-template #pieLegend let-slices="slices">
+  <ul class="pie-legend list-unstyled">
+    @for (slice of slices; track slice.key) {
+      <li class="pie-legend-item">
+        <span class="pie-legend-swatch" [style.background-color]="slice.color" aria-hidden="true"></span>
+        <span class="pie-legend-label">{{ slice.label }}</span>
+        <span class="pie-legend-value">{{ slice.value | dauer }} · {{ slice.percent.toFixed(1) }}%</span>
+      </li>
+    }
+  </ul>
+</ng-template>
+
+<!--
+  Reusable pie chart block (5.3/5.4): caption, SVG (slices, or a grey empty circle, or a
+  single full circle when one slice holds 100%), optional note, shared legend. Slices are
+  aria-hidden — the legend is the accessible data source. ns = unique id prefix for title/desc.
+-->
+<ng-template
+  #pieChart
+  let-result="result"
+  let-caption="caption"
+  let-note="note"
+  let-ns="ns"
+  let-titleText="titleText"
+  let-descText="descText"
+>
+  <div class="pie-block">
+    <p class="pie-caption">{{ caption }}</p>
+
+    <svg
+      class="pie-svg"
+      viewBox="0 0 100 100"
+      role="img"
+      [attr.aria-labelledby]="'pie-title-' + ns"
+      [attr.aria-describedby]="'pie-desc-' + ns"
+    >
+      <title [id]="'pie-title-' + ns">{{ titleText }}</title>
+      <desc [id]="'pie-desc-' + ns">{{ descText }}</desc>
+
+      @if (result.isEmpty) {
+        <circle cx="50" cy="50" r="45" fill="#dedede" stroke="#495057" stroke-width="1" aria-hidden="true" />
+      } @else if (result.isFullCircle) {
+        <circle
+          cx="50"
+          cy="50"
+          r="45"
+          [attr.fill]="result.fullCircleColor"
+          stroke="#495057"
+          stroke-width="1"
+          aria-hidden="true"
+        />
+      } @else {
+        @for (slice of result.slices; track slice.key) {
+          @if (slice.value > 0) {
+            <path [attr.d]="slice.path" [attr.fill]="slice.color" stroke="#495057" stroke-width="1" aria-hidden="true" />
+          }
+        }
+      }
+    </svg>
+
+    @if (result.isEmpty) {
+      <p class="pie-empty-label">Keine Daten</p>
+    }
+    @if (note) {
+      <p class="pie-note">{{ note }}</p>
+    }
+
+    <ng-container [ngTemplateOutlet]="pieLegend" [ngTemplateOutletContext]="{ slices: result.slices }" />
+  </div>
+</ng-template>
+
 <!-- VISUALIZATION CARD: shared-scale comparison across all four processes -->
 <div id="prozessvergleich" class="card mb-4 viz-card">
   <div class="card-body">
@@ -263,7 +335,7 @@
   </div>
 </div>
 
-<!-- STEP INPUT TABS: one tab per process (title+total → toggle+pies placeholder → Balken bar → Schritt-Zeiten form) -->
+<!-- STEP INPUT TABS: one tab per process (title+total → Balken/Flussdiagramm toggle → [Balken bar | Flussdiagramm] → Pie A [+ Pie B] → Schritt-Zeiten form) -->
 <div class="card">
   <div class="card-body">
     <h5 class="card-title">Schritt-Zeiten</h5>
@@ -278,12 +350,103 @@
               <span class="bar-total">{{ getProzessTotal($index) | dauer }}</span>
             </div>
 
-            <!-- ui-designer: toggle + pies here -->
+            <!-- Balken/Flussdiagramm toggle (5.6): default Balken, ≥44px hit area. -->
+            <div class="btn-group mb-3" role="group" [attr.aria-label]="'Ansicht für ' + p.titel + ' wählen'">
+              <button
+                type="button"
+                class="btn view-toggle-btn"
+                [class.btn-primary]="viewMode() === 'balken'"
+                [class.btn-outline-primary]="viewMode() !== 'balken'"
+                [attr.aria-pressed]="viewMode() === 'balken'"
+                (click)="setViewMode('balken')"
+              >
+                Balken
+              </button>
+              <button
+                type="button"
+                class="btn view-toggle-btn"
+                [class.btn-primary]="viewMode() === 'flussdiagramm'"
+                [class.btn-outline-primary]="viewMode() !== 'flussdiagramm'"
+                [attr.aria-pressed]="viewMode() === 'flussdiagramm'"
+                (click)="setViewMode('flussdiagramm')"
+              >
+                Flussdiagramm
+              </button>
+            </div>
 
-            <ng-container
-              [ngTemplateOutlet]="procBar"
-              [ngTemplateOutletContext]="{ $implicit: $index, ns: p.key }"
-            />
+            @if (viewMode() === 'balken') {
+              <ng-container
+                [ngTemplateOutlet]="procBar"
+                [ngTemplateOutletContext]="{ $implicit: $index, ns: p.key }"
+              />
+            } @else {
+              <!--
+                Flowchart (5.5/R4): unlike #procBar above (which skips tabindex on 0-work
+                segments), EVERY box here gets tabindex="0" + its own aria-label, including
+                the 0-min "Auslöser" trigger step. This intentionally differs from the
+                Balken bar — R4 requires per-box focusability; the NFR "same information"
+                is about content parity, not an identical tab-stop count.
+              -->
+              <div
+                class="flow-scroll"
+                role="group"
+                [attr.aria-label]="'Ablaufdiagramm ' + p.titel + ', ' + p.stepCount + ' Schritte'"
+              >
+                <div class="flow-track">
+                  @for (schritt of getFlowchartSchritte($index); track schritt.nr) {
+                    @let folgeWartezeit = schritt.wait !== null
+                      ? ('. Folgende Wartezeit: ' + (schritt.wait | dauer) + '.')
+                      : '.';
+                    @let boxAriaLabel = 'Schritt ' + schritt.nr + ': ' + schritt.label + '. ' +
+                      p.arbeitszeitLabel + ': ' + (schritt.work | dauer) + folgeWartezeit;
+                    <div
+                      class="flow-box"
+                      tabindex="0"
+                      [ngbTooltip]="schritt.label"
+                      container="body"
+                      [attr.aria-label]="boxAriaLabel"
+                    >
+                      <span class="flow-box-nr" aria-hidden="true">{{ schritt.nr }}</span>
+                      <span class="flow-box-label" aria-hidden="true">{{ schritt.label }}</span>
+                      <span class="flow-chip flow-chip-work" aria-hidden="true">{{ schritt.work | dauer }}</span>
+                      @if (schritt.wait !== null) {
+                        <span class="flow-chip flow-chip-wait" aria-hidden="true">{{ schritt.wait | dauer }}</span>
+                      }
+                    </div>
+                    @if (!$last) {
+                      <span class="flow-connector" aria-hidden="true">→</span>
+                    }
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- Pies (5.3/5.4): Pie A on every tab, Pie B (role split) on the two agile tabs only. -->
+            <div class="pie-row mb-4">
+              <ng-container
+                [ngTemplateOutlet]="pieChart"
+                [ngTemplateOutletContext]="{
+                  result: getPieASlices($index),
+                  caption: 'Arbeit vs. Warten',
+                  ns: p.key + '-a',
+                  titleText: p.titel + ': Arbeit vs. Warten',
+                  descText: 'Kreisdiagramm Arbeit vs. Warten für ' + p.titel
+                }"
+              />
+              @if (p.key === 'menschlich' || p.key === 'agileKi') {
+                <ng-container
+                  [ngTemplateOutlet]="pieChart"
+                  [ngTemplateOutletContext]="{
+                    result: getPieBSlices($index),
+                    caption: 'Arbeitsverteilung nach Rolle',
+                    note: 'Summe = nur Arbeitszeit',
+                    ns: p.key + '-b',
+                    titleText: p.titel + ': Arbeitsverteilung nach Rolle',
+                    descText: 'Kreisdiagramm Rollenverteilung nach BA, Dev und Tester für ' + p.titel
+                  }"
+                />
+              }
+            </div>
 
             <form [formGroup]="form" class="mt-4">
               <div [formGroupName]="p.key">
