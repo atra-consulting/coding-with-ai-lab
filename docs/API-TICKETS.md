@@ -471,20 +471,25 @@ All errors use the app-wide handler:
 
 | # | Title | Type | Status | Owner |
 |---|-------|------|--------|-------|
-| 1 | Firmen auf einer Karte anzeigen | FEATURE | TODO | AI |
-| 2 | KI-Chat fürs CRM | FEATURE | TODO | AI |
-| 3 | Firmendossier aus dem Internet | FEATURE | TODO | AI |
+| 1 | Firmen auf einer Karte anzeigen | FEATURE | DEFINITION | HUMAN |
+| 2 | KI-Chat fürs CRM | FEATURE | DEFINITION | HUMAN |
+| 3 | Firmendossier aus dem Internet | FEATURE | DEFINITION | HUMAN |
 | 4 | KI-Beziehungsanalyse | FEATURE | DEFINITION | HUMAN |
 | 5 | Firmen aus Datei importieren | FEATURE | DEFINITION | HUMAN |
 | 6 | Dunkelmodus-Umschalter im Header | FEATURE | TODO | AI |
 | 7 | CSV-Export für die Firmenliste | FEATURE | ON_HOLD | HUMAN |
-| 8 | Icons für Aktivitätstypen | CHORE | DEFINITION | HUMAN |
-| 9 | Zähler-Badges im Seitenmenü | FEATURE | DEFINITION | HUMAN |
+| 8 | Icons für Aktivitätstypen | CHORE | TODO | AI |
+| 9 | Zähler-Badges im Seitenmenü | FEATURE | ON_HOLD | HUMAN |
 | 10 | Chancen-Phase als farbiger Badge | CHORE | TODO | AI |
-| 11 | Notiz-Feld für Chancen | FEATURE | ON_HOLD | HUMAN |
-| 12 | Firmen als Favorit markieren | FEATURE | DEFINITION | HUMAN |
+| 11 | Notiz-Feld für Chancen | FEATURE | TODO | AI |
+| 12 | Firmen als Favorit markieren | FEATURE | TODO | AI |
 
-Starting board: 5 `DEFINITION` (all `HUMAN`), 5 `TODO` (all `AI`), 2 `ON_HOLD` (`HUMAN`). Seven tickets carry a seeded `AGENT` comment (`authorName: "Claude Code"`) with an open question: the five `DEFINITION` tickets (4, 5, 8, 9, 12) and the two `ON_HOLD` tickets (7, 11). `POST /reset` deletes all comments and tickets then re-inserts all 12 tickets plus these 7 comments.
+Starting board, by intent:
+- **`DEFINITION`** (5, all `HUMAN`): tickets 1–5 — too vague to build. Each carries a seeded `AGENT` comment (`authorName: "Claude Code"`) asking the human to add detail.
+- **`TODO`** / "Zu bereit" (5, all `AI`): tickets 6, 8, 10, 11, 12 — well-specified and ready. No comments. (Ticket 11 had an open question about the note character limit; the answer — 1000 characters — is baked into its body.)
+- **`ON_HOLD`** / "Wartet" (2, `HUMAN`): tickets 7 and 9 — the AI asked a specific question and is waiting for an answer. Each carries the `AGENT` question as a comment.
+
+Seven tickets carry a seeded `AGENT` comment: the five `DEFINITION` tickets (1–5) and the two `ON_HOLD` tickets (7, 9). `POST /reset` deletes all comments and tickets then re-inserts all 12 tickets plus these 7 comments.
 
 ---
 

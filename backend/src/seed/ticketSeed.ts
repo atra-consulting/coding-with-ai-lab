@@ -25,49 +25,49 @@ interface TicketCommentSeedRow {
 }
 
 const TICKET_SEED: TicketSeedRow[] = [
-  // 01-firmenkarte.md — TODO, owner=AI, FEATURE
+  // 01-firmenkarte.md — DEFINITION, owner=HUMAN, FEATURE (too vague, needs detail)
   {
     id: 1,
-    owner: 'AI',
+    owner: 'HUMAN',
     type: 'FEATURE',
     title: 'Firmen auf einer Karte anzeigen',
     body: 'Es wäre schön, die Firmen irgendwo auf einer Karte zu sehen.\n\nBitte bau eine Karte ein, auf der man die Firmen findet.',
-    status: 'TODO',
+    status: 'DEFINITION',
     solution: null,
     pickedUpAt: null,
     resolvedAt: null,
     createdAt: '2026-06-20T08:00:00.000Z',
     updatedAt: '2026-06-20T08:00:00.000Z',
   },
-  // 02-crm-chat.md — TODO, owner=AI, FEATURE
+  // 02-crm-chat.md — DEFINITION, owner=HUMAN, FEATURE (too vague, needs detail)
   {
     id: 2,
-    owner: 'AI',
+    owner: 'HUMAN',
     type: 'FEATURE',
     title: 'KI-Chat fürs CRM',
     body: 'Wir hätten gern einen KI-Chat im CRM, mit dem man Fragen zu den Daten stellen kann.\n\nMach das bitte.',
-    status: 'TODO',
+    status: 'DEFINITION',
     solution: null,
     pickedUpAt: null,
     resolvedAt: null,
     createdAt: '2026-06-20T09:00:00.000Z',
     updatedAt: '2026-06-20T09:00:00.000Z',
   },
-  // 03-firmendossier.md — TODO, owner=AI, FEATURE
+  // 03-firmendossier.md — DEFINITION, owner=HUMAN, FEATURE (too vague, needs detail)
   {
     id: 3,
-    owner: 'AI',
+    owner: 'HUMAN',
     type: 'FEATURE',
     title: 'Firmendossier aus dem Internet',
     body: 'Zu jeder Firma sollen aktuelle Infos aus dem Internet angezeigt werden.\n\nSuch dir was Passendes und bau es ein.',
-    status: 'TODO',
+    status: 'DEFINITION',
     solution: null,
     pickedUpAt: null,
     resolvedAt: null,
     createdAt: '2026-06-20T10:00:00.000Z',
     updatedAt: '2026-06-20T10:00:00.000Z',
   },
-  // 04-beziehungsanalyse.md — DEFINITION, owner=HUMAN, FEATURE (open question in comments)
+  // 04-beziehungsanalyse.md — DEFINITION, owner=HUMAN, FEATURE (too vague, needs detail)
   {
     id: 4,
     owner: 'HUMAN',
@@ -81,7 +81,7 @@ const TICKET_SEED: TicketSeedRow[] = [
     createdAt: '2026-06-20T11:00:00.000Z',
     updatedAt: '2026-06-20T11:00:00.000Z',
   },
-  // 05-csv-import.md — DEFINITION, owner=HUMAN, FEATURE (open question in comments)
+  // 05-csv-import.md — DEFINITION, owner=HUMAN, FEATURE (too vague, needs detail)
   {
     id: 5,
     owner: 'HUMAN',
@@ -95,7 +95,7 @@ const TICKET_SEED: TicketSeedRow[] = [
     createdAt: '2026-06-21T08:00:00.000Z',
     updatedAt: '2026-06-21T08:00:00.000Z',
   },
-  // 06-dark-mode.md — TODO, owner=AI, FEATURE
+  // 06-dark-mode.md — TODO, owner=AI, FEATURE (well-specified, ready to build)
   {
     id: 6,
     owner: 'AI',
@@ -109,7 +109,7 @@ const TICKET_SEED: TicketSeedRow[] = [
     createdAt: '2026-06-21T09:00:00.000Z',
     updatedAt: '2026-06-21T09:00:00.000Z',
   },
-  // 07-csv-export.md — ON_HOLD, owner=HUMAN, FEATURE (Will ask)
+  // 07-csv-export.md — ON_HOLD, owner=HUMAN, FEATURE (AI asked a question, waiting)
   {
     id: 7,
     owner: 'HUMAN',
@@ -123,35 +123,35 @@ const TICKET_SEED: TicketSeedRow[] = [
     createdAt: '2026-06-21T10:00:00.000Z',
     updatedAt: '2026-06-21T10:00:00.000Z',
   },
-  // 08-aktivitaet-icons.md — DEFINITION, owner=HUMAN, CHORE (open question in comments)
+  // 08-aktivitaet-icons.md — TODO, owner=AI, CHORE (well-specified, ready to build)
   {
     id: 8,
-    owner: 'HUMAN',
+    owner: 'AI',
     type: 'CHORE',
     title: 'Icons für Aktivitätstypen',
     body: '## Ziel\nIn der Aktivitäten-Liste erscheint vor dem Typ-Text ein passendes Icon.\n\n## Anforderungen\n- Mapping: Anruf → Telefon, E-Mail → Briefumschlag, Meeting → mehrere Personen, Notiz → Notizzettel, Aufgabe → Checkliste.\n- Unbekannte Typen bekommen ein neutrales Fallback-Icon.\n- Keine weiteren Änderungen.\n\n## Hinweise\n- FontAwesome: z. B. `faPhone`, `faEnvelope`, `faUsers`, `faNoteSticky`, `faListCheck` aus `@fortawesome/free-solid-svg-icons`, gerendert mit `<fa-icon [icon]="…">`.\n- Reine Frontend-Aufgabe.\n\n## Fertig, wenn\n- [ ] Jeder bekannte Typ zeigt sein Icon vor dem Text.\n- [ ] Unbekannte Typen zeigen das Fallback-Icon.',
-    status: 'DEFINITION',
+    status: 'TODO',
     solution: null,
     pickedUpAt: null,
     resolvedAt: null,
     createdAt: '2026-06-22T08:00:00.000Z',
     updatedAt: '2026-06-22T08:00:00.000Z',
   },
-  // 09-sidebar-counters.md — DEFINITION, owner=HUMAN, FEATURE (open question in comments)
+  // 09-sidebar-counters.md — ON_HOLD, owner=HUMAN, FEATURE (AI asked a question, waiting)
   {
     id: 9,
     owner: 'HUMAN',
     type: 'FEATURE',
     title: 'Zähler-Badges im Seitenmenü',
     body: '## Ziel\nNeben den Menüpunkten im Seitenmenü steht jeweils ein kleiner grauer Badge mit der Anzahl der Einträge.\n\n## Anforderungen\n- Badge neben Firmen, Personen, Chancen und Aktivitäten.\n- Ein einziger Request beim Laden des Menüs.\n- Schlägt der Request fehl, wird einfach kein Badge angezeigt (kein Fehler).\n\n## Rückfrage erforderlich\nEine Entscheidung in dieser Aufgabe triffst du **nicht allein**: Soll der\nChancen-Badge **alle** Chancen zählen oder nur die **offenen**? Das Dashboard\nliefert nur `offeneChancenCount` — für „alle" wäre Backend-Arbeit nötig. Beide\nVarianten sind sinnvoll. Rate **nicht** und wähle keinen Standard. Bevor du Code\nschreibst:\n1. Schreibe einen Kommentar an dieses Issue mit deiner konkreten Frage (alle oder nur offene Chancen?).\n2. Setze das Label `Input needed`.\n3. Warte auf die Antwort, bevor du weiterarbeitest.\n\n## Hinweise\n- Das Backend hat bereits `GET /api/dashboard` mit `firmenCount`, `personenCount` und `offeneChancenCount`. Für die Aktivitäten-Zahl ggf. einen kleinen Count ergänzen.\n- Badge mit Bootstrap: `<span class="badge bg-secondary">…</span>`, rechtsbündig über `ms-auto`.\n\n## Fertig, wenn\n- [ ] Vier Badges mit korrekten Zahlen sichtbar.\n- [ ] Nur ein Request beim Laden des Menüs.',
-    status: 'DEFINITION',
+    status: 'ON_HOLD',
     solution: null,
     pickedUpAt: null,
     resolvedAt: null,
     createdAt: '2026-06-22T09:00:00.000Z',
     updatedAt: '2026-06-22T09:00:00.000Z',
   },
-  // 10-phasen-badges.md — TODO, owner=AI, CHORE
+  // 10-phasen-badges.md — TODO, owner=AI, CHORE (well-specified, ready to build)
   {
     id: 10,
     owner: 'AI',
@@ -165,28 +165,28 @@ const TICKET_SEED: TicketSeedRow[] = [
     createdAt: '2026-06-23T08:00:00.000Z',
     updatedAt: '2026-06-23T08:00:00.000Z',
   },
-  // 11-chance-notiz.md — ON_HOLD, owner=HUMAN, FEATURE (Will ask)
+  // 11-chance-notiz.md — TODO, owner=AI, FEATURE (open question answered in the body: limit = 1000)
   {
     id: 11,
-    owner: 'HUMAN',
+    owner: 'AI',
     type: 'FEATURE',
     title: 'Notiz-Feld für Chancen',
-    body: '## Ziel\nChancen bekommen ein optionales, mehrzeiliges Notiz-Feld.\n\n## Anforderungen\n- Neue Spalte `notes` (TEXT, optional) in der Tabelle `chance`.\n- Backend akzeptiert und liefert `notes` (Create UND Update).\n- Im Formular: dreizeilige Textarea; das Zeichenlimit klärst du per Rückfrage (siehe unten).\n- Auf der Detailseite: Notiz mit erhaltenen Zeilenumbrüchen anzeigen.\n- In der Liste taucht die Notiz NICHT auf.\n\n## Rückfrage erforderlich\nEine Entscheidung in dieser Aufgabe triffst du **nicht allein**: die maximale\nZeichenzahl der Notiz. Diese Zahl steuert sowohl das Frontend-Limit als auch die\nZod-Validierung im Backend — sie muss bewusst gewählt werden. Rate **nicht** und\nnimm keinen Standardwert an. Bevor du Code schreibst:\n1. Schreibe einen Kommentar an dieses Issue mit deiner konkreten Frage (welches Zeichenlimit?).\n2. Setze das Label `Input needed`.\n3. Warte auf die Antwort, bevor du weiterarbeitest.\n\n## Hinweise\n- Schema an zwei Stellen pflegen: Drizzle-Schema (Typ-Inferenz) und `migrate.ts` (Runtime-Source-of-Truth).\n- Zod: `z.string().max(<Limit>).optional().nullable()` — auch im Update-Schema.\n- Detail-Anzeige mit CSS `white-space: pre-wrap`, damit Zeilenumbrüche bleiben.\n- Die Entität `Person` hat bereits ein `notes`-Feld — als Vorlage nutzen.\n\n## Fertig, wenn\n- [ ] Notiz lässt sich anlegen, speichern und wieder laden.\n- [ ] Textarea mit dem abgestimmten Zeichenlimit im Formular.\n- [ ] Detailseite zeigt Zeilenumbrüche korrekt.',
-    status: 'ON_HOLD',
+    body: '## Ziel\nChancen bekommen ein optionales, mehrzeiliges Notiz-Feld.\n\n## Anforderungen\n- Neue Spalte `notes` (TEXT, optional) in der Tabelle `chance`.\n- Backend akzeptiert und liefert `notes` (Create UND Update).\n- Im Formular: dreizeilige Textarea mit maximal 1000 Zeichen.\n- Auf der Detailseite: Notiz mit erhaltenen Zeilenumbrüchen anzeigen.\n- In der Liste taucht die Notiz NICHT auf.\n\n## Hinweise\n- Schema an zwei Stellen pflegen: Drizzle-Schema (Typ-Inferenz) und `migrate.ts` (Runtime-Source-of-Truth).\n- Zod: `z.string().max(1000).optional().nullable()` — auch im Update-Schema.\n- Detail-Anzeige mit CSS `white-space: pre-wrap`, damit Zeilenumbrüche bleiben.\n- Die Entität `Person` hat bereits ein `notes`-Feld — als Vorlage nutzen.\n\n## Fertig, wenn\n- [ ] Notiz lässt sich anlegen, speichern und wieder laden.\n- [ ] Textarea mit maximal 1000 Zeichen im Formular.\n- [ ] Detailseite zeigt Zeilenumbrüche korrekt.',
+    status: 'TODO',
     solution: null,
     pickedUpAt: null,
     resolvedAt: null,
     createdAt: '2026-06-23T09:00:00.000Z',
     updatedAt: '2026-06-23T09:00:00.000Z',
   },
-  // 12-firma-favorit.md — DEFINITION, owner=HUMAN, FEATURE (open question in comments)
+  // 12-firma-favorit.md — TODO, owner=AI, FEATURE (well-specified, ready to build)
   {
     id: 12,
-    owner: 'HUMAN',
+    owner: 'AI',
     type: 'FEATURE',
     title: 'Firmen als Favorit markieren',
     body: '## Ziel\nFirmen lassen sich per Stern-Icon als Favorit markieren; ein Filter zeigt nur Favoriten.\n\n## Anforderungen\n- Neue Spalte `is_favorit` (Boolean, Default false) in der Tabelle `firma`.\n- Endpoint `PATCH /api/firmen/:id/favorit` toggelt den Wert.\n- Stern-Icon in der Firmenliste vor dem Namen: voll = Favorit, transparent = kein Favorit. Klick toggelt.\n- Checkbox „Nur Favoriten anzeigen" über der Liste filtert auf Favoriten.\n- Der Favoritenstatus gilt pro Firma (nicht pro User).\n\n## Hinweise\n- SQLite speichert Boolean als INTEGER (0/1) — im Service zu Boolean mappen.\n- Migration in `migrate.ts` idempotent ergänzen: `ALTER TABLE firma ADD COLUMN is_favorit INTEGER NOT NULL DEFAULT 0`.\n- Stern-Klick in ag-Grid: `event.stopPropagation()`, damit nicht die Zeilen-Navigation auslöst. Nach dem PATCH die Row lokal aktualisieren.\n- FontAwesome `faStar`, gerendert mit `<fa-icon [icon]="faStar">`; voll/transparent über Opacity.\n\n## Fertig, wenn\n- [ ] Stern in der Liste, Klick toggelt und bleibt nach Reload erhalten.\n- [ ] Filter-Checkbox zeigt nur Favoriten.',
-    status: 'DEFINITION',
+    status: 'TODO',
     solution: null,
     pickedUpAt: null,
     resolvedAt: null,
@@ -196,68 +196,68 @@ const TICKET_SEED: TicketSeedRow[] = [
 ];
 
 const TICKET_COMMENT_SEED: TicketCommentSeedRow[] = [
-  // 07 CSV-Export (ON_HOLD): question about separator (comma vs semicolon)
+  // 01 Firmenkarte (DEFINITION): too vague — ask for detail
   {
     id: 1,
-    ticketId: 7,
+    ticketId: 1,
     author: 'AGENT',
     authorName: 'Claude Code',
-    body: 'Welches Trennzeichen soll die CSV-Datei verwenden: Komma (Standard) oder Semikolon (für deutsches Excel)? Die Wahl beeinflusst, ob die Datei per Doppelklick korrekt in Excel öffnet.',
-    createdAt: '2026-06-21T10:05:00.000Z',
+    body: 'Diese Anforderung ist noch zu vage, um sie zu bauen. Bitte beschreibe genauer: Welche Karten-Bibliothek oder welchen Anbieter sollen wir nutzen, woher kommen die Koordinaten der Firmen (aus der Adresse?), und was soll beim Klick auf eine Firma passieren?',
+    createdAt: '2026-06-20T08:05:00.000Z',
   },
-  // 09 Sidebar Counters (DEFINITION, owner=HUMAN): question about all vs open Chancen
+  // 02 KI-Chat (DEFINITION): too vague — ask for detail
   {
     id: 2,
-    ticketId: 9,
+    ticketId: 2,
     author: 'AGENT',
     authorName: 'Claude Code',
-    body: 'Soll der Chancen-Badge im Seitenmenü alle Chancen zählen oder nur die offenen? Für „alle" ist eine neue Backend-Abfrage nötig, da `GET /api/dashboard` nur `offeneChancenCount` liefert.',
-    createdAt: '2026-06-22T09:05:00.000Z',
+    body: 'Bitte erkläre genauer, was der KI-Chat können soll: Auf welche Daten greift er zu (Firmen, Personen, Chancen?), wo erscheint er in der Oberfläche, und welche Art von Fragen soll er beantworten?',
+    createdAt: '2026-06-20T09:05:00.000Z',
   },
-  // 11 Chance Notiz (ON_HOLD): question about max character limit
+  // 03 Firmendossier (DEFINITION): too vague — ask for detail
   {
     id: 3,
-    ticketId: 11,
+    ticketId: 3,
     author: 'AGENT',
     authorName: 'Claude Code',
-    body: 'Welches maximale Zeichenlimit soll das Notiz-Feld einer Chance haben? Das Limit steuert sowohl die Zod-Validierung im Backend als auch das Frontend-Textarea-Limit.',
-    createdAt: '2026-06-23T09:05:00.000Z',
+    body: 'Diese Aufgabe ist noch zu offen. Bitte beschreibe genauer: Welche Infos sollen im Dossier stehen, aus welcher Quelle (welche API oder Website), und an welcher Stelle in der App werden sie angezeigt?',
+    createdAt: '2026-06-20T10:05:00.000Z',
   },
-  // 08 Aktivitaet-Icons (DEFINITION, owner=HUMAN): question about the fallback icon
+  // 04 KI-Beziehungsanalyse (DEFINITION): too vague — ask for detail
   {
     id: 4,
-    ticketId: 8,
-    author: 'AGENT',
-    authorName: 'Claude Code',
-    body: 'Welches neutrale Fallback-Icon soll für unbekannte Aktivitätstypen verwendet werden — zum Beispiel ein generisches Kreis-Icon, ein Fragezeichen oder ein Listen-Icon?',
-    createdAt: '2026-06-22T08:05:00.000Z',
-  },
-  // 12 Firma-Favorit (DEFINITION, owner=HUMAN): question about filter persistence
-  {
-    id: 5,
-    ticketId: 12,
-    author: 'AGENT',
-    authorName: 'Claude Code',
-    body: 'Soll die Checkbox „Nur Favoriten anzeigen" ihren Zustand über einen Seiten-Reload hinweg behalten, oder bei jedem Laden der Firmenliste zurückgesetzt werden?',
-    createdAt: '2026-06-24T08:05:00.000Z',
-  },
-  // 04 KI-Beziehungsanalyse (DEFINITION, owner=HUMAN): needs more detail before it can start
-  {
-    id: 6,
     ticketId: 4,
     author: 'AGENT',
     authorName: 'Claude Code',
     body: 'Diese Anforderung ist noch sehr offen. Bitte gib mehr Details: Welche Beziehungen genau soll die KI analysieren (Firma–Person, Person–Person, Chancen?), und was soll als Ergebnis herauskommen — ein Text, eine Bewertung, eine Visualisierung?',
     createdAt: '2026-06-20T11:05:00.000Z',
   },
-  // 05 CSV-Import (DEFINITION, owner=HUMAN): needs more detail before it can start
+  // 05 CSV-Import (DEFINITION): too vague — ask for detail
   {
-    id: 7,
+    id: 5,
     ticketId: 5,
     author: 'AGENT',
     authorName: 'Claude Code',
     body: 'Hier fehlen noch Details. Bitte gib mehr Infos: Welche Dateiformate sollen unterstützt werden (CSV, Excel?), welche Spalten erwartet der Import, und wie sollen Duplikate oder fehlerhafte Zeilen behandelt werden?',
     createdAt: '2026-06-21T08:05:00.000Z',
+  },
+  // 07 CSV-Export (ON_HOLD): question about separator (comma vs semicolon)
+  {
+    id: 6,
+    ticketId: 7,
+    author: 'AGENT',
+    authorName: 'Claude Code',
+    body: 'Welches Trennzeichen soll die CSV-Datei verwenden: Komma (Standard) oder Semikolon (für deutsches Excel)? Die Wahl beeinflusst, ob die Datei per Doppelklick korrekt in Excel öffnet.',
+    createdAt: '2026-06-21T10:05:00.000Z',
+  },
+  // 09 Sidebar Counters (ON_HOLD): question about all vs open Chancen
+  {
+    id: 7,
+    ticketId: 9,
+    author: 'AGENT',
+    authorName: 'Claude Code',
+    body: 'Soll der Chancen-Badge im Seitenmenü alle Chancen zählen oder nur die offenen? Für „alle" ist eine neue Backend-Abfrage nötig, da `GET /api/dashboard` nur `offeneChancenCount` liefert.',
+    createdAt: '2026-06-22T09:05:00.000Z',
   },
 ];
 
