@@ -679,6 +679,9 @@ describe('TicketDetailComponent — DEFINITION status actions', () => {
     mockService.handToAi.and.returnValue(
       of({ ...definitionTicket, owner: 'AI', status: 'TODO' }),
     );
+    mockService.setOwner.and.returnValue(
+      of({ ...definitionTicket, owner: 'AI' }),
+    );
     mockService.setStatus.and.returnValue(of({ ...definitionTicket, status: 'TODO' }));
 
     await TestBed.configureTestingModule({
@@ -728,40 +731,43 @@ describe('TicketDetailComponent — DEFINITION status actions', () => {
     expect(badge.textContent?.trim()).toBe('Definition');
   });
 
-  it('calls ticketService.handToAi with the ticket id when "An KI übergeben" is clicked', fakeAsync(() => {
+  it('assigns to AI via setOwner (keeps DEFINITION) when "An KI übergeben" is clicked', fakeAsync(() => {
     findButtonByText('An KI übergeben')!.click();
     tick();
 
-    expect(mockService.handToAi).toHaveBeenCalledWith(10);
+    expect(mockService.setOwner).toHaveBeenCalledWith(10, 'AI');
+    expect(mockService.handToAi).not.toHaveBeenCalled();
   }));
 
-  it('updates the ticket after handToAi() succeeds', fakeAsync(() => {
+  it('updates the ticket to owner=AI, status stays DEFINITION after "An KI übergeben" succeeds', fakeAsync(() => {
     findButtonByText('An KI übergeben')!.click();
+    tick();
+
+    expect(component.ticket?.owner).toBe('AI');
+    expect(component.ticket?.status).toBe('DEFINITION');
+  }));
+
+  it('assigns to AI and moves to TODO via handToAi when "Nach Bereit" is clicked', fakeAsync(() => {
+    findButtonByText('Nach Bereit')!.click();
+    tick();
+
+    expect(mockService.handToAi).toHaveBeenCalledWith(10);
+    expect(mockService.setStatus).not.toHaveBeenCalled();
+  }));
+
+  it('updates the ticket to owner=AI, status=TODO after "Nach Bereit" succeeds', fakeAsync(() => {
+    findButtonByText('Nach Bereit')!.click();
     tick();
 
     expect(component.ticket?.owner).toBe('AI');
     expect(component.ticket?.status).toBe('TODO');
   }));
 
-  it('calls ticketService.setStatus with (id, "TODO") when "Nach Bereit" is clicked', fakeAsync(() => {
-    findButtonByText('Nach Bereit')!.click();
-    tick();
-
-    expect(mockService.setStatus).toHaveBeenCalledWith(10, 'TODO');
-  }));
-
-  it('updates the ticket after moveToReady() (Nach Bereit) succeeds', fakeAsync(() => {
-    findButtonByText('Nach Bereit')!.click();
-    tick();
-
-    expect(component.ticket?.status).toBe('TODO');
-  }));
-
-  it('disables both Definition buttons while handToAi() is in flight', fakeAsync(() => {
+  it('disables both Definition buttons while "Nach Bereit" (handToAi) is in flight', fakeAsync(() => {
     const handToAi$ = new Subject<Ticket>();
     mockService.handToAi.and.returnValue(handToAi$);
 
-    findButtonByText('An KI übergeben')!.click();
+    findButtonByText('Nach Bereit')!.click();
     fixture.detectChanges();
 
     expect(findButtonByText('An KI übergeben')!.disabled).toBeTrue();
@@ -772,20 +778,20 @@ describe('TicketDetailComponent — DEFINITION status actions', () => {
     tick();
   }));
 
-  it('resets savingHandToAi and notifies an error when handToAi() fails', fakeAsync(() => {
-    mockService.handToAi.and.returnValue(throwError(() => new Error('Server error')));
+  it('resets savingAssignAi and notifies an error when "An KI übergeben" (setOwner) fails', fakeAsync(() => {
+    mockService.setOwner.and.returnValue(throwError(() => new Error('Server error')));
 
     findButtonByText('An KI übergeben')!.click();
     tick();
 
-    expect(component.savingHandToAi).toBeFalse();
+    expect(component.savingAssignAi).toBeFalse();
     expect(mockNotification.error).toHaveBeenCalledWith(
-      'Fehler beim Übergeben des Tickets an die KI.',
+      'Fehler beim Zuweisen des Tickets an die KI.',
     );
   }));
 
-  it('resets savingMoveToReady and notifies an error when setStatus() fails for "Nach Bereit"', fakeAsync(() => {
-    mockService.setStatus.and.returnValue(throwError(() => new Error('Server error')));
+  it('resets savingMoveToReady and notifies an error when "Nach Bereit" (handToAi) fails', fakeAsync(() => {
+    mockService.handToAi.and.returnValue(throwError(() => new Error('Server error')));
 
     findButtonByText('Nach Bereit')!.click();
     tick();

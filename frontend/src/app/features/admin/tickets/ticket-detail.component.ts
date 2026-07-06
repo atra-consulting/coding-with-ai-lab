@@ -168,11 +168,11 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
                 <div class="d-flex flex-column gap-2">
                   <button
                     class="btn btn-outline-primary w-100"
-                    (click)="handToAi()"
-                    [disabled]="savingHandToAi || savingMoveToReady"
-                    title="Eigentümer auf KI setzen und Status auf &quot;Zu bereit&quot; setzen"
+                    (click)="assignToAi()"
+                    [disabled]="savingAssignAi || savingMoveToReady || ticket.owner === 'AI'"
+                    title="Eigentümer auf KI setzen, Ticket bleibt in &quot;Definition&quot;"
                   >
-                    @if (savingHandToAi) {
+                    @if (savingAssignAi) {
                       <span class="spinner-border spinner-border-sm me-1" role="status"></span>
                     }
                     <fa-icon [icon]="faRobot" class="me-1" />An KI übergeben
@@ -180,8 +180,8 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
                   <button
                     class="btn btn-outline-secondary w-100"
                     (click)="moveToReady()"
-                    [disabled]="savingHandToAi || savingMoveToReady"
-                    title="Status auf &quot;Zu bereit&quot; setzen, Eigentümer bleibt unverändert"
+                    [disabled]="savingAssignAi || savingMoveToReady"
+                    title="Eigentümer auf KI setzen und nach &quot;Zu bereit&quot; verschieben"
                   >
                     @if (savingMoveToReady) {
                       <span class="spinner-border spinner-border-sm me-1" role="status"></span>
@@ -371,7 +371,7 @@ export class TicketDetailComponent implements OnInit {
   handingBack = false;
   savingOwner = false;
   savingWontDo = false;
-  savingHandToAi = false;
+  savingAssignAi = false;
   savingMoveToReady = false;
 
   readonly faArrowLeft = faArrowLeft;
@@ -450,10 +450,33 @@ export class TicketDetailComponent implements OnInit {
       });
   }
 
-  handToAi(): void {
+  // "An KI übergeben": assign owner to AI, ticket stays in DEFINITION.
+  assignToAi(): void {
     if (!this.ticket) return;
     const ticketId = this.ticket.id;
-    this.savingHandToAi = true;
+    this.savingAssignAi = true;
+
+    this.ticketService
+      .setOwner(ticketId, 'AI')
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (updated) => {
+          this.ticket = updated;
+          this.savingAssignAi = false;
+          this.notification.success('Ticket der KI zugewiesen. Es bleibt in "Definition".');
+        },
+        error: () => {
+          this.savingAssignAi = false;
+          this.notification.error('Fehler beim Zuweisen des Tickets an die KI.');
+        },
+      });
+  }
+
+  // "Nach Bereit": assign owner to AI and move to TODO ("Zu bereit").
+  moveToReady(): void {
+    if (!this.ticket) return;
+    const ticketId = this.ticket.id;
+    this.savingMoveToReady = true;
 
     this.ticketService
       .handToAi(ticketId)
@@ -461,29 +484,8 @@ export class TicketDetailComponent implements OnInit {
       .subscribe({
         next: (updated) => {
           this.ticket = updated;
-          this.savingHandToAi = false;
-          this.notification.success('Ticket an KI übergeben.');
-        },
-        error: () => {
-          this.savingHandToAi = false;
-          this.notification.error('Fehler beim Übergeben des Tickets an die KI.');
-        },
-      });
-  }
-
-  moveToReady(): void {
-    if (!this.ticket) return;
-    const ticketId = this.ticket.id;
-    this.savingMoveToReady = true;
-
-    this.ticketService
-      .setStatus(ticketId, 'TODO')
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (updated) => {
-          this.ticket = updated;
           this.savingMoveToReady = false;
-          this.notification.success('Ticket nach Bereit verschoben.');
+          this.notification.success('Ticket der KI zugewiesen und nach "Zu bereit" verschoben.');
         },
         error: () => {
           this.savingMoveToReady = false;

@@ -946,7 +946,7 @@ test.describe('PATCH /api/tickets/:id/status', () => {
     expect(resp.status()).toBe(404);
   });
 
-  test('"Nach Bereit": DEFINITION → TODO, owner unchanged', async () => {
+  test('PATCH status DEFINITION → TODO (drag-drop) keeps owner unchanged', async () => {
     // Fresh ticket starts as HUMAN+DEFINITION.
     const createResp = await admin.post('/api/tickets', {
       data: { type: 'FEATURE', title: 'Ready ticket', body: 'Should move to TODO.' },
@@ -1857,7 +1857,7 @@ test.describe('POST /api/tickets/:id/start', () => {
     expect(created.owner).toBe('HUMAN');
     expect(created.status).toBe('DEFINITION');
 
-    // Drive it to TODO via "Nach Bereit" — owner stays HUMAN.
+    // Drive it to TODO via PATCH /status (drag-drop) — owner stays HUMAN.
     const readyResp = await admin.patch(`/api/tickets/${created.id}/status`, {
       data: { status: 'TODO' },
     });
@@ -1990,7 +1990,7 @@ test.describe('POST /:id/comments — handBackToAi guard (only ON_HOLD+HUMAN all
     expect(created.status).toBe('DEFINITION');
     expect(created.owner).toBe('HUMAN');
 
-    // Drive it to TODO via "Nach Bereit" — owner stays HUMAN.
+    // Drive it to TODO via PATCH /status (drag-drop) — owner stays HUMAN.
     const readyResp = await admin.patch(`/api/tickets/${ticketId}/status`, {
       data: { status: 'TODO' },
     });
