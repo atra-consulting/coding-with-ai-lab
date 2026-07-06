@@ -1,147 +1,27 @@
-<div class="page-header">
-  <h2>Rechner</h2>
+<div class="page-header mb-3">
+  <h2>Ein Ticket bis in Produktion</h2>
+  <p class="text-muted mb-0">Vier Wege, ein Ziel — vergleiche Arbeitszeit, Wartezeit und Rollen.</p>
 </div>
 
-<!-- HERO: geführte Erzählung des heutigen (menschlichen) Prozesses -->
-<section class="hero-card card mb-4" aria-labelledby="hero-title">
-  <div class="card-body">
-    <p class="hero-eyebrow">Der heutige Prozess</p>
-    <h2 id="hero-title" class="hero-title">
-      Ein Ticket bis in Produktion:
-      <span class="hero-total">{{ heroGesamt() | dauer }}</span>
-    </h2>
-    <p class="hero-sub">
-      Von der Anfrage bis zum Deployment — durch die Hände von BA, zwei
-      Entwicklern und einem Tester.
-    </p>
-
-    <!-- Schritt 0: einfarbiger Gesamtbalken (verrät die Aufteilung noch nicht) -->
-    <svg
-      class="hero-solid-svg"
-      viewBox="0 0 100 10"
-      preserveAspectRatio="none"
-      role="img"
-      [attr.aria-label]="'Aufwand gesamt: ' + (heroGesamt() | dauer)"
-    >
-      <rect x="0" y="0" width="100" height="10" fill="#264892" />
-    </svg>
-    <div class="hero-solid-label">
-      <span>Aufwand gesamt</span>
-      <span>{{ heroGesamt() | dauer }}</span>
-    </div>
-
-    <!-- Schritt 1: Menschlich aufschlüsseln -->
-    @if (revealStep() < 1) {
-      <div class="hero-cta">
-        <button type="button" class="btn btn-primary" (click)="reveal(1)">
-          Was kostet wie viel Zeit? ↓
-        </button>
-      </div>
-    } @else {
-      <div class="hero-reveal">
-        <p class="hero-reveal-title">Was steckt wirklich drin?</p>
-        <div class="hero-legend" aria-hidden="true">
-          <span class="hero-chip hero-chip--work">Arbeit</span>
-          <span class="hero-chip hero-chip--wait">Warten</span>
-        </div>
-        <ng-container
-          [ngTemplateOutlet]="procBar"
-          [ngTemplateOutletContext]="{ $implicit: 0, ns: 'hero', shared: true }"
-        />
-        <p class="hero-why">
-          Überraschung: Von {{ heroGesamt() | dauer }} sind nur
-          <strong>{{ heroArbeit() | dauer }}</strong> echte Arbeit — gerade
-          einmal {{ heroArbeitPct() }}&nbsp;%. Die übrige Zeit liegt das Ticket
-          still und wartet auf die nächste Person: Refinement, Reviews, Tests,
-          Releases. Fahre über die Abschnitte, um jeden Schritt zu sehen.
-        </p>
-      </div>
-    }
-
-    <!-- Schritt 2: Halbautomatisch -->
-    @if (revealStep() >= 1) {
-      @if (revealStep() < 2) {
-        <div class="hero-cta">
-          <button type="button" class="btn btn-primary" (click)="reveal(2)">
-            Verbessere den Prozess (halbautomatisch) ↓
-          </button>
-        </div>
-      } @else {
-        <div class="hero-reveal">
-          <ng-container
-            [ngTemplateOutlet]="procBar"
-            [ngTemplateOutletContext]="{ $implicit: 1, ns: 'hero', shared: true }"
-          />
-        </div>
-      }
-    }
-
-    <!-- Schritt 3: Vollautomatisch -->
-    @if (revealStep() >= 2) {
-      @if (revealStep() < 3) {
-        <div class="hero-cta">
-          <button type="button" class="btn btn-primary" (click)="reveal(3)">
-            Vollautomatisch: Human in the Loop entfernen ↓
-          </button>
-        </div>
-      } @else {
-        <div class="hero-reveal">
-          <ng-container
-            [ngTemplateOutlet]="procBar"
-            [ngTemplateOutletContext]="{ $implicit: 2, ns: 'hero', shared: true }"
-          />
-          <div class="hero-goal">
-            <span class="hero-goal-label">Ziel</span>
-            <span>
-              Den Menschen so weit wie möglich aus der Schleife (Human in the
-              Loop) nehmen — jede entfernte Übergabe streicht eine Wartezeit. Aus
-              {{ heroGesamt() | dauer }} werden {{ getProzessTotal(2) | dauer }}.
-            </span>
-          </div>
-        </div>
-      }
-    }
-
-    <!-- Brücke / Scroll-Cue zum Bestand -->
-    <div class="hero-bridge">
-      <a
-        href="#prozessvergleich"
-        class="hero-scroll-link"
-        (click)="scrollToDetail($event)"
-        >Alle Details &amp; selbst durchrechnen ↓</a
-      >
-    </div>
-  </div>
-</section>
-
-<!-- Wiederverwendbarer Prozessbalken (Hero + Vergleich); ns = eindeutiges ID-Präfix, shared = gemeinsame Basis -->
-<ng-template #procBar let-prozessIdx let-ns="ns" let-shared="shared">
+<!-- Wiederverwendbarer Prozessbalken; ns = eindeutiges ID-Präfix für aria-Attribute -->
+<ng-template #procBar let-prozessIdx let-ns="ns">
   <div class="process-bar-wrap">
     <div class="bar-label-row">
       <span class="bar-title">{{ prozesse[prozessIdx].titel }}</span>
-      <span class="bar-meta">
-        <span class="bar-total">{{ getProzessTotal(prozessIdx) | dauer }}</span>
-        @if (shared) {
-          @if (prozessIdx === 0) {
-            <span class="bar-base">Basis</span>
-          } @else {
-            <span class="bar-saved">↓ {{ getGesparteZeit(prozessIdx) | dauer }} gespart</span>
-          }
-        }
-      </span>
+      <span class="bar-total">{{ getProzessTotal(prozessIdx) | dauer }}</span>
     </div>
 
     <svg
       class="process-svg"
       viewBox="0 0 600 32"
       preserveAspectRatio="none"
-      [attr.aria-labelledby]="'bar-title-' + ns + '-' + prozessIdx"
-      [attr.aria-describedby]="'bar-desc-' + ns + '-' + prozessIdx"
+      [attr.aria-labelledby]="'bar-title-' + ns"
+      [attr.aria-describedby]="'bar-desc-' + ns"
     >
-      <title [id]="'bar-title-' + ns + '-' + prozessIdx">
+      <title [id]="'bar-title-' + ns">
         {{ prozesse[prozessIdx].titel }}: {{ getProzessTotal(prozessIdx) | dauer }}
       </title>
-      <desc [id]="'bar-desc-' + ns + '-' + prozessIdx">
+      <desc [id]="'bar-desc-' + ns">
         Prozessbalken für {{ prozesse[prozessIdx].titel }} mit
         {{ prozesse[prozessIdx].stepCount }} Schritten. Gesamtdauer:
         {{ getProzessTotal(prozessIdx) | dauer }}.
@@ -149,7 +29,7 @@
 
       <defs>
         <pattern
-          [id]="'hatch-wait-' + ns + '-' + prozessIdx"
+          [id]="'hatch-wait-' + ns"
           patternUnits="userSpaceOnUse"
           width="9"
           height="9"
@@ -160,12 +40,7 @@
         </pattern>
       </defs>
 
-      @if (shared) {
-        <!-- Grau-Track = volle Basis (33d); ungenutzter Rest visualisiert die gesparte Zeit -->
-        <rect x="0" y="0" width="600" height="32" fill="#eef1f6" />
-      }
-
-      @for (seg of (shared ? getSharedSegments(prozessIdx, 600) : getSegments(prozessIdx, 600)); track seg.type + '-' + seg.index) {
+      @for (seg of getSegments(prozessIdx, 600); track seg.type + '-' + seg.index) {
         @if (seg.type === 'work') {
           @if (svgSnapshot().prozesse[prozessIdx].works[seg.index] === 0) {
             <rect
@@ -197,7 +72,7 @@
             y="0"
             [attr.width]="seg.width"
             height="32"
-            [attr.fill]="'url(#hatch-wait-' + ns + '-' + prozessIdx + ')'"
+            [attr.fill]="'url(#hatch-wait-' + ns + ')'"
             [ngbTooltip]="getWaitTooltip(prozessIdx, seg.index)"
             container="body"
             aria-hidden="true"
@@ -208,18 +83,10 @@
   </div>
 </ng-template>
 
-<!-- Detailbereich: anfangs ausgeblendet, erscheint per „Alle Details & selbst durchrechnen" -->
-@if (showDetails()) {
-<!-- VISUALIZATION CARD -->
-<div id="prozessvergleich" class="card mb-4 viz-card" tabindex="-1">
+<!-- VISUALIZATION CARD: shared-scale comparison across all four processes -->
+<div id="prozessvergleich" class="card mb-4 viz-card">
   <div class="card-body">
     <h5 class="card-title">Prozessvergleich</h5>
-
-    <!-- Skip link: visible on focus, jumps to input area -->
-    <a
-      href="#schritt-zeiten-eingabe"
-      class="visually-hidden-focusable d-inline-block mb-2"
-    >Zur Eingabe springen</a>
 
     <!-- Legend -->
     <div class="d-flex align-items-center gap-3 mb-3" aria-hidden="true">
@@ -243,10 +110,10 @@
       </span>
     </div>
 
-    <!-- Comparison bar: shared scale, all three processes -->
+    <!-- Comparison bar: shared scale, all four processes -->
     @let bars = getComparisonBars(380);
     <svg
-      class="comparison-svg mb-4"
+      class="comparison-svg"
       role="img"
       [attr.viewBox]="'0 0 500 ' + (prozesse.length * 44)"
       preserveAspectRatio="xMidYMid meet"
@@ -255,12 +122,12 @@
     >
       <title id="cmp-title">Prozessvergleich</title>
       <desc id="cmp-desc">
-        Menschlich: {{ getProzessTotal(0) | dauer }};
-        Halbautomatisch: {{ getProzessTotal(1) | dauer }};
-        Vollautomatisch: {{ getProzessTotal(2) | dauer }}
+        @for (p of prozesse; track p.key) {
+          {{ p.titel }}: {{ getProzessTotal($index) | dauer }}@if (!$last) {; }
+        }
       </desc>
 
-      @for (p of prozesse; track $index) {
+      @for (p of prozesse; track p.key) {
         @let cmpIdx = $index;
         <!-- grey track -->
         <rect
@@ -289,7 +156,7 @@
           fill="#264892"
           font-weight="600"
         >{{ p.titel }}</text>
-        <!-- D6 total label (right of bar) -->
+        <!-- total label (right of bar) -->
         <text
           x="388"
           [attr.y]="cmpIdx * 44 + 30"
@@ -300,15 +167,6 @@
         >{{ getProzessTotal(cmpIdx) | dauer }}</text>
       }
     </svg>
-
-    <!-- Per-process segment bars (geteiltes Template) -->
-    @for (p of prozesse; track $index) {
-      <ng-container
-        [ngTemplateOutlet]="procBar"
-        [ngTemplateOutletContext]="{ $implicit: $index, ns: 'cmp', shared: false }"
-      />
-    }
-
   </div>
 </div>
 
@@ -405,243 +263,103 @@
   </div>
 </div>
 
-<!-- STEP INPUT TABS -->
+<!-- STEP INPUT TABS: one tab per process (title+total → toggle+pies placeholder → Balken bar → Schritt-Zeiten form) -->
 <div class="card">
-  <div id="schritt-zeiten-eingabe" class="card-body" tabindex="-1">
+  <div class="card-body">
     <h5 class="card-title">Schritt-Zeiten</h5>
 
-    <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs mb-3">
+    <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" (navChange)="onNavChange()" class="nav-tabs mb-3">
+      @for (p of prozesse; track p.key) {
+        <li [ngbNavItem]="$index + 1">
+          <button ngbNavLink>{{ p.titel }} ({{ p.stepCount }})</button>
+          <ng-template ngbNavContent>
+            <div class="d-flex justify-content-between align-items-baseline mb-3">
+              <h6 class="mb-0">{{ p.titel }}</h6>
+              <span class="bar-total">{{ getProzessTotal($index) | dauer }}</span>
+            </div>
 
-      <!-- Tab 1: Menschlich (23 steps) -->
-      <li [ngbNavItem]="1">
-        <button ngbNavLink>Menschlich ({{ prozesse[0].stepCount }})</button>
-        <ng-template ngbNavContent>
-          <form [formGroup]="form">
-            <div formGroupName="menschlich">
-              @for (ctrl of getWorksArray('menschlich').controls; track $index) {
-                <!-- Work step row -->
-                <div class="mb-2">
-                  <div class="step-row">
-                    <span class="step-label fw-semibold">
-                      {{ $index + 1 }}. {{ prozesse[0].labels[$index] }}
-                    </span>
-                    <span class="text-muted small">Arbeitszeit:</span>
-                    <input
-                      type="number"
-                      class="form-control input-number"
-                      [formControl]="getValueCtrl(ctrl)"
-                      min="0"
-                      max="479520"
-                      [attr.aria-label]="prozesse[0].labels[$index] + ' – Arbeitszeit (Wert)'"
-                      [attr.aria-describedby]="getValueCtrl(ctrl).invalid && getValueCtrl(ctrl).touched ? 'menschlich-work-err-' + $index : null"
-                    />
-                    <select
-                      class="form-select w-auto"
-                      [formControl]="getUnitCtrl(ctrl)"
-                      [attr.aria-label]="prozesse[0].labels[$index] + ' – Arbeitszeit (Einheit)'"
-                    >
-                      @for (einheit of zeiteinheiten; track einheit) {
-                        <option [value]="einheit">{{ einheit }}</option>
-                      }
-                    </select>
-                    @if (getValueCtrl(ctrl).invalid && getValueCtrl(ctrl).touched) {
-                      <div [id]="'menschlich-work-err-' + $index" class="text-danger small">
-                        Wert muss zwischen 0 und 479.520 liegen.
-                      </div>
-                    }
-                  </div>
-                </div>
+            <!-- ui-designer: toggle + pies here -->
 
-                <!-- Wait row after this step (only if not last) -->
-                @if ($index < getWaitsArray('menschlich').controls.length) {
+            <ng-container
+              [ngTemplateOutlet]="procBar"
+              [ngTemplateOutletContext]="{ $implicit: $index, ns: p.key }"
+            />
+
+            <form [formGroup]="form" class="mt-4">
+              <div [formGroupName]="p.key">
+                @for (ctrl of getWorksArray(p.key).controls; track $index) {
+                  <!-- Work step row -->
                   <div class="mb-2">
-                    <div class="wait-row">
-                      <span class="text-muted small">Wartezeit nach Schritt {{ $index + 1 }}:</span>
+                    <div class="step-row">
+                      <span class="step-label fw-semibold">
+                        {{ $index + 1 }}. {{ p.labels[$index] }}
+                      </span>
+                      <span class="text-muted small">{{ p.arbeitszeitLabel }}:</span>
                       <input
                         type="number"
                         class="form-control input-number"
-                        [formControl]="getWaitValueCtrl('menschlich', $index)"
+                        [formControl]="getValueCtrl(ctrl)"
                         min="0"
-                        max="479520"
-                        [attr.aria-label]="'Wartezeit nach Schritt ' + ($index + 1) + ' – (Wert)'"
-                        [attr.aria-describedby]="getWaitValueCtrl('menschlich', $index).invalid && getWaitValueCtrl('menschlich', $index).touched ? 'menschlich-wait-err-' + $index : null"
+                        [attr.max]="getValueMax(ctrl)"
+                        [attr.aria-label]="p.labels[$index] + ' – ' + p.arbeitszeitLabel + ' (Wert)'"
+                        [attr.aria-describedby]="getValueCtrl(ctrl).invalid && getValueCtrl(ctrl).touched ? p.key + '-work-err-' + $index : null"
                       />
                       <select
                         class="form-select w-auto"
-                        [formControl]="getWaitUnitCtrl('menschlich', $index)"
-                        [attr.aria-label]="'Wartezeit nach Schritt ' + ($index + 1) + ' – (Einheit)'"
+                        [formControl]="getUnitCtrl(ctrl)"
+                        [attr.aria-label]="p.labels[$index] + ' – ' + p.arbeitszeitLabel + ' (Einheit)'"
                       >
                         @for (einheit of zeiteinheiten; track einheit) {
                           <option [value]="einheit">{{ einheit }}</option>
                         }
                       </select>
-                      @if (getWaitValueCtrl('menschlich', $index).invalid && getWaitValueCtrl('menschlich', $index).touched) {
-                        <div [id]="'menschlich-wait-err-' + $index" class="text-danger small">
-                          Wert muss zwischen 0 und 479.520 liegen.
+                      @if (getValueCtrl(ctrl).invalid && getValueCtrl(ctrl).touched) {
+                        <div [id]="p.key + '-work-err-' + $index" class="text-danger small">
+                          Wert muss zwischen 0 und {{ getValueMax(ctrl) }} liegen.
                         </div>
                       }
                     </div>
                   </div>
-                }
-              }
-            </div>
-          </form>
-        </ng-template>
-      </li>
 
-      <!-- Tab 2: Halbautomatisch (6 steps) -->
-      <li [ngbNavItem]="2">
-        <button ngbNavLink>Halbautomatisch ({{ prozesse[1].stepCount }})</button>
-        <ng-template ngbNavContent>
-          <form [formGroup]="form">
-            <div formGroupName="halbautomatisch">
-              @for (ctrl of getWorksArray('halbautomatisch').controls; track $index) {
-                <div class="mb-2">
-                  <div class="step-row">
-                    <span class="step-label fw-semibold">
-                      {{ $index + 1 }}. {{ prozesse[1].labels[$index] }}
-                    </span>
-                    <span class="text-muted small">Arbeitszeit:</span>
-                    <input
-                      type="number"
-                      class="form-control input-number"
-                      [formControl]="getValueCtrl(ctrl)"
-                      min="0"
-                      max="479520"
-                      [attr.aria-label]="prozesse[1].labels[$index] + ' – Arbeitszeit (Wert)'"
-                      [attr.aria-describedby]="getValueCtrl(ctrl).invalid && getValueCtrl(ctrl).touched ? 'halb-work-err-' + $index : null"
-                    />
-                    <select
-                      class="form-select w-auto"
-                      [formControl]="getUnitCtrl(ctrl)"
-                      [attr.aria-label]="prozesse[1].labels[$index] + ' – Arbeitszeit (Einheit)'"
-                    >
-                      @for (einheit of zeiteinheiten; track einheit) {
-                        <option [value]="einheit">{{ einheit }}</option>
-                      }
-                    </select>
-                    @if (getValueCtrl(ctrl).invalid && getValueCtrl(ctrl).touched) {
-                      <div [id]="'halb-work-err-' + $index" class="text-danger small">
-                        Wert muss zwischen 0 und 479.520 liegen.
-                      </div>
-                    }
-                  </div>
-                </div>
-
-                @if ($index < getWaitsArray('halbautomatisch').controls.length) {
-                  <div class="mb-2">
-                    <div class="wait-row">
-                      <span class="text-muted small">Wartezeit nach Schritt {{ $index + 1 }}:</span>
-                      <input
-                        type="number"
-                        class="form-control input-number"
-                        [formControl]="getWaitValueCtrl('halbautomatisch', $index)"
-                        min="0"
-                        max="479520"
-                        [attr.aria-label]="'Wartezeit nach Schritt ' + ($index + 1) + ' – (Wert)'"
-                        [attr.aria-describedby]="getWaitValueCtrl('halbautomatisch', $index).invalid && getWaitValueCtrl('halbautomatisch', $index).touched ? 'halb-wait-err-' + $index : null"
-                      />
-                      <select
-                        class="form-select w-auto"
-                        [formControl]="getWaitUnitCtrl('halbautomatisch', $index)"
-                        [attr.aria-label]="'Wartezeit nach Schritt ' + ($index + 1) + ' – (Einheit)'"
-                      >
-                        @for (einheit of zeiteinheiten; track einheit) {
-                          <option [value]="einheit">{{ einheit }}</option>
+                  <!-- Wait row after this step (only if not last) -->
+                  @if ($index < getWaitsArray(p.key).controls.length) {
+                    <div class="mb-2">
+                      <div class="wait-row">
+                        <span class="text-muted small">Wartezeit nach Schritt {{ $index + 1 }}:</span>
+                        <input
+                          type="number"
+                          class="form-control input-number"
+                          [formControl]="getWaitValueCtrl(p.key, $index)"
+                          min="0"
+                          [attr.max]="getWaitValueMax(p.key, $index)"
+                          [attr.aria-label]="'Wartezeit nach Schritt ' + ($index + 1) + ' – (Wert)'"
+                          [attr.aria-describedby]="getWaitValueCtrl(p.key, $index).invalid && getWaitValueCtrl(p.key, $index).touched ? p.key + '-wait-err-' + $index : null"
+                        />
+                        <select
+                          class="form-select w-auto"
+                          [formControl]="getWaitUnitCtrl(p.key, $index)"
+                          [attr.aria-label]="'Wartezeit nach Schritt ' + ($index + 1) + ' – (Einheit)'"
+                        >
+                          @for (einheit of zeiteinheiten; track einheit) {
+                            <option [value]="einheit">{{ einheit }}</option>
+                          }
+                        </select>
+                        @if (getWaitValueCtrl(p.key, $index).invalid && getWaitValueCtrl(p.key, $index).touched) {
+                          <div [id]="p.key + '-wait-err-' + $index" class="text-danger small">
+                            Wert muss zwischen 0 und {{ getWaitValueMax(p.key, $index) }} liegen.
+                          </div>
                         }
-                      </select>
-                      @if (getWaitValueCtrl('halbautomatisch', $index).invalid && getWaitValueCtrl('halbautomatisch', $index).touched) {
-                        <div [id]="'halb-wait-err-' + $index" class="text-danger small">
-                          Wert muss zwischen 0 und 479.520 liegen.
-                        </div>
-                      }
-                    </div>
-                  </div>
-                }
-              }
-            </div>
-          </form>
-        </ng-template>
-      </li>
-
-      <!-- Tab 3: Vollautomatisch (2 steps) -->
-      <li [ngbNavItem]="3">
-        <button ngbNavLink>Vollautomatisch ({{ prozesse[2].stepCount }})</button>
-        <ng-template ngbNavContent>
-          <form [formGroup]="form">
-            <div formGroupName="vollautomatisch">
-              @for (ctrl of getWorksArray('vollautomatisch').controls; track $index) {
-                <div class="mb-2">
-                  <div class="step-row">
-                    <span class="step-label fw-semibold">
-                      {{ $index + 1 }}. {{ prozesse[2].labels[$index] }}
-                    </span>
-                    <span class="text-muted small">Arbeitszeit:</span>
-                    <input
-                      type="number"
-                      class="form-control input-number"
-                      [formControl]="getValueCtrl(ctrl)"
-                      min="0"
-                      max="479520"
-                      [attr.aria-label]="prozesse[2].labels[$index] + ' – Arbeitszeit (Wert)'"
-                      [attr.aria-describedby]="getValueCtrl(ctrl).invalid && getValueCtrl(ctrl).touched ? 'voll-work-err-' + $index : null"
-                    />
-                    <select
-                      class="form-select w-auto"
-                      [formControl]="getUnitCtrl(ctrl)"
-                      [attr.aria-label]="prozesse[2].labels[$index] + ' – Arbeitszeit (Einheit)'"
-                    >
-                      @for (einheit of zeiteinheiten; track einheit) {
-                        <option [value]="einheit">{{ einheit }}</option>
-                      }
-                    </select>
-                    @if (getValueCtrl(ctrl).invalid && getValueCtrl(ctrl).touched) {
-                      <div [id]="'voll-work-err-' + $index" class="text-danger small">
-                        Wert muss zwischen 0 und 479.520 liegen.
                       </div>
-                    }
-                  </div>
-                </div>
-
-                @if ($index < getWaitsArray('vollautomatisch').controls.length) {
-                  <div class="mb-2">
-                    <div class="wait-row">
-                      <span class="text-muted small">Wartezeit nach Schritt {{ $index + 1 }}:</span>
-                      <input
-                        type="number"
-                        class="form-control input-number"
-                        [formControl]="getWaitValueCtrl('vollautomatisch', $index)"
-                        min="0"
-                        max="479520"
-                        [attr.aria-label]="'Wartezeit nach Schritt ' + ($index + 1) + ' – (Wert)'"
-                        [attr.aria-describedby]="getWaitValueCtrl('vollautomatisch', $index).invalid && getWaitValueCtrl('vollautomatisch', $index).touched ? 'voll-wait-err-' + $index : null"
-                      />
-                      <select
-                        class="form-select w-auto"
-                        [formControl]="getWaitUnitCtrl('vollautomatisch', $index)"
-                        [attr.aria-label]="'Wartezeit nach Schritt ' + ($index + 1) + ' – (Einheit)'"
-                      >
-                        @for (einheit of zeiteinheiten; track einheit) {
-                          <option [value]="einheit">{{ einheit }}</option>
-                        }
-                      </select>
-                      @if (getWaitValueCtrl('vollautomatisch', $index).invalid && getWaitValueCtrl('vollautomatisch', $index).touched) {
-                        <div [id]="'voll-wait-err-' + $index" class="text-danger small">
-                          Wert muss zwischen 0 und 479.520 liegen.
-                        </div>
-                      }
                     </div>
-                  </div>
+                  }
                 }
-              }
-            </div>
-          </form>
-        </ng-template>
-      </li>
-
+              </div>
+            </form>
+          </ng-template>
+        </li>
+      }
     </ul>
 
     <div [ngbNavOutlet]="nav"></div>
   </div>
 </div>
-}
