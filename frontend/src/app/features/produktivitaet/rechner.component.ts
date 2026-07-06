@@ -18,7 +18,7 @@ import {
 } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
 import { NgbModal, NgbNavModule, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
-import { debounceTime, pairwise, startWith } from 'rxjs/operators';
+import { debounceTime } from 'rxjs/operators';
 import {
   DEFAULT_DURATIONS,
   PROZESS_ROLLEN,
@@ -326,8 +326,13 @@ export class RechnerComponent implements OnInit {
   private viewModeSignal = signal<'balken' | 'flussdiagramm'>('balken');
   readonly viewMode = this.viewModeSignal.asReadonly();
 
-  /** Guards the unit-conversion pipeline against firing while a scenario is being patched in. */
-  private isLoading = signal(false);
+  /**
+   * Tracks each step's unit control's most-recently-seen value, so wireUnitConversion
+   * can detect a real user-driven unit change vs. a silent {emitEvent:false} reset
+   * (e.g. from patchSchritt during a scenario load). Keyed by the control instance
+   * because RxJS emission history (pairwise) can't see emitEvent:false patches.
+   */
+  private letzteEinheit = new Map<FormControl<ZeitEinheit>, ZeitEinheit>();
 
   // One Record<ProzessKey, ProzessSnapshot> holds works/waits/total for all four processes.
   private prozessDaten = signal<Record<ProzessKey, ProzessSnapshot>>(baueInitialeProzessDaten());
@@ -365,10 +370,6 @@ export class RechnerComponent implements OnInit {
     this.viewModeSignal.set(mode);
   }
 
-  toggleView(): void {
-    this.viewModeSignal.update((m) => (m === 'balken' ? 'flussdiagramm' : 'balken'));
-  }
-
   private baueFormular(): FormGroup {
     const gruppen: Record<string, FormGroup> = {};
     for (const p of PROZESSE) {
@@ -393,22 +394,23 @@ export class RechnerComponent implements OnInit {
 
   /**
    * Subscribes to a step group's unit control so switching units converts the value
-   * in place (R5). Uses startWith + pairwise to see [prev, cur] on every change, and
-   * is skipped entirely while a scenario is loading (isLoading guard + the load
-   * path's own {emitEvent:false} patches).
+   * in place (R5). The "previous unit" is tracked explicitly in the letzteEinheit map
+   * (keyed by control instance) rather than derived from RxJS emission history —
+   * patchSchritt's silent {emitEvent:false} reset during a scenario load never fires
+   * valueChanges, so a pairwise buffer would go stale and mislabel the loaded value.
    */
   private wireUnitConversion(group: FormGroup): void {
     const unitCtrl = group.get('unit') as FormControl<ZeitEinheit>;
     const valueCtrl = group.get('value') as FormControl<number>;
 
+    this.letzteEinheit.set(unitCtrl, unitCtrl.value);
+
     unitCtrl.valueChanges
-      .pipe(
-        startWith(unitCtrl.value),
-        pairwise(),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe(([prev, cur]) => {
-        if (this.isLoading() || prev === cur) return;
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((cur) => {
+        const prev = this.letzteEinheit.get(unitCtrl) ?? unitCtrl.value;
+        this.letzteEinheit.set(unitCtrl, cur);
+        if (prev === cur) return;
 
         const minuten = feldWertZuMinuten(valueCtrl.value ?? 0, prev);
         const konvertiert = minuten / einheitZuFaktor(cur);
@@ -503,7 +505,6 @@ export class RechnerComponent implements OnInit {
     this.nameInput = s.name;
     this.nameError = null;
 
-    this.isLoading.set(true);
     for (const p of PROZESSE) {
       const feld = PROZESS_SZENARIO_FELD[p.key];
       const stored: ProzessDauer | undefined = s[feld];
@@ -511,7 +512,6 @@ export class RechnerComponent implements OnInit {
         stored && stored.works.length === p.stepCount ? stored : DEFAULT_DURATIONS[p.key];
       this.patchProzessArray(p.key, quelle.works, quelle.waits);
     }
-    this.isLoading.set(false);
 
     // The {emitEvent:false} patches above suppress form.valueChanges → berechne(),
     // so recompute explicitly. Required for the tabs/bars/pies to reflect the load.
@@ -532,6 +532,11 @@ export class RechnerComponent implements OnInit {
       const valueCtrl = this.getValueCtrl(ctrl);
       valueCtrl.setValidators(durationValidatorsFor('Minuten'));
       valueCtrl.updateValueAndValidity({ emitEvent: false });
+
+      // The patch above never fires unitCtrl.valueChanges (emitEvent:false), so keep
+      // the tracked "previous unit" truthful for the next real user-driven switch.
+      const unitCtrl = this.getUnitCtrl(ctrl);
+      this.letzteEinheit.set(unitCtrl, 'Minuten');
     };
 
     works.forEach((min, i) => patchSchritt(worksArray.at(i), min));

@@ -3,13 +3,15 @@
   <p class="text-muted mb-0">Vier Wege, ein Ziel — vergleiche Arbeitszeit, Wartezeit und Rollen.</p>
 </div>
 
-<!-- Wiederverwendbarer Prozessbalken; ns = eindeutiges ID-Präfix für aria-Attribute -->
-<ng-template #procBar let-prozessIdx let-ns="ns">
+<!-- Wiederverwendbarer Prozessbalken; ns = eindeutiges ID-Präfix für aria-Attribute; showTitle=false unterdrückt die eigene Titel/Summe-Zeile, wenn ein Aufrufer sie schon selbst rendert. -->
+<ng-template #procBar let-prozessIdx let-ns="ns" let-showTitle="showTitle">
   <div class="process-bar-wrap">
-    <div class="bar-label-row">
-      <span class="bar-title">{{ prozesse[prozessIdx].titel }}</span>
-      <span class="bar-total">{{ getProzessTotal(prozessIdx) | dauer }}</span>
-    </div>
+    @if (showTitle !== false) {
+      <div class="bar-label-row">
+        <span class="bar-title">{{ prozesse[prozessIdx].titel }}</span>
+        <span class="bar-total">{{ getProzessTotal(prozessIdx) | dauer }}</span>
+      </div>
+    }
 
     <svg
       class="process-svg"
@@ -160,27 +162,8 @@
   <div class="card-body">
     <h5 class="card-title">Prozessvergleich</h5>
 
-    <!-- Legend -->
-    <div class="d-flex align-items-center gap-3 mb-3" aria-hidden="true">
-      <span class="d-flex align-items-center gap-1">
-        <svg width="16" height="16" aria-hidden="true">
-          <rect width="16" height="16" fill="#264892" rx="2" />
-        </svg>
-        <span class="small">Arbeitszeit</span>
-      </span>
-      <span class="d-flex align-items-center gap-1">
-        <svg width="16" height="16" aria-hidden="true">
-          <defs>
-            <pattern id="legend-hatch" patternUnits="userSpaceOnUse" width="9" height="9" patternTransform="rotate(45)">
-              <rect width="9" height="9" fill="#f4e6d3" />
-              <line x1="0" y1="0" x2="0" y2="9" stroke="#cf944f" stroke-width="1.6" />
-            </pattern>
-          </defs>
-          <rect width="16" height="16" fill="url(#legend-hatch)" rx="2" />
-        </svg>
-        <span class="small">Wartezeit</span>
-      </span>
-    </div>
+    <!-- Caption: this chart shows one solid bar per process, scaled to the longest total (no work/wait split here). -->
+    <p class="text-muted small mb-3">Balken = Anteil an der längsten Gesamtdauer.</p>
 
     <!-- Comparison bar: shared scale, all four processes -->
     @let bars = getComparisonBars(380);
@@ -345,6 +328,8 @@
         <li [ngbNavItem]="$index + 1">
           <button ngbNavLink>{{ p.titel }} ({{ p.stepCount }})</button>
           <ng-template ngbNavContent>
+            <a class="visually-hidden-focusable" href="#form-{{ p.key }}">Zur Eingabe springen</a>
+
             <div class="d-flex justify-content-between align-items-baseline mb-3">
               <h6 class="mb-0">{{ p.titel }}</h6>
               <span class="bar-total">{{ getProzessTotal($index) | dauer }}</span>
@@ -377,7 +362,7 @@
             @if (viewMode() === 'balken') {
               <ng-container
                 [ngTemplateOutlet]="procBar"
-                [ngTemplateOutletContext]="{ $implicit: $index, ns: p.key }"
+                [ngTemplateOutletContext]="{ $implicit: $index, ns: p.key, showTitle: false }"
               />
             } @else {
               <!--
@@ -448,7 +433,7 @@
               }
             </div>
 
-            <form [formGroup]="form" class="mt-4">
+            <form [formGroup]="form" class="mt-4" id="form-{{ p.key }}" tabindex="-1">
               <div [formGroupName]="p.key">
                 @for (ctrl of getWorksArray(p.key).controls; track $index) {
                   <!-- Work step row -->
@@ -478,7 +463,7 @@
                       </select>
                       @if (getValueCtrl(ctrl).invalid && getValueCtrl(ctrl).touched) {
                         <div [id]="p.key + '-work-err-' + $index" class="text-danger small">
-                          Wert muss zwischen 0 und {{ getValueMax(ctrl) }} liegen.
+                          Wert muss zwischen 0 und {{ getValueMax(ctrl).toLocaleString('de-DE') }} liegen.
                         </div>
                       }
                     </div>
@@ -509,7 +494,7 @@
                         </select>
                         @if (getWaitValueCtrl(p.key, $index).invalid && getWaitValueCtrl(p.key, $index).touched) {
                           <div [id]="p.key + '-wait-err-' + $index" class="text-danger small">
-                            Wert muss zwischen 0 und {{ getWaitValueMax(p.key, $index) }} liegen.
+                            Wert muss zwischen 0 und {{ getWaitValueMax(p.key, $index).toLocaleString('de-DE') }} liegen.
                           </div>
                         }
                       </div>
