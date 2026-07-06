@@ -230,9 +230,9 @@ All tickets grouped by status. Each column sorted by `createdAt ASC`. Tickets in
 
 ```json
 {
-  "byStatus":   { "DEFINITION": 0, "TODO": 9, "IN_PROGRESS": 0, "ON_HOLD": 3, "DONE": 0 },
-  "byType":     { "FEATURE": 9, "BUG": 0, "CHORE": 3 },
-  "byOwner":    { "AI": 9, "HUMAN": 3 },
+  "byStatus":   { "DEFINITION": 5, "TODO": 5, "IN_PROGRESS": 0, "ON_HOLD": 2, "DONE": 0 },
+  "byType":     { "FEATURE": 10, "BUG": 0, "CHORE": 2 },
+  "byOwner":    { "AI": 5, "HUMAN": 7 },
   "bySolution": { "DONE": 0, "WONT_DO": 0 }
 }
 ```
@@ -470,17 +470,17 @@ All errors use the app-wide handler:
 | 1 | Firmen auf einer Karte anzeigen | FEATURE | TODO | AI |
 | 2 | KI-Chat fürs CRM | FEATURE | TODO | AI |
 | 3 | Firmendossier aus dem Internet | FEATURE | TODO | AI |
-| 4 | KI-Beziehungsanalyse | FEATURE | TODO | AI |
-| 5 | Firmen aus Datei importieren | FEATURE | TODO | AI |
+| 4 | KI-Beziehungsanalyse | FEATURE | DEFINITION | HUMAN |
+| 5 | Firmen aus Datei importieren | FEATURE | DEFINITION | HUMAN |
 | 6 | Dunkelmodus-Umschalter im Header | FEATURE | TODO | AI |
 | 7 | CSV-Export für die Firmenliste | FEATURE | ON_HOLD | HUMAN |
-| 8 | Icons für Aktivitätstypen | CHORE | TODO | AI |
-| 9 | Zähler-Badges im Seitenmenü | FEATURE | ON_HOLD | HUMAN |
+| 8 | Icons für Aktivitätstypen | CHORE | DEFINITION | HUMAN |
+| 9 | Zähler-Badges im Seitenmenü | FEATURE | DEFINITION | HUMAN |
 | 10 | Chancen-Phase als farbiger Badge | CHORE | TODO | AI |
 | 11 | Notiz-Feld für Chancen | FEATURE | ON_HOLD | HUMAN |
-| 12 | Firmen als Favorit markieren | FEATURE | TODO | AI |
+| 12 | Firmen als Favorit markieren | FEATURE | DEFINITION | HUMAN |
 
-The three `ON_HOLD` + `HUMAN` tickets (7, 9, 11) each have a seeded `AGENT` comment (`authorName: "Claude Code"`) with a clarifying question. `POST /reset` deletes all comments and tickets then re-inserts all 12 tickets plus these 3 comments.
+Starting board: 5 `DEFINITION` (all `HUMAN`), 5 `TODO` (all `AI`), 2 `ON_HOLD` (`HUMAN`). Seven tickets carry a seeded `AGENT` comment (`authorName: "Claude Code"`) with an open question: the five `DEFINITION` tickets (4, 5, 8, 9, 12) and the two `ON_HOLD` tickets (7, 11). `POST /reset` deletes all comments and tickets then re-inserts all 12 tickets plus these 7 comments.
 
 ---
 

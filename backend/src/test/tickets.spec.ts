@@ -22,10 +22,11 @@
  *   - Admin session endpoints: require ADMIN role (user=USER gets 403)
  *
  * Seeded state (after POST /reset or fresh DB):
- *   Ids 1-12; 7,9,11 → ON_HOLD + owner=HUMAN + 1 AGENT comment each.
- *   Others (1-6,8,10,12) → TODO + owner=AI. Types: 8,10=CHORE, rest=FEATURE.
- *   All solution=null. No seeded ticket starts in DEFINITION — only newly
- *   created tickets (via POST /api/tickets) start there.
+ *   Ids 1-12. TODO + owner=AI: 1,2,3,6,10 (5 tickets; 10=CHORE, rest=FEATURE).
+ *   ON_HOLD + owner=HUMAN: 7,11 (2 tickets, FEATURE), each with 1 seeded AGENT comment.
+ *   DEFINITION + owner=HUMAN: 4,5,8,9,12 (5 tickets; 8=CHORE, rest=FEATURE), each
+ *   with 1 seeded AGENT comment (7 seeded comments total across 4,5,7,8,9,11,12).
+ *   All solution=null.
  */
 import { test, expect, request as playwrightRequest, type APIRequestContext } from '@playwright/test';
 import { loginCtx } from './helpers.js';
@@ -395,20 +396,19 @@ test.describe('GET /api/tickets/next', () => {
 
   test('type=CHORE filter claims a CHORE ticket', async () => {
     // Reset first to guarantee a clean slate independent of prior claims in this suite.
-    // After reset: tickets 8 and 10 are TODO+AI+CHORE. Oldest is ticket 8.
+    // After reset: ticket 10 is the only TODO+AI+CHORE ticket (8 is DEFINITION+HUMAN+CHORE).
     await resetTickets(admin);
     const resp = await agent.get('/api/tickets/next?type=CHORE');
     expect(resp.status()).toBe(200);
     const body = await resp.json() as Ticket;
     expect(body.type).toBe('CHORE');
-    expect(body.id).toBe(8); // oldest CHORE ticket by createdAt
+    expect(body.id).toBe(10); // only TODO+AI CHORE ticket
     expect(body.status).toBe('IN_PROGRESS');
   });
 
   test('returns 204 when no eligible TODO+AI ticket remains of requested type', async () => {
-    // Reset then claim all CHOREs (ids 8 and 10)
+    // Reset then claim the only TODO+AI+CHORE ticket (id 10)
     await resetTickets(admin);
-    await agent.get('/api/tickets/next?type=CHORE'); // claim 8
     await agent.get('/api/tickets/next?type=CHORE'); // claim 10
     const resp = await agent.get('/api/tickets/next?type=CHORE');
     expect(resp.status()).toBe(204);
@@ -424,11 +424,11 @@ test.describe('GET /api/tickets/next', () => {
   });
 
   test('ON_HOLD+owner=HUMAN tickets are never claimed by /next', async () => {
-    // After reset, tickets 7, 9, 11 are ON_HOLD+HUMAN. They must never be returned.
+    // After reset, tickets 7, 11 are ON_HOLD+HUMAN. They must never be returned.
     await resetTickets(admin);
 
-    // Drain all 9 TODO+AI tickets
-    for (let i = 0; i < 9; i++) {
+    // Drain all 5 TODO+AI tickets (1,2,3,6,10)
+    for (let i = 0; i < 5; i++) {
       await agent.get('/api/tickets/next');
     }
 
@@ -448,8 +448,8 @@ test.describe('GET /api/tickets/next', () => {
     const created = await createResp.json() as Ticket;
     expect(created.status).toBe('DEFINITION');
 
-    // Drain all 9 seeded TODO+AI tickets.
-    for (let i = 0; i < 9; i++) {
+    // Drain all 5 seeded TODO+AI tickets (1,2,3,6,10).
+    for (let i = 0; i < 5; i++) {
       const resp = await agent.get('/api/tickets/next');
       expect(resp.status()).toBe(200);
       const claimed = await resp.json() as Ticket;
@@ -1248,8 +1248,8 @@ test.describe('GET /api/tickets', () => {
     expect(resp.status()).toBe(200);
     const body = await resp.json() as PageResult<TicketListItem>;
 
-    await test.step('totalElements is 3 (7,9,11 are ON_HOLD)', () => {
-      expect(body.totalElements).toBe(3);
+    await test.step('totalElements is 2 (7,11 are ON_HOLD)', () => {
+      expect(body.totalElements).toBe(2);
     });
     await test.step('all content items have status ON_HOLD', () => {
       for (const item of body.content) {
@@ -1262,8 +1262,8 @@ test.describe('GET /api/tickets', () => {
     const resp = await admin.get('/api/tickets?owner=AI');
     expect(resp.status()).toBe(200);
     const body = await resp.json() as PageResult<TicketListItem>;
-    await test.step('totalElements is 9 (tickets 1-6,8,10,12)', () => {
-      expect(body.totalElements).toBe(9);
+    await test.step('totalElements is 5 (tickets 1,2,3,6,10)', () => {
+      expect(body.totalElements).toBe(5);
     });
     for (const item of body.content) {
       expect(item.owner).toBe('AI');
@@ -1283,7 +1283,8 @@ test.describe('GET /api/tickets', () => {
   });
 
   test('filter by status=DEFINITION is accepted (200) and returns only DEFINITION tickets', async () => {
-    // No seeded ticket starts in DEFINITION — create one so the filter has a match.
+    // 5 tickets already seed as DEFINITION (4,5,8,9,12) — create one more so the count
+    // grows predictably instead of hard-coding a single expected match.
     const createResp = await admin.post('/api/tickets', {
       data: { type: 'FEATURE', title: 'List Definition Ticket', body: 'Should be filterable.' },
     });
@@ -1294,8 +1295,8 @@ test.describe('GET /api/tickets', () => {
     expect(resp.status()).toBe(200);
     const body = await resp.json() as PageResult<TicketListItem>;
 
-    await test.step('totalElements is 1', () => {
-      expect(body.totalElements).toBe(1);
+    await test.step('totalElements is 6 (5 seeded DEFINITION tickets + 1 created)', () => {
+      expect(body.totalElements).toBe(6);
     });
     await test.step('all content items have status DEFINITION', () => {
       for (const item of body.content) {
@@ -1304,6 +1305,11 @@ test.describe('GET /api/tickets', () => {
     });
     await test.step('the created ticket is in the result', () => {
       expect(body.content.some((item) => item.id === created.id)).toBe(true);
+    });
+    await test.step('all 5 seeded DEFINITION tickets (4,5,8,9,12) are in the result', () => {
+      for (const seededId of [4, 5, 8, 9, 12]) {
+        expect(body.content.some((item) => item.id === seededId)).toBe(true);
+      }
     });
   });
 
@@ -1392,18 +1398,21 @@ test.describe('GET /api/tickets/board', () => {
 
     const body = await resp.json() as TicketBoard;
 
-    await test.step('DEFINITION is empty (no seeded ticket starts there)', () => {
+    await test.step('DEFINITION has 5 seeded tickets (4,5,8,9,12)', () => {
       expect(Array.isArray(body.DEFINITION)).toBe(true);
-      expect(body.DEFINITION.length).toBe(0);
+      expect(body.DEFINITION.length).toBe(5);
+      for (const seededId of [4, 5, 8, 9, 12]) {
+        expect(body.DEFINITION.some((t) => t.id === seededId)).toBe(true);
+      }
     });
-    await test.step('TODO has 9 tickets (1-6,8,10,12)', () => {
-      expect(body.TODO.length).toBe(9);
+    await test.step('TODO has 5 tickets (1,2,3,6,10)', () => {
+      expect(body.TODO.length).toBe(5);
     });
     await test.step('IN_PROGRESS is empty', () => {
       expect(body.IN_PROGRESS.length).toBe(0);
     });
-    await test.step('ON_HOLD has 3 tickets (7,9,11)', () => {
-      expect(body.ON_HOLD.length).toBe(3);
+    await test.step('ON_HOLD has 2 tickets (7,11)', () => {
+      expect(body.ON_HOLD.length).toBe(2);
     });
     await test.step('DONE is empty', () => {
       expect(body.DONE.length).toBe(0);
@@ -1426,6 +1435,9 @@ test.describe('GET /api/tickets/board', () => {
   });
 
   test('each ticket includes commentCount', async () => {
+    // Reset first: an earlier test in this block creates an extra DEFINITION
+    // ticket (0 comments), which would break the per-column commentCount checks.
+    await resetTickets(admin);
     const resp = await admin.get('/api/tickets/board');
     const body = await resp.json() as TicketBoard;
 
@@ -1436,8 +1448,14 @@ test.describe('GET /api/tickets/board', () => {
       }
     });
 
-    await test.step('ON_HOLD tickets (7,9,11) have commentCount=1', () => {
+    await test.step('ON_HOLD tickets (7,11) have commentCount=1', () => {
       for (const t of body.ON_HOLD) {
+        expect(t.commentCount).toBe(1);
+      }
+    });
+
+    await test.step('all 5 DEFINITION tickets (4,5,8,9,12) have commentCount=1', () => {
+      for (const t of body.DEFINITION) {
         expect(t.commentCount).toBe(1);
       }
     });
@@ -1488,16 +1506,16 @@ test.describe('GET /api/tickets/summary', () => {
       expect(typeof body.byStatus['DONE']).toBe('number');
     });
 
-    await test.step('byStatus.DEFINITION is 0 (no seeded ticket starts there)', () => {
-      expect(body.byStatus['DEFINITION']).toBe(0);
+    await test.step('byStatus.DEFINITION is 5 (tickets 4,5,8,9,12)', () => {
+      expect(body.byStatus['DEFINITION']).toBe(5);
     });
 
-    await test.step('byStatus.TODO is 9', () => {
-      expect(body.byStatus['TODO']).toBe(9);
+    await test.step('byStatus.TODO is 5', () => {
+      expect(body.byStatus['TODO']).toBe(5);
     });
 
-    await test.step('byStatus.ON_HOLD is 3', () => {
-      expect(body.byStatus['ON_HOLD']).toBe(3);
+    await test.step('byStatus.ON_HOLD is 2', () => {
+      expect(body.byStatus['ON_HOLD']).toBe(2);
     });
 
     await test.step('byStatus.IN_PROGRESS is 0', () => {
@@ -1527,12 +1545,12 @@ test.describe('GET /api/tickets/summary', () => {
       expect(typeof body.byOwner['HUMAN']).toBe('number');
     });
 
-    await test.step('byOwner.AI is 9', () => {
-      expect(body.byOwner['AI']).toBe(9);
+    await test.step('byOwner.AI is 5 (tickets 1,2,3,6,10)', () => {
+      expect(body.byOwner['AI']).toBe(5);
     });
 
-    await test.step('byOwner.HUMAN is 3 (tickets 7,9,11)', () => {
-      expect(body.byOwner['HUMAN']).toBe(3);
+    await test.step('byOwner.HUMAN is 7 (tickets 4,5,7,8,9,11,12)', () => {
+      expect(body.byOwner['HUMAN']).toBe(7);
     });
 
     await test.step('bySolution has DONE and WONT_DO keys', () => {
@@ -1550,6 +1568,7 @@ test.describe('GET /api/tickets/summary', () => {
   });
 
   test('byStatus.DEFINITION reflects a freshly created ticket', async () => {
+    // 5 tickets already seed as DEFINITION (4,5,8,9,12); creating one more should bump it to 6.
     const createResp = await admin.post('/api/tickets', {
       data: { type: 'FEATURE', title: 'Summary Definition Ticket', body: 'Should count as DEFINITION.' },
     });
@@ -1558,7 +1577,7 @@ test.describe('GET /api/tickets/summary', () => {
     const resp = await admin.get('/api/tickets/summary');
     expect(resp.status()).toBe(200);
     const body = await resp.json() as TicketSummary;
-    expect(body.byStatus['DEFINITION']).toBe(1);
+    expect(body.byStatus['DEFINITION']).toBe(6);
   });
 });
 
@@ -1599,20 +1618,20 @@ test.describe('POST /api/tickets/reset', () => {
     });
   });
 
-  test('after reset: board shows 9 TODO and 3 ON_HOLD', async () => {
+  test('after reset: board shows 5 TODO and 2 ON_HOLD', async () => {
     await admin.post('/api/tickets/reset');
     const boardResp = await admin.get('/api/tickets/board');
     const board = await boardResp.json() as TicketBoard;
-    expect(board.TODO.length).toBe(9);
-    expect(board.ON_HOLD.length).toBe(3);
+    expect(board.TODO.length).toBe(5);
+    expect(board.ON_HOLD.length).toBe(2);
     expect(board.IN_PROGRESS.length).toBe(0);
     expect(board.DONE.length).toBe(0);
   });
 
-  test('after reset: ON_HOLD tickets (7,9,11) each have 1 seeded AGENT comment', async () => {
+  test('after reset: ON_HOLD tickets (7,11) each have 1 seeded AGENT comment', async () => {
     await admin.post('/api/tickets/reset');
 
-    for (const id of [7, 9, 11]) {
+    for (const id of [7, 11]) {
       const resp = await admin.get(`/api/tickets/${id}`);
       expect(resp.status()).toBe(200);
       const ticket = await resp.json() as Ticket;
