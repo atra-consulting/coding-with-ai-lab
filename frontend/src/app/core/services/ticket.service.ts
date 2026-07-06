@@ -61,6 +61,10 @@ export class TicketService {
     return this.http.patch<Ticket>(`${this.baseUrl}/${id}/owner`, { owner });
   }
 
+  handToAi(id: number): Observable<Ticket> {
+    return this.http.post<Ticket>(`${this.baseUrl}/${id}/hand-to-ai`, {});
+  }
+
   wontDo(id: number, comment?: string): Observable<Ticket> {
     return this.http.post<Ticket>(`${this.baseUrl}/${id}/wont-do`, { comment });
   }

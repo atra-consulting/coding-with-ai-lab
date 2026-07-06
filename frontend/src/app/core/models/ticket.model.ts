@@ -1,6 +1,6 @@
 export type TicketOwner = 'AI' | 'HUMAN';
 export type TicketType = 'FEATURE' | 'BUG' | 'CHORE';
-export type TicketStatus = 'TODO' | 'IN_PROGRESS' | 'ON_HOLD' | 'DONE';
+export type TicketStatus = 'DEFINITION' | 'TODO' | 'IN_PROGRESS' | 'ON_HOLD' | 'DONE';
 export type TicketSolution = 'DONE' | 'WONT_DO';
 export type TicketCommentAuthor = 'HUMAN' | 'AGENT';
 
@@ -30,6 +30,7 @@ export interface Ticket {
 }
 
 export interface TicketBoard {
+  DEFINITION: Ticket[];
   TODO: Ticket[];
   IN_PROGRESS: Ticket[];
   ON_HOLD: Ticket[];
@@ -38,6 +39,7 @@ export interface TicketBoard {
 
 export interface TicketSummary {
   byStatus: {
+    DEFINITION: number;
     TODO: number;
     IN_PROGRESS: number;
     ON_HOLD: number;

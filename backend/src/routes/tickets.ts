@@ -237,6 +237,17 @@ router.post(
   }),
 );
 
+// POST /api/tickets/:id/hand-to-ai  (admin only)
+router.post(
+  '/:id/hand-to-ai',
+  requireAuth,
+  requireRole('ADMIN'),
+  asyncHandler(async (req: Request, res: Response) => {
+    const id = parseInt(req.params['id'] as string, 10);
+    res.json(await ticketService.handToAi(id));
+  }),
+);
+
 // POST /api/tickets/:id/comments  (admin only)
 router.post(
   '/:id/comments',

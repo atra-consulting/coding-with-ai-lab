@@ -75,14 +75,14 @@ describe('SidebarComponent', () => {
     mockAuthService.currentUser.set(adminUser);
     fixture.detectChanges();
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Agent-Aufgaben');
+    expect(text).toContain('App-Feedback');
   });
 
   it('hides item with requiredRole ADMIN when user only has USER role', () => {
     mockAuthService.currentUser.set(regularUser);
     fixture.detectChanges();
     const text = fixture.nativeElement.textContent as string;
-    expect(text).not.toContain('Agent-Aufgaben');
+    expect(text).not.toContain('App-Feedback');
   });
 
   it('does not render the Administration section header when all its items are hidden', () => {
@@ -108,7 +108,7 @@ describe('SidebarComponent', () => {
     expect(linkDebugEl).toBeTruthy();
     const anchor = linkDebugEl.nativeElement as HTMLAnchorElement;
     expect(anchor.getAttribute('href')).toBe('/feedback');
-    expect((anchor.textContent as string)).toContain('Feedback');
+    expect((anchor.textContent as string)).toContain('Trainings-Feedback');
   });
 
   it('hides the Feedback label but keeps the link clickable when collapsed', () => {

@@ -122,7 +122,10 @@ export async function runMigrations(): Promise<void> {
       type        TEXT NOT NULL,
       title       TEXT NOT NULL,
       body        TEXT NOT NULL,
-      status      TEXT NOT NULL DEFAULT 'TODO',
+      -- status is a DB enum: CHECK constraint mirrors TICKET_STATUS in
+      -- db/schema/enums.ts. Existing local DBs must run './start.sh --reset-db'
+      -- to pick this up -- CREATE TABLE IF NOT EXISTS does not alter an existing table.
+      status      TEXT NOT NULL DEFAULT 'DEFINITION' CHECK (status IN ('DEFINITION','TODO','IN_PROGRESS','ON_HOLD','DONE')),
       solution    TEXT,
       pickedUpAt  TEXT,
       resolvedAt  TEXT,

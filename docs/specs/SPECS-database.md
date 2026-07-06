@@ -42,7 +42,7 @@ Kanban work items with an owner and status lifecycle. Created by admins or seede
 | type | text | NOT NULL — `TICKET_TYPE` enum |
 | title | text | NOT NULL |
 | body | text | NOT NULL |
-| status | text | NOT NULL, default `TODO` — `TICKET_STATUS` enum |
+| status | text | NOT NULL, default `DEFINITION` — `TICKET_STATUS` enum, DB `CHECK` constraint |
 | solution | text | nullable — `TICKET_SOLUTION` enum; set on `status=DONE` |
 | pickedUpAt | text | nullable — ISO-8601, set when status → `IN_PROGRESS` |
 | resolvedAt | text | nullable — ISO-8601, set when status → `DONE` |
@@ -249,7 +249,7 @@ Stored as plain `text` in SQLite. Validated by Zod on write. Defined in `backend
 | AgentTaskStatus | OPEN, IN_PROGRESS, DONE, REJECTED |
 | TicketOwner | AI, HUMAN |
 | TicketType | FEATURE, BUG, CHORE |
-| TicketStatus | TODO, IN_PROGRESS, ON_HOLD, DONE |
+| TicketStatus | DEFINITION, TODO, IN_PROGRESS, ON_HOLD, DONE |
 | TicketSolution | DONE, WONT_DO |
 | TicketCommentAuthor | HUMAN, AGENT |
 

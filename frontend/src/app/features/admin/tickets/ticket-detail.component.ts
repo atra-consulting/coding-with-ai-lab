@@ -8,12 +8,14 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import {
   faArrowLeft,
+  faArrowRight,
   faRobot,
   faUser,
   faComment,
   faBan,
 } from '@fortawesome/free-solid-svg-icons';
 import { Ticket, TicketComment } from '../../../core/models/ticket.model';
+import { MarkdownPipe } from '../../../core/pipes/markdown.pipe';
 import { TicketService } from '../../../core/services/ticket.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
@@ -21,7 +23,7 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
 
 @Component({
   selector: 'app-ticket-detail',
-  imports: [RouterLink, ReactiveFormsModule, FaIconComponent, LoadingSpinnerComponent, DatePipe],
+  imports: [RouterLink, ReactiveFormsModule, FaIconComponent, LoadingSpinnerComponent, DatePipe, MarkdownPipe],
   template: `
     @if (loading) {
       <app-loading-spinner />
@@ -53,7 +55,7 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
               </div>
             </div>
 
-            <pre class="ticket-body">{{ ticket.body }}</pre>
+            <div class="ticket-body markdown-body" [innerHTML]="ticket.body | markdown"></div>
 
             <dl class="row mt-3 text-muted small">
               <dt class="col-sm-4">Erstellt</dt>
@@ -96,7 +98,7 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
                       </span>
                       <span class="comment-time text-muted small">{{ comment.createdAt | date:'dd.MM.yyyy HH:mm' }}</span>
                     </div>
-                    <div class="comment-body">{{ comment.body }}</div>
+                    <div class="comment-body markdown-body" [innerHTML]="comment.body | markdown"></div>
                   </div>
                 }
               </div>
@@ -160,27 +162,60 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
           <div class="table-container">
             <h5 class="mb-3">Aktionen</h5>
 
-            <!-- Owner toggle -->
-            <div class="mb-3">
-              <label class="form-label fw-semibold">Eigentümer ändern</label>
-              <div>
-                <button
-                  class="btn btn-outline-primary w-100"
-                  (click)="toggleOwner()"
-                  [disabled]="savingOwner"
-                  [title]="toggleOwnerTitle"
-                >
-                  @if (savingOwner) {
-                    <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-                  }
-                  @if (ticket.owner === 'HUMAN') {
+            <!-- Definition actions -->
+            @if (ticket.status === 'DEFINITION') {
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Definition abschließen</label>
+                <div class="d-flex flex-column gap-2">
+                  <button
+                    class="btn btn-outline-primary w-100"
+                    (click)="assignToAi()"
+                    [disabled]="savingAssignAi || savingMoveToReady || ticket.owner === 'AI'"
+                    title="Eigentümer auf KI setzen, Ticket bleibt in &quot;Definition&quot;"
+                  >
+                    @if (savingAssignAi) {
+                      <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                    }
                     <fa-icon [icon]="faRobot" class="me-1" />An KI übergeben
-                  } @else {
-                    <fa-icon [icon]="faUser" class="me-1" />An Mensch übergeben
-                  }
-                </button>
+                  </button>
+                  <button
+                    class="btn btn-outline-secondary w-100"
+                    (click)="moveToReady()"
+                    [disabled]="savingAssignAi || savingMoveToReady"
+                    title="Eigentümer auf KI setzen und nach &quot;Zu bereit&quot; verschieben"
+                  >
+                    @if (savingMoveToReady) {
+                      <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                    }
+                    <fa-icon [icon]="faArrowRight" class="me-1" />Nach Bereit
+                  </button>
+                </div>
               </div>
-            </div>
+            }
+
+            <!-- Owner toggle -->
+            @if (ticket.status !== 'DEFINITION') {
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Eigentümer ändern</label>
+                <div>
+                  <button
+                    class="btn btn-outline-primary w-100"
+                    (click)="toggleOwner()"
+                    [disabled]="savingOwner"
+                    [title]="toggleOwnerTitle"
+                  >
+                    @if (savingOwner) {
+                      <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                    }
+                    @if (ticket.owner === 'HUMAN') {
+                      <fa-icon [icon]="faRobot" class="me-1" />An KI übergeben
+                    } @else {
+                      <fa-icon [icon]="faUser" class="me-1" />An Mensch übergeben
+                    }
+                  </button>
+                </div>
+              </div>
+            }
 
             <!-- Won't Do -->
             @if (ticket.owner === 'HUMAN' && ticket.status !== 'DONE') {
@@ -239,12 +274,89 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
         background: #f8f9fa;
         border: 1px solid #e9ecef;
         border-radius: 0.4rem;
-        padding: 1rem;
-        font-family: inherit;
+        padding: 1rem 1.25rem;
         font-size: 0.9rem;
-        white-space: pre-wrap;
         overflow-wrap: anywhere;
         color: #212529;
+      }
+
+      /* Markdown rendering (ticket body + comments) */
+      .markdown-body {
+        overflow-wrap: anywhere;
+      }
+      .markdown-body > :first-child {
+        margin-top: 0;
+      }
+      .markdown-body > :last-child {
+        margin-bottom: 0;
+      }
+      .markdown-body h1,
+      .markdown-body h2,
+      .markdown-body h3,
+      .markdown-body h4 {
+        font-weight: 700;
+        line-height: 1.25;
+        margin: 1rem 0 0.5rem;
+      }
+      .markdown-body h1 {
+        font-size: 1.25rem;
+      }
+      .markdown-body h2 {
+        font-size: 1.1rem;
+      }
+      .markdown-body h3 {
+        font-size: 1rem;
+      }
+      .markdown-body h4 {
+        font-size: 0.92rem;
+      }
+      .markdown-body p {
+        margin: 0 0 0.6rem;
+      }
+      .markdown-body ul,
+      .markdown-body ol {
+        margin: 0 0 0.6rem;
+        padding-left: 1.4rem;
+      }
+      .markdown-body li {
+        margin-bottom: 0.2rem;
+      }
+      .markdown-body code {
+        background: rgba(175, 184, 193, 0.25);
+        padding: 0.1rem 0.35rem;
+        border-radius: 0.25rem;
+        font-size: 0.85em;
+      }
+      .markdown-body pre {
+        background: #f0f1f3;
+        border: 1px solid #e0e2e6;
+        border-radius: 0.4rem;
+        padding: 0.75rem 1rem;
+        overflow-x: auto;
+      }
+      .markdown-body pre code {
+        background: none;
+        padding: 0;
+        font-size: 0.85rem;
+      }
+      .markdown-body a {
+        color: #264892;
+        text-decoration: underline;
+      }
+      .markdown-body blockquote {
+        border-left: 3px solid #ced4da;
+        margin: 0 0 0.6rem;
+        padding-left: 0.8rem;
+        color: #6c757d;
+      }
+      .markdown-body table {
+        border-collapse: collapse;
+        margin-bottom: 0.6rem;
+      }
+      .markdown-body th,
+      .markdown-body td {
+        border: 1px solid #dee2e6;
+        padding: 0.3rem 0.6rem;
       }
 
       /* Comment thread */
@@ -284,7 +396,6 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
 
       .comment-body {
         font-size: 0.88rem;
-        white-space: pre-wrap;
         overflow-wrap: anywhere;
         color: #212529;
       }
@@ -337,8 +448,11 @@ export class TicketDetailComponent implements OnInit {
   handingBack = false;
   savingOwner = false;
   savingWontDo = false;
+  savingAssignAi = false;
+  savingMoveToReady = false;
 
   readonly faArrowLeft = faArrowLeft;
+  readonly faArrowRight = faArrowRight;
   readonly faRobot = faRobot;
   readonly faUser = faUser;
   readonly faComment = faComment;
@@ -413,6 +527,50 @@ export class TicketDetailComponent implements OnInit {
       });
   }
 
+  // "An KI übergeben": assign owner to AI, ticket stays in DEFINITION.
+  assignToAi(): void {
+    if (!this.ticket) return;
+    const ticketId = this.ticket.id;
+    this.savingAssignAi = true;
+
+    this.ticketService
+      .setOwner(ticketId, 'AI')
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (updated) => {
+          this.ticket = updated;
+          this.savingAssignAi = false;
+          this.notification.success('Ticket der KI zugewiesen. Es bleibt in "Definition".');
+        },
+        error: () => {
+          this.savingAssignAi = false;
+          this.notification.error('Fehler beim Zuweisen des Tickets an die KI.');
+        },
+      });
+  }
+
+  // "Nach Bereit": assign owner to AI and move to TODO ("Zu bereit").
+  moveToReady(): void {
+    if (!this.ticket) return;
+    const ticketId = this.ticket.id;
+    this.savingMoveToReady = true;
+
+    this.ticketService
+      .handToAi(ticketId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (updated) => {
+          this.ticket = updated;
+          this.savingMoveToReady = false;
+          this.notification.success('Ticket der KI zugewiesen und nach "Zu bereit" verschoben.');
+        },
+        error: () => {
+          this.savingMoveToReady = false;
+          this.notification.error('Fehler beim Verschieben des Tickets.');
+        },
+      });
+  }
+
   toggleOwner(): void {
     if (!this.ticket) return;
     const newOwner = this.ticket.owner === 'AI' ? 'HUMAN' : 'AI';
@@ -435,7 +593,7 @@ export class TicketDetailComponent implements OnInit {
         this.savingOwner = false;
         const message =
           willResetStatus
-            ? 'Eigentümer auf "KI" gesetzt und Status auf "Zu erledigen" zurückgesetzt.'
+            ? 'Eigentümer auf "KI" gesetzt und Status auf "Zu bereit" zurückgesetzt.'
             : `Eigentümer auf "${newOwner === 'AI' ? 'KI' : 'Mensch'}" gesetzt.`;
         this.notification.success(message);
       },
@@ -454,7 +612,7 @@ export class TicketDetailComponent implements OnInit {
   get toggleOwnerTitle(): string {
     if (!this.ticket) return '';
     if (this.ticket.owner === 'HUMAN' && this.ticket.status !== 'DONE' && this.ticket.status !== 'TODO') {
-      return 'Eigentümer auf KI setzen und Status auf "Zu erledigen" zurücksetzen';
+      return 'Eigentümer auf KI setzen und Status auf "Zu bereit" zurücksetzen';
     }
     if (this.ticket.owner === 'HUMAN') {
       return 'Eigentümer auf KI setzen';
@@ -520,6 +678,8 @@ export class TicketDetailComponent implements OnInit {
 
   statusBadgeClass(status: string): string {
     switch (status) {
+      case 'DEFINITION':
+        return 'badge bg-info text-dark';
       case 'TODO':
         return 'badge bg-primary';
       case 'IN_PROGRESS':
@@ -535,8 +695,10 @@ export class TicketDetailComponent implements OnInit {
 
   statusLabel(status: string): string {
     switch (status) {
+      case 'DEFINITION':
+        return 'Definition';
       case 'TODO':
-        return 'Zu erledigen';
+        return 'Zu bereit';
       case 'IN_PROGRESS':
         return 'In Arbeit';
       case 'ON_HOLD':

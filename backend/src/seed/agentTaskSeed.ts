@@ -227,8 +227,8 @@ const AGENT_TASK_SEED: AgentTaskSeedRow[] = [
   {
     id: 17,
     source: 'EMAIL',
-    title: 'Show phone number of contacts in the persons list',
-    body: 'The contacts list at /personen shows the email address, company name, and position for each contact, but not the phone number. The `phone` field is stored in the database and returned by the API in the PersonDTO, but the phone column is missing from the persons list table. I have to click into each individual contact just to find their phone number. Please add the `phone` column to the persons list, next to the email column. This is a frontend-only change — the API already returns `phone` in PersonDTO.',
+    title: 'Show phone numbers in the contacts list',
+    body: 'In the contacts list I can see everyone\'s email and company, but not their phone number. When I want to call someone I have to open their profile every single time, which is really slow. Could you please show the phone number right in the list? Thanks!',
     status: 'OPEN',
     comment: null,
     metadata: '{"sender":"l.zimmermann@bayer-group.de","subject":"Feature request: phone number in contacts list"}',
@@ -240,8 +240,8 @@ const AGENT_TASK_SEED: AgentTaskSeedRow[] = [
   {
     id: 18,
     source: 'EMAIL',
-    title: 'Show website URL in the company list view',
-    body: 'The company list at /firmen displays the company name, industry, email address, phone number, and number of contacts. But the website URL is not shown, even though it is stored in the database and returned by the API. I frequently need to check websites for multiple companies and currently have to click into each company detail page. Please add the `website` column to the company list table so it is visible at a glance. This is a frontend-only change — the API already returns `website` in FirmaDTO.',
+    title: 'Show the website in the company list',
+    body: 'When I look at the company list I can see the name, industry, email and phone, but not the website. I often need to open several companies\' websites quickly, and right now I have to click into each one. Could you add the website to the list so I can see it at a glance? Thank you!',
     status: 'OPEN',
     comment: null,
     metadata: '{"sender":"t.berger@vertrieb-nord.de","subject":"Company list: please show website URL"}',

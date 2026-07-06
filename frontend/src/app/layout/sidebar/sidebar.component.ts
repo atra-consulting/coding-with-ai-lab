@@ -48,7 +48,7 @@ export class SidebarComponent {
   faListCheck = faListCheck;
 
   bottomItems: NavItem[] = [
-    { label: 'Feedback', route: '/feedback', icon: faCommentDots },
+    { label: 'Trainings-Feedback', route: '/feedback', icon: faCommentDots },
   ];
 
   sections: NavSection[] = [
@@ -83,21 +83,21 @@ export class SidebarComponent {
       title: 'Administration',
       items: [
         {
-          label: 'Agent-Aufgaben',
+          label: 'App-Feedback',
           route: '/admin/agent-tasks',
           icon: faListCheck,
-          requiredRole: 'ROLE_ADMIN',
-        },
-        {
-          label: 'Cron-Jobs',
-          route: '/admin/cron',
-          icon: faClock,
           requiredRole: 'ROLE_ADMIN',
         },
         {
           label: 'Tickets',
           route: '/admin/tickets',
           icon: faClipboardList,
+          requiredRole: 'ROLE_ADMIN',
+        },
+        {
+          label: 'Cron-Jobs',
+          route: '/admin/cron',
+          icon: faClock,
           requiredRole: 'ROLE_ADMIN',
         },
       ],

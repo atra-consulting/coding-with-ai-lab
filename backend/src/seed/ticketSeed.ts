@@ -25,77 +25,77 @@ interface TicketCommentSeedRow {
 }
 
 const TICKET_SEED: TicketSeedRow[] = [
-  // 01-firmenkarte.md — TODO, owner=AI, FEATURE
+  // 01-firmenkarte.md — DEFINITION, owner=HUMAN, FEATURE (too vague, needs detail)
   {
     id: 1,
-    owner: 'AI',
+    owner: 'HUMAN',
     type: 'FEATURE',
     title: 'Firmen auf einer Karte anzeigen',
     body: 'Es wäre schön, die Firmen irgendwo auf einer Karte zu sehen.\n\nBitte bau eine Karte ein, auf der man die Firmen findet.',
-    status: 'TODO',
+    status: 'DEFINITION',
     solution: null,
     pickedUpAt: null,
     resolvedAt: null,
     createdAt: '2026-06-20T08:00:00.000Z',
     updatedAt: '2026-06-20T08:00:00.000Z',
   },
-  // 02-crm-chat.md — TODO, owner=AI, FEATURE
+  // 02-crm-chat.md — DEFINITION, owner=HUMAN, FEATURE (too vague, needs detail)
   {
     id: 2,
-    owner: 'AI',
+    owner: 'HUMAN',
     type: 'FEATURE',
     title: 'KI-Chat fürs CRM',
     body: 'Wir hätten gern einen KI-Chat im CRM, mit dem man Fragen zu den Daten stellen kann.\n\nMach das bitte.',
-    status: 'TODO',
+    status: 'DEFINITION',
     solution: null,
     pickedUpAt: null,
     resolvedAt: null,
     createdAt: '2026-06-20T09:00:00.000Z',
     updatedAt: '2026-06-20T09:00:00.000Z',
   },
-  // 03-firmendossier.md — TODO, owner=AI, FEATURE
+  // 03-firmendossier.md — DEFINITION, owner=HUMAN, FEATURE (too vague, needs detail)
   {
     id: 3,
-    owner: 'AI',
+    owner: 'HUMAN',
     type: 'FEATURE',
     title: 'Firmendossier aus dem Internet',
     body: 'Zu jeder Firma sollen aktuelle Infos aus dem Internet angezeigt werden.\n\nSuch dir was Passendes und bau es ein.',
-    status: 'TODO',
+    status: 'DEFINITION',
     solution: null,
     pickedUpAt: null,
     resolvedAt: null,
     createdAt: '2026-06-20T10:00:00.000Z',
     updatedAt: '2026-06-20T10:00:00.000Z',
   },
-  // 04-beziehungsanalyse.md — TODO, owner=AI, FEATURE
+  // 04-beziehungsanalyse.md — DEFINITION, owner=HUMAN, FEATURE (too vague, needs detail)
   {
     id: 4,
-    owner: 'AI',
+    owner: 'HUMAN',
     type: 'FEATURE',
     title: 'KI-Beziehungsanalyse',
     body: 'Die KI soll die Beziehungen analysieren und etwas Sinnvolles dazu sagen.\n\nDie Details überlasse ich dir.',
-    status: 'TODO',
+    status: 'DEFINITION',
     solution: null,
     pickedUpAt: null,
     resolvedAt: null,
     createdAt: '2026-06-20T11:00:00.000Z',
     updatedAt: '2026-06-20T11:00:00.000Z',
   },
-  // 05-csv-import.md — TODO, owner=AI, FEATURE
+  // 05-csv-import.md — DEFINITION, owner=HUMAN, FEATURE (too vague, needs detail)
   {
     id: 5,
-    owner: 'AI',
+    owner: 'HUMAN',
     type: 'FEATURE',
     title: 'Firmen aus Datei importieren',
     body: 'Man soll Firmen aus einer Datei importieren können. Die KI soll dabei helfen.\n\nBau das bitte so, dass es gut funktioniert.',
-    status: 'TODO',
+    status: 'DEFINITION',
     solution: null,
     pickedUpAt: null,
     resolvedAt: null,
     createdAt: '2026-06-21T08:00:00.000Z',
     updatedAt: '2026-06-21T08:00:00.000Z',
   },
-  // 06-dark-mode.md — TODO, owner=AI, FEATURE
+  // 06-dark-mode.md — TODO, owner=AI, FEATURE (well-specified, ready to build)
   {
     id: 6,
     owner: 'AI',
@@ -109,7 +109,7 @@ const TICKET_SEED: TicketSeedRow[] = [
     createdAt: '2026-06-21T09:00:00.000Z',
     updatedAt: '2026-06-21T09:00:00.000Z',
   },
-  // 07-csv-export.md — ON_HOLD, owner=HUMAN, FEATURE (Will ask)
+  // 07-csv-export.md — ON_HOLD, owner=HUMAN, FEATURE (AI asked a question, waiting)
   {
     id: 7,
     owner: 'HUMAN',
@@ -123,7 +123,7 @@ const TICKET_SEED: TicketSeedRow[] = [
     createdAt: '2026-06-21T10:00:00.000Z',
     updatedAt: '2026-06-21T10:00:00.000Z',
   },
-  // 08-aktivitaet-icons.md — TODO, owner=AI, CHORE
+  // 08-aktivitaet-icons.md — TODO, owner=AI, CHORE (well-specified, ready to build)
   {
     id: 8,
     owner: 'AI',
@@ -137,7 +137,7 @@ const TICKET_SEED: TicketSeedRow[] = [
     createdAt: '2026-06-22T08:00:00.000Z',
     updatedAt: '2026-06-22T08:00:00.000Z',
   },
-  // 09-sidebar-counters.md — ON_HOLD, owner=HUMAN, FEATURE (Will ask)
+  // 09-sidebar-counters.md — ON_HOLD, owner=HUMAN, FEATURE (AI asked a question, waiting)
   {
     id: 9,
     owner: 'HUMAN',
@@ -151,7 +151,7 @@ const TICKET_SEED: TicketSeedRow[] = [
     createdAt: '2026-06-22T09:00:00.000Z',
     updatedAt: '2026-06-22T09:00:00.000Z',
   },
-  // 10-phasen-badges.md — TODO, owner=AI, CHORE
+  // 10-phasen-badges.md — TODO, owner=AI, CHORE (well-specified, ready to build)
   {
     id: 10,
     owner: 'AI',
@@ -165,21 +165,21 @@ const TICKET_SEED: TicketSeedRow[] = [
     createdAt: '2026-06-23T08:00:00.000Z',
     updatedAt: '2026-06-23T08:00:00.000Z',
   },
-  // 11-chance-notiz.md — ON_HOLD, owner=HUMAN, FEATURE (Will ask)
+  // 11-chance-notiz.md — TODO, owner=AI, FEATURE (open question answered in the body: limit = 1000)
   {
     id: 11,
-    owner: 'HUMAN',
+    owner: 'AI',
     type: 'FEATURE',
     title: 'Notiz-Feld für Chancen',
-    body: '## Ziel\nChancen bekommen ein optionales, mehrzeiliges Notiz-Feld.\n\n## Anforderungen\n- Neue Spalte `notes` (TEXT, optional) in der Tabelle `chance`.\n- Backend akzeptiert und liefert `notes` (Create UND Update).\n- Im Formular: dreizeilige Textarea; das Zeichenlimit klärst du per Rückfrage (siehe unten).\n- Auf der Detailseite: Notiz mit erhaltenen Zeilenumbrüchen anzeigen.\n- In der Liste taucht die Notiz NICHT auf.\n\n## Rückfrage erforderlich\nEine Entscheidung in dieser Aufgabe triffst du **nicht allein**: die maximale\nZeichenzahl der Notiz. Diese Zahl steuert sowohl das Frontend-Limit als auch die\nZod-Validierung im Backend — sie muss bewusst gewählt werden. Rate **nicht** und\nnimm keinen Standardwert an. Bevor du Code schreibst:\n1. Schreibe einen Kommentar an dieses Issue mit deiner konkreten Frage (welches Zeichenlimit?).\n2. Setze das Label `Input needed`.\n3. Warte auf die Antwort, bevor du weiterarbeitest.\n\n## Hinweise\n- Schema an zwei Stellen pflegen: Drizzle-Schema (Typ-Inferenz) und `migrate.ts` (Runtime-Source-of-Truth).\n- Zod: `z.string().max(<Limit>).optional().nullable()` — auch im Update-Schema.\n- Detail-Anzeige mit CSS `white-space: pre-wrap`, damit Zeilenumbrüche bleiben.\n- Die Entität `Person` hat bereits ein `notes`-Feld — als Vorlage nutzen.\n\n## Fertig, wenn\n- [ ] Notiz lässt sich anlegen, speichern und wieder laden.\n- [ ] Textarea mit dem abgestimmten Zeichenlimit im Formular.\n- [ ] Detailseite zeigt Zeilenumbrüche korrekt.',
-    status: 'ON_HOLD',
+    body: '## Ziel\nChancen bekommen ein optionales, mehrzeiliges Notiz-Feld.\n\n## Anforderungen\n- Neue Spalte `notes` (TEXT, optional) in der Tabelle `chance`.\n- Backend akzeptiert und liefert `notes` (Create UND Update).\n- Im Formular: dreizeilige Textarea mit maximal 1000 Zeichen.\n- Auf der Detailseite: Notiz mit erhaltenen Zeilenumbrüchen anzeigen.\n- In der Liste taucht die Notiz NICHT auf.\n\n## Hinweise\n- Schema an zwei Stellen pflegen: Drizzle-Schema (Typ-Inferenz) und `migrate.ts` (Runtime-Source-of-Truth).\n- Zod: `z.string().max(1000).optional().nullable()` — auch im Update-Schema.\n- Detail-Anzeige mit CSS `white-space: pre-wrap`, damit Zeilenumbrüche bleiben.\n- Die Entität `Person` hat bereits ein `notes`-Feld — als Vorlage nutzen.\n\n## Fertig, wenn\n- [ ] Notiz lässt sich anlegen, speichern und wieder laden.\n- [ ] Textarea mit maximal 1000 Zeichen im Formular.\n- [ ] Detailseite zeigt Zeilenumbrüche korrekt.',
+    status: 'TODO',
     solution: null,
     pickedUpAt: null,
     resolvedAt: null,
     createdAt: '2026-06-23T09:00:00.000Z',
     updatedAt: '2026-06-23T09:00:00.000Z',
   },
-  // 12-firma-favorit.md — TODO, owner=AI, FEATURE
+  // 12-firma-favorit.md — TODO, owner=AI, FEATURE (well-specified, ready to build)
   {
     id: 12,
     owner: 'AI',
@@ -196,32 +196,68 @@ const TICKET_SEED: TicketSeedRow[] = [
 ];
 
 const TICKET_COMMENT_SEED: TicketCommentSeedRow[] = [
-  // 07 CSV-Export: question about separator (comma vs semicolon)
+  // 01 Firmenkarte (DEFINITION): too vague — ask for detail
   {
     id: 1,
+    ticketId: 1,
+    author: 'AGENT',
+    authorName: 'Claude Code',
+    body: 'Diese Anforderung ist noch zu vage, um sie zu bauen. Bitte beschreibe genauer: Welche Karten-Bibliothek oder welchen Anbieter sollen wir nutzen, woher kommen die Koordinaten der Firmen (aus der Adresse?), und was soll beim Klick auf eine Firma passieren?',
+    createdAt: '2026-06-20T08:05:00.000Z',
+  },
+  // 02 KI-Chat (DEFINITION): too vague — ask for detail
+  {
+    id: 2,
+    ticketId: 2,
+    author: 'AGENT',
+    authorName: 'Claude Code',
+    body: 'Bitte erkläre genauer, was der KI-Chat können soll: Auf welche Daten greift er zu (Firmen, Personen, Chancen?), wo erscheint er in der Oberfläche, und welche Art von Fragen soll er beantworten?',
+    createdAt: '2026-06-20T09:05:00.000Z',
+  },
+  // 03 Firmendossier (DEFINITION): too vague — ask for detail
+  {
+    id: 3,
+    ticketId: 3,
+    author: 'AGENT',
+    authorName: 'Claude Code',
+    body: 'Diese Aufgabe ist noch zu offen. Bitte beschreibe genauer: Welche Infos sollen im Dossier stehen, aus welcher Quelle (welche API oder Website), und an welcher Stelle in der App werden sie angezeigt?',
+    createdAt: '2026-06-20T10:05:00.000Z',
+  },
+  // 04 KI-Beziehungsanalyse (DEFINITION): too vague — ask for detail
+  {
+    id: 4,
+    ticketId: 4,
+    author: 'AGENT',
+    authorName: 'Claude Code',
+    body: 'Diese Anforderung ist noch sehr offen. Bitte gib mehr Details: Welche Beziehungen genau soll die KI analysieren (Firma–Person, Person–Person, Chancen?), und was soll als Ergebnis herauskommen — ein Text, eine Bewertung, eine Visualisierung?',
+    createdAt: '2026-06-20T11:05:00.000Z',
+  },
+  // 05 CSV-Import (DEFINITION): too vague — ask for detail
+  {
+    id: 5,
+    ticketId: 5,
+    author: 'AGENT',
+    authorName: 'Claude Code',
+    body: 'Hier fehlen noch Details. Bitte gib mehr Infos: Welche Dateiformate sollen unterstützt werden (CSV, Excel?), welche Spalten erwartet der Import, und wie sollen Duplikate oder fehlerhafte Zeilen behandelt werden?',
+    createdAt: '2026-06-21T08:05:00.000Z',
+  },
+  // 07 CSV-Export (ON_HOLD): question about separator (comma vs semicolon)
+  {
+    id: 6,
     ticketId: 7,
     author: 'AGENT',
     authorName: 'Claude Code',
     body: 'Welches Trennzeichen soll die CSV-Datei verwenden: Komma (Standard) oder Semikolon (für deutsches Excel)? Die Wahl beeinflusst, ob die Datei per Doppelklick korrekt in Excel öffnet.',
     createdAt: '2026-06-21T10:05:00.000Z',
   },
-  // 09 Sidebar Counters: question about all vs open Chancen
+  // 09 Sidebar Counters (ON_HOLD): question about all vs open Chancen
   {
-    id: 2,
+    id: 7,
     ticketId: 9,
     author: 'AGENT',
     authorName: 'Claude Code',
     body: 'Soll der Chancen-Badge im Seitenmenü alle Chancen zählen oder nur die offenen? Für „alle" ist eine neue Backend-Abfrage nötig, da `GET /api/dashboard` nur `offeneChancenCount` liefert.',
     createdAt: '2026-06-22T09:05:00.000Z',
-  },
-  // 11 Chance Notiz: question about max character limit
-  {
-    id: 3,
-    ticketId: 11,
-    author: 'AGENT',
-    authorName: 'Claude Code',
-    body: 'Welches maximale Zeichenlimit soll das Notiz-Feld einer Chance haben? Das Limit steuert sowohl die Zod-Validierung im Backend als auch das Frontend-Textarea-Limit.',
-    createdAt: '2026-06-23T09:05:00.000Z',
   },
 ];
 

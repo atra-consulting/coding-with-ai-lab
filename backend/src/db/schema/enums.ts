@@ -39,7 +39,7 @@ export type TicketOwner = (typeof TICKET_OWNER)[number];
 export const TICKET_TYPE = ['FEATURE', 'BUG', 'CHORE'] as const;
 export type TicketType = (typeof TICKET_TYPE)[number];
 
-export const TICKET_STATUS = ['TODO', 'IN_PROGRESS', 'ON_HOLD', 'DONE'] as const;
+export const TICKET_STATUS = ['DEFINITION', 'TODO', 'IN_PROGRESS', 'ON_HOLD', 'DONE'] as const;
 export type TicketStatus = (typeof TICKET_STATUS)[number];
 
 export const TICKET_SOLUTION = ['DONE', 'WONT_DO'] as const;

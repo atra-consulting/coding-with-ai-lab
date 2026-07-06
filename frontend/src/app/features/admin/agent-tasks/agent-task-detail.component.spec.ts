@@ -67,7 +67,7 @@ describe('AgentTaskDetailComponent', () => {
 
   it('renders the task id in the page header', () => {
     const text: string = fixture.nativeElement.textContent;
-    expect(text).toContain('Agent-Aufgabe #7');
+    expect(text).toContain('App-Feedback #7');
   });
 
   it('renders the source field', () => {

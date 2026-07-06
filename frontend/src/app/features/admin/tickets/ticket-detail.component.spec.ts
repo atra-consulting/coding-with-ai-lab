@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { ComponentFixture, fakeAsync, tick } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { TicketDetailComponent } from './ticket-detail.component';
 import { TicketService } from '../../../core/services/ticket.service';
@@ -62,6 +62,7 @@ function makeMockTicketService(): jasmine.SpyObj<TicketService> {
     'create',
     'setStatus',
     'setOwner',
+    'handToAi',
     'wontDo',
     'addComment',
   ]);
@@ -184,10 +185,12 @@ describe('TicketDetailComponent — template rendering', () => {
     expect(text).toContain('CSV-Export für Firmenliste');
   });
 
-  it('renders the ticket body in a <pre> element', () => {
-    const pre: HTMLElement = fixture.nativeElement.querySelector('pre');
-    expect(pre).toBeTruthy();
-    expect(pre.textContent).toContain('Bitte CSV-Export implementieren.');
+  it('renders the ticket body as Markdown in a .markdown-body container', () => {
+    const md: HTMLElement = fixture.nativeElement.querySelector('.ticket-body.markdown-body');
+    expect(md).toBeTruthy();
+    // marked wraps plain text in a paragraph
+    expect(md.querySelector('p')).toBeTruthy();
+    expect(md.textContent).toContain('Bitte CSV-Export implementieren.');
   });
 
   it('renders both comments in the comment thread', () => {
@@ -653,6 +656,209 @@ describe('TicketDetailComponent — toggleOwner()', () => {
   it('renders "An KI übergeben" button text when owner is HUMAN', () => {
     const text: string = fixture.nativeElement.textContent;
     expect(text).toContain('An KI übergeben');
+  });
+});
+
+// ─── DEFINITION status — Definition actions ──────────────────────────────────
+
+describe('TicketDetailComponent — DEFINITION status actions', () => {
+  let fixture: ComponentFixture<TicketDetailComponent>;
+  let component: TicketDetailComponent;
+  let mockService: jasmine.SpyObj<TicketService>;
+  let mockNotification: jasmine.SpyObj<NotificationService>;
+
+  const definitionTicket = makeTicket({ owner: 'HUMAN', status: 'DEFINITION' });
+
+  function findButtonByText(text: string): HTMLButtonElement | undefined {
+    const buttons: NodeListOf<HTMLButtonElement> = fixture.nativeElement.querySelectorAll('button');
+    return Array.from(buttons).find((b) => b.textContent?.includes(text));
+  }
+
+  beforeEach(async () => {
+    mockService = makeMockTicketService();
+    mockNotification = makeMockNotification();
+    mockService.getById.and.returnValue(of(definitionTicket));
+    mockService.handToAi.and.returnValue(
+      of({ ...definitionTicket, owner: 'AI', status: 'TODO' }),
+    );
+    mockService.setOwner.and.returnValue(
+      of({ ...definitionTicket, owner: 'AI' }),
+    );
+    mockService.setStatus.and.returnValue(of({ ...definitionTicket, status: 'TODO' }));
+
+    await TestBed.configureTestingModule({
+      imports: [TicketDetailComponent],
+      providers: [
+        provideRouter([]),
+        { provide: TicketService, useValue: mockService },
+        { provide: NotificationService, useValue: mockNotification },
+        { provide: NgbModal, useValue: makeModalStub() },
+        { provide: ActivatedRoute, useValue: makeRoute('10') },
+      ],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(TicketDetailComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('renders the "An KI übergeben" Definition button', () => {
+    expect(findButtonByText('An KI übergeben')).toBeTruthy();
+  });
+
+  it('renders the "Nach Bereit" button', () => {
+    expect(findButtonByText('Nach Bereit')).toBeTruthy();
+  });
+
+  it('hides the generic owner-toggle button while status is DEFINITION', () => {
+    // Only one button should reference "An KI übergeben" — the Definition action,
+    // not the generic owner-toggle (which also uses that label for HUMAN owners).
+    const buttons: NodeListOf<HTMLButtonElement> = fixture.nativeElement.querySelectorAll('button');
+    const matches = Array.from(buttons).filter((b) => b.textContent?.includes('An KI übergeben'));
+    expect(matches.length).toBe(1);
+  });
+
+  it('does not render the "Eigentümer ändern" label used by the generic owner-toggle', () => {
+    const text: string = fixture.nativeElement.textContent;
+    expect(text).not.toContain('Eigentümer ändern');
+  });
+
+  it('shows "Definition" as the status label via statusLabel()', () => {
+    expect(component.statusLabel('DEFINITION')).toBe('Definition');
+  });
+
+  it('renders the "Definition" status badge in the DOM', () => {
+    const badge: HTMLElement = fixture.nativeElement.querySelector('.bg-info.text-dark');
+    expect(badge).toBeTruthy();
+    expect(badge.textContent?.trim()).toBe('Definition');
+  });
+
+  it('assigns to AI via setOwner (keeps DEFINITION) when "An KI übergeben" is clicked', fakeAsync(() => {
+    findButtonByText('An KI übergeben')!.click();
+    tick();
+
+    expect(mockService.setOwner).toHaveBeenCalledWith(10, 'AI');
+    expect(mockService.handToAi).not.toHaveBeenCalled();
+  }));
+
+  it('updates the ticket to owner=AI, status stays DEFINITION after "An KI übergeben" succeeds', fakeAsync(() => {
+    findButtonByText('An KI übergeben')!.click();
+    tick();
+
+    expect(component.ticket?.owner).toBe('AI');
+    expect(component.ticket?.status).toBe('DEFINITION');
+  }));
+
+  it('assigns to AI and moves to TODO via handToAi when "Nach Bereit" is clicked', fakeAsync(() => {
+    findButtonByText('Nach Bereit')!.click();
+    tick();
+
+    expect(mockService.handToAi).toHaveBeenCalledWith(10);
+    expect(mockService.setStatus).not.toHaveBeenCalled();
+  }));
+
+  it('updates the ticket to owner=AI, status=TODO after "Nach Bereit" succeeds', fakeAsync(() => {
+    findButtonByText('Nach Bereit')!.click();
+    tick();
+
+    expect(component.ticket?.owner).toBe('AI');
+    expect(component.ticket?.status).toBe('TODO');
+  }));
+
+  it('disables both Definition buttons while "Nach Bereit" (handToAi) is in flight', fakeAsync(() => {
+    const handToAi$ = new Subject<Ticket>();
+    mockService.handToAi.and.returnValue(handToAi$);
+
+    findButtonByText('Nach Bereit')!.click();
+    fixture.detectChanges();
+
+    expect(findButtonByText('An KI übergeben')!.disabled).toBeTrue();
+    expect(findButtonByText('Nach Bereit')!.disabled).toBeTrue();
+
+    handToAi$.next({ ...definitionTicket, owner: 'AI', status: 'TODO' });
+    handToAi$.complete();
+    tick();
+  }));
+
+  it('resets savingAssignAi and notifies an error when "An KI übergeben" (setOwner) fails', fakeAsync(() => {
+    mockService.setOwner.and.returnValue(throwError(() => new Error('Server error')));
+
+    findButtonByText('An KI übergeben')!.click();
+    tick();
+
+    expect(component.savingAssignAi).toBeFalse();
+    expect(mockNotification.error).toHaveBeenCalledWith(
+      'Fehler beim Zuweisen des Tickets an die KI.',
+    );
+  }));
+
+  it('resets savingMoveToReady and notifies an error when "Nach Bereit" (handToAi) fails', fakeAsync(() => {
+    mockService.handToAi.and.returnValue(throwError(() => new Error('Server error')));
+
+    findButtonByText('Nach Bereit')!.click();
+    tick();
+
+    expect(component.savingMoveToReady).toBeFalse();
+    expect(mockNotification.error).toHaveBeenCalledWith(
+      'Fehler beim Verschieben des Tickets.',
+    );
+  }));
+});
+
+// ─── Non-DEFINITION ticket — Definition actions absent ───────────────────────
+
+describe('TicketDetailComponent — Definition actions absent for non-DEFINITION ticket', () => {
+  it('does not render "An KI übergeben" Definition button or "Nach Bereit" button for a TODO ticket', async () => {
+    const todoTicket = makeTicket({ owner: 'HUMAN', status: 'TODO' });
+    const mockService = makeMockTicketService();
+    mockService.getById.and.returnValue(of(todoTicket));
+
+    await TestBed.configureTestingModule({
+      imports: [TicketDetailComponent],
+      providers: [
+        provideRouter([]),
+        { provide: TicketService, useValue: mockService },
+        { provide: NotificationService, useValue: makeMockNotification() },
+        { provide: NgbModal, useValue: makeModalStub() },
+        { provide: ActivatedRoute, useValue: makeRoute('10') },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(TicketDetailComponent);
+    fixture.detectChanges();
+
+    const text: string = fixture.nativeElement.textContent;
+    expect(text).not.toContain('Nach Bereit');
+
+    // The generic owner-toggle button IS shown (status !== DEFINITION), and it also
+    // reads "An KI übergeben" for a HUMAN owner — so there should be exactly one match,
+    // coming from the generic toggle, not the Definition action group.
+    const buttons: NodeListOf<HTMLButtonElement> = fixture.nativeElement.querySelectorAll('button');
+    const matches = Array.from(buttons).filter((b) => b.textContent?.includes('An KI übergeben'));
+    expect(matches.length).toBe(1);
+  });
+
+  it('shows the generic "Eigentümer ändern" owner-toggle for a non-DEFINITION ticket', async () => {
+    const todoTicket = makeTicket({ owner: 'HUMAN', status: 'TODO' });
+    const mockService = makeMockTicketService();
+    mockService.getById.and.returnValue(of(todoTicket));
+
+    await TestBed.configureTestingModule({
+      imports: [TicketDetailComponent],
+      providers: [
+        provideRouter([]),
+        { provide: TicketService, useValue: mockService },
+        { provide: NotificationService, useValue: makeMockNotification() },
+        { provide: NgbModal, useValue: makeModalStub() },
+        { provide: ActivatedRoute, useValue: makeRoute('10') },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(TicketDetailComponent);
+    fixture.detectChanges();
+
+    const text: string = fixture.nativeElement.textContent;
+    expect(text).toContain('Eigentümer ändern');
   });
 });
 
