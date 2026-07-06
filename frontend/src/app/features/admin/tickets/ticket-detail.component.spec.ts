@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { ComponentFixture, fakeAsync, tick } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { TicketDetailComponent } from './ticket-detail.component';
 import { TicketService } from '../../../core/services/ticket.service';
@@ -663,6 +663,7 @@ describe('TicketDetailComponent — DEFINITION status actions', () => {
   let fixture: ComponentFixture<TicketDetailComponent>;
   let component: TicketDetailComponent;
   let mockService: jasmine.SpyObj<TicketService>;
+  let mockNotification: jasmine.SpyObj<NotificationService>;
 
   const definitionTicket = makeTicket({ owner: 'HUMAN', status: 'DEFINITION' });
 
@@ -673,6 +674,7 @@ describe('TicketDetailComponent — DEFINITION status actions', () => {
 
   beforeEach(async () => {
     mockService = makeMockTicketService();
+    mockNotification = makeMockNotification();
     mockService.getById.and.returnValue(of(definitionTicket));
     mockService.handToAi.and.returnValue(
       of({ ...definitionTicket, owner: 'AI', status: 'TODO' }),
@@ -684,7 +686,7 @@ describe('TicketDetailComponent — DEFINITION status actions', () => {
       providers: [
         provideRouter([]),
         { provide: TicketService, useValue: mockService },
-        { provide: NotificationService, useValue: makeMockNotification() },
+        { provide: NotificationService, useValue: mockNotification },
         { provide: NgbModal, useValue: makeModalStub() },
         { provide: ActivatedRoute, useValue: makeRoute('10') },
       ],
@@ -753,6 +755,45 @@ describe('TicketDetailComponent — DEFINITION status actions', () => {
     tick();
 
     expect(component.ticket?.status).toBe('TODO');
+  }));
+
+  it('disables both Definition buttons while handToAi() is in flight', fakeAsync(() => {
+    const handToAi$ = new Subject<Ticket>();
+    mockService.handToAi.and.returnValue(handToAi$);
+
+    findButtonByText('An KI übergeben')!.click();
+    fixture.detectChanges();
+
+    expect(findButtonByText('An KI übergeben')!.disabled).toBeTrue();
+    expect(findButtonByText('Nach Bereit')!.disabled).toBeTrue();
+
+    handToAi$.next({ ...definitionTicket, owner: 'AI', status: 'TODO' });
+    handToAi$.complete();
+    tick();
+  }));
+
+  it('resets savingHandToAi and notifies an error when handToAi() fails', fakeAsync(() => {
+    mockService.handToAi.and.returnValue(throwError(() => new Error('Server error')));
+
+    findButtonByText('An KI übergeben')!.click();
+    tick();
+
+    expect(component.savingHandToAi).toBeFalse();
+    expect(mockNotification.error).toHaveBeenCalledWith(
+      'Fehler beim Übergeben des Tickets an die KI.',
+    );
+  }));
+
+  it('resets savingMoveToReady and notifies an error when setStatus() fails for "Nach Bereit"', fakeAsync(() => {
+    mockService.setStatus.and.returnValue(throwError(() => new Error('Server error')));
+
+    findButtonByText('Nach Bereit')!.click();
+    tick();
+
+    expect(component.savingMoveToReady).toBeFalse();
+    expect(mockNotification.error).toHaveBeenCalledWith(
+      'Fehler beim Verschieben des Tickets.',
+    );
   }));
 });
 

@@ -1142,13 +1142,25 @@ test.describe('POST /api/tickets/:id/hand-to-ai', () => {
   test('non-DEFINITION ticket (TODO+AI) → 409', async () => {
     // Ticket 1 is TODO+AI after reset, not DEFINITION
     const resp = await admin.post('/api/tickets/1/hand-to-ai');
-    expect(resp.status()).toBe(409);
+
+    await test.step('response is 409', () => { expect(resp.status()).toBe(409); });
+
+    // Ticket must remain untouched
+    const persisted = await (await admin.get('/api/tickets/1')).json() as Ticket;
+    await test.step('ticket owner is still AI', () => { expect(persisted.owner).toBe('AI'); });
+    await test.step('ticket status is still TODO', () => { expect(persisted.status).toBe('TODO'); });
   });
 
   test('ON_HOLD+HUMAN ticket → 409', async () => {
     // Ticket 7 is ON_HOLD+HUMAN after reset
     const resp = await admin.post('/api/tickets/7/hand-to-ai');
-    expect(resp.status()).toBe(409);
+
+    await test.step('response is 409', () => { expect(resp.status()).toBe(409); });
+
+    // Ticket must remain untouched
+    const persisted = await (await admin.get('/api/tickets/7')).json() as Ticket;
+    await test.step('ticket owner is still HUMAN', () => { expect(persisted.owner).toBe('HUMAN'); });
+    await test.step('ticket status is still ON_HOLD', () => { expect(persisted.status).toBe('ON_HOLD'); });
   });
 
   // ── Not found ───────────────────────────────────────────────────────────────

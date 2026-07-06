@@ -328,6 +328,14 @@ describe('TicketService', () => {
       req.flush({ ...MOCK_TICKET, status: 'TODO', owner: 'AI' });
     });
 
+    it('sends an empty request body', () => {
+      service.handToAi(10).subscribe();
+
+      const req = httpMock.expectOne('/api/tickets/10/hand-to-ai');
+      expect(req.request.body).toEqual({});
+      req.flush({ ...MOCK_TICKET, status: 'TODO', owner: 'AI' });
+    });
+
     it('emits the updated ticket from the server', () => {
       let received: Ticket | undefined;
       service.handToAi(10).subscribe((r) => (received = r));
