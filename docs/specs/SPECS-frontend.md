@@ -148,7 +148,15 @@ Three public components. No auth required. No backend calls — data posts direc
 
 ### Produktivität → Rechner
 
-`features/produktivitaet/` — a standalone `RechnerComponent` at `/produktivitaet/rechner` (authGuard, all logged-in users). Compares three software-delivery processes (human/semi-automated/fully-automated) and computes end-to-end cycle time. Per-step **Arbeitszeit** + between-step **Wartezeit** inputs (reactive form: per process a `works` FormArray of N and a `waits` FormArray of N−1), live-recalculated (debounced) into a `computed` snapshot. Visualizations: a shared-scale comparison bar plus per-process step-flow SVG bars (work/wait segments distinguished by color **and** hatch pattern for greyscale/WCAG), generated on the fly via pure functions in `svg-util.ts`. Inputs grouped in tabs (NgbNav). Named scenarios persisted via `SzenarioService` → `/api/szenarien` (create/load/update/delete, `ConfirmDialogComponent` for delete). Duration formatting via the `dauer` pipe (8h workday). Sidebar: "Produktivität" section, item "Rechner" (`faCalculator`), no role required.
+`features/produktivitaet/` — a standalone `RechnerComponent` at `/produktivitaet/rechner` (authGuard, all logged-in users). Compares four software-delivery processes — Agile mit Menschen, Agile mit KI, KI-Prozess mit Feedback, KI-Prozess vollautomatisch — and computes end-to-end cycle time.
+
+A short static intro (title + one-line subtitle) sits above a single tab strip (NgbNav) with four tabs, one per process, in that order. Each tab shows: its Arbeit/Warten bar (default view) with a Balken ↔ Flussdiagramm toggle button, an Arbeit-vs-Warten pie (all four tabs), a BA/Dev/Tester role-split pie (Agile mit Menschen and Agile mit KI tabs only), and that process's own Schritt-Zeiten step-time form. There is no second, competing tab strip — the outer tab is the only process picker.
+
+The component is process-keyed: one `PROZESSE` list drives signals, form groups, and template blocks for all four processes — not four hardcoded per-process copies.
+
+Per-step **Arbeitszeit** + between-step **Wartezeit** inputs (reactive form: per process a `works` FormArray of N and a `waits` FormArray of N−1), live-recalculated (debounced) into a `computed` snapshot. Switching a step's unit dropdown (Minuten/Stunden/Tage) converts the displayed number so the real duration stays unchanged; the value's max scales with the selected unit.
+
+Below the four tabs, in its own section: a shared-scale comparison bar chart across all four processes. Below that, in its own card: the Szenarien save/load/delete flow, unchanged from before. Bars, pies, and the flowchart are all generated on the fly via pure functions in `svg-util.ts` — no charting library. Named scenarios persisted via `SzenarioService` → `/api/szenarien` (create/load/update/delete, `ConfirmDialogComponent` for delete). Duration formatting via the `dauer` pipe (8h workday). Sidebar: "Produktivität" section, item "Rechner" (`faCalculator`), no role required.
 
 ### Administration (Admin Routes)
 
