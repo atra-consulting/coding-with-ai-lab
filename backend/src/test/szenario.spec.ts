@@ -57,11 +57,33 @@ const AGILE_KI_WAITS_18: number[] = [
   10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
 ];
 
+// Used ONLY in the PUT round-trip test, in place of AGILE_KI_WORKS_19/
+// AGILE_KI_WAITS_18. If the PUT test resent the same creation-time
+// constants, the round-trip assertion would pass even if update() dropped
+// agileKiSteps from its SET clause entirely (GET would still echo back the
+// value written at create() time). Offsetting by +1 forces the assertion to
+// fail unless update() actually persists the newly sent values.
+const AGILE_KI_WORKS_19_ALT: number[] = AGILE_KI_WORKS_19.map((w) => w + 1);
+const AGILE_KI_WAITS_18_ALT: number[] = AGILE_KI_WAITS_18.map((w) => w + 1);
+
 const SEMI_WORKS_7: number[] = [0, 5, 15, 15, 10, 30, 20];
 const SEMI_WAITS_6: number[] = [5, 60, 60, 5, 60, 5];
 
 const AUTO_WORKS_2: number[] = [0, 20];
 const AUTO_WAITS_1: number[] = [5];
+
+// Seed-exact values for the "Seed defaults" suite below — kept as separate
+// constants from AGILE_KI_WORKS_19/AGILE_KI_WAITS_18 (the CRUD-test payload
+// values) even though the works arrays happen to coincide, because the two
+// constants serve different purposes: these assert against the real seed
+// written by szenarioSeed.ts, the others exist to catch column swaps in
+// arbitrary CRUD payloads. SEMI_WORKS_7/SEMI_WAITS_6/AUTO_WORKS_2/AUTO_WAITS_1
+// above are already seed-exact, so no separate SEED_* constants are needed
+// for those two processes.
+const SEED_AGILE_KI_WORKS: number[] = [
+  0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+];
+const SEED_AGILE_KI_WAITS: number[] = HUMAN_WAITS_18;
 
 /** Build a minimal valid szenario payload with a unique name. */
 function validPayload(name: string) {
@@ -315,9 +337,24 @@ test.describe('CRUD happy path', () => {
   test('PUT /api/szenarien/:id returns 200 and change is reflected by GET', async () => {
     test.skip(createdId === undefined, 'POST did not return an id');
 
+    // Deliberately do NOT reuse validPayload()'s agileKiSteps values here.
+    // The row was created (above) with AGILE_KI_WORKS_19/AGILE_KI_WAITS_18;
+    // resending those same constants in the PUT would make the round-trip
+    // assertion pass even if update() silently dropped agileKiSteps from its
+    // SET clause (GET would still echo back the value written at create()
+    // time). Sending the _ALT variants and asserting GET reflects THEM
+    // proves update() actually persists the column. humanSteps stays on its
+    // own distinct constants throughout, so the column-swap guard elsewhere
+    // in this suite is unaffected.
     const updatedName = `Updated-Szenario-${Date.now()}`;
     const putResp = await adminCtx.put(`/api/szenarien/${createdId}`, {
-      data: validPayload(updatedName),
+      data: {
+        name: updatedName,
+        humanSteps: { works: HUMAN_WORKS_19, waits: HUMAN_WAITS_18 },
+        agileKiSteps: { works: AGILE_KI_WORKS_19_ALT, waits: AGILE_KI_WAITS_18_ALT },
+        semiAutomatedSteps: { works: SEMI_WORKS_7, waits: SEMI_WAITS_6 },
+        automatedSteps: { works: AUTO_WORKS_2, waits: AUTO_WAITS_1 },
+      },
     });
 
     await test.step('PUT returns 200', () => {
@@ -342,8 +379,16 @@ test.describe('CRUD happy path', () => {
       expect(getBody.name).toBe(updatedName);
     });
 
-    await test.step('GET agileKiSteps.works still round-trips after update', () => {
-      expect(getBody.agileKiSteps.works).toEqual(AGILE_KI_WORKS_19);
+    await test.step('GET agileKiSteps.works reflects the NEW value sent in the PUT (proves update() writes the column)', () => {
+      expect(getBody.agileKiSteps.works).toEqual(AGILE_KI_WORKS_19_ALT);
+    });
+
+    await test.step('GET agileKiSteps.waits reflects the NEW value sent in the PUT', () => {
+      expect(getBody.agileKiSteps.waits).toEqual(AGILE_KI_WAITS_18_ALT);
+    });
+
+    await test.step('GET agileKiSteps.works differs from the value used at creation (not a stale echo)', () => {
+      expect(getBody.agileKiSteps.works).not.toEqual(AGILE_KI_WORKS_19);
     });
 
     // Keep the name tracking consistent for cleanup
@@ -845,7 +890,7 @@ test.describe('Seed defaults — Standard-Szenario reflects canonical totals', (
     await adminCtx.dispose();
   });
 
-  test('GET /api/szenarien/1 reflects the 4-process canonical totals and array shapes', async () => {
+  test('GET /api/szenarien/1 reflects the exact 4-process canonical arrays and totals', async () => {
     const resp = await adminCtx.get('/api/szenarien/1');
     expect(resp.status()).toBe(200);
 
@@ -855,6 +900,28 @@ test.describe('Seed defaults — Standard-Szenario reflects canonical totals', (
       expect(body.name).toBe('Standard-Szenario');
     });
 
+    // Exact-array assertions — the point of this test. Summing works+waits
+    // alone would pass even if individual elements were shuffled or wrong as
+    // long as the total matched; toEqual against the byte-identical seed
+    // constants catches that.
+    await test.step('humanSteps matches the exact seeded arrays', () => {
+      expect(body.humanSteps).toEqual({ works: HUMAN_WORKS_19, waits: HUMAN_WAITS_18 });
+    });
+
+    await test.step('agileKiSteps matches the exact seeded arrays', () => {
+      expect(body.agileKiSteps).toEqual({ works: SEED_AGILE_KI_WORKS, waits: SEED_AGILE_KI_WAITS });
+    });
+
+    await test.step('semiAutomatedSteps matches the exact seeded arrays', () => {
+      expect(body.semiAutomatedSteps).toEqual({ works: SEMI_WORKS_7, waits: SEMI_WAITS_6 });
+    });
+
+    await test.step('automatedSteps matches the exact seeded arrays', () => {
+      expect(body.automatedSteps).toEqual({ works: AUTO_WORKS_2, waits: AUTO_WAITS_1 });
+    });
+
+    // Aggregate sums, retained as an easy-to-read cross-check of the totals
+    // called out in PLAN-RECHNER-OVERHAUL.md's Canonical section.
     await test.step('humanSteps works+waits sums to 3,880', () => {
       const total = sum(body.humanSteps.works) + sum(body.humanSteps.waits);
       expect(total).toBe(3880);
