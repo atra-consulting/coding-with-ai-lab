@@ -7,7 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { NgTemplateOutlet } from '@angular/common';
+import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
 import {
   AbstractControl,
   FormArray,
@@ -308,6 +308,17 @@ export class RechnerComponent implements OnInit {
   private szenarioService = inject(SzenarioService);
   private modalService = inject(NgbModal);
   private notification = inject(NotificationService);
+  private document = inject(DOCUMENT);
+
+  /**
+   * Skip-link handler: focus the tab's Schritt-Zeiten form directly.
+   * A raw `href="#form-…"` would resolve against `<base href="/">` → `/#form-…`,
+   * triggering a full-page redirect to /dashboard. Focus programmatically instead.
+   */
+  focusForm(event: Event, targetId: string): void {
+    event.preventDefault();
+    (this.document.getElementById(targetId) as HTMLElement | null)?.focus();
+  }
 
   readonly prozesse = PROZESSE;
   readonly zeiteinheiten: ZeitEinheit[] = ZEITEINHEITEN;
