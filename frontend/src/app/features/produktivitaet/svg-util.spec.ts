@@ -1,4 +1,4 @@
-import { computeSegments, computeComparisonBars, SvgSegment } from './svg-util';
+import { computeSegments, computeComparisonBars, computePieSlices, SvgSegment } from './svg-util';
 
 describe('computeSegments', () => {
   const WIDTH = 100;
@@ -133,5 +133,136 @@ describe('computeComparisonBars', () => {
   it('uses width of 0 for an empty totals array', () => {
     const bars = computeComparisonBars([], WIDTH);
     expect(bars.length).toBe(0);
+  });
+});
+
+describe('computePieSlices', () => {
+  const CX = 50;
+  const CY = 50;
+  const R = 45;
+
+  describe('2-slice pie (Pie A: work vs. wait)', () => {
+    const result = computePieSlices(
+      [
+        { key: 'work', value: 70, color: '#264892', label: 'Arbeit' },
+        { key: 'wait', value: 30, color: '#cf944f', label: 'Wartezeit' },
+      ],
+      CX,
+      CY,
+      R,
+    );
+
+    it('returns one slice per input', () => {
+      expect(result.slices.length).toBe(2);
+    });
+
+    it('is not empty and not a full circle', () => {
+      expect(result.isEmpty).toBeFalse();
+      expect(result.isFullCircle).toBeFalse();
+    });
+
+    it('gives every slice a non-empty SVG path', () => {
+      result.slices.forEach((s) => expect(s.path.length).toBeGreaterThan(0));
+    });
+
+    it('percentages sum to 100 (rounded to 1 decimal each)', () => {
+      const total = result.slices.reduce((sum, s) => sum + s.percent, 0);
+      expect(total).toBeCloseTo(100, 5);
+    });
+  });
+
+  describe('3-slice pie (Pie B: role split)', () => {
+    const result = computePieSlices(
+      [
+        { key: 'ba', value: 180, color: '#6f42c1', label: 'BA' },
+        { key: 'dev', value: 640, color: '#0f766e', label: 'Dev' },
+        { key: 'tester', value: 180, color: '#9a6700', label: 'Tester' },
+      ],
+      CX,
+      CY,
+      R,
+    );
+
+    it('returns one slice per input', () => {
+      expect(result.slices.length).toBe(3);
+    });
+
+    it('is not empty and not a full circle', () => {
+      expect(result.isEmpty).toBeFalse();
+      expect(result.isFullCircle).toBeFalse();
+    });
+
+    it('gives every slice a non-empty SVG path', () => {
+      result.slices.forEach((s) => expect(s.path.length).toBeGreaterThan(0));
+    });
+  });
+
+  describe('zero-total pie', () => {
+    const result = computePieSlices(
+      [
+        { key: 'work', value: 0, color: '#264892', label: 'Arbeit' },
+        { key: 'wait', value: 0, color: '#cf944f', label: 'Wartezeit' },
+      ],
+      CX,
+      CY,
+      R,
+    );
+
+    it('sets isEmpty to true', () => {
+      expect(result.isEmpty).toBeTrue();
+    });
+
+    it('is not a full circle', () => {
+      expect(result.isFullCircle).toBeFalse();
+    });
+
+    it('gives every slice an empty path (caller renders a grey circle instead)', () => {
+      result.slices.forEach((s) => expect(s.path).toBe(''));
+    });
+  });
+
+  describe('single-100%-slice pie', () => {
+    const result = computePieSlices(
+      [
+        { key: 'work', value: 90, color: '#264892', label: 'Arbeit' },
+        { key: 'wait', value: 0, color: '#cf944f', label: 'Wartezeit' },
+      ],
+      CX,
+      CY,
+      R,
+    );
+
+    it('sets isFullCircle to true', () => {
+      expect(result.isFullCircle).toBeTrue();
+    });
+
+    it('is not empty', () => {
+      expect(result.isEmpty).toBeFalse();
+    });
+
+    it('reports the sole 100% slice color as fullCircleColor', () => {
+      expect(result.fullCircleColor).toBe('#264892');
+    });
+
+    it('gives every slice an empty path (caller renders a plain circle instead of a 360° arc)', () => {
+      result.slices.forEach((s) => expect(s.path).toBe(''));
+    });
+  });
+
+  describe('small-share rounding (~3% of the Agile-mit-KI total)', () => {
+    it('rounds a 90-of-2,970 share to "3.0", not "0"', () => {
+      const result = computePieSlices(
+        [
+          { key: 'work', value: 90, color: '#264892', label: 'Arbeit' },
+          { key: 'wait', value: 2880, color: '#cf944f', label: 'Wartezeit' },
+        ],
+        CX,
+        CY,
+        R,
+      );
+
+      const workSlice = result.slices.find((s) => s.key === 'work');
+      expect(workSlice?.percent.toFixed(1)).toBe('3.0');
+    });
   });
 });

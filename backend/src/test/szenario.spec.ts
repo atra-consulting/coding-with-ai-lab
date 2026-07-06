@@ -9,12 +9,22 @@
  *   DELETE /api/szenarien/:id   — 204; subsequent GET → 404
  *   Auth: no session → 401 (requireAuth only, no requireRole)
  *   Validation: missing name → 400 + fieldErrors.name
- *               wrong works length → 400 + fieldErrors key
- *               wrong waits length → 400 + fieldErrors key
+ *               wrong works length → 400 + fieldErrors key (all 4 processes)
+ *               wrong waits length → 400 + fieldErrors key (all 4 processes)
  *               negative duration → 400
  *               duration > 479520 → 400
  *   Duplicate name → 409 with message
- *   Persistence: re-fetched humanSteps.works exactly matches the 23-element array sent
+ *   Persistence: re-fetched humanSteps.works exactly matches the 19-element array sent;
+ *                agileKiSteps round-trips element-by-element with values distinct from
+ *                humanSteps, so a column-swap bug in create()/update() would be caught.
+ *   Seed: after startup, the seeded Standard-Szenario (id=1) reflects the 4-process
+ *         canonical totals (3,880 / 2,970 / 290 / 25) and has a valid 19-length
+ *         agileKiSteps. The pre-existing-DB ALTER/upgrade path (adding the
+ *         agileKiSteps column to an old 3-process DB) is NOT exercised here — it
+ *         is a manual/scripted check (see PLAN-RECHNER-OVERHAUL.md §8), not
+ *         automatable against the fresh CI DB this harness always starts with.
+ *
+ * Process step counts: human 19, agileKi 19, semiAutomated 7, automated 2.
  */
 import { test, expect, request as playwrightRequest } from '@playwright/test';
 import type { APIRequestContext } from '@playwright/test';
@@ -26,28 +36,40 @@ const BASE_URL = 'http://localhost:7070';
 // Shared test data
 // ---------------------------------------------------------------------------
 
-// Valid 23-element works array (element 0 is 0 per convention)
-const HUMAN_WORKS_23: number[] = [
-  0, 60, 30, 60, 30, 15, 240, 30, 60, 60, 30, 15, 120, 15, 120, 20, 30, 30, 20, 15, 60, 30, 30,
+// Valid 19-element works array (element 0 is 0 per convention)
+const HUMAN_WORKS_19: number[] = [
+  0, 60, 30, 60, 30, 15, 240, 30, 60, 60, 30, 15, 120, 15, 120, 20, 20, 15, 60,
 ];
-// Valid 22-element waits array
-const HUMAN_WAITS_22: number[] = [
-  240, 480, 240, 1440, 2880, 0, 480, 480, 480, 240, 480, 1440, 480, 240, 480, 480, 240, 240, 480,
-  1440, 1440, 480,
+// Valid 18-element waits array
+const HUMAN_WAITS_18: number[] = [
+  120, 120, 120, 960, 480, 0, 30, 120, 120, 120, 30, 240, 60, 0, 30, 240, 30, 60,
 ];
 
-const SEMI_WORKS_6: number[] = [0, 5, 15, 10, 30, 20];
-const SEMI_WAITS_5: number[] = [240, 480, 0, 480, 0];
+// agileKiSteps test values are intentionally DISTINCT from HUMAN_WORKS_19 /
+// HUMAN_WAITS_18 (both are also 19/18-length arrays) so that a column-swap
+// bug in szenarioService create()/update() — e.g. writing humanSteps' JSON
+// into the agileKiSteps column or vice versa — is caught by the round-trip
+// assertions below instead of silently passing on identical data.
+const AGILE_KI_WORKS_19: number[] = [
+  0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+];
+const AGILE_KI_WAITS_18: number[] = [
+  10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+];
+
+const SEMI_WORKS_7: number[] = [0, 5, 15, 15, 10, 30, 20];
+const SEMI_WAITS_6: number[] = [5, 60, 60, 5, 60, 5];
 
 const AUTO_WORKS_2: number[] = [0, 20];
-const AUTO_WAITS_1: number[] = [240];
+const AUTO_WAITS_1: number[] = [5];
 
 /** Build a minimal valid szenario payload with a unique name. */
 function validPayload(name: string) {
   return {
     name,
-    humanSteps: { works: HUMAN_WORKS_23, waits: HUMAN_WAITS_22 },
-    semiAutomatedSteps: { works: SEMI_WORKS_6, waits: SEMI_WAITS_5 },
+    humanSteps: { works: HUMAN_WORKS_19, waits: HUMAN_WAITS_18 },
+    agileKiSteps: { works: AGILE_KI_WORKS_19, waits: AGILE_KI_WAITS_18 },
+    semiAutomatedSteps: { works: SEMI_WORKS_7, waits: SEMI_WAITS_6 },
     automatedSteps: { works: AUTO_WORKS_2, waits: AUTO_WAITS_1 },
   };
 }
@@ -61,6 +83,7 @@ interface SzenarioDTO {
   id: number;
   name: string;
   humanSteps: ProzessDauer;
+  agileKiSteps: ProzessDauer;
   semiAutomatedSteps: ProzessDauer;
   automatedSteps: ProzessDauer;
   createdAt: string;
@@ -72,6 +95,10 @@ interface ErrorBody {
   message: string;
   timestamp: string;
   fieldErrors: Record<string, string>;
+}
+
+function sum(values: number[]): number {
+  return values.reduce((acc, v) => acc + v, 0);
 }
 
 // ---------------------------------------------------------------------------
@@ -170,6 +197,10 @@ test.describe('CRUD happy path', () => {
       expect(body.humanSteps).toBeDefined();
     });
 
+    await test.step('agileKiSteps is present', () => {
+      expect(body.agileKiSteps).toBeDefined();
+    });
+
     await test.step('semiAutomatedSteps is present', () => {
       expect(body.semiAutomatedSteps).toBeDefined();
     });
@@ -183,7 +214,7 @@ test.describe('CRUD happy path', () => {
 
   // ── Persistence round-trip ────────────────────────────────────────────────
 
-  test('humanSteps.works round-trips exactly as the 23-element array sent', async () => {
+  test('humanSteps.works round-trips exactly as the 19-element array sent', async () => {
     test.skip(createdId === undefined, 'POST did not return an id');
 
     const resp = await adminCtx.get(`/api/szenarien/${createdId}`);
@@ -191,18 +222,55 @@ test.describe('CRUD happy path', () => {
 
     const body = await resp.json() as SzenarioDTO;
 
-    await test.step('works array has exactly 23 elements', () => {
-      expect(body.humanSteps.works.length).toBe(23);
+    await test.step('works array has exactly 19 elements', () => {
+      expect(body.humanSteps.works.length).toBe(19);
     });
 
     await test.step('every works element matches the sent value', () => {
-      for (let i = 0; i < 23; i++) {
-        expect(body.humanSteps.works[i]).toBe(HUMAN_WORKS_23[i]);
+      for (let i = 0; i < 19; i++) {
+        expect(body.humanSteps.works[i]).toBe(HUMAN_WORKS_19[i]);
       }
     });
 
-    await test.step('waits array has exactly 22 elements', () => {
-      expect(body.humanSteps.waits.length).toBe(22);
+    await test.step('waits array has exactly 18 elements', () => {
+      expect(body.humanSteps.waits.length).toBe(18);
+    });
+  });
+
+  test('agileKiSteps round-trips exactly, with values distinct from humanSteps (column-swap guard)', async () => {
+    test.skip(createdId === undefined, 'POST did not return an id');
+
+    const resp = await adminCtx.get(`/api/szenarien/${createdId}`);
+    expect(resp.status()).toBe(200);
+
+    const body = await resp.json() as SzenarioDTO;
+
+    await test.step('agileKiSteps.works has exactly 19 elements', () => {
+      expect(body.agileKiSteps.works.length).toBe(19);
+    });
+
+    await test.step('every agileKiSteps.works element matches the sent value', () => {
+      for (let i = 0; i < 19; i++) {
+        expect(body.agileKiSteps.works[i]).toBe(AGILE_KI_WORKS_19[i]);
+      }
+    });
+
+    await test.step('agileKiSteps.waits has exactly 18 elements', () => {
+      expect(body.agileKiSteps.waits.length).toBe(18);
+    });
+
+    await test.step('every agileKiSteps.waits element matches the sent value', () => {
+      for (let i = 0; i < 18; i++) {
+        expect(body.agileKiSteps.waits[i]).toBe(AGILE_KI_WAITS_18[i]);
+      }
+    });
+
+    await test.step('agileKiSteps.works differs from humanSteps.works (would fail on a column swap)', () => {
+      expect(body.agileKiSteps.works).not.toEqual(body.humanSteps.works);
+    });
+
+    await test.step('agileKiSteps.waits differs from humanSteps.waits (would fail on a column swap)', () => {
+      expect(body.agileKiSteps.waits).not.toEqual(body.humanSteps.waits);
     });
   });
 
@@ -272,6 +340,10 @@ test.describe('CRUD happy path', () => {
 
     await test.step('GET name reflects the update', () => {
       expect(getBody.name).toBe(updatedName);
+    });
+
+    await test.step('GET agileKiSteps.works still round-trips after update', () => {
+      expect(getBody.agileKiSteps.works).toEqual(AGILE_KI_WORKS_19);
     });
 
     // Keep the name tracking consistent for cleanup
@@ -377,8 +449,9 @@ test.describe('Validation errors', () => {
   test('POST with missing name → 400 with fieldErrors.name', async () => {
     const payload = {
       // no name field
-      humanSteps: { works: HUMAN_WORKS_23, waits: HUMAN_WAITS_22 },
-      semiAutomatedSteps: { works: SEMI_WORKS_6, waits: SEMI_WAITS_5 },
+      humanSteps: { works: HUMAN_WORKS_19, waits: HUMAN_WAITS_18 },
+      agileKiSteps: { works: AGILE_KI_WORKS_19, waits: AGILE_KI_WAITS_18 },
+      semiAutomatedSteps: { works: SEMI_WORKS_7, waits: SEMI_WAITS_6 },
       automatedSteps: { works: AUTO_WORKS_2, waits: AUTO_WAITS_1 },
     };
 
@@ -411,16 +484,17 @@ test.describe('Validation errors', () => {
     });
   });
 
-  // ── Wrong works length (22 instead of 23) ─────────────────────────────────
+  // ── Wrong works length (18 instead of 19) ─────────────────────────────────
 
-  test('POST with humanSteps.works length 22 (not 23) → 400 with fieldErrors key', async () => {
-    const shortWorks = HUMAN_WORKS_23.slice(0, 22); // 22 elements
+  test('POST with humanSteps.works length 18 (not 19) → 400 with fieldErrors key', async () => {
+    const shortWorks = HUMAN_WORKS_19.slice(0, 18); // 18 elements
 
     const resp = await adminCtx.post('/api/szenarien', {
       data: {
         name: `Invalid-Works-${Date.now()}`,
-        humanSteps: { works: shortWorks, waits: HUMAN_WAITS_22 },
-        semiAutomatedSteps: { works: SEMI_WORKS_6, waits: SEMI_WAITS_5 },
+        humanSteps: { works: shortWorks, waits: HUMAN_WAITS_18 },
+        agileKiSteps: { works: AGILE_KI_WORKS_19, waits: AGILE_KI_WAITS_18 },
+        semiAutomatedSteps: { works: SEMI_WORKS_7, waits: SEMI_WAITS_6 },
         automatedSteps: { works: AUTO_WORKS_2, waits: AUTO_WAITS_1 },
       },
     });
@@ -436,16 +510,17 @@ test.describe('Validation errors', () => {
     });
   });
 
-  // ── Wrong waits length (21 instead of 22) ─────────────────────────────────
+  // ── Wrong waits length (17 instead of 18) ─────────────────────────────────
 
-  test('POST with humanSteps.waits length 21 (not 22) → 400 with fieldErrors key', async () => {
-    const shortWaits = HUMAN_WAITS_22.slice(0, 21); // 21 elements
+  test('POST with humanSteps.waits length 17 (not 18) → 400 with fieldErrors key', async () => {
+    const shortWaits = HUMAN_WAITS_18.slice(0, 17); // 17 elements
 
     const resp = await adminCtx.post('/api/szenarien', {
       data: {
         name: `Invalid-Waits-${Date.now()}`,
-        humanSteps: { works: HUMAN_WORKS_23, waits: shortWaits },
-        semiAutomatedSteps: { works: SEMI_WORKS_6, waits: SEMI_WAITS_5 },
+        humanSteps: { works: HUMAN_WORKS_19, waits: shortWaits },
+        agileKiSteps: { works: AGILE_KI_WORKS_19, waits: AGILE_KI_WAITS_18 },
+        semiAutomatedSteps: { works: SEMI_WORKS_7, waits: SEMI_WAITS_6 },
         automatedSteps: { works: AUTO_WORKS_2, waits: AUTO_WAITS_1 },
       },
     });
@@ -464,14 +539,15 @@ test.describe('Validation errors', () => {
   // ── Negative duration ─────────────────────────────────────────────────────
 
   test('POST with a negative duration value → 400', async () => {
-    const worksWithNegative: number[] = [...HUMAN_WORKS_23];
+    const worksWithNegative: number[] = [...HUMAN_WORKS_19];
     worksWithNegative[5] = -1;
 
     const resp = await adminCtx.post('/api/szenarien', {
       data: {
         name: `Negative-Duration-${Date.now()}`,
-        humanSteps: { works: worksWithNegative, waits: HUMAN_WAITS_22 },
-        semiAutomatedSteps: { works: SEMI_WORKS_6, waits: SEMI_WAITS_5 },
+        humanSteps: { works: worksWithNegative, waits: HUMAN_WAITS_18 },
+        agileKiSteps: { works: AGILE_KI_WORKS_19, waits: AGILE_KI_WAITS_18 },
+        semiAutomatedSteps: { works: SEMI_WORKS_7, waits: SEMI_WAITS_6 },
         automatedSteps: { works: AUTO_WORKS_2, waits: AUTO_WAITS_1 },
       },
     });
@@ -491,14 +567,15 @@ test.describe('Validation errors', () => {
   // ── Duration exceeds 479520 ───────────────────────────────────────────────
 
   test('POST with duration > 479520 → 400', async () => {
-    const worksOverMax: number[] = [...HUMAN_WORKS_23];
+    const worksOverMax: number[] = [...HUMAN_WORKS_19];
     worksOverMax[5] = 479521;
 
     const resp = await adminCtx.post('/api/szenarien', {
       data: {
         name: `Over-Max-Duration-${Date.now()}`,
-        humanSteps: { works: worksOverMax, waits: HUMAN_WAITS_22 },
-        semiAutomatedSteps: { works: SEMI_WORKS_6, waits: SEMI_WAITS_5 },
+        humanSteps: { works: worksOverMax, waits: HUMAN_WAITS_18 },
+        agileKiSteps: { works: AGILE_KI_WORKS_19, waits: AGILE_KI_WAITS_18 },
+        semiAutomatedSteps: { works: SEMI_WORKS_7, waits: SEMI_WAITS_6 },
         automatedSteps: { works: AUTO_WORKS_2, waits: AUTO_WAITS_1 },
       },
     });
@@ -518,15 +595,16 @@ test.describe('Validation errors', () => {
   // ── Boundary: exactly 479520 is valid ─────────────────────────────────────
 
   test('POST with duration exactly 479520 → 201 (boundary is inclusive)', async () => {
-    const worksAtMax: number[] = [...HUMAN_WORKS_23];
+    const worksAtMax: number[] = [...HUMAN_WORKS_19];
     worksAtMax[1] = 479520;
 
     const name = `At-Max-Duration-${Date.now()}`;
     const resp = await adminCtx.post('/api/szenarien', {
       data: {
         name,
-        humanSteps: { works: worksAtMax, waits: HUMAN_WAITS_22 },
-        semiAutomatedSteps: { works: SEMI_WORKS_6, waits: SEMI_WAITS_5 },
+        humanSteps: { works: worksAtMax, waits: HUMAN_WAITS_18 },
+        agileKiSteps: { works: AGILE_KI_WORKS_19, waits: AGILE_KI_WAITS_18 },
+        semiAutomatedSteps: { works: SEMI_WORKS_7, waits: SEMI_WAITS_6 },
         automatedSteps: { works: AUTO_WORKS_2, waits: AUTO_WAITS_1 },
       },
     });
@@ -631,12 +709,13 @@ test.describe('Validation for semiAutomated and automated step counts', () => {
     await adminCtx.dispose();
   });
 
-  test('POST with semiAutomatedSteps.works length 5 (not 6) → 400', async () => {
+  test('POST with semiAutomatedSteps.works length 6 (not 7) → 400', async () => {
     const resp = await adminCtx.post('/api/szenarien', {
       data: {
         name: `Invalid-Semi-Works-${Date.now()}`,
-        humanSteps: { works: HUMAN_WORKS_23, waits: HUMAN_WAITS_22 },
-        semiAutomatedSteps: { works: SEMI_WORKS_6.slice(0, 5), waits: SEMI_WAITS_5 },
+        humanSteps: { works: HUMAN_WORKS_19, waits: HUMAN_WAITS_18 },
+        agileKiSteps: { works: AGILE_KI_WORKS_19, waits: AGILE_KI_WAITS_18 },
+        semiAutomatedSteps: { works: SEMI_WORKS_7.slice(0, 6), waits: SEMI_WAITS_6 },
         automatedSteps: { works: AUTO_WORKS_2, waits: AUTO_WAITS_1 },
       },
     });
@@ -656,8 +735,9 @@ test.describe('Validation for semiAutomated and automated step counts', () => {
     const resp = await adminCtx.post('/api/szenarien', {
       data: {
         name: `Invalid-Auto-Waits-${Date.now()}`,
-        humanSteps: { works: HUMAN_WORKS_23, waits: HUMAN_WAITS_22 },
-        semiAutomatedSteps: { works: SEMI_WORKS_6, waits: SEMI_WAITS_5 },
+        humanSteps: { works: HUMAN_WORKS_19, waits: HUMAN_WAITS_18 },
+        agileKiSteps: { works: AGILE_KI_WORKS_19, waits: AGILE_KI_WAITS_18 },
+        semiAutomatedSteps: { works: SEMI_WORKS_7, waits: SEMI_WAITS_6 },
         automatedSteps: { works: AUTO_WORKS_2, waits: [] },
       },
     });
@@ -670,6 +750,137 @@ test.describe('Validation for semiAutomated and automated step counts', () => {
 
     await test.step('fieldErrors contains automatedSteps.waits key', () => {
       expect(typeof body.fieldErrors?.['automatedSteps.waits']).toBe('string');
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Suite: agileKiSteps validation (4th process, added by RECHNER-OVERHAUL)
+// ---------------------------------------------------------------------------
+
+test.describe('Validation for agileKiSteps step counts', () => {
+  let adminCtx: APIRequestContext;
+
+  test.beforeAll(async () => {
+    adminCtx = await loginCtx('admin', 'admin123');
+  });
+
+  test.afterAll(async () => {
+    await adminCtx.dispose();
+  });
+
+  // ── Wrong works length (18 instead of 19) ─────────────────────────────────
+
+  test('POST with agileKiSteps.works length 18 (not 19) → 400 with fieldErrors key', async () => {
+    const shortWorks = AGILE_KI_WORKS_19.slice(0, 18); // 18 elements
+
+    const resp = await adminCtx.post('/api/szenarien', {
+      data: {
+        name: `Invalid-AgileKi-Works-${Date.now()}`,
+        humanSteps: { works: HUMAN_WORKS_19, waits: HUMAN_WAITS_18 },
+        agileKiSteps: { works: shortWorks, waits: AGILE_KI_WAITS_18 },
+        semiAutomatedSteps: { works: SEMI_WORKS_7, waits: SEMI_WAITS_6 },
+        automatedSteps: { works: AUTO_WORKS_2, waits: AUTO_WAITS_1 },
+      },
+    });
+
+    await test.step('status 400', () => {
+      expect(resp.status()).toBe(400);
+    });
+
+    const body = await resp.json() as ErrorBody;
+
+    await test.step('fieldErrors contains an agileKiSteps.works key', () => {
+      expect(typeof body.fieldErrors?.['agileKiSteps.works']).toBe('string');
+    });
+  });
+
+  // ── Wrong waits length (17 instead of 18) ─────────────────────────────────
+
+  test('POST with agileKiSteps.waits length 17 (not 18) → 400 with fieldErrors key', async () => {
+    const shortWaits = AGILE_KI_WAITS_18.slice(0, 17); // 17 elements
+
+    const resp = await adminCtx.post('/api/szenarien', {
+      data: {
+        name: `Invalid-AgileKi-Waits-${Date.now()}`,
+        humanSteps: { works: HUMAN_WORKS_19, waits: HUMAN_WAITS_18 },
+        agileKiSteps: { works: AGILE_KI_WORKS_19, waits: shortWaits },
+        semiAutomatedSteps: { works: SEMI_WORKS_7, waits: SEMI_WAITS_6 },
+        automatedSteps: { works: AUTO_WORKS_2, waits: AUTO_WAITS_1 },
+      },
+    });
+
+    await test.step('status 400', () => {
+      expect(resp.status()).toBe(400);
+    });
+
+    const body = await resp.json() as ErrorBody;
+
+    await test.step('fieldErrors contains an agileKiSteps.waits key', () => {
+      expect(typeof body.fieldErrors?.['agileKiSteps.waits']).toBe('string');
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Suite: Seed defaults — Standard-Szenario reflects the new 4-process totals
+//
+// This only verifies the fresh-DB seed path, which the Playwright global
+// setup always exercises (a clean `crmdb.sqlite` per CI run). The
+// pre-existing-DB upgrade path — an old 3-process DB gaining the
+// `agileKiSteps` column via `ensureSzenarioAgileKiColumn()` — is not
+// automatable in this harness (there is no fixture representing the old
+// schema shape to swap in) and is instead a manual/scripted check, see
+// PLAN-RECHNER-OVERHAUL.md §8.
+// ---------------------------------------------------------------------------
+
+test.describe('Seed defaults — Standard-Szenario reflects canonical totals', () => {
+  let adminCtx: APIRequestContext;
+
+  test.beforeAll(async () => {
+    adminCtx = await loginCtx('admin', 'admin123');
+  });
+
+  test.afterAll(async () => {
+    await adminCtx.dispose();
+  });
+
+  test('GET /api/szenarien/1 reflects the 4-process canonical totals and array shapes', async () => {
+    const resp = await adminCtx.get('/api/szenarien/1');
+    expect(resp.status()).toBe(200);
+
+    const body = await resp.json() as SzenarioDTO;
+
+    await test.step('name is Standard-Szenario', () => {
+      expect(body.name).toBe('Standard-Szenario');
+    });
+
+    await test.step('humanSteps works+waits sums to 3,880', () => {
+      const total = sum(body.humanSteps.works) + sum(body.humanSteps.waits);
+      expect(total).toBe(3880);
+    });
+
+    await test.step('agileKiSteps works+waits sums to 2,970', () => {
+      const total = sum(body.agileKiSteps.works) + sum(body.agileKiSteps.waits);
+      expect(total).toBe(2970);
+    });
+
+    await test.step('semiAutomatedSteps works+waits sums to 290', () => {
+      const total = sum(body.semiAutomatedSteps.works) + sum(body.semiAutomatedSteps.waits);
+      expect(total).toBe(290);
+    });
+
+    await test.step('automatedSteps works+waits sums to 25', () => {
+      const total = sum(body.automatedSteps.works) + sum(body.automatedSteps.waits);
+      expect(total).toBe(25);
+    });
+
+    await test.step('agileKiSteps.works has exactly 19 elements', () => {
+      expect(body.agileKiSteps.works.length).toBe(19);
+    });
+
+    await test.step('agileKiSteps.waits has exactly 18 elements', () => {
+      expect(body.agileKiSteps.waits.length).toBe(18);
     });
   });
 });
