@@ -3,6 +3,52 @@ import { seedAgentTasks } from '../seed/agentTaskSeed.js';
 import { seedTickets } from '../seed/ticketSeed.js';
 import { seedSzenario } from '../seed/szenarioSeed.js';
 
+// Shared Agile-mit-KI default JSON — used verbatim as the column DEFAULT in
+// both the CREATE TABLE (fresh DBs) and the ALTER TABLE (existing DBs) below,
+// so the two never drift. Must stay byte-identical to the AGILE_KI_WORKS /
+// AGILE_KI_WAITS payload seeded in szenarioSeed.ts.
+const AGILE_KI_DEFAULT_JSON =
+  '{"works":[0,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],"waits":[120,120,120,960,480,0,30,120,120,120,30,240,60,0,30,240,30,60]}';
+
+// Idempotent guarded ALTER for existing databases created before agileKiSteps
+// existed. `CREATE TABLE IF NOT EXISTS` never touches an already-existing
+// table, so upgraded DBs need this column added explicitly.
+//
+// This is the codebase's first real guarded-ALTER-on-existing-table
+// migration. (Not the same situation as the `ticket.status` comment
+// elsewhere, which tells users to run `--reset-db` instead of migrating in
+// place — there is no prior guarded-ALTER precedent here.)
+//
+// The try/catch swallowing "duplicate column" is a concurrent-cold-start
+// guard: on Vercel, multiple serverless instances can cold-start concurrently
+// against the same Turso DB (each has its own `initPromise`, not shared
+// cross-instance — see `api/index.ts`). Two instances can both pass the
+// `table_info` check below and both attempt the ALTER; SQLite has no
+// `ADD COLUMN IF NOT EXISTS`, so the loser fails with "duplicate column
+// name". Swallow only that error — mirrors the `isUniqueConstraintError()`
+// pattern in `szenarioService.ts` — and re-throw anything else so a real
+// migration failure is never hidden.
+async function ensureSzenarioAgileKiColumn(): Promise<void> {
+  // Standalone execute (not batched) — PRAGMA statements are ignored inside a
+  // transaction/batch, same reasoning as the PRAGMA foreign_keys call above.
+  const info = await client.execute('PRAGMA table_info(szenario)');
+  const hasColumn = info.rows.some((row) => row.name === 'agileKiSteps');
+  if (hasColumn) {
+    return;
+  }
+
+  try {
+    await client.execute(
+      `ALTER TABLE szenario ADD COLUMN agileKiSteps TEXT NOT NULL DEFAULT '${AGILE_KI_DEFAULT_JSON}' CHECK (json_valid(agileKiSteps))`
+    );
+  } catch (err) {
+    if (err instanceof Error && err.message.includes('duplicate column')) {
+      return;
+    }
+    throw err;
+  }
+}
+
 export async function runMigrations(): Promise<void> {
   console.log('Running database migrations...');
 
@@ -161,6 +207,7 @@ export async function runMigrations(): Promise<void> {
       humanSteps         TEXT NOT NULL CHECK (json_valid(humanSteps)),
       semiAutomatedSteps TEXT NOT NULL CHECK (json_valid(semiAutomatedSteps)),
       automatedSteps     TEXT NOT NULL CHECK (json_valid(automatedSteps)),
+      agileKiSteps       TEXT NOT NULL DEFAULT '${AGILE_KI_DEFAULT_JSON}' CHECK (json_valid(agileKiSteps)),
       createdAt          TEXT NOT NULL DEFAULT (datetime('now')),
       updatedAt          TEXT NOT NULL DEFAULT (datetime('now'))
     );
@@ -196,6 +243,7 @@ export async function runMigrations(): Promise<void> {
   // (e.g. DONE/REJECTED/IN_PROGRESS) are never overwritten.
   await seedAgentTasks();
   await seedTickets();
+  await ensureSzenarioAgileKiColumn();
   await seedSzenario();
 
   console.log('Database migrations complete.');
