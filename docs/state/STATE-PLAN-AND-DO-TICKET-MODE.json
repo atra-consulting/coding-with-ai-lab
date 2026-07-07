@@ -2,7 +2,7 @@
   "version": 1,
   "task_key": "PLAN-AND-DO-TICKET-MODE",
   "status": "in_progress",
-  "current_step": "4.5",
+  "current_step": "7.5",
   "started": "2026-07-07T20:43:39.000Z",
   "updated": "2026-07-07T20:43:39.000Z",
   "config": {
@@ -14,8 +14,8 @@
     "branch_name": "plan-and-do-ticket-mode-and-spec-move",
     "original_branch": "main",
     "docs_folder": "docs",
-    "workflow_scope": null,
-    "keep_files": null
+    "workflow_scope": "full",
+    "keep_files": true
   },
   "discovery": {
     "agents_available": true,
