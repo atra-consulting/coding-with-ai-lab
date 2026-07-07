@@ -2,7 +2,7 @@
   "version": 1,
   "task_key": "UPDATE-CLAUDE-FILES-SKILL",
   "status": "in_progress",
-  "current_step": "6.4",
+  "current_step": "7.5",
   "started": "2026-07-07T00:00:00Z",
   "updated": "2026-07-07T00:00:00Z",
   "config": {
@@ -14,8 +14,8 @@
     "original_head": "885d0181ab2730ba23f146ef5dd9b96bfaa60939",
     "docs_folder": "docs",
     "is_git_repo": true,
-    "workflow_scope": null,
-    "pr_prefix": null,
+    "workflow_scope": "full",
+    "pr_prefix": "feat:",
     "pr_exists": false,
     "pr_url": null
   },
@@ -29,12 +29,12 @@
     "test_runner_agents": ["be-test-runner", "fe-test-runner"],
     "tooling_coding_agents": ["python-coder", "shell-coder", "skill-coder"],
     "tooling_review_agents": ["python-reviewer", "shell-reviewer", "skill-reviewer"],
-    "test_command": null
+    "test_command": "No suite (Markdown skill files); verified via skill-reviewer + read-through"
   },
   "artifacts": {
     "prd_skipped": false,
     "prd_file": "docs/prds/PRD-UPDATE-CLAUDE-FILES-SKILL.md",
-    "plan_file": null
+    "plan_file": "docs/plans/PLAN-UPDATE-CLAUDE-FILES-SKILL.md"
   },
   "completed_steps": []
 }
