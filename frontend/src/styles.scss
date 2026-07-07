@@ -1,6 +1,14 @@
 @import 'variables';
 
 // Global styles
+
+// Always reserve the vertical scrollbar gutter so pages don't shift sideways
+// when their content height crosses the scrollbar threshold (e.g. switching
+// between a tall and a short tab on the Rechner page).
+html {
+  scrollbar-gutter: stable;
+}
+
 body {
   min-height: 100vh;
   --sidebar-width: 250px;
