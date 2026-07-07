@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "task_key": "DO-SEMI-AUTOMATIC-SKILL",
+  "status": "in_progress",
+  "current_step": "4.5",
+  "started": "2026-07-07T23:08:16Z",
+  "updated": "2026-07-07T23:08:16Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Schreibe den /do-semi-automatic Projekt-Skill, weitestgehend so, wie er in der Datei tasks/advanced/Skill für Übungsaufgabe 4.md beschrieben ist. Unterschiede: Schritt 1: Ticket muss auf Ready sein und AI zugewiesen. Schritt 3a: Ticket geht zurück auf Definition und wird Human zugewiesen. Schritt 3b: Ticket geht auf In progress. Wenn zwischendurch unbeantwortbare Fragen oder Probleme auftauchen, dann Ticket auf Blocked, Kommentar hinzufügen und Human zuweisen. Wenn Ticket fertig ist, dann auf Done. Jede Ticket-Status-Änderung mit einem kleinen Ticket-Kommentar dokumentieren. Der Skill pusht nicht auf remote und legt keinen PR an. Lies die Umgebungsvariablen aus backend/.env und setze sie, bevor der Skill die Anwendungs-APIs nutzt.",
+    "special_instructions": null,
+    "ticket_mode": false,
+    "ticket_id": null,
+    "ticket_url": null,
+    "ticket_api_base": null,
+    "ticket_claimed": false,
+    "branch_name": "solution-jfs-2026",
+    "original_branch": "solution-jfs-2026",
+    "original_head": "852242c04324d9d76ea52c62fd905a6e0ccdce36",
+    "docs_folder": "docs",
+    "is_git_repo": true,
+    "workflow_scope": null,
+    "pr_prefix": null,
+    "pr_exists": false,
+    "pr_url": null
+  },
+  "discovery": {
+    "agents_available": false,
+    "writer_agents": [],
+    "coding_agents": [],
+    "review_agents": [],
+    "test_coding_agents": [],
+    "test_review_agents": [],
+    "test_runner_agents": [],
+    "tooling_coding_agents": [],
+    "tooling_review_agents": [],
+    "test_command": null
+  },
+  "artifacts": {
+    "prd_skipped": null,
+    "prd_file": null,
+    "plan_file": null
+  },
+  "completed_steps": []
+}
