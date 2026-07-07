@@ -1,0 +1,241 @@
+---
+name: "project:do-semi-automatic"
+description: "Headless-Skill, der pro Lauf genau ein Ready+AI-Kanban-Ticket bearbeitet — beurteilt es, schickt es bei fehlender Spezifikation zurück nach Definition oder baut es via plan-and-do, wobei jede Statusänderung mit einem Kommentar dokumentiert wird. Kein Push, kein PR. Für headless claude -p Läufe."
+argument-hint: "[ticket-id]"
+version: 1.0.0
+last-modified: 2026-07-08
+allowed-tools:
+  - Read
+  - Bash
+  - Task
+  - Skill
+---
+
+# Do Semi Automatic
+
+Du bist ein autonomer Software-Ingenieur. Du läufst **headless** (`claude -p`) — kein Mensch kann Fragen beantworten. Entscheide alles selbst. Halte nie an, um Eingaben abzuwarten. Rufe niemals `AskUserQuestion` auf.
+
+Auftrag: Ein Ticket in Spalte „Zu bereit" mit `owner=AI` finden (oder direkt per ID laden), seinen Thread lesen, beurteilen ob es gut genug zum Bauen ist, und es dann entweder zurück nach Definition geben oder vollständig umsetzen — unbeaufsichtigt. Ein Ticket pro Durchlauf.
+
+API-Referenz: `docs/specs/SPEC-API-TICKETS.md` (Abschnitt „For skill authors").
+
+## Konfiguration
+
+- API-Basis-URL: Umgebungsvariable `APP_BASE_URL`, sonst `http://localhost:7070`.
+- Auth-Header bei **jedem** API-Aufruf: `Authorization: Bearer $AGENT_API_TOKEN`. Lokal greift statt dessen der Loopback-Bypass (`AGENT_AUTH_ALLOW_LOOPBACK=1`), falls kein Header gesetzt ist. Dieser Skill nutzt **ausschließlich** den Agent-Token — kein Admin-Login, keine Admin-Session, keine Admin-Zugangsdaten an irgendeiner Stelle. Das gilt auch für `GET /api/tickets/board` und `PATCH /api/tickets/:id/status` — beide akzeptieren zusätzlich zur Admin-Session auch den Agent-Token bzw. den Loopback-Bypass.
+- Ein Ticket pro Durchlauf.
+
+## Parameter
+
+Wenn der Skill mit einer Zahl aufgerufen wird (z. B. `/do-semi-automatic 8`), ist das eine Ticket-ID. Dann die „Nächstes Ticket finden"-Auswahl in Schritt 1 überspringen. Statt dessen das Ticket per ID laden und prüfen, ob es Ready+AI ist (siehe unten).
+
+## Schritt 0 — Umgebungsvariablen laden
+
+*(Immer zuerst ausführen — auch wenn eine Ticket-ID übergeben wurde.)*
+
+Alle Pfade sind relativ zum Projekt-Wurzelverzeichnis. Der Skill läuft aus dem Repo-Root.
+
+```bash
+if [ -f backend/.env ]; then
+  set -a
+  source backend/.env
+  set +a
+fi
+```
+
+Danach prüfen ob `AGENT_API_TOKEN` gesetzt ist:
+
+```bash
+if [ -z "$AGENT_API_TOKEN" ]; then
+  echo "Fehler: AGENT_API_TOKEN ist nicht gesetzt. Bitte die Variable in backend/.env oder in der Shell definieren."
+  exit 1
+fi
+```
+
+Wenn `AGENT_API_TOKEN` leer oder ungesetzt ist: sofort beenden. Keine weiteren Schritte. Keine API-Aufrufe.
+
+## Schritt 1 — Nächstes Ready+AI-Ticket finden (NICHT starten)
+
+*(Überspringen, wenn eine Ticket-ID als Parameter übergeben wurde — dann den ID-Zweig unten nutzen.)*
+
+**Wichtig:** Dieser Schritt beansprucht das Ticket noch nicht. Es bleibt in `TODO`. Der Wechsel nach `IN_PROGRESS` passiert erst in Schritt 3b.
+
+```bash
+curl -s -w '\n%{http_code}' \
+  -H "Authorization: Bearer $AGENT_API_TOKEN" \
+  "${APP_BASE_URL:-http://localhost:7070}/api/tickets/board"
+```
+
+Body und HTTP-Code separat aus der Ausgabe lesen (`body` = alles vor der letzten Zeile, `http_code` = letzte Zeile).
+
+- HTTP `200` → JSON parsen. Das `TODO`-Array (Spalte „Zu bereit") herausnehmen, es ist bereits nach `createdAt ASC` sortiert. Das älteste Ticket mit `owner=="AI"` wählen. Kein solches Ticket → „Keine Tickets bereit für AI." ausgeben und **beenden**.
+- Jeder andere Code → Fehler ausgeben und **beenden**.
+
+Dann das volle Ticket laden:
+
+```bash
+curl -s -w '\n%{http_code}' \
+  -H "Authorization: Bearer $AGENT_API_TOKEN" \
+  "${APP_BASE_URL:-http://localhost:7070}/api/tickets/<id>"
+```
+
+- HTTP `200` → JSON parsen. `id`, `title`, `body` und das **`comments`**-Array behalten. Weiter zu Schritt 2.
+- Jeder andere Code → Fehler ausgeben und **beenden**.
+
+**Wenn eine Ticket-ID als Parameter übergeben wurde**, statt dessen:
+
+```bash
+curl -s -w '\n%{http_code}' \
+  -H "Authorization: Bearer $AGENT_API_TOKEN" \
+  "${APP_BASE_URL:-http://localhost:7070}/api/tickets/<ID>"
+```
+
+- HTTP `404` → „Ticket nicht gefunden." ausgeben und **beenden**.
+- HTTP `200` → JSON parsen. `id`, `title`, `body`, `status`, `owner` und das **`comments`**-Array behalten.
+  - `owner` nicht `"AI"` (auch `null` oder leer) → „Ticket <id>: owner=<owner> — Skill verarbeitet nur AI-Tickets. Durchlauf beendet." ausgeben und **beenden**.
+  - `status` nicht `"TODO"` → „Ticket <id>: status=<status> — Skill verarbeitet nur Zu-bereit-Tickets (TODO). Durchlauf beendet." ausgeben und **beenden**.
+  - Sonst (`owner == "AI"` und `status == "TODO"`) → weiter zu Schritt 2. Ticket bleibt `TODO` — noch nicht starten.
+- Jeder andere Code → Fehler ausgeben und **beenden**.
+
+## Schritt 2 — Thread lesen
+
+Das `comments`-Array ist die vollständige Konversation, älteste zuerst. Die neuesten `HUMAN`-Kommentare sind maßgeblich. Wurde eine frühere `AGENT`-Frage bereits beantwortet, nicht erneut fragen.
+
+## Schritt 3 — Beurteilen: bauen oder zurückgeben
+
+*(VOR dem Schreiben von Code entscheiden.)*
+
+Den **`requirements-reviewer`-Subagenten** via Task-Tool beauftragen. `title`, `body` und den **`comments`-Thread** des Tickets übergeben. Er beurteilt:
+
+- Beschreibt das Ticket EINE klare, konkrete Änderung?
+- Sind alle Fakten vorhanden, die zur Umsetzung nötig sind — einschließlich aller Entscheidungen, die im Thread beantwortet wurden?
+- Passt es zu dieser CRM-Codebasis (Express/Drizzle-Backend oder Angular-Frontend)?
+- Gibt es einen offensichtlich richtigen Ansatz — keine ungelöste Produktentscheidung, kein Raten zwischen gültigen Optionen?
+
+Der Subagent prüft das Ticket zusätzlich gegen den echten Code. Wenn das beschriebene Problem im aktuellen Code nicht existiert, ist das Ticket zurückzugeben.
+
+Der Subagent liefert ein klares, binäres Urteil: entweder **„gut genug zum Bauen"** oder **„zurückgeben"** mit dem spezifischen, noch offenen Entscheidungspunkt.
+
+Dem Urteil des Subagenten ohne Abweichung folgen.
+
+## Schritt 3a — Nicht gut genug → zurück auf Definition + Human
+
+*(NICHT ablehnen, `plan-and-do` NICHT aufrufen.)*
+
+Der Reihe nach, jeweils mit dem Agent-Token:
+
+1. Kommentar hinterlassen, der genau benennt, was fehlt bzw. welche Entscheidung offen ist:
+
+   ```bash
+   curl -s -X POST \
+     -H "Authorization: Bearer $AGENT_API_TOKEN" \
+     -H "Content-Type: application/json" \
+     -d '{"body": "GENAU WAS FEHLT ODER UNKLAR IST, damit ein Mensch das Ticket vervollständigen kann"}' \
+     "${APP_BASE_URL:-http://localhost:7070}/api/tickets/<id>/comments"
+   ```
+
+2. Owner auf `HUMAN` setzen:
+
+   ```bash
+   curl -s -X PATCH \
+     -H "Authorization: Bearer $AGENT_API_TOKEN" \
+     -H "Content-Type: application/json" \
+     -d '{"owner": "HUMAN"}' \
+     "${APP_BASE_URL:-http://localhost:7070}/api/tickets/<id>/owner"
+   ```
+
+3. Status zurück auf `DEFINITION` setzen:
+
+   ```bash
+   curl -s -X PATCH \
+     -H "Authorization: Bearer $AGENT_API_TOKEN" \
+     -H "Content-Type: application/json" \
+     -d '{"status": "DEFINITION"}' \
+     "${APP_BASE_URL:-http://localhost:7070}/api/tickets/<id>/status"
+   ```
+
+Dann **beenden**. Das Ticket landet in der Definition-Spalte bei `owner=HUMAN` und war nie `IN_PROGRESS`.
+
+Generische Kommentare wie „unklar" sind nicht akzeptabel. Den fehlenden Punkt konkret benennen.
+
+## Schritt 3b — Bauen (gut genug)
+
+1. Ticket claimen:
+
+   ```bash
+   START_CODE=$(curl -s -o /dev/null -w '%{http_code}' -X POST \
+     -H "Authorization: Bearer $AGENT_API_TOKEN" \
+     "${APP_BASE_URL:-http://localhost:7070}/api/tickets/<id>/start")
+   ```
+
+   - HTTP `200` → Ticket ist jetzt `IN_PROGRESS`. Weiter mit Punkt 2 unten.
+   - HTTP `409` → jemand/etwas anderes hat es beansprucht, oder es ist nicht mehr `TODO`+`AI`. Fehler ausgeben und **beenden**.
+   - Jeder andere Code → Fehler ausgeben und **beenden**.
+
+2. Statuswechsel dokumentieren (`/start` kennt kein Kommentarfeld):
+
+   ```bash
+   curl -s -X POST \
+     -H "Authorization: Bearer $AGENT_API_TOKEN" \
+     -H "Content-Type: application/json" \
+     -d '{"body": "In Bearbeitung genommen. Baue jetzt via plan-and-do."}' \
+     "${APP_BASE_URL:-http://localhost:7070}/api/tickets/<id>/comments"
+   ```
+
+3. `plan-and-do` via Skill-Tool aufrufen. Ticket-Titel + Body plus die gelösten Entscheidungen aus den `HUMAN`-Kommentaren als Beschreibung übergeben:
+
+   ```
+   /project:plan-and-do "<Ticket-Titel + Body, plus die gelösten Entscheidungen aus den HUMAN-Kommentaren>"
+   ```
+
+   Diese Daueranweisungen dem Aufruf voranstellen und auf JEDEN Checkpoint anwenden, ohne je anzuhalten:
+
+   > Vollständig autonom und unbeaufsichtigt ausführen. Zu keinem Zeitpunkt `AskUserQuestion` aufrufen oder auf Eingaben warten. Standardantworten: PRD überspringen → direkt zum Plan; Plan-Freigabe → „Approve, implement, and review" (kein PR); jeder Review-Befund → alle Korrekturen genehmigen; jeder andere Checkpoint → Continue / empfohlene Option. Planungsdateien behalten. NIEMALS pushen, KEINEN PR anlegen. Wenn mitten im Bauen eine echte Produktentscheidung fehlt, ODER Tests/Build nach vertretbarem Versuch nicht automatisch grün werden: den Build stoppen und zu Schritt 3b-Blocker übergehen (siehe unten), statt zu raten oder zu hängen.
+
+   `plan-and-do` bis zur Fertigstellung laufen lassen (umsetzen → testen → reviewen). **Keinen PR erstellen. Nichts pushen.** Das im Ergebnis explizit vermerken.
+
+## Schritt 3b-Blocker — Frage oder Fehler während des Baus
+
+Wenn mitten im Bauen eine echte, nicht beantwortbare Produktentscheidung fehlt, ODER Tests/der Build nach einem vertretbaren Versuch nicht automatisch grün werden: den Build abbrechen, NICHT raten, NICHT hängen bleiben.
+
+```bash
+curl -s -X POST \
+  -H "Authorization: Bearer $AGENT_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"question": "DIE GENAUE FRAGE ODER DER FEHLERTEXT, plus was bereits versucht wurde"}' \
+  "${APP_BASE_URL:-http://localhost:7070}/api/tickets/<id>/ask"
+```
+
+Das setzt das Ticket auf `ON_HOLD` („Wartet"), `owner` zurück auf `HUMAN`, und postet den Text als `AGENT`-Kommentar — `/ask` trägt seinen Kommentar selbst. Dann **beenden**. Das Ticket **nicht** als erledigt markieren.
+
+## Schritt 4 — Erledigt markieren
+
+*(Nur nach erfolgreichem Abschluss von Schritt 3b.)*
+
+Zuerst den Branch-Namen ermitteln, den `plan-and-do` angelegt hat:
+
+```bash
+BRANCH=$(git branch --show-current)
+```
+
+Dann das Ticket als erledigt markieren. `$BRANCH` in den Kommentar einsetzen, `$AGENT_API_TOKEN` in den Header. Kein PR-Link — es gibt keinen PR:
+
+```bash
+curl -s -X POST \
+  -H "Authorization: Bearer $AGENT_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "{\"comment\": \"KURZE ZUSAMMENFASSUNG WAS GEBAUT WURDE (Branch: $BRANCH)\"}" \
+  "${APP_BASE_URL:-http://localhost:7070}/api/tickets/<id>/done"
+```
+
+Dies setzt `solution=DONE`. Dann **beenden**. Ein Ticket pro Durchlauf.
+
+## Kommentar-Regel
+
+Jede Statuswechsel-Entscheidung dieses Skills wird mit einem kleinen Ticket-Kommentar dokumentiert:
+
+- `→ IN_PROGRESS` (Schritt 3b) und `→ DEFINITION` (Schritt 3a): jeweils per eigenem `POST /:id/comments`, da `/start`, `/owner` und `/status` selbst kein Kommentarfeld kennen.
+- `→ ON_HOLD` (Schritt 3b-Blocker): der Kommentar kommt automatisch von `POST /:id/ask`.
+- `→ DONE` (Schritt 4): der Kommentar kommt automatisch von `POST /:id/done`.
+
+> Hinweis: Dieser Skill löst ein Ticket nie als „Won't Do" auf — das ist eine Aktion nur für Menschen. Seine einzigen Ergebnisse sind **erledigt** (Schritt 4), **zurück auf Definition** (Schritt 3a) oder **Blocked** (Schritt 3b-Blocker).
