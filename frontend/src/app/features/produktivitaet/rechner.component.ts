@@ -790,11 +790,12 @@ export class RechnerComponent implements OnInit {
     return computeSegments(snap.works, snap.waits, containerWidth);
   }
 
-  /** Tooltip text for a wait segment. */
+  /** Tooltip text for a wait segment (includes the title of the step it follows). */
   getWaitTooltip(prozessIndex: number, stepIndex: number): string {
     const snap = this.svgSnapshot().prozesse[prozessIndex];
     const waitMin = snap.waits[stepIndex] ?? 0;
-    return `Wartezeit nach Schritt ${stepIndex + 1}: ${minutenZuDauer(waitMin)}`;
+    const label = this.prozesse[prozessIndex]?.labels[stepIndex] ?? `Schritt ${stepIndex + 1}`;
+    return `Wartezeit nach Schritt ${stepIndex + 1} (${label}): ${minutenZuDauer(waitMin)}`;
   }
 
   /** Builds the label/tooltip text for a work rect. */
