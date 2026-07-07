@@ -215,7 +215,7 @@ Canonical home. Cross-referenced from the Produktivität → Rechner section in 
 | Pie B (Rollen-Split) — agile tabs only | Dev | `#0f766e` |
 | Pie B (Rollen-Split) — agile tabs only | Tester | `#9a6700` |
 
-`#264892` and `#cf944f` also color the work/wait segments of the Balken bar and the Flussdiagramm boxes. The 3 role colors are fixed, identical across both agile tabs, and distinct from Bootstrap's `success`/`danger` semantic colors.
+`#264892` and `#cf944f` also color the work/wait segments of the Balken bar and the Flussdiagramm boxes. The 3 role colors are fixed, identical across both agile tabs, and distinct from Bootstrap's `success`/`danger` semantic colors. Each slice's percent label is white (`#fff`), on both Pie A and Pie B.
 
 ---
 
