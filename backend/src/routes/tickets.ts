@@ -76,10 +76,11 @@ router.get(
 // ─── Admin literal-path endpoints (must come before /:id) ─────────────────────
 
 // GET /api/tickets/board
+// Accepts agent token, loopback bypass, or admin session — a skill can peek
+// the whole board without claiming anything and without an admin login.
 router.get(
   '/board',
-  requireAuth,
-  requireRole('ADMIN'),
+  requireAgentTokenOrAdminSession,
   asyncHandler(async (_req: Request, res: Response) => {
     res.json(await ticketService.getBoard());
   }),
@@ -171,10 +172,11 @@ router.get(
 );
 
 // PATCH /api/tickets/:id/status
+// Accepts agent token, loopback bypass, or admin session — a skill can move a
+// ticket to any column (incl. DEFINITION) without an admin login.
 router.patch(
   '/:id/status',
-  requireAuth,
-  requireRole('ADMIN'),
+  requireAgentTokenOrAdminSession,
   asyncHandler(async (req: Request, res: Response) => {
     const id = parseInt(req.params['id'] as string, 10);
     const dto = validate(StatusBodySchema, req.body);
