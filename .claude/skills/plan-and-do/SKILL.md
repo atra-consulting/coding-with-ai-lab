@@ -137,7 +137,7 @@ Never do any of these — each is a bug:
 When user chooses "quit" at any checkpoint:
 1. Update state file: set `status` = "paused"
 2. **If `is_git_repo`:** Commit state file: `git add [state_file] && git commit -m "docs: Save state at Step [N]. [task_key]"`
-3. **If `ticket_mode = true`:** Run **TM.4 (Blocked + Human)** with the reason "Von der KI pausiert — wartet auf Eingabe." so the ticket does not stay stuck in "In Arbeit". (Skip if the ticket was never claimed, i.e. Step 4.6 has not run.)
+3. **If `ticket_mode = true` AND `ticket_claimed = true`:** Run **TM.4 (Blocked + Human)** with the reason "Von der KI pausiert — wartet auf Eingabe." so the ticket does not stay stuck in "In Arbeit". (If `ticket_claimed = false`, the ticket was never claimed — nothing to hand back.)
 4. Display: "Progress saved. Resume with: /plan-and-do [input]"
 5. STOP (clean exit)
 
@@ -240,31 +240,37 @@ then set `ticket_mode = true` and extract `ticket_id`. Otherwise `ticket_mode = 
 `owner` (`AI` | `HUMAN`) is a **separate field**, not a column or a visible label. **The skill only processes tickets that are `TODO` + `owner=AI`** — i.e. in the "Ready" ("Zu bereit") column and owned by the AI.
 
 **Config (store in state under `config`).**
-- `ticket_api_base` — default `http://localhost:7070` (the backend). Only override if the pasted URL names a different backend host; a bare number or a `localhost:7200` frontend URL both use `http://localhost:7070`.
-- **Auth** — from repo root, if `backend/.env` exists load it with `set -a && source backend/.env && set +a`; if `AGENT_API_TOKEN` is set, send `-H "Authorization: Bearer $AGENT_API_TOKEN"` on every agent call. Otherwise rely on the localhost loopback bypass (`AGENT_AUTH_ALLOW_LOOPBACK=1`).
+- `ticket_api_base` — default `http://localhost:7070` (the backend). A bare number or a `localhost:7200` frontend URL both use `http://localhost:7070`. For a non-localhost URL, use that URL's origin as the base (replace a `:7200` frontend port with `:7070` if present); if unsure, ask the user for the backend base URL.
+- **Auth** — the backend needs `AGENT_API_TOKEN` set in `backend/.env` for **any** agent call to work: an unset token → **401** on every agent endpoint, even from localhost (loopback bypass is gated on the token being configured). From repo root, load it with `set -a && source backend/.env && set +a`. Then either send `-H "Authorization: Bearer $AGENT_API_TOKEN"` on every agent call, or — if `AGENT_AUTH_ALLOW_LOOPBACK=1` is also set — omit the header and let the localhost bypass through. If `backend/.env` has no `AGENT_API_TOKEN`, tell the user to set it (see the "Local setup" block in `docs/specs/SPEC-API-TICKETS.md`) and STOP. The admin session used for the claim comment does **not** need the agent token.
 - `ticket_url` — the frontend URL `http://localhost:7200/admin/tickets/<id>` (rebuild it when only a number was given).
 
 **Comment on every state change.** Agent verbs carry a comment only on `done` and `ask`. The claim (`/start` → In Progress) has **no** comment field, so the skill posts that one comment through a short-lived **admin session** (workshop admin user `admin` / `admin123`):
 ```bash
 # Login body uses German field names: benutzername / passwort. Cookie name is set by the server (-c captures it).
-curl -s -c /tmp/pad-cookies.txt -X POST -H "Content-Type: application/json" \
-  -d '{"benutzername":"admin","passwort":"admin123"}' "$ticket_api_base/api/auth/login"
-curl -s -b /tmp/pad-cookies.txt -X POST -H "Content-Type: application/json" \
+# Use a per-ticket cookie jar so concurrent runs don't clobber each other. Verify login returned 200 before commenting.
+JAR="/tmp/pad-cookies-<id>.txt"
+code=$(curl -s -o /dev/null -w "%{http_code}" -c "$JAR" -X POST -H "Content-Type: application/json" \
+  -d '{"benutzername":"admin","passwort":"admin123"}' "$ticket_api_base/api/auth/login")
+# if $code != 200 -> admin login failed; warn the user (the transition still happened, only the comment is missing) and skip the comment
+curl -s -b "$JAR" -X POST -H "Content-Type: application/json" \
   -d '{"body":"<message>"}' "$ticket_api_base/api/tickets/<id>/comments"
+rm -f "$JAR"
 ```
-Use the admin session **only** for the extra In-Progress comment. Do the real transitions with the agent verbs below. (`done` and `ask` already post their own comments, so no admin comment is needed there.)
+Use the admin session **only** for the extra In-Progress comment. Do the real transitions with the agent verbs below. (`done` and `ask` already post their own comments, so no admin comment is needed there.) A failed admin login is non-fatal — warn, skip the comment, keep going.
 
 ### TM.1 — Resolve & verify (run from Step 1, ticket mode only)
-1. `GET $ticket_api_base/api/tickets/<id>`. A `404` → tell the user "Ticket &lt;id&gt; not found" and STOP the whole skill.
-2. Require `status == "TODO"` **and** `owner == "AI"`. If not, display the actual status + owner (e.g. "Ticket 8 is In Arbeit / HUMAN — not Ready+AI, nothing to do") and STOP. Never process a ticket that is not Ready+AI.
-3. Set `user_description` = ticket `title` + two newlines + `body` (append the existing `comments` thread for context). Set `task_key = TICKET-<id>-<2–4 kebab words from the title>`. Set `ticket_url`.
+1. **Resume check first.** Glob `[docs_folder]/state/STATE-TICKET-<id>-*.json`. If one exists with `status` = "paused" or "in_progress", this ticket was already claimed by an earlier run — load it (`task_key`, full `config` incl. `ticket_claimed = true`) and route into the normal resume flow (Step 1.2 → STEP RESUME ROUTER). Do **not** re-verify claimability and do **not** re-claim. Skip the rest of TM.1. This is the only way a ticket already in "In Arbeit" gets picked back up.
+2. `GET $ticket_api_base/api/tickets/<id>` (auth per the TICKET MODE config). `404` → "Ticket <id> not found", STOP. `401` → the backend has no `AGENT_API_TOKEN` set (or the token/loopback is wrong); tell the user to fix `backend/.env` per the "Local setup" block in `docs/specs/SPEC-API-TICKETS.md`, STOP.
+3. Require `status == "TODO"` **and** `owner == "AI"`. If not, display the actual status + owner (e.g. "Ticket 8 is In Arbeit / HUMAN — not Ready+AI, nothing to do") and STOP. Never process a ticket that is not Ready+AI. (An already-`IN_PROGRESS` ticket with no matching state file is not ours — stop here.)
+4. Set `user_description` = ticket `title` + two newlines + `body` (append the existing `comments` thread for context). Set `task_key = TICKET-<id>-<2–4 kebab words from the title, UPPERCASED, umlauts transliterated: ä→ae ö→oe ü→ue ß→ss>` (e.g. ticket 8 "Icons für Aktivitätstypen" → `TICKET-8-ICONS-FUER-AKTIVITAETSTYPEN`). Set `ticket_url`.
 
 ### TM.2 — Claim → In Progress (run from Step 4.6, after the branch exists)
 1. `POST $ticket_api_base/api/tickets/<id>/start` → `IN_PROGRESS`. A `409` means it is no longer Ready+AI (already claimed) — STOP and tell the user.
-2. Post the state-change comment via the admin session, e.g. `"Von der KI übernommen. Status → In Arbeit (Branch: <branch_name>)."`
+2. On success set `config.ticket_claimed = true` in the state file (so a resume / Quit knows the ticket is live).
+3. Post the state-change comment via the admin session, e.g. `"Von der KI übernommen. Status → In Arbeit."` — append `" (Branch: <branch_name>)"` only when `is_git_repo`.
 
 ### TM.3 — Finish → Done (run from Step 13.4, on success)
-`POST $ticket_api_base/api/tickets/<id>/done` with body `{"comment":"<2–3 sentence summary of the change + the PR link if one was created>"}`. Moves the ticket to `DONE` (`solution=DONE`); the `comment` is the state-change comment.
+`POST $ticket_api_base/api/tickets/<id>/done` with body `{"comment":"<2–3 sentence summary of the change + the PR link if one was created>"}`. Moves the ticket to `DONE` (`solution=DONE`); the `comment` is the state-change comment. **On failure** (`409` not IN_PROGRESS, `404`, `401`, or a network error — retry once on a transient network error): do NOT claim success — show the response, tell the user the ticket is still "In Arbeit" and needs manual completion, and report that in the Step 13.1 summary / Step 13.4 output.
 
 ### TM.4 — Question / error → Blocked + Human (run on any unanswerable question, unrecoverable error, or Quit while in ticket mode)
 `POST $ticket_api_base/api/tickets/<id>/ask` with body `{"question":"<the exact question or error text, plus what you already tried>"}`. This moves the ticket to `ON_HOLD` ("Wartet"), sets `owner=HUMAN`, and posts the text as an `AGENT` comment — the state-change comment **and** the reassignment to Human in a single call. Then STOP the skill.
@@ -396,6 +402,7 @@ Write `[state_dir]/STATE-[task_key].json` using Write tool:
     "ticket_id": null,
     "ticket_url": null,
     "ticket_api_base": null,
+    "ticket_claimed": false,
     "branch_name": null,
     "original_branch": null,
     "original_head": null,
@@ -506,9 +513,9 @@ git commit -m "docs: Initialize state tracking for [task_key]"
 
 ### Step 4.6: Claim Ticket (ticket mode only)
 
-**If `ticket_mode = false`:** Skip this step.
+**If `ticket_mode = false`, OR `ticket_claimed = true` (resumed run — already claimed):** Skip this step.
 
-**If `ticket_mode = true`:** Run **TM.2 (Claim → In Progress)** now — the branch exists, so the In-Progress comment can name it. This flips the ticket `TODO → IN_PROGRESS` and posts the state-change comment. A `409` here means the ticket is no longer Ready+AI — STOP and tell the user.
+**Otherwise:** Run **TM.2 (Claim → In Progress)** now — the branch exists (when `is_git_repo`), so the In-Progress comment can name it. This flips the ticket `TODO → IN_PROGRESS`, sets `ticket_claimed = true`, and posts the state-change comment. A `409` here means the ticket is no longer Ready+AI — STOP and tell the user.
 
 ---
 
@@ -926,7 +933,7 @@ Agents Used: [list or "None (direct mode)"]
 [If PRD exists]: Specifications: [full absolute path to prd_file]
 Plan: [full absolute path to plan_file]
 State: [full absolute path to state_file]
-[If ticket_mode]: Ticket: [ticket_url] → Erledigt (Done)
+[If ticket_mode]: Ticket: [ticket_url]  (final ticket status set in Step 13.4)
 
 Commits:
 [List SHAs and messages]
@@ -945,11 +952,15 @@ Read `plan-and-do-modes.md` and execute "POST-COMPLETION WORKFLOW" section. This
 
 **CRITICAL:** PRs MUST target `original_branch` (the branch active when the skill started, stored in state file `config.original_branch`). Never default to main/master.
 
+**Ticket mode — do not stop yet.** The POST-COMPLETION WORKFLOW ends with "STOP — workflow complete" (`plan-and-do-modes.md`, PC.5). When `ticket_mode = true`, treat that terminal STOP as "return here": note the `pr_url` / `pr_merged` it set, then **continue to Step 13.4** to mark the ticket Done before the skill actually ends. In non-ticket mode, PC.5's STOP is final as before.
+
 ### Step 13.4: Finish Ticket (ticket mode only)
 
 **If `ticket_mode = false`:** Skip this step.
 
 **If `ticket_mode = true`:** Run **TM.3 (Finish → Done)** — the last step, so any PR created in Step 13.3 is already known and its URL goes into the Done comment. This moves the ticket to `DONE` ("Erledigt"). Run this on any successful completion regardless of `workflow_scope`. If the run ended by asking a question or hitting an unrecoverable error, TM.4 (Blocked + Human) already ran instead — do **not** also mark it Done.
+
+Then display the final ticket status: on success `Ticket <id> → Erledigt (Done): [ticket_url]`; if TM.3 failed, `Ticket <id> still In Arbeit — mark Done manually: [ticket_url]`.
 
 ---
 

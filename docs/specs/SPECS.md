@@ -77,6 +77,13 @@ Full-Stack-CRM-Anwendung. Node.js/TypeScript-Backend mit Angular-Frontend.
 | [SPECS-testing.md](SPECS-testing.md) | Tests: Playwright-Backend-API-Tests, Jasmine/Karma-Frontend-Unit-Tests, Testmuster |
 | [SPECS-infrastructure.md](SPECS-infrastructure.md) | Build, Konfiguration, Datenbank-Engine, Startup, Projektstruktur |
 
+Daneben liegen im selben Ordner zwei **API-Referenz-Dokumente** (Präfix `SPEC-API-`, nicht `SPECS-`): sie beschreiben die Agenten-APIs der fortgeschrittenen Schulung und gehören **nicht** zur Lese-Liste eines Subagenten.
+
+| Dokument | Inhalt |
+|----------|--------|
+| [SPEC-API-TASKS.md](SPEC-API-TASKS.md) | Agent-Task-API (`/api/agent-tasks`) + Cron-Runner: Endpunkte, Auth, Lifecycle |
+| [SPEC-API-TICKETS.md](SPEC-API-TICKETS.md) | Kanban-Ticket-API (`/api/tickets`): Endpunkte, Auth, Status-Maschine, Board |
+
 ## Seed-Daten
 
 - **Benutzer**: 3 Benutzer — hardcodiert in `config/users.ts`, nicht in der Datenbank
