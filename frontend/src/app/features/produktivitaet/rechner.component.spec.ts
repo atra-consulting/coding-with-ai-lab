@@ -8,7 +8,13 @@ import { RechnerComponent } from './rechner.component';
 import { SzenarioService } from '../../core/services/szenario.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { Szenario, SzenarioCreate } from '../../core/models/szenario.model';
-import { DEFAULT_DURATIONS, PROZESSE, ProzessKey } from '../../core/models/prozess-defaults';
+import {
+  DEFAULT_DURATIONS,
+  PROZESS_ANNAHMEN,
+  PROZESS_CAPTION,
+  PROZESSE,
+  ProzessKey,
+} from '../../core/models/prozess-defaults';
 
 // ─── Test-data factories ───────────────────────────────────────────────────
 
@@ -59,7 +65,7 @@ function makeProzessDauer(workLen: number, waitLen: number, workVal: number, wai
  * swapped field produces the wrong number, not a coincidentally-correct one.
  *   humanSteps:         19 works * 100, 18 waits * 50  → total 2,800
  *   agileKiSteps:       19 works * 10,  18 waits * 50  → total 1,090
- *   semiAutomatedSteps:  7 works * 20,   6 waits * 15  → total   230
+ *   semiAutomatedSteps: 11 works * 20,  10 waits * 15  → total   370
  *   automatedSteps:      2 works * 30,   1 wait  * 5   → total    65
  */
 function makeFullSzenario(overrides: Partial<Szenario> = {}): Szenario {
@@ -68,7 +74,7 @@ function makeFullSzenario(overrides: Partial<Szenario> = {}): Szenario {
     name: 'Test-Szenario',
     humanSteps: makeProzessDauer(19, 18, 100, 50),
     agileKiSteps: makeProzessDauer(19, 18, 10, 50),
-    semiAutomatedSteps: makeProzessDauer(7, 6, 20, 15),
+    semiAutomatedSteps: makeProzessDauer(11, 10, 20, 15),
     automatedSteps: makeProzessDauer(2, 1, 30, 5),
     createdAt: '2024-01-01T00:00:00.000Z',
     updatedAt: '2024-01-01T00:00:00.000Z',
@@ -209,7 +215,10 @@ describe('RechnerComponent', () => {
       value.setValue(10); // stands in for "10 Stunden", set before the load
 
       const szenario = makeFullSzenario({
-        semiAutomatedSteps: { works: [0, 777, 15, 15, 10, 30, 20], waits: [5, 60, 60, 5, 60, 5] },
+        semiAutomatedSteps: {
+          works: [0, 777, 10, 10, 5, 10, 10, 5, 10, 30, 20],
+          waits: [5, 60, 5, 60, 60, 5, 60, 5, 60, 5],
+        },
       });
       component.ladeScenario(szenario);
 
@@ -278,8 +287,8 @@ describe('RechnerComponent', () => {
       const szenario = makeFullSzenario();
       component.ladeScenario(szenario);
 
-      // halbautomatisch: 7 works * 20 + 6 waits * 15 = 140 + 90 = 230
-      expect(component.getProzessTotal(2)).toBe(230);
+      // halbautomatisch: 11 works * 20 + 10 waits * 15 = 220 + 150 = 370
+      expect(component.getProzessTotal(2)).toBe(370);
     });
 
     it('svgSnapshot() works/waits reflect the loaded halbautomatisch arrays after ladeScenario() (index 2, column-swap guard)', () => {
@@ -287,8 +296,8 @@ describe('RechnerComponent', () => {
       component.ladeScenario(szenario);
 
       const snap = component.svgSnapshot().prozesse[2];
-      expect(snap.works).toEqual(new Array(7).fill(20));
-      expect(snap.waits).toEqual(new Array(6).fill(15));
+      expect(snap.works).toEqual(new Array(11).fill(20));
+      expect(snap.waits).toEqual(new Array(10).fill(15));
     });
 
     it('getProzessTotal() reflects the loaded vollautomatisch total after ladeScenario() (index 3)', () => {
@@ -322,7 +331,7 @@ describe('RechnerComponent', () => {
   describe('ladeScenario() falls back to defaults on mismatched process data', () => {
     it('does not throw when a process array has the wrong length', () => {
       const szenario = makeFullSzenario({
-        // halbautomatisch expects 7 works — this one has only 5 (wrong length)
+        // halbautomatisch expects 11 works — this one has only 5 (wrong length)
         semiAutomatedSteps: { works: [0, 5, 15, 15, 10], waits: [5, 60, 60, 5] },
       });
 
@@ -472,8 +481,8 @@ describe('RechnerComponent', () => {
       expect(payload.humanSteps.waits.length).toBe(18);
       expect(payload.agileKiSteps.works.length).toBe(19);
       expect(payload.agileKiSteps.waits.length).toBe(18);
-      expect(payload.semiAutomatedSteps.works.length).toBe(7);
-      expect(payload.semiAutomatedSteps.waits.length).toBe(6);
+      expect(payload.semiAutomatedSteps.works.length).toBe(11);
+      expect(payload.semiAutomatedSteps.waits.length).toBe(10);
       expect(payload.automatedSteps.works.length).toBe(2);
       expect(payload.automatedSteps.waits.length).toBe(1);
       // The unmodified form still carries the DEFAULT_DURATIONS values, so the
@@ -550,6 +559,36 @@ describe('RechnerComponent', () => {
           expect((box.getAttribute('aria-label') ?? '').trim().length).toBeGreaterThan(0);
         });
       }
+    });
+  });
+
+  // ─── DOM: Prozessvergleich Annahmen bullets + per-process caption ─────────
+
+  describe('DOM: Prozessvergleich Annahmen bullets and caption', () => {
+    it('renders exactly 2 Annahmen bullets per process, matching PROZESS_ANNAHMEN in R1 order', () => {
+      const rows: NodeListOf<HTMLElement> = fixture.nativeElement.querySelectorAll('.cmp-row');
+      expect(rows.length).toBe(4);
+
+      rows.forEach((row, i) => {
+        const key = PROZESSE[i].key;
+        const bullets = Array.from(row.querySelectorAll('.cmp-annahmen-list li')).map(
+          (li) => li.textContent?.trim(),
+        );
+        expect(bullets).toEqual(PROZESS_ANNAHMEN[key]);
+      });
+    });
+
+    it('renders one caption per process, matching PROZESS_CAPTION', () => {
+      const captions: NodeListOf<HTMLElement> = fixture.nativeElement.querySelectorAll('.cmp-caption');
+      expect(captions.length).toBe(4);
+
+      const rows: NodeListOf<HTMLElement> = fixture.nativeElement.querySelectorAll('.cmp-row');
+      rows.forEach((row, i) => {
+        const key = PROZESSE[i].key;
+        const caption = row.querySelector('.cmp-caption');
+        expect(caption).not.toBeNull();
+        expect(caption?.textContent?.trim()).toBe(PROZESS_CAPTION[key]);
+      });
     });
   });
 });

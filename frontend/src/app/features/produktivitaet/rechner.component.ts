@@ -21,6 +21,8 @@ import { NgbModal, NgbNavModule, NgbTooltipModule } from '@ng-bootstrap/ng-boots
 import { debounceTime } from 'rxjs/operators';
 import {
   DEFAULT_DURATIONS,
+  PROZESS_ANNAHMEN,
+  PROZESS_CAPTION,
   PROZESS_ROLLEN,
   PROZESSE,
   ProzessKey,
@@ -128,11 +130,6 @@ function baueInitialeProzessDaten(): Record<ProzessKey, ProzessSnapshot> {
         height: 32px;
         overflow: hidden;
       }
-      .comparison-svg {
-        display: block;
-        width: 100%;
-        overflow: visible;
-      }
       .seg-rect:focus-visible {
         outline: 3px solid #264892;
         outline-offset: 2px;
@@ -173,15 +170,84 @@ function baueInitialeProzessDaten(): Record<ProzessKey, ProzessSnapshot> {
         color: #264892;
       }
 
-      /* ── Prozessvergleich: klickbare Zeilen wählen den Tab ── */
+      /* ── Prozessvergleich: hybrid HTML row layout (name + small SVG bar + total + Annahmen), one row per process ── */
+      .cmp-header-row {
+        gap: 0.4rem 1.5rem;
+        padding: 0 0.5rem;
+        margin-bottom: 0.25rem;
+      }
+      .cmp-col-header {
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: #495057;
+      }
+      .cmp-rows {
+        display: flex;
+        flex-direction: column;
+      }
+      .cmp-row {
+        position: relative;
+      }
+      .cmp-row + .cmp-row {
+        border-top: 1px solid #eef0f3;
+      }
+      .cmp-row-content {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 0.4rem 1.5rem;
+        padding: 0.6rem 0.5rem;
+      }
+      .cmp-row-main {
+        flex: 1 1 260px;
+        min-width: 220px;
+      }
+      .cmp-row-annahmen {
+        flex: 1 1 220px;
+        max-width: 340px;
+      }
+      .cmp-bar-svg {
+        display: block;
+        width: 100%;
+        height: 16px;
+      }
+      .cmp-caption {
+        font-style: italic;
+        /* Sits above .cmp-hit (z-index: 1) so its text stays mouse-selectable;
+           the row-selection overlay still covers name/bar/total around it. */
+        position: relative;
+        z-index: 2;
+      }
+      .cmp-annahmen-label-inline {
+        display: block;
+        margin-bottom: 0.15rem;
+      }
+      .cmp-annahmen-list {
+        margin: 0;
+        padding-left: 1.1rem;
+        /* Stays under .cmp-hit (z-index: 1) so clicking the Annahmen bullets also
+           selects the process, like the rest of the row. */
+      }
+      /* Transparent overlay covering the whole row: click/keyboard selects the process's tab.
+         Kept as a sibling overlay (not a wrapper around the row content) so the real Annahmen/
+         bar/total text underneath stays in the accessible tree for screen readers, instead of
+         being swallowed by the button role's accessible-name computation. Mirrors the previous
+         SVG design, where the transparent cmp-hit rect was also painted on top of — not around —
+         the visible <text> nodes. */
       .cmp-hit {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        border-radius: 0.5rem;
         cursor: pointer;
       }
       .cmp-hit:hover {
-        fill: rgba(38, 72, 146, 0.07);
+        background: rgba(38, 72, 146, 0.07);
       }
       .cmp-hit.active {
-        fill: rgba(38, 72, 146, 0.11);
+        background: rgba(38, 72, 146, 0.11);
       }
       .cmp-hit:focus-visible {
         outline: 3px solid #264892;
@@ -427,6 +493,10 @@ export class RechnerComponent implements OnInit {
 
   readonly prozesse = PROZESSE;
   readonly zeiteinheiten: ZeitEinheit[] = ZEITEINHEITEN;
+
+  /** Prozessvergleich card: two "Annahmen" bullets per process + the Agile-mit-KI-only caption. */
+  readonly prozessAnnahmen = PROZESS_ANNAHMEN;
+  readonly prozessCaption = PROZESS_CAPTION;
 
   activeTab = 1;
 

@@ -124,7 +124,7 @@ Saved scenarios for the Produktivität → Rechner cycle-time calculator. Each s
 | id | integer | PK, autoIncrement |
 | name | text | NOT NULL, UNIQUE |
 | humanSteps | text | NOT NULL, `CHECK (json_valid(...))` — JSON `{ works: number[19], waits: number[18] }` — Agile mit Menschen |
-| semiAutomatedSteps | text | NOT NULL, `CHECK (json_valid(...))` — JSON `{ works: number[7], waits: number[6] }` — KI-Prozess mit Feedback |
+| semiAutomatedSteps | text | NOT NULL, `CHECK (json_valid(...))` — JSON `{ works: number[11], waits: number[10] }` — KI-Prozess mit Feedback |
 | automatedSteps | text | NOT NULL, `CHECK (json_valid(...))` — JSON `{ works: number[2], waits: number[1] }` — KI-Prozess vollautomatisch |
 | agileKiSteps | text | NOT NULL, `CHECK (json_valid(...))` — JSON `{ works: number[19], waits: number[18] }` — Agile mit KI |
 | createdAt | text | NOT NULL, default `datetime('now')` |

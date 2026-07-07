@@ -78,7 +78,7 @@ export const ChanceCreateSchema = z.object({
 export type ChanceCreateDTO = z.infer<typeof ChanceCreateSchema>;
 
 // ─── Szenario ─────────────────────────────────────────────────────────────────
-export const PROCESS_STEP_COUNTS = { human: 19, agileKi: 19, semiAutomated: 7, automated: 2 } as const;
+export const PROCESS_STEP_COUNTS = { human: 19, agileKi: 19, semiAutomated: 11, automated: 2 } as const;
 
 const DurationSchema = z
   .number()

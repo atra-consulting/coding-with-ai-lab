@@ -8,7 +8,7 @@ import { seedSzenario } from '../seed/szenarioSeed.js';
 // so the two never drift. Must stay byte-identical to the AGILE_KI_WORKS /
 // AGILE_KI_WAITS payload seeded in szenarioSeed.ts.
 const AGILE_KI_DEFAULT_JSON =
-  '{"works":[0,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],"waits":[120,120,120,960,480,0,30,120,120,120,30,240,60,0,30,240,30,60]}';
+  '{"works":[0,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],"waits":[120,120,120,960,240,0,15,60,60,60,15,120,30,0,15,120,15,30]}';
 
 // Idempotent guarded ALTER for existing databases created before agileKiSteps
 // existed. `CREATE TABLE IF NOT EXISTS` never touches an already-existing

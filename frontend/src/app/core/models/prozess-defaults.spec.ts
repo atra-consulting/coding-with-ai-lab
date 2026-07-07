@@ -1,4 +1,12 @@
-import { DEFAULT_DURATIONS, PROZESS_ROLLEN, PROZESS_STEP_LABELS, PROZESSE, Rolle } from './prozess-defaults';
+import {
+  DEFAULT_DURATIONS,
+  PROZESS_ANNAHMEN,
+  PROZESS_CAPTION,
+  PROZESS_ROLLEN,
+  PROZESS_STEP_LABELS,
+  PROZESSE,
+  Rolle,
+} from './prozess-defaults';
 
 function sum(arr: number[]): number {
   return arr.reduce((s, v) => s + v, 0);
@@ -29,16 +37,29 @@ describe('DEFAULT_DURATIONS — canonical arrays', () => {
     ]);
   });
 
-  it('agileKi waits is the same array reference as menschlich waits', () => {
-    expect(DEFAULT_DURATIONS.agileKi.waits).toBe(DEFAULT_DURATIONS.menschlich.waits);
+  it('agileKi waits matches the canonical 18-element array (own array, halved from step 5 onward)', () => {
+    expect(DEFAULT_DURATIONS.agileKi.waits).toEqual([
+      120, 120, 120, 960, 240, 0, 15, 60, 60, 60, 15, 120, 30, 0, 15, 120, 15, 30,
+    ]);
   });
 
-  it('halbautomatisch works matches the canonical 7-element array', () => {
-    expect(DEFAULT_DURATIONS.halbautomatisch.works).toEqual([0, 5, 15, 15, 10, 30, 20]);
+  it('agileKi waits is NOT the same array reference as menschlich waits (own array)', () => {
+    expect(DEFAULT_DURATIONS.agileKi.waits).not.toBe(DEFAULT_DURATIONS.menschlich.waits);
   });
 
-  it('halbautomatisch waits matches the canonical 6-element array', () => {
-    expect(DEFAULT_DURATIONS.halbautomatisch.waits).toEqual([5, 60, 60, 5, 60, 5]);
+  it('agileKi waits equals menschlich waits for steps 1-4 and is halved from step 5 onward', () => {
+    const menschlich = DEFAULT_DURATIONS.menschlich.waits;
+    const agileKi = DEFAULT_DURATIONS.agileKi.waits;
+    expect(agileKi.slice(0, 4)).toEqual(menschlich.slice(0, 4));
+    expect(agileKi.slice(4)).toEqual(menschlich.slice(4).map((min) => min / 2));
+  });
+
+  it('halbautomatisch works matches the canonical 11-element array', () => {
+    expect(DEFAULT_DURATIONS.halbautomatisch.works).toEqual([0, 5, 10, 10, 5, 10, 10, 5, 10, 30, 20]);
+  });
+
+  it('halbautomatisch waits matches the canonical 10-element array', () => {
+    expect(DEFAULT_DURATIONS.halbautomatisch.waits).toEqual([5, 60, 5, 60, 60, 5, 60, 5, 60, 5]);
   });
 
   it('vollautomatisch works matches the canonical 2-element array', () => {
@@ -55,12 +76,12 @@ describe('DEFAULT_DURATIONS — totals', () => {
     expect(total(DEFAULT_DURATIONS.menschlich)).toBe(3880);
   });
 
-  it('agileKi totals 2,970 minutes (work 90 + wait 2,880)', () => {
-    expect(total(DEFAULT_DURATIONS.agileKi)).toBe(2970);
+  it('agileKi totals 2,190 minutes (work 90 + wait 2,100)', () => {
+    expect(total(DEFAULT_DURATIONS.agileKi)).toBe(2190);
   });
 
-  it('halbautomatisch totals 290 minutes (work 95 + wait 195)', () => {
-    expect(total(DEFAULT_DURATIONS.halbautomatisch)).toBe(290);
+  it('halbautomatisch totals 440 minutes (work 115 + wait 325)', () => {
+    expect(total(DEFAULT_DURATIONS.halbautomatisch)).toBe(440);
   });
 
   it('vollautomatisch totals 25 minutes (work 20 + wait 5)', () => {
@@ -84,8 +105,8 @@ describe('PROZESSE — R1 order, titles, step counts', () => {
     ]);
   });
 
-  it('has step counts 19/19/7/2 in R1 order', () => {
-    expect(PROZESSE.map((p) => p.stepCount)).toEqual([19, 19, 7, 2]);
+  it('has step counts 19/19/11/2 in R1 order', () => {
+    expect(PROZESSE.map((p) => p.stepCount)).toEqual([19, 19, 11, 2]);
   });
 
   it('has the R1a process titles in order, with no leftover old titles', () => {
@@ -118,8 +139,8 @@ describe('PROZESS_STEP_LABELS', () => {
     expect(PROZESS_STEP_LABELS.menschlich.length).toBe(19);
   });
 
-  it('halbautomatisch has 7 labels', () => {
-    expect(PROZESS_STEP_LABELS.halbautomatisch.length).toBe(7);
+  it('halbautomatisch has 11 labels', () => {
+    expect(PROZESS_STEP_LABELS.halbautomatisch.length).toBe(11);
   });
 
   it('vollautomatisch has 2 labels', () => {
@@ -130,6 +151,57 @@ describe('PROZESS_STEP_LABELS', () => {
     for (const p of PROZESSE) {
       expect(p.labels).toBe(PROZESS_STEP_LABELS[p.key]);
     }
+  });
+
+  it('contains the three renamed "Business Analyst" menschlich labels (indices 1-3)', () => {
+    expect(PROZESS_STEP_LABELS.menschlich[1]).toBe('Business Analyst analysiert die Situation');
+    expect(PROZESS_STEP_LABELS.menschlich[2]).toBe('Business Analyst bespricht mit Entwickler');
+    expect(PROZESS_STEP_LABELS.menschlich[3]).toBe('Business Analyst schreibt Ticket');
+  });
+});
+
+// ─── PROZESS_ANNAHMEN — two simplifying-assumption bullets per process ────────
+
+describe('PROZESS_ANNAHMEN', () => {
+  it('has exactly 2 bullets for each of the 4 processes', () => {
+    for (const p of PROZESSE) {
+      expect(PROZESS_ANNAHMEN[p.key].length).toBe(2);
+    }
+  });
+
+  it('has the exact bullet text for menschlich', () => {
+    expect(PROZESS_ANNAHMEN.menschlich).toEqual(['Mensch macht alles', 'Mensch macht Fehler']);
+  });
+
+  it('has the exact bullet text for agileKi', () => {
+    expect(PROZESS_ANNAHMEN.agileKi).toEqual(['KI macht alles', 'KI macht Fehler']);
+  });
+
+  it('has the exact bullet text for halbautomatisch', () => {
+    expect(PROZESS_ANNAHMEN.halbautomatisch).toEqual(['KI macht alles', 'Ausführung fehlerfrei']);
+  });
+
+  it('has the exact bullet text for vollautomatisch', () => {
+    expect(PROZESS_ANNAHMEN.vollautomatisch).toEqual([
+      'KI macht alles',
+      'Planung und Ausführung fehlerfrei',
+    ]);
+  });
+});
+
+// ─── PROZESS_CAPTION — one per process ────────────────────────────────────────
+
+describe('PROZESS_CAPTION', () => {
+  it('gives the two agile processes the same Refinement/PR-Review caption', () => {
+    const agileCaption =
+      'Agiler Prozess mit Refinement und PR-Review, Business Analyst, Entwickler, Tester';
+    expect(PROZESS_CAPTION.menschlich).toBe(agileCaption);
+    expect(PROZESS_CAPTION.agileKi).toBe(agileCaption);
+  });
+
+  it('has the role captions for the two KI processes', () => {
+    expect(PROZESS_CAPTION.halbautomatisch).toBe('Business Analyst, Entwickler');
+    expect(PROZESS_CAPTION.vollautomatisch).toBe('Nur KI');
   });
 });
 
