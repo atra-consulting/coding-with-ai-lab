@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "branch": "update-prozesse-tickets-annahmen-seed",
+  "main_branch": "1c209f74582203b1062e8240850f5e909b34adcb",
+  "docs_folder": "docs",
+  "special_instructions": null,
+  "review_agents_available": true,
+  "fix_agents_available": true,
+  "all_reviewers": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer"],
+  "all_coders": ["be-coder", "db-coder", "fe-coder"],
+  "all_designers": ["ui-designer"],
+  "changed_files": [
+    "backend/src/config/migrate.ts",
+    "backend/src/seed/szenarioSeed.ts",
+    "backend/src/seed/ticketSeed.ts",
+    "backend/src/test/szenario.spec.ts",
+    "backend/src/test/tickets.spec.ts",
+    "backend/src/utils/validation.ts",
+    "frontend/src/app/core/models/prozess-defaults.ts",
+    "frontend/src/app/core/models/prozess-defaults.spec.ts",
+    "frontend/src/app/features/produktivitaet/rechner.component.html",
+    "frontend/src/app/features/produktivitaet/rechner.component.ts",
+    "frontend/src/app/features/produktivitaet/rechner.component.spec.ts",
+    "docs/specs/SPECS-database.md"
+  ],
+  "dry_run_mode": false,
+  "started": "2026-07-07T09:14:34Z"
+}
