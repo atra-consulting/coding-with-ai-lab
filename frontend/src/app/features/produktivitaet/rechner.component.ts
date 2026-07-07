@@ -141,6 +141,72 @@ function baueInitialeProzessDaten(): Record<ProzessKey, ProzessSnapshot> {
         cursor: pointer;
       }
 
+      /* ── Karten-Überschriften kräftiger hervorheben ── */
+      .card-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #1b2a52;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #d7e0f5;
+        margin-bottom: 1rem;
+      }
+
+      /* ── Szenarien-Umschalter (unten, eingeklappt) ── */
+      .szenarien-toggle {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #1b2a52;
+      }
+      .szenarien-toggle:hover {
+        color: #264892;
+      }
+
+      /* ── Prozessvergleich: klickbare Zeilen wählen den Tab ── */
+      .cmp-hit {
+        cursor: pointer;
+      }
+      .cmp-hit:hover {
+        fill: rgba(38, 72, 146, 0.07);
+      }
+      .cmp-hit.active {
+        fill: rgba(38, 72, 146, 0.11);
+      }
+      .cmp-hit:focus-visible {
+        outline: 3px solid #264892;
+        outline-offset: -3px;
+      }
+
+      /* ── Prozess-Tabs (Schritt-Zeiten): kräftiger hervorgehoben ── */
+      .schritt-tabs.nav-tabs {
+        border-bottom: 2px solid #d7e0f5;
+        gap: 0.3rem;
+      }
+      .schritt-tabs .nav-link {
+        font-weight: 600;
+        font-size: 1rem;
+        color: #264892;
+        padding: 0.6rem 1.1rem;
+        border: 1px solid transparent;
+        border-bottom: none;
+        border-radius: 8px 8px 0 0;
+        margin-bottom: -2px;
+        transition: background-color 0.15s ease, color 0.15s ease;
+      }
+      .schritt-tabs .nav-link:hover {
+        background: #eef3ff;
+        border-color: #d7e0f5;
+      }
+      .schritt-tabs .nav-link.active {
+        color: #fff;
+        background: #264892;
+        border-color: #264892;
+        box-shadow: 0 2px 6px rgba(38, 72, 146, 0.25);
+      }
+      .schritt-tabs .nav-link:focus-visible {
+        outline: 3px solid #264892;
+        outline-offset: 2px;
+      }
+
       /* ── Balken/Flussdiagramm toggle (5.6) ── */
       .view-toggle-btn {
         min-height: 44px;
@@ -320,10 +386,22 @@ export class RechnerComponent implements OnInit {
     (this.document.getElementById(targetId) as HTMLElement | null)?.focus();
   }
 
+  /**
+   * Selects a process from the Prozessvergleich chart: activates that
+   * process's tab (no scrolling — keep the user where they are).
+   */
+  selectProzess(index: number): void {
+    this.activeTab = index + 1;
+    this.setViewMode('balken');
+  }
+
   readonly prozesse = PROZESSE;
   readonly zeiteinheiten: ZeitEinheit[] = ZEITEINHEITEN;
 
   activeTab = 1;
+
+  /** Szenarien card is collapsed by default (kept out of the way at the page bottom). */
+  showSzenarien = false;
   nameInput = '';
   nameError: string | null = null;
 

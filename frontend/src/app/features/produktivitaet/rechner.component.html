@@ -1,5 +1,5 @@
 <div class="page-header mb-3">
-  <h2>Ein Ticket bis in Produktion</h2>
+  <h2>Ein Ticket, vier Prozesse</h2>
   <p class="text-muted mb-0">Vier Wege, ein Ziel — vergleiche Arbeitszeit, Wartezeit und Rollen.</p>
 </div>
 
@@ -163,7 +163,7 @@
     <h5 class="card-title">Prozessvergleich</h5>
 
     <!-- Caption: this chart shows one solid bar per process, scaled to the longest total (no work/wait split here). -->
-    <p class="text-muted small mb-3">Balken = Anteil an der längsten Gesamtdauer.</p>
+    <p class="text-muted small mb-3">Balken = Anteil an der längsten Gesamtdauer. Zeile anklicken, um den Prozess zu öffnen.</p>
 
     <!-- Comparison bar: shared scale, all four processes -->
     @let bars = getComparisonBars(380);
@@ -220,110 +220,34 @@
           fill="#495057"
           text-anchor="start"
         >{{ getProzessTotal(cmpIdx) | dauer }}</text>
+        <!-- transparent hit area: click/keyboard selects this process's tab -->
+        <rect
+          class="cmp-hit"
+          [class.active]="activeTab === cmpIdx + 1"
+          x="0"
+          [attr.y]="cmpIdx * 44"
+          width="500"
+          height="40"
+          rx="4"
+          fill="transparent"
+          tabindex="0"
+          role="button"
+          [attr.aria-label]="p.titel + ' auswählen (' + (getProzessTotal(cmpIdx) | dauer) + ')'"
+          (click)="selectProzess(cmpIdx)"
+          (keydown.enter)="selectProzess(cmpIdx)"
+          (keydown.space)="selectProzess(cmpIdx); $event.preventDefault()"
+        />
       }
     </svg>
   </div>
 </div>
 
-<!-- SCENARIO CONTROLS CARD -->
-<div class="card mb-4">
-  <div class="card-body">
-    <h5 class="card-title">Szenarien</h5>
-
-    <!-- Loaded scenario indicator -->
-    <div class="mb-3">
-      @if (geladenSzenario()) {
-        <span class="badge bg-primary me-2">Geladen: {{ geladenSzenario()!.name }}</span>
-      } @else {
-        <span class="text-muted fst-italic">Kein Szenario geladen</span>
-      }
-    </div>
-
-    <!-- Name input + save buttons -->
-    <div class="row g-2 align-items-start mb-3">
-      <div class="col-auto">
-        <label for="szenario-name" class="form-label">Szenario-Name</label>
-        <input
-          id="szenario-name"
-          type="text"
-          class="form-control"
-          [(ngModel)]="nameInput"
-          placeholder="Szenario-Name"
-          [attr.aria-describedby]="nameError ? 'name-error' : null"
-        />
-        @if (nameError) {
-          <div id="name-error" class="text-danger small mt-1">{{ nameError }}</div>
-        }
-      </div>
-      <div class="col-auto d-flex align-items-end gap-2" style="padding-top: 1.75rem">
-        @if (!geladenSzenario()) {
-          <button
-            type="button"
-            class="btn btn-primary"
-            (click)="neuSpeichern()"
-            [disabled]="form.invalid || scenarioLoading()"
-          >
-            Neu erstellen
-          </button>
-        }
-        @if (geladenSzenario()) {
-          <button
-            type="button"
-            class="btn btn-outline-primary"
-            (click)="aktualisieren()"
-            [disabled]="form.invalid || scenarioLoading()"
-          >
-            Aktualisieren
-          </button>
-          <button
-            type="button"
-            class="btn btn-outline-secondary"
-            (click)="alsNeuSpeichern()"
-            [disabled]="form.invalid || scenarioLoading()"
-          >
-            Kopie speichern
-          </button>
-        }
-      </div>
-    </div>
-
-    <!-- Scenario list -->
-    @if (scenarioLoading()) {
-      <app-loading-spinner />
-    } @else if (szenarien().length === 0) {
-      <p class="text-muted">Keine Szenarien gespeichert.</p>
-    } @else {
-      <ul class="list-group">
-        @for (s of szenarien(); track s.id) {
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            <button
-              type="button"
-              class="btn btn-link p-0 text-start"
-              (click)="ladeScenario(s)"
-            >
-              {{ s.name }}
-            </button>
-            <button
-              type="button"
-              class="btn btn-outline-danger btn-sm"
-              (click)="loeschen(s)"
-              [disabled]="scenarioLoading()"
-            >
-              Löschen
-            </button>
-          </li>
-        }
-      </ul>
-    }
-  </div>
-</div>
-
 <!-- STEP INPUT TABS: one tab per process (title+total → Balken/Flussdiagramm toggle → [Balken bar | Flussdiagramm] → Pie A [+ Pie B] → Schritt-Zeiten form) -->
-<div class="card">
+<div id="schritt-zeiten" class="card" tabindex="-1">
   <div class="card-body">
     <h5 class="card-title">Schritt-Zeiten</h5>
 
-    <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" (navChange)="onNavChange()" class="nav-tabs mb-3">
+    <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" (navChange)="onNavChange()" class="nav-tabs schritt-tabs mb-3">
       @for (p of prozesse; track p.key) {
         <li [ngbNavItem]="$index + 1">
           <button ngbNavLink>{{ p.titel }} ({{ p.stepCount }})</button>
@@ -514,5 +438,114 @@
     </ul>
 
     <div [ngbNavOutlet]="nav"></div>
+  </div>
+</div>
+
+<!-- SCENARIO CONTROLS CARD (collapsed by default, at the bottom, out of the way) -->
+<div class="card mt-4">
+  <div class="card-body">
+    <button
+      type="button"
+      class="btn btn-link p-0 text-decoration-none szenarien-toggle d-flex align-items-center gap-2"
+      (click)="showSzenarien = !showSzenarien"
+      [attr.aria-expanded]="showSzenarien"
+      aria-controls="szenarien-body"
+    >
+      <span aria-hidden="true">{{ showSzenarien ? '▾' : '▸' }}</span>
+      <span>Szenarien</span>
+      @if (geladenSzenario()) {
+        <span class="badge bg-primary ms-1">{{ geladenSzenario()!.name }}</span>
+      }
+    </button>
+
+    @if (showSzenarien) {
+      <div id="szenarien-body" class="mt-3">
+        <!-- Loaded scenario indicator -->
+        <div class="mb-3">
+          @if (geladenSzenario()) {
+            <span class="badge bg-primary me-2">Geladen: {{ geladenSzenario()!.name }}</span>
+          } @else {
+            <span class="text-muted fst-italic">Kein Szenario geladen</span>
+          }
+        </div>
+
+        <!-- Name input + save buttons -->
+        <div class="row g-2 align-items-start mb-3">
+          <div class="col-auto">
+            <label for="szenario-name" class="form-label">Szenario-Name</label>
+            <input
+              id="szenario-name"
+              type="text"
+              class="form-control"
+              [(ngModel)]="nameInput"
+              placeholder="Szenario-Name"
+              [attr.aria-describedby]="nameError ? 'name-error' : null"
+            />
+            @if (nameError) {
+              <div id="name-error" class="text-danger small mt-1">{{ nameError }}</div>
+            }
+          </div>
+          <div class="col-auto d-flex align-items-end gap-2" style="padding-top: 1.75rem">
+            @if (!geladenSzenario()) {
+              <button
+                type="button"
+                class="btn btn-primary"
+                (click)="neuSpeichern()"
+                [disabled]="form.invalid || scenarioLoading()"
+              >
+                Neu erstellen
+              </button>
+            }
+            @if (geladenSzenario()) {
+              <button
+                type="button"
+                class="btn btn-outline-primary"
+                (click)="aktualisieren()"
+                [disabled]="form.invalid || scenarioLoading()"
+              >
+                Aktualisieren
+              </button>
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                (click)="alsNeuSpeichern()"
+                [disabled]="form.invalid || scenarioLoading()"
+              >
+                Kopie speichern
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Scenario list -->
+        @if (scenarioLoading()) {
+          <app-loading-spinner />
+        } @else if (szenarien().length === 0) {
+          <p class="text-muted">Keine Szenarien gespeichert.</p>
+        } @else {
+          <ul class="list-group">
+            @for (s of szenarien(); track s.id) {
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <button
+                  type="button"
+                  class="btn btn-link p-0 text-start"
+                  (click)="ladeScenario(s)"
+                >
+                  {{ s.name }}
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-danger btn-sm"
+                  (click)="loeschen(s)"
+                  [disabled]="scenarioLoading()"
+                >
+                  Löschen
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    }
   </div>
 </div>
