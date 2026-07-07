@@ -2,7 +2,7 @@
   "version": 1,
   "task_key": "UPDATE-PROZESSE-TICKETS",
   "status": "in_progress",
-  "current_step": "4.5",
+  "current_step": "6.4",
   "started": "2026-07-07T09:14:34Z",
   "updated": "2026-07-07T09:14:34Z",
   "config": {
@@ -32,8 +32,8 @@
     "test_command": null
   },
   "artifacts": {
-    "prd_skipped": null,
-    "prd_file": null,
+    "prd_skipped": false,
+    "prd_file": "docs/prds/PRD-UPDATE-PROZESSE-TICKETS.md",
     "plan_file": null
   },
   "completed_steps": []
