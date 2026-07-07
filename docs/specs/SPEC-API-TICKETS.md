@@ -76,7 +76,7 @@ Same fields as ticket, but `comments` is replaced by `commentCount: number`.
 
 Three schemes. Some endpoints accept more than one — the write endpoints a skill needs (`create`, `/:id/owner`, `/:id/comments`, `/:id/status`) plus `GET /:id` and `GET /board` accept **agent token · loopback bypass · admin session** (first match wins).
 
-### Agent token (machine endpoints: `/next`, `/:id/start`, `/:id/done`, `/:id/ask`, plus `POST /`, `GET /board`, `PATCH /:id/owner`, `PATCH /:id/status`, `POST /:id/comments`)
+### Agent token (machine endpoints: `/next`, `/:id/start`, `/:id/done`, `/:id/ask`, plus `POST /`, `GET /:id`, `GET /board`, `PATCH /:id/owner`, `PATCH /:id/status`, `POST /:id/comments`)
 
 Send the shared secret in **either** header:
 
@@ -87,7 +87,7 @@ X-Agent-Token: <AGENT_API_TOKEN>
 ```
 
 - Compared against `AGENT_API_TOKEN` env var via SHA-256 + constant-time `timingSafeEqual`.
-- If `AGENT_API_TOKEN` is **unset/empty**, the pure machine endpoints (`/next`, `/:id/start`, `/:id/done`, `/:id/ask`) return **401**. The endpoints that also accept an admin session (`POST /`, `GET /board`, `PATCH /:id/owner`, `PATCH /:id/status`, `POST /:id/comments`) still work with a valid admin session, even when the token is unset.
+- If `AGENT_API_TOKEN` is **unset/empty**, the pure machine endpoints (`/next`, `/:id/start`, `/:id/done`, `/:id/ask`) return **401**. The endpoints that also accept an admin session (`POST /`, `GET /:id`, `GET /board`, `PATCH /:id/owner`, `PATCH /:id/status`, `POST /:id/comments`) still work with a valid admin session, even when the token is unset.
 - Missing or wrong token → **401**.
 - **Localhost bypass:** Set `AGENT_AUTH_ALLOW_LOOPBACK=1` in `backend/.env`. Requests from `127.0.0.1`, `::1`, or `::ffff:127.0.0.1` with no `Authorization` or `X-Agent-Token` header then skip validation. Requests with proxy-forwarding headers (`X-Forwarded-For`, `X-Real-IP`, `Forwarded`) are never bypassed. Local development only — never set in production.
 - Locally the backend auto-loads `backend/.env`; in CI set it as a GitHub Actions secret.
@@ -457,13 +457,13 @@ Deletes all rows in `ticket_comment` and `ticket`, then re-seeds the 12 workshop
 
 | Trigger | From | To | Side effects |
 |---------|------|----|-------------|
-| `PATCH /:id/owner {AI}` (admin) | `DEFINITION` | `DEFINITION` | `owner→AI` ("An KI übergeben") |
+| `PATCH /:id/owner {AI}` (agent · loopback · admin) | `DEFINITION` | `DEFINITION` | `owner→AI` ("An KI übergeben") |
 | `POST /:id/hand-to-ai` (admin) | `DEFINITION` | `TODO` | `owner→AI` ("Nach Bereit") |
 | `GET /next` | `TODO` + `owner=AI` | `IN_PROGRESS` | sets `pickedUpAt` |
 | `POST /start` (agent) | `TODO` + `owner=AI` | `IN_PROGRESS` | sets `pickedUpAt` |
 | `POST /done` (agent) | `IN_PROGRESS` | `DONE` | `solution=DONE`, `resolvedAt` |
 | `POST /ask` (agent) | `IN_PROGRESS` | `ON_HOLD` | `owner→HUMAN`, AGENT comment |
-| `POST /comments` + `handBackToAi` (admin) | `ON_HOLD` + `owner=HUMAN` | `TODO` | `owner→AI`, `solution`/`resolvedAt` cleared, HUMAN comment |
+| `POST /comments` + `handBackToAi` (agent · loopback · admin) | `ON_HOLD` + `owner=HUMAN` | `TODO` | `owner→AI`, `solution`/`resolvedAt` cleared, HUMAN comment |
 | `POST /wont-do` (admin) | any (not `DONE`), `owner=HUMAN` | `DONE` | `solution=WONT_DO`, `resolvedAt` |
 | `PATCH /status → DONE` (agent · loopback · admin) | any | `DONE` | `solution=DONE`, `resolvedAt` |
 | `PATCH /status → non-DONE` (agent · loopback · admin) | any | target status | `solution`/`resolvedAt` cleared |
