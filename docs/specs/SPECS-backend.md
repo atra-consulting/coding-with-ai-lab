@@ -108,7 +108,7 @@ Allowed sort fields: `name`, `firmaId`, `createdAt`, `updatedAt`.
 
 ### Adressen (`/api/adressen`)
 
-Standard CRUD. Default sort: `city,ASC`. Allowed sort fields: `city`, `postalCode`, `street`, `createdAt`, `updatedAt`.
+Standard CRUD. Default sort: `city,ASC`. Allowed sort fields: `city`, `postalCode`, `street`, `createdAt`, `updatedAt`. Params: `search` (optional, case-insensitive substring match on `city`), `page`, `size`, `sort`.
 
 ### Aktivitaeten (`/api/aktivitaeten`)
 
@@ -120,7 +120,7 @@ Standard CRUD. Default sort: `createdAt,DESC`. Allowed sort fields: `titel`, `we
 
 ### Szenarien (`/api/szenarien`)
 
-Saved scenarios for the Produktivität-Rechner cycle-time calculator. All routes `requireAuth` (any logged-in user). Each process body is `{ works: number[], waits: number[] }` (waits length = works length − 1); durations are integer minutes, validated by `SzenarioSchema` (Zod) in `utils/validation.ts`.
+Saved scenarios for the Produktivität-Rechner cycle-time calculator. All routes `requireAuth` (any logged-in user). Each body has four named process fields: `humanSteps` (19 steps), `agileKiSteps` (19 steps), `semiAutomatedSteps` (7 steps), `automatedSteps` (2 steps). Each process is `{ works: number[], waits: number[] }` (waits length = works length − 1); durations are integer minutes. Step counts enforced by `PROCESS_STEP_COUNTS` in `utils/validation.ts`; validated by `SzenarioSchema` (Zod). Omitting `agileKiSteps` fails validation → 400.
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
@@ -139,12 +139,35 @@ Manages the autonomous-agent work queue. Lifecycle: `OPEN → IN_PROGRESS → DO
 | GET | `/api/agent-tasks/next?source=X` | requireAgentToken | Claim next OPEN task → IN_PROGRESS. Returns 204 when none exist |
 | GET | `/api/agent-tasks/summary` | requireAuth + requireRole('ADMIN') | Per-source open/done/rejected counts |
 | POST | `/api/agent-tasks/reset` | requireAuth + requireRole('ADMIN') | Reset all tasks back to OPEN |
+| POST | `/api/agent-tasks/:id/start` | requireAgentToken | Claim a specific task by id → IN_PROGRESS (skips `/next`) |
 | POST | `/api/agent-tasks/:id/reject` | requireAgentToken | Mark task REJECTED (comment required) |
 | POST | `/api/agent-tasks/:id/done` | requireAgentToken | Mark task DONE |
-| GET | `/api/agent-tasks/:id` | requireAuth + requireRole('ADMIN') | Single task |
+| GET | `/api/agent-tasks/:id` | requireAgentTokenOrAdminSession | Single task. Accepts agent token, loopback bypass, or admin session — see [Agent token auth](#agent-token-auth) |
 | GET | `/api/agent-tasks` | requireAuth + requireRole('ADMIN') | Paginated list; filter by `source`, `status` |
 
 Agent endpoints are authenticated via `requireAgentToken` (see [agentAuth.ts](#agent-token-auth)). Admin endpoints require a valid admin session.
+
+### Tickets (`/api/tickets`)
+
+Fake Kanban ticket system for the software-factory training. Board mechanics and full contract: see [docs/API-TICKETS.md](../API-TICKETS.md). Status enum: `DEFINITION → TODO → IN_PROGRESS → ON_HOLD → DONE`. Owner: `AI` or `HUMAN`. New tickets start `owner=HUMAN`, `status=DEFINITION`.
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/tickets/next?type=X` | requireAgentToken | Claim oldest `TODO`+`AI` ticket → `IN_PROGRESS`. Optional `type` filter. 204 when none |
+| GET | `/api/tickets/board` | requireAuth + requireRole('ADMIN') | Full board, grouped by column |
+| GET | `/api/tickets/summary` | requireAuth + requireRole('ADMIN') | Per-column counts |
+| POST | `/api/tickets/reset` | requireAuth + requireRole('ADMIN') | Re-seed the 12 workshop tickets |
+| GET | `/api/tickets` | requireAuth + requireRole('ADMIN') | Paginated list; filter by `type`, `status`, `owner` |
+| POST | `/api/tickets` | requireAuth + requireRole('ADMIN') | Create → 201 (`owner=HUMAN`, `status=DEFINITION`) |
+| GET | `/api/tickets/:id` | requireAgentTokenOrAdminSession | Single ticket (agent token, loopback, or admin session) |
+| PATCH | `/api/tickets/:id/status` | requireAuth + requireRole('ADMIN') | Move to another column |
+| PATCH | `/api/tickets/:id/owner` | requireAuth + requireRole('ADMIN') | Reassign owner. `{owner:AI}` = "An KI übergeben" (stays `DEFINITION`) |
+| POST | `/api/tickets/:id/start` | requireAgentToken | Claim a specific ticket by id → `IN_PROGRESS` |
+| POST | `/api/tickets/:id/done` | requireAgentToken | Finish → `solution=DONE` |
+| POST | `/api/tickets/:id/ask` | requireAgentToken | Ask a question → `ON_HOLD`, owner back to `HUMAN` |
+| POST | `/api/tickets/:id/wont-do` | requireAuth + requireRole('ADMIN') | Set `solution=WONT_DO` (only on `owner=HUMAN`) |
+| POST | `/api/tickets/:id/hand-to-ai` | requireAuth + requireRole('ADMIN') | "Nach Bereit": owner=AI, → `TODO` |
+| POST | `/api/tickets/:id/comments` | requireAuth + requireRole('ADMIN') | Add comment; `handBackToAi` returns ticket to `TODO`+`AI` |
 
 ### Cron (`/api/cron`)
 
@@ -245,6 +268,13 @@ All 3 users currently hold all 7 permissions: `FIRMEN`, `PERSONEN`, `ABTEILUNGEN
 - Reads the token from `Authorization: Bearer <token>` first, then falls back to the `X-Agent-Token` header.
 - Compares SHA-256 hashes of the incoming and configured (`AGENT_API_TOKEN` env var) tokens using `timingSafeEqual` to prevent timing attacks.
 - Returns 401 if the env var is not set, the header is absent, or the token does not match.
+- **Loopback bypass (dev only).** When env var `AGENT_AUTH_ALLOW_LOOPBACK=1`, a request from `127.0.0.1` / `::1` / `::ffff:127.0.0.1` with **no** auth header and **no** proxy-forwarding header (`X-Forwarded-For`, `X-Real-IP`, `Forwarded`) skips the token check. Never set this in production. The forwarding-header refusal stops a same-host reverse proxy (which appears as `127.0.0.1` on the socket) from opening the bypass.
+
+`requireAgentTokenOrAdminSession` (in `src/middleware/agentAuth.ts`): guards endpoints that both agents and the admin UI read — currently `GET /api/agent-tasks/:id` and `GET /api/tickets/:id`. First match wins:
+
+1. Loopback bypass — same gating as above (also requires `AGENT_API_TOKEN` set).
+2. Agent token — if a token header is present, it must match; a wrong token is rejected (401), never falling through to the session.
+3. Admin session — `req.session.userId` must resolve to a user with the `ADMIN` role, else 403. No session → 401.
 
 ### CORS
 
@@ -268,7 +298,7 @@ src/
     enums.ts        — TypeScript enum arrays and types
   middleware/
     auth.ts               — requireAuth, requireRole
-    agentAuth.ts          — requireAgentToken
+    agentAuth.ts          — requireAgentToken, requireAgentTokenOrAdminSession (+ AGENT_AUTH_ALLOW_LOOPBACK bypass)
     cors.ts               — CORS config
     errorHandler.ts       — global error handler (last middleware)
     libsqlSessionStore.ts — custom express-session Store backed by `sessions` table
