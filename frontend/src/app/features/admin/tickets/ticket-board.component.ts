@@ -43,9 +43,19 @@ import { TicketCreateComponent } from './ticket-create.component';
   template: `
     <div class="page-header">
       <h2>Ticket-Board</h2>
-      <button class="btn btn-primary" (click)="openCreateModal()">
-        <fa-icon [icon]="faPlus" class="me-2" />Neues Ticket
-      </button>
+      <div class="d-flex gap-2">
+        <button
+          type="button"
+          class="btn btn-outline-secondary"
+          (click)="toggleRecent()"
+          [attr.aria-pressed]="recentOnly"
+        >
+          {{ recentOnly ? 'Alle' : 'Kürzlich geändert' }}
+        </button>
+        <button class="btn btn-primary" (click)="openCreateModal()">
+          <fa-icon [icon]="faPlus" class="me-2" />Neues Ticket
+        </button>
+      </div>
     </div>
 
     @if (loading) {
@@ -186,18 +196,18 @@ import { TicketCreateComponent } from './ticket-create.component';
         <div class="board-column">
           <div class="column-header column-definition">
             <span class="column-title">Definition</span>
-            <span class="badge bg-secondary">{{ definition.length }}</span>
+            <span class="badge bg-secondary">{{ viewDefinition.length }}</span>
           </div>
           <div
             class="column-body"
             cdkDropList
             id="list-DEFINITION"
-            [cdkDropListData]="definition"
+            [cdkDropListData]="viewDefinition"
             [cdkDropListConnectedTo]="['list-TODO', 'list-IN_PROGRESS', 'list-ON_HOLD', 'list-DONE']"
             (cdkDropListDropped)="onDrop($event, 'DEFINITION')"
           >
-            @for (ticket of definition; track ticket.id) {
-              <div class="ticket-card" cdkDrag [cdkDragData]="ticket">
+            @for (ticket of viewDefinition; track ticket.id) {
+              <div class="ticket-card" cdkDrag [cdkDragData]="ticket" [cdkDragDisabled]="recentOnly">
                 <div class="ticket-drag-handle" cdkDragHandle (click)="$event.stopPropagation()">
                   <fa-icon [icon]="faGripVertical" />
                 </div>
@@ -218,7 +228,7 @@ import { TicketCreateComponent } from './ticket-create.component';
                 </div>
               </div>
             }
-            @if (definition.length === 0) {
+            @if (viewDefinition.length === 0) {
               <div class="column-empty">Keine Tickets</div>
             }
           </div>
@@ -228,18 +238,18 @@ import { TicketCreateComponent } from './ticket-create.component';
         <div class="board-column">
           <div class="column-header column-todo">
             <span class="column-title">Zu bereit</span>
-            <span class="badge bg-secondary">{{ todo.length }}</span>
+            <span class="badge bg-secondary">{{ viewTodo.length }}</span>
           </div>
           <div
             class="column-body"
             cdkDropList
             id="list-TODO"
-            [cdkDropListData]="todo"
+            [cdkDropListData]="viewTodo"
             [cdkDropListConnectedTo]="['list-DEFINITION', 'list-IN_PROGRESS', 'list-ON_HOLD', 'list-DONE']"
             (cdkDropListDropped)="onDrop($event, 'TODO')"
           >
-            @for (ticket of todo; track ticket.id) {
-              <div class="ticket-card" cdkDrag [cdkDragData]="ticket">
+            @for (ticket of viewTodo; track ticket.id) {
+              <div class="ticket-card" cdkDrag [cdkDragData]="ticket" [cdkDragDisabled]="recentOnly">
                 <div class="ticket-drag-handle" cdkDragHandle (click)="$event.stopPropagation()">
                   <fa-icon [icon]="faGripVertical" />
                 </div>
@@ -260,7 +270,7 @@ import { TicketCreateComponent } from './ticket-create.component';
                 </div>
               </div>
             }
-            @if (todo.length === 0) {
+            @if (viewTodo.length === 0) {
               <div class="column-empty">Keine Tickets</div>
             }
           </div>
@@ -270,18 +280,18 @@ import { TicketCreateComponent } from './ticket-create.component';
         <div class="board-column">
           <div class="column-header column-inprogress">
             <span class="column-title">In Arbeit</span>
-            <span class="badge bg-secondary">{{ inProgress.length }}</span>
+            <span class="badge bg-secondary">{{ viewInProgress.length }}</span>
           </div>
           <div
             class="column-body"
             cdkDropList
             id="list-IN_PROGRESS"
-            [cdkDropListData]="inProgress"
+            [cdkDropListData]="viewInProgress"
             [cdkDropListConnectedTo]="['list-DEFINITION', 'list-TODO', 'list-ON_HOLD', 'list-DONE']"
             (cdkDropListDropped)="onDrop($event, 'IN_PROGRESS')"
           >
-            @for (ticket of inProgress; track ticket.id) {
-              <div class="ticket-card" cdkDrag [cdkDragData]="ticket">
+            @for (ticket of viewInProgress; track ticket.id) {
+              <div class="ticket-card" cdkDrag [cdkDragData]="ticket" [cdkDragDisabled]="recentOnly">
                 <div class="ticket-drag-handle" cdkDragHandle (click)="$event.stopPropagation()">
                   <fa-icon [icon]="faGripVertical" />
                 </div>
@@ -302,7 +312,7 @@ import { TicketCreateComponent } from './ticket-create.component';
                 </div>
               </div>
             }
-            @if (inProgress.length === 0) {
+            @if (viewInProgress.length === 0) {
               <div class="column-empty">Keine Tickets</div>
             }
           </div>
@@ -312,18 +322,18 @@ import { TicketCreateComponent } from './ticket-create.component';
         <div class="board-column">
           <div class="column-header column-onhold">
             <span class="column-title">Wartet</span>
-            <span class="badge bg-secondary">{{ onHold.length }}</span>
+            <span class="badge bg-secondary">{{ viewOnHold.length }}</span>
           </div>
           <div
             class="column-body"
             cdkDropList
             id="list-ON_HOLD"
-            [cdkDropListData]="onHold"
+            [cdkDropListData]="viewOnHold"
             [cdkDropListConnectedTo]="['list-DEFINITION', 'list-TODO', 'list-IN_PROGRESS', 'list-DONE']"
             (cdkDropListDropped)="onDrop($event, 'ON_HOLD')"
           >
-            @for (ticket of onHold; track ticket.id) {
-              <div class="ticket-card" cdkDrag [cdkDragData]="ticket">
+            @for (ticket of viewOnHold; track ticket.id) {
+              <div class="ticket-card" cdkDrag [cdkDragData]="ticket" [cdkDragDisabled]="recentOnly">
                 <div class="ticket-drag-handle" cdkDragHandle (click)="$event.stopPropagation()">
                   <fa-icon [icon]="faGripVertical" />
                 </div>
@@ -344,7 +354,7 @@ import { TicketCreateComponent } from './ticket-create.component';
                 </div>
               </div>
             }
-            @if (onHold.length === 0) {
+            @if (viewOnHold.length === 0) {
               <div class="column-empty">Keine Tickets</div>
             }
           </div>
@@ -354,18 +364,18 @@ import { TicketCreateComponent } from './ticket-create.component';
         <div class="board-column">
           <div class="column-header column-done">
             <span class="column-title">Erledigt</span>
-            <span class="badge bg-secondary">{{ done.length }}</span>
+            <span class="badge bg-secondary">{{ viewDone.length }}</span>
           </div>
           <div
             class="column-body"
             cdkDropList
             id="list-DONE"
-            [cdkDropListData]="done"
+            [cdkDropListData]="viewDone"
             [cdkDropListConnectedTo]="['list-DEFINITION', 'list-TODO', 'list-IN_PROGRESS', 'list-ON_HOLD']"
             (cdkDropListDropped)="onDrop($event, 'DONE')"
           >
-            @for (ticket of done; track ticket.id) {
-              <div class="ticket-card" cdkDrag [cdkDragData]="ticket">
+            @for (ticket of viewDone; track ticket.id) {
+              <div class="ticket-card" cdkDrag [cdkDragData]="ticket" [cdkDragDisabled]="recentOnly">
                 <div class="ticket-drag-handle" cdkDragHandle (click)="$event.stopPropagation()">
                   <fa-icon [icon]="faGripVertical" />
                 </div>
@@ -391,7 +401,7 @@ import { TicketCreateComponent } from './ticket-create.component';
                 </div>
               </div>
             }
-            @if (done.length === 0) {
+            @if (viewDone.length === 0) {
               <div class="column-empty">Keine Tickets</div>
             }
           </div>
@@ -700,6 +710,15 @@ export class TicketBoardComponent implements OnInit {
   errorMessage: string | null = null;
   dropError: string | null = null;
 
+  recentOnly = false;
+  private readonly RECENT_WINDOW_MS = 60 * 60 * 1000;
+
+  viewDefinition: Ticket[] = [];
+  viewTodo: Ticket[] = [];
+  viewInProgress: Ticket[] = [];
+  viewOnHold: Ticket[] = [];
+  viewDone: Ticket[] = [];
+
   readonly faPlus = faPlus;
   readonly faClipboardList = faClipboardList;
   readonly faFileLines = faFileLines;
@@ -742,12 +761,38 @@ export class TicketBoardComponent implements OnInit {
           this.done = board.DONE;
           this.loading = false;
           this.summaryTrigger$.next();
+          this.refreshView();
         },
         error: () => {
           this.errorMessage = 'Fehler beim Laden des Boards.';
           this.loading = false;
         },
       });
+  }
+
+  isRecent(ticket: Ticket): boolean {
+    const now = Date.now();
+    return (
+      now - Date.parse(ticket.updatedAt) <= this.RECENT_WINDOW_MS ||
+      now - Date.parse(ticket.createdAt) <= this.RECENT_WINDOW_MS
+    );
+  }
+
+  private refreshView(): void {
+    this.viewDefinition = this.recentOnly
+      ? this.definition.filter((t) => this.isRecent(t))
+      : this.definition;
+    this.viewTodo = this.recentOnly ? this.todo.filter((t) => this.isRecent(t)) : this.todo;
+    this.viewInProgress = this.recentOnly
+      ? this.inProgress.filter((t) => this.isRecent(t))
+      : this.inProgress;
+    this.viewOnHold = this.recentOnly ? this.onHold.filter((t) => this.isRecent(t)) : this.onHold;
+    this.viewDone = this.recentOnly ? this.done.filter((t) => this.isRecent(t)) : this.done;
+  }
+
+  toggleRecent(): void {
+    this.recentOnly = !this.recentOnly;
+    this.refreshView();
   }
 
   onDrop(event: CdkDragDrop<Ticket[]>, targetStatus: TicketStatus): void {
@@ -770,6 +815,7 @@ export class TicketBoardComponent implements OnInit {
       movedTicket.solution = null;
     }
     movedTicket.status = targetStatus;
+    this.refreshView();
 
     this.ticketService
       .setStatus(ticket.id, targetStatus)

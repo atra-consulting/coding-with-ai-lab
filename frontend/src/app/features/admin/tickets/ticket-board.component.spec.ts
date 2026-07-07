@@ -728,3 +728,91 @@ describe('TicketBoardComponent — typeBadgeClass() and typeLabel()', () => {
     expect(component.typeLabel('CHORE')).toBe('Aufgabe');
   });
 });
+
+// ─── "Kürzlich geändert" toggle ────────────────────────────────────────────────
+
+describe('TicketBoardComponent — recent-only toggle', () => {
+  let fixture: ComponentFixture<TicketBoardComponent>;
+  let component: TicketBoardComponent;
+
+  beforeEach(async () => {
+    const mockService = makeMockTicketService();
+    mockService.getBoard.and.returnValue(of(makeMockBoard()));
+    mockService.getSummary.and.returnValue(of(MOCK_SUMMARY));
+    await setupTestBed(mockService);
+
+    fixture = TestBed.createComponent(TicketBoardComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('defaults recentOnly to false', () => {
+    expect(component.recentOnly).toBeFalse();
+  });
+
+  it('populates the view arrays with the full arrays after loadBoard()', () => {
+    expect(component.viewDefinition).toEqual(component.definition);
+    expect(component.viewTodo).toEqual(component.todo);
+    expect(component.viewInProgress).toEqual(component.inProgress);
+    expect(component.viewOnHold).toEqual(component.onHold);
+    expect(component.viewDone).toEqual(component.done);
+  });
+
+  it('isRecent() returns true for a ticket updated 30 minutes ago', () => {
+    const ticket = makeTicket(100, {
+      updatedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+      createdAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+    });
+    expect(component.isRecent(ticket)).toBeTrue();
+  });
+
+  it('isRecent() returns false when both createdAt and updatedAt are 90 minutes ago', () => {
+    const ticket = makeTicket(101, {
+      updatedAt: new Date(Date.now() - 90 * 60 * 1000).toISOString(),
+      createdAt: new Date(Date.now() - 90 * 60 * 1000).toISOString(),
+    });
+    expect(component.isRecent(ticket)).toBeFalse();
+  });
+
+  it('toggleRecent() sets recentOnly to true and filters the view arrays to only recent tickets', () => {
+    // Make one ticket recent, the rest old — reuse the TODO column (2 tickets)
+    component.todo[0].updatedAt = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    component.todo[0].createdAt = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    component.todo[1].updatedAt = new Date(Date.now() - 90 * 60 * 1000).toISOString();
+    component.todo[1].createdAt = new Date(Date.now() - 90 * 60 * 1000).toISOString();
+
+    component.toggleRecent();
+
+    expect(component.recentOnly).toBeTrue();
+    expect(component.viewTodo.length).toBe(1);
+    expect(component.viewTodo[0].id).toBe(component.todo[0].id);
+  });
+
+  it('toggling recentOnly a second time restores the full view arrays (same references)', () => {
+    component.toggleRecent();
+    expect(component.recentOnly).toBeTrue();
+
+    component.toggleRecent();
+
+    expect(component.recentOnly).toBeFalse();
+    expect(component.viewDefinition).toBe(component.definition);
+    expect(component.viewTodo).toBe(component.todo);
+    expect(component.viewInProgress).toBe(component.inProgress);
+    expect(component.viewOnHold).toBe(component.onHold);
+    expect(component.viewDone).toBe(component.done);
+  });
+
+  it('renders the "Kürzlich geändert" label by default and flips to "Alle" when pressed', () => {
+    const button: HTMLButtonElement = fixture.nativeElement.querySelector(
+      '.page-header button.btn-outline-secondary',
+    );
+    expect(button).toBeTruthy();
+    expect(button.textContent).toContain('Kürzlich geändert');
+
+    button.click();
+    fixture.detectChanges();
+
+    expect(button.textContent).toContain('Alle');
+    expect(button.getAttribute('aria-pressed')).toBe('true');
+  });
+});
