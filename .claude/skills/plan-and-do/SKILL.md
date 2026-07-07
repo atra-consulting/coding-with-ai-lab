@@ -2,8 +2,8 @@
 name: "project:plan-and-do"
 description: "End-to-end implementation workflow from idea to code review. Use for building features, implementing tasks, fixing complex bugs, or any substantial coding work. Handles planning, implementation, testing, and review automatically."
 argument-hint: ["description"] [special-instructions|resume:<step>]
-version: 1.10.2
-last-modified: 2026-06-23
+version: 1.11.0
+last-modified: 2026-07-07
 allowed-tools:
   - Read
   - Write
@@ -58,7 +58,7 @@ If NOT in plan mode → continue.
 ## SKILL HEADER
 
 ```
-Plan and Do (v1.10.2, 2026-06-23)
+Plan and Do (v1.11.0, 2026-07-07)
 ************************************
 
 Plan and implement any work from freeform description

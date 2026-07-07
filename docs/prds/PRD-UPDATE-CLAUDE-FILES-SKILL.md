@@ -83,7 +83,7 @@ Trigger: no args, or free-text special instructions.
 
 Trigger: first arg is `embedded`. Optional `base:<sha>`.
 
-- First: `rm -f docs/state/UPDATE-CLAUDE-FILES-RESULT.md` (clear any stale result), then `mkdir -p docs/state`.
+- First: `mkdir -p docs/state`, then `rm -f docs/state/UPDATE-CLAUDE-FILES-RESULT.md` (clear any stale result). This runs before the R3 guard so any later STOP can still write its result file.
 - Then run R3 guard (writes skip result + STOP if no agents).
 - Scope = branch changes:
   - If `base:<sha>` given: validate with `git rev-parse --verify "<sha>^{commit}"`. If valid, changed files = `git diff <sha>...HEAD --name-only`. If invalid/unreachable, warn and fall back to the R5 timestamp scan.
@@ -99,7 +99,9 @@ Edit `.claude/skills/plan-and-do/SKILL.md` Step 12 (Documentation Updates). Step
 - When `agents_available` and `is_git_repo`: invoke `update-claude-files` embedded, scoped to the branch: `embedded base:[original_head]`.
 - When `is_git_repo` but no agents: print the R3 warning + URL, skip the doc update, continue (do not block the PR).
 - When not a git repo: keep the existing manual-scan fallback text.
-- After the embedded call: read `docs/state/UPDATE-CLAUDE-FILES-RESULT.md`. If `status` shows real changes, stage the changed docs + the result file and commit `docs: Update project documentation. [task_key]` (with `PRD:` footer when a PRD exists). If `status` is `no-changes` or `skipped-no-agents`: display it, commit nothing, continue.
+- After the embedded call: read `docs/state/UPDATE-CLAUDE-FILES-RESULT.md`. If `status` shows real changes, stage only the changed docs (not the result file — it is gitignored) and commit `docs: Update project documentation. [task_key]` (with `PRD:` footer when a PRD exists). If `status` is `no-changes`, `skipped-no-agents`, or `error`: display it, commit nothing, continue.
+
+**Result file is gitignored.** `docs/state/UPDATE-CLAUDE-FILES-RESULT.md` is untracked and gitignored. The skill rewrites it every embedded run. Keeping it out of git stops plan-and-do's PC.1 cleanup from committing a stale result on the `no-changes` path.
 
 **Known limitation:** Step 12 does not run for `workflow_scope == "implement"` or `"implement-review"`. If a user later opens a PR from one of those runs via PC.2, the doc-sync step did not run. Acceptable: those scopes are for small changes and stop before Step 12.
 

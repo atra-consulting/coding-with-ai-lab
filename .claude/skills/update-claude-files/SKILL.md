@@ -1,7 +1,7 @@
 ---
 name: "project:update-claude-files"
 description: "Update .claude/agents, docs/specs, and CLAUDE.md from source code changes. Use when features land, the schema changes, or infrastructure shifts. Keeps project documentation in sync with the code."
-argument-hint: (optional special instructions | embedded [base:<sha>])
+argument-hint: (optional special instructions)
 version: 1.0.0
 last-modified: 2026-07-07
 allowed-tools:
@@ -11,7 +11,6 @@ allowed-tools:
   - Grep
   - Glob
   - Bash(git:*)
-  - Bash(ls:*)
   - Bash(mkdir:*)
   - Bash(rm:*)
   - AskUserQuestion
@@ -82,21 +81,9 @@ Focus: [special_instructions]
 
 ## PHASE 1: INIT & VALIDATION
 
-### Step 1.1: Git Check
+### Step 1.1: Embedded Housekeeping (embedded only, first)
 
-```bash
-git rev-parse --git-dir
-```
-
-If it fails (not a git repository):
-- **Standalone:** display "Not a git repository. Run this skill inside the repo." Then STOP.
-- **Embedded:** write a result file with `status: error` (see PHASE 8 schema, note "not a git repo"), then STOP. Never block the caller.
-
-Capture `project_root` (`pwd`) and `current_branch` (`git branch --show-current`).
-
-### Step 1.2: Embedded Housekeeping (embedded only)
-
-Run this BEFORE the agent guard, so the guard can write its skip-result on a fresh checkout:
+Do this as the very first embedded action — before the git check — so any later STOP can still write its result file:
 
 ```bash
 mkdir -p docs/state
@@ -104,6 +91,18 @@ rm -f docs/state/UPDATE-CLAUDE-FILES-RESULT.md
 ```
 
 This clears any stale result from a previous run. The result file is gitignored — it never gets committed.
+
+### Step 1.2: Git Check
+
+```bash
+git rev-parse --git-dir
+```
+
+If it fails (not a git repository):
+- **Standalone:** display "Not a git repository. Run this skill inside the repo." Then STOP.
+- **Embedded:** write `docs/state/UPDATE-CLAUDE-FILES-RESULT.md` with `status: error` (PHASE 8 schema, note "not a git repo"), then STOP. Never block the caller.
+
+Capture `project_root` (`pwd`) and `current_branch` (`git branch --show-current`).
 
 ---
 
@@ -161,7 +160,7 @@ Check one target at a time. For each doc target `T`:
    ```
 3. A non-empty result → `T` is stale.
 
-Collect all stale targets as `stale_targets`.
+Collect stale targets as `stale_targets`. Then apply roll-ups — these targets have no direct source globs of their own: if any `SPECS-*.md` is stale, add `SPECS.md` (the index). If any backend, frontend, or build/config target (spec or agent) is stale, add `CLAUDE.md`.
 
 ### Step 3.3: Nothing To Do
 
@@ -194,6 +193,12 @@ Roll-up rules:
 **DOMAIN.md vs SPECS-database.md.** `DOMAIN.md` holds business meaning only — no schema. A pure schema change (column type, index, nullable) flags `SPECS-database.md` only. A change to relationships, cascade / delete behavior, roles, or the sales pipeline flags `DOMAIN.md` too. Read the diff to decide.
 
 Build the final edit list: intersect candidate targets with `stale_targets` (standalone) or with what the diff actually changed (embedded). Track `agents_changed`, `specs_changed`, `claude_md_changed` for the summary.
+
+**No target flagged.** If the final edit list is empty — the changes touched only files outside this mapping (e.g. only `.claude/skills/**`, `docs/**`, `.gitignore`) — there is nothing to update:
+- **Standalone:** display "No documentation updates needed." STOP.
+- **Embedded:** write `status: no-changes` (PHASE 8 schema). STOP.
+
+This is separate from PHASE 3.3: there the changed/stale set was empty; here it was non-empty but mapped to no doc target.
 
 ---
 
