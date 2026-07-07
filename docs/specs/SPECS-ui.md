@@ -203,6 +203,22 @@ Canonical home. Cross-referenced from the Chance Board section in `SPECS-fronten
 
 ---
 
+## Rechner Chart Colors
+
+Canonical home. Cross-referenced from the Produktivität → Rechner section in `SPECS-frontend.md`.
+
+| Chart | Slice / segment | Color |
+|-------|-----------------|-------|
+| Pie A (Arbeit vs. Warten) — all 4 tabs | Arbeit / KI-Arbeit | `#264892` |
+| Pie A (Arbeit vs. Warten) — all 4 tabs | Warten | `#cf944f` |
+| Pie B (Rollen-Split) — agile tabs only | BA | `#6f42c1` |
+| Pie B (Rollen-Split) — agile tabs only | Dev | `#0f766e` |
+| Pie B (Rollen-Split) — agile tabs only | Tester | `#9a6700` |
+
+`#264892` and `#cf944f` also color the work/wait segments of the Balken bar and the Flussdiagramm boxes. The 3 role colors are fixed, identical across both agile tabs, and distinct from Bootstrap's `success`/`danger` semantic colors.
+
+---
+
 ## Public-Page Card Template
 
 ### Shared pattern — Login, FeedbackQr

@@ -1,147 +1,29 @@
-<div class="page-header">
-  <h2>Rechner</h2>
+<div class="page-header mb-3">
+  <h2>Ein Ticket, vier Prozesse</h2>
+  <p class="text-muted mb-0">Vier Wege, ein Ziel — vergleiche Arbeitszeit, Wartezeit und Rollen.</p>
 </div>
 
-<!-- HERO: geführte Erzählung des heutigen (menschlichen) Prozesses -->
-<section class="hero-card card mb-4" aria-labelledby="hero-title">
-  <div class="card-body">
-    <p class="hero-eyebrow">Der heutige Prozess</p>
-    <h2 id="hero-title" class="hero-title">
-      Ein Ticket bis in Produktion:
-      <span class="hero-total">{{ heroGesamt() | dauer }}</span>
-    </h2>
-    <p class="hero-sub">
-      Von der Anfrage bis zum Deployment — durch die Hände von BA, zwei
-      Entwicklern und einem Tester.
-    </p>
-
-    <!-- Schritt 0: einfarbiger Gesamtbalken (verrät die Aufteilung noch nicht) -->
-    <svg
-      class="hero-solid-svg"
-      viewBox="0 0 100 10"
-      preserveAspectRatio="none"
-      role="img"
-      [attr.aria-label]="'Aufwand gesamt: ' + (heroGesamt() | dauer)"
-    >
-      <rect x="0" y="0" width="100" height="10" fill="#264892" />
-    </svg>
-    <div class="hero-solid-label">
-      <span>Aufwand gesamt</span>
-      <span>{{ heroGesamt() | dauer }}</span>
-    </div>
-
-    <!-- Schritt 1: Menschlich aufschlüsseln -->
-    @if (revealStep() < 1) {
-      <div class="hero-cta">
-        <button type="button" class="btn btn-primary" (click)="reveal(1)">
-          Was kostet wie viel Zeit? ↓
-        </button>
-      </div>
-    } @else {
-      <div class="hero-reveal">
-        <p class="hero-reveal-title">Was steckt wirklich drin?</p>
-        <div class="hero-legend" aria-hidden="true">
-          <span class="hero-chip hero-chip--work">Arbeit</span>
-          <span class="hero-chip hero-chip--wait">Warten</span>
-        </div>
-        <ng-container
-          [ngTemplateOutlet]="procBar"
-          [ngTemplateOutletContext]="{ $implicit: 0, ns: 'hero', shared: true }"
-        />
-        <p class="hero-why">
-          Überraschung: Von {{ heroGesamt() | dauer }} sind nur
-          <strong>{{ heroArbeit() | dauer }}</strong> echte Arbeit — gerade
-          einmal {{ heroArbeitPct() }}&nbsp;%. Die übrige Zeit liegt das Ticket
-          still und wartet auf die nächste Person: Refinement, Reviews, Tests,
-          Releases. Fahre über die Abschnitte, um jeden Schritt zu sehen.
-        </p>
-      </div>
-    }
-
-    <!-- Schritt 2: Halbautomatisch -->
-    @if (revealStep() >= 1) {
-      @if (revealStep() < 2) {
-        <div class="hero-cta">
-          <button type="button" class="btn btn-primary" (click)="reveal(2)">
-            Verbessere den Prozess (halbautomatisch) ↓
-          </button>
-        </div>
-      } @else {
-        <div class="hero-reveal">
-          <ng-container
-            [ngTemplateOutlet]="procBar"
-            [ngTemplateOutletContext]="{ $implicit: 1, ns: 'hero', shared: true }"
-          />
-        </div>
-      }
-    }
-
-    <!-- Schritt 3: Vollautomatisch -->
-    @if (revealStep() >= 2) {
-      @if (revealStep() < 3) {
-        <div class="hero-cta">
-          <button type="button" class="btn btn-primary" (click)="reveal(3)">
-            Vollautomatisch: Human in the Loop entfernen ↓
-          </button>
-        </div>
-      } @else {
-        <div class="hero-reveal">
-          <ng-container
-            [ngTemplateOutlet]="procBar"
-            [ngTemplateOutletContext]="{ $implicit: 2, ns: 'hero', shared: true }"
-          />
-          <div class="hero-goal">
-            <span class="hero-goal-label">Ziel</span>
-            <span>
-              Den Menschen so weit wie möglich aus der Schleife (Human in the
-              Loop) nehmen — jede entfernte Übergabe streicht eine Wartezeit. Aus
-              {{ heroGesamt() | dauer }} werden {{ getProzessTotal(2) | dauer }}.
-            </span>
-          </div>
-        </div>
-      }
-    }
-
-    <!-- Brücke / Scroll-Cue zum Bestand -->
-    <div class="hero-bridge">
-      <a
-        href="#prozessvergleich"
-        class="hero-scroll-link"
-        (click)="scrollToDetail($event)"
-        >Alle Details &amp; selbst durchrechnen ↓</a
-      >
-    </div>
-  </div>
-</section>
-
-<!-- Wiederverwendbarer Prozessbalken (Hero + Vergleich); ns = eindeutiges ID-Präfix, shared = gemeinsame Basis -->
-<ng-template #procBar let-prozessIdx let-ns="ns" let-shared="shared">
+<!-- Wiederverwendbarer Prozessbalken; ns = eindeutiges ID-Präfix für aria-Attribute; showTitle=false unterdrückt die eigene Titel/Summe-Zeile, wenn ein Aufrufer sie schon selbst rendert. -->
+<ng-template #procBar let-prozessIdx let-ns="ns" let-showTitle="showTitle">
   <div class="process-bar-wrap">
-    <div class="bar-label-row">
-      <span class="bar-title">{{ prozesse[prozessIdx].titel }}</span>
-      <span class="bar-meta">
+    @if (showTitle !== false) {
+      <div class="bar-label-row">
+        <span class="bar-title">{{ prozesse[prozessIdx].titel }}</span>
         <span class="bar-total">{{ getProzessTotal(prozessIdx) | dauer }}</span>
-        @if (shared) {
-          @if (prozessIdx === 0) {
-            <span class="bar-base">Basis</span>
-          } @else {
-            <span class="bar-saved">↓ {{ getGesparteZeit(prozessIdx) | dauer }} gespart</span>
-          }
-        }
-      </span>
-    </div>
+      </div>
+    }
 
     <svg
       class="process-svg"
       viewBox="0 0 600 32"
       preserveAspectRatio="none"
-      [attr.aria-labelledby]="'bar-title-' + ns + '-' + prozessIdx"
-      [attr.aria-describedby]="'bar-desc-' + ns + '-' + prozessIdx"
+      [attr.aria-labelledby]="'bar-title-' + ns"
+      [attr.aria-describedby]="'bar-desc-' + ns"
     >
-      <title [id]="'bar-title-' + ns + '-' + prozessIdx">
+      <title [id]="'bar-title-' + ns">
         {{ prozesse[prozessIdx].titel }}: {{ getProzessTotal(prozessIdx) | dauer }}
       </title>
-      <desc [id]="'bar-desc-' + ns + '-' + prozessIdx">
+      <desc [id]="'bar-desc-' + ns">
         Prozessbalken für {{ prozesse[prozessIdx].titel }} mit
         {{ prozesse[prozessIdx].stepCount }} Schritten. Gesamtdauer:
         {{ getProzessTotal(prozessIdx) | dauer }}.
@@ -149,7 +31,7 @@
 
       <defs>
         <pattern
-          [id]="'hatch-wait-' + ns + '-' + prozessIdx"
+          [id]="'hatch-wait-' + ns"
           patternUnits="userSpaceOnUse"
           width="9"
           height="9"
@@ -160,12 +42,7 @@
         </pattern>
       </defs>
 
-      @if (shared) {
-        <!-- Grau-Track = volle Basis (33d); ungenutzter Rest visualisiert die gesparte Zeit -->
-        <rect x="0" y="0" width="600" height="32" fill="#eef1f6" />
-      }
-
-      @for (seg of (shared ? getSharedSegments(prozessIdx, 600) : getSegments(prozessIdx, 600)); track seg.type + '-' + seg.index) {
+      @for (seg of getSegments(prozessIdx, 600); track seg.type + '-' + seg.index) {
         @if (seg.type === 'work') {
           @if (svgSnapshot().prozesse[prozessIdx].works[seg.index] === 0) {
             <rect
@@ -197,7 +74,7 @@
             y="0"
             [attr.width]="seg.width"
             height="32"
-            [attr.fill]="'url(#hatch-wait-' + ns + '-' + prozessIdx + ')'"
+            [attr.fill]="'url(#hatch-wait-' + ns + ')'"
             [ngbTooltip]="getWaitTooltip(prozessIdx, seg.index)"
             container="body"
             aria-hidden="true"
@@ -208,45 +85,106 @@
   </div>
 </ng-template>
 
-<!-- Detailbereich: anfangs ausgeblendet, erscheint per „Alle Details & selbst durchrechnen" -->
-@if (showDetails()) {
-<!-- VISUALIZATION CARD -->
-<div id="prozessvergleich" class="card mb-4 viz-card" tabindex="-1">
+<!-- Legend shared by Pie A and Pie B: swatch + label + minutes (dauer pipe) + percent, always visible. -->
+<ng-template #pieLegend let-slices="slices">
+  <ul class="pie-legend list-unstyled">
+    @for (slice of slices; track slice.key) {
+      <li class="pie-legend-item">
+        <span class="pie-legend-swatch" [style.background-color]="slice.color" aria-hidden="true"></span>
+        <span class="pie-legend-label">{{ slice.label }}</span>
+        <span class="pie-legend-value">{{ slice.value | dauer }} · {{ slice.percent.toFixed(1) }}%</span>
+      </li>
+    }
+  </ul>
+</ng-template>
+
+<!--
+  Reusable pie chart block (5.3/5.4): caption, SVG (slices, or a grey empty circle, or a
+  single full circle when one slice holds 100%), optional note, shared legend. Slices are
+  aria-hidden — the legend is the accessible data source. ns = unique id prefix for title/desc.
+-->
+<ng-template
+  #pieChart
+  let-result="result"
+  let-caption="caption"
+  let-note="note"
+  let-ns="ns"
+  let-titleText="titleText"
+  let-descText="descText"
+>
+  <div class="pie-block">
+    <p class="pie-caption">{{ caption }}</p>
+
+    <div class="pie-body">
+      <svg
+        class="pie-svg"
+        viewBox="0 0 100 100"
+        role="img"
+        [attr.aria-labelledby]="'pie-title-' + ns"
+        [attr.aria-describedby]="'pie-desc-' + ns"
+      >
+        <title [id]="'pie-title-' + ns">{{ titleText }}</title>
+        <desc [id]="'pie-desc-' + ns">{{ descText }}</desc>
+
+        @if (result.isEmpty) {
+          <circle cx="50" cy="50" r="45" fill="#dedede" stroke="#495057" stroke-width="1" aria-hidden="true" />
+        } @else if (result.isFullCircle) {
+          <circle
+            cx="50"
+            cy="50"
+            r="45"
+            [attr.fill]="result.fullCircleColor"
+            stroke="#495057"
+            stroke-width="1"
+            aria-hidden="true"
+          />
+          <text x="50" y="50" text-anchor="middle" dominant-baseline="central" class="pie-slice-label" aria-hidden="true">100%</text>
+        } @else {
+          @for (slice of result.slices; track slice.key) {
+            @if (slice.value > 0) {
+              <path [attr.d]="slice.path" [attr.fill]="slice.color" stroke="#495057" stroke-width="1" aria-hidden="true" />
+            }
+          }
+          @for (slice of result.slices; track slice.key) {
+            @if (slice.showLabel) {
+              <text
+                [attr.x]="slice.labelX"
+                [attr.y]="slice.labelY"
+                text-anchor="middle"
+                dominant-baseline="central"
+                class="pie-slice-label"
+                aria-hidden="true"
+              >{{ slice.percent.toFixed(0) }}%</text>
+            }
+          }
+        }
+      </svg>
+
+      <div class="pie-side">
+        @if (result.isEmpty) {
+          <p class="pie-empty-label">Keine Daten</p>
+        }
+        <ng-container [ngTemplateOutlet]="pieLegend" [ngTemplateOutletContext]="{ slices: result.slices }" />
+        @if (note) {
+          <p class="pie-note">{{ note }}</p>
+        }
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<!-- VISUALIZATION CARD: shared-scale comparison across all four processes -->
+<div id="prozessvergleich" class="card mb-4 viz-card">
   <div class="card-body">
     <h5 class="card-title">Prozessvergleich</h5>
 
-    <!-- Skip link: visible on focus, jumps to input area -->
-    <a
-      href="#schritt-zeiten-eingabe"
-      class="visually-hidden-focusable d-inline-block mb-2"
-    >Zur Eingabe springen</a>
+    <!-- Caption: this chart shows one solid bar per process, scaled to the longest total (no work/wait split here). -->
+    <p class="text-muted small mb-3">Balken = Anteil an der längsten Gesamtdauer. Zeile anklicken, um den Prozess zu öffnen.</p>
 
-    <!-- Legend -->
-    <div class="d-flex align-items-center gap-3 mb-3" aria-hidden="true">
-      <span class="d-flex align-items-center gap-1">
-        <svg width="16" height="16" aria-hidden="true">
-          <rect width="16" height="16" fill="#264892" rx="2" />
-        </svg>
-        <span class="small">Arbeitszeit</span>
-      </span>
-      <span class="d-flex align-items-center gap-1">
-        <svg width="16" height="16" aria-hidden="true">
-          <defs>
-            <pattern id="legend-hatch" patternUnits="userSpaceOnUse" width="9" height="9" patternTransform="rotate(45)">
-              <rect width="9" height="9" fill="#f4e6d3" />
-              <line x1="0" y1="0" x2="0" y2="9" stroke="#cf944f" stroke-width="1.6" />
-            </pattern>
-          </defs>
-          <rect width="16" height="16" fill="url(#legend-hatch)" rx="2" />
-        </svg>
-        <span class="small">Wartezeit</span>
-      </span>
-    </div>
-
-    <!-- Comparison bar: shared scale, all three processes -->
+    <!-- Comparison bar: shared scale, all four processes -->
     @let bars = getComparisonBars(380);
     <svg
-      class="comparison-svg mb-4"
+      class="comparison-svg"
       role="img"
       [attr.viewBox]="'0 0 500 ' + (prozesse.length * 44)"
       preserveAspectRatio="xMidYMid meet"
@@ -255,12 +193,12 @@
     >
       <title id="cmp-title">Prozessvergleich</title>
       <desc id="cmp-desc">
-        Menschlich: {{ getProzessTotal(0) | dauer }};
-        Halbautomatisch: {{ getProzessTotal(1) | dauer }};
-        Vollautomatisch: {{ getProzessTotal(2) | dauer }}
+        @for (p of prozesse; track p.key) {
+          {{ p.titel }}: {{ getProzessTotal($index) | dauer }}@if (!$last) {; }
+        }
       </desc>
 
-      @for (p of prozesse; track $index) {
+      @for (p of prozesse; track p.key) {
         @let cmpIdx = $index;
         <!-- grey track -->
         <rect
@@ -289,7 +227,7 @@
           fill="#264892"
           font-weight="600"
         >{{ p.titel }}</text>
-        <!-- D6 total label (right of bar) -->
+        <!-- total label (right of bar) -->
         <text
           x="388"
           [attr.y]="cmpIdx * 44 + 30"
@@ -298,350 +236,332 @@
           fill="#495057"
           text-anchor="start"
         >{{ getProzessTotal(cmpIdx) | dauer }}</text>
+        <!-- transparent hit area: click/keyboard selects this process's tab -->
+        <rect
+          class="cmp-hit"
+          [class.active]="activeTab === cmpIdx + 1"
+          x="0"
+          [attr.y]="cmpIdx * 44"
+          width="500"
+          height="40"
+          rx="4"
+          fill="transparent"
+          tabindex="0"
+          role="button"
+          [attr.aria-label]="p.titel + ' auswählen (' + (getProzessTotal(cmpIdx) | dauer) + ')'"
+          (click)="selectProzess(cmpIdx)"
+          (keydown.enter)="selectProzess(cmpIdx)"
+          (keydown.space)="selectProzess(cmpIdx); $event.preventDefault()"
+        />
       }
     </svg>
-
-    <!-- Per-process segment bars (geteiltes Template) -->
-    @for (p of prozesse; track $index) {
-      <ng-container
-        [ngTemplateOutlet]="procBar"
-        [ngTemplateOutletContext]="{ $implicit: $index, ns: 'cmp', shared: false }"
-      />
-    }
-
   </div>
 </div>
 
-<!-- SCENARIO CONTROLS CARD -->
-<div class="card mb-4">
+<!-- STEP INPUT TABS: one tab per process (title+total → Balken/Flussdiagramm toggle → [Balken bar | Flussdiagramm] → Pie A [+ Pie B] → Schritt-Zeiten form) -->
+<div id="schritt-zeiten" class="card" tabindex="-1">
   <div class="card-body">
-    <h5 class="card-title">Szenarien</h5>
-
-    <!-- Loaded scenario indicator -->
-    <div class="mb-3">
-      @if (geladenSzenario()) {
-        <span class="badge bg-primary me-2">Geladen: {{ geladenSzenario()!.name }}</span>
-      } @else {
-        <span class="text-muted fst-italic">Kein Szenario geladen</span>
-      }
-    </div>
-
-    <!-- Name input + save buttons -->
-    <div class="row g-2 align-items-start mb-3">
-      <div class="col-auto">
-        <label for="szenario-name" class="form-label">Szenario-Name</label>
-        <input
-          id="szenario-name"
-          type="text"
-          class="form-control"
-          [(ngModel)]="nameInput"
-          placeholder="Szenario-Name"
-          [attr.aria-describedby]="nameError ? 'name-error' : null"
-        />
-        @if (nameError) {
-          <div id="name-error" class="text-danger small mt-1">{{ nameError }}</div>
-        }
-      </div>
-      <div class="col-auto d-flex align-items-end gap-2" style="padding-top: 1.75rem">
-        @if (!geladenSzenario()) {
-          <button
-            type="button"
-            class="btn btn-primary"
-            (click)="neuSpeichern()"
-            [disabled]="form.invalid || scenarioLoading()"
-          >
-            Neu erstellen
-          </button>
-        }
-        @if (geladenSzenario()) {
-          <button
-            type="button"
-            class="btn btn-outline-primary"
-            (click)="aktualisieren()"
-            [disabled]="form.invalid || scenarioLoading()"
-          >
-            Aktualisieren
-          </button>
-          <button
-            type="button"
-            class="btn btn-outline-secondary"
-            (click)="alsNeuSpeichern()"
-            [disabled]="form.invalid || scenarioLoading()"
-          >
-            Kopie speichern
-          </button>
-        }
-      </div>
-    </div>
-
-    <!-- Scenario list -->
-    @if (scenarioLoading()) {
-      <app-loading-spinner />
-    } @else if (szenarien().length === 0) {
-      <p class="text-muted">Keine Szenarien gespeichert.</p>
-    } @else {
-      <ul class="list-group">
-        @for (s of szenarien(); track s.id) {
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            <button
-              type="button"
-              class="btn btn-link p-0 text-start"
-              (click)="ladeScenario(s)"
-            >
-              {{ s.name }}
-            </button>
-            <button
-              type="button"
-              class="btn btn-outline-danger btn-sm"
-              (click)="loeschen(s)"
-              [disabled]="scenarioLoading()"
-            >
-              Löschen
-            </button>
-          </li>
-        }
-      </ul>
-    }
-  </div>
-</div>
-
-<!-- STEP INPUT TABS -->
-<div class="card">
-  <div id="schritt-zeiten-eingabe" class="card-body" tabindex="-1">
     <h5 class="card-title">Schritt-Zeiten</h5>
 
-    <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs mb-3">
+    <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" (navChange)="onNavChange()" class="nav-tabs schritt-tabs mb-3">
+      @for (p of prozesse; track p.key) {
+        <li [ngbNavItem]="$index + 1">
+          <button ngbNavLink>{{ p.titel }} ({{ p.stepCount }})</button>
+          <ng-template ngbNavContent>
+            <a
+              class="visually-hidden-focusable"
+              href="#form-{{ p.key }}"
+              (click)="focusForm($event, 'form-' + p.key)"
+              >Zur Eingabe springen</a
+            >
 
-      <!-- Tab 1: Menschlich (23 steps) -->
-      <li [ngbNavItem]="1">
-        <button ngbNavLink>Menschlich ({{ prozesse[0].stepCount }})</button>
-        <ng-template ngbNavContent>
-          <form [formGroup]="form">
-            <div formGroupName="menschlich">
-              @for (ctrl of getWorksArray('menschlich').controls; track $index) {
-                <!-- Work step row -->
-                <div class="mb-2">
-                  <div class="step-row">
-                    <span class="step-label fw-semibold">
-                      {{ $index + 1 }}. {{ prozesse[0].labels[$index] }}
-                    </span>
-                    <span class="text-muted small">Arbeitszeit:</span>
-                    <input
-                      type="number"
-                      class="form-control input-number"
-                      [formControl]="getValueCtrl(ctrl)"
-                      min="0"
-                      max="479520"
-                      [attr.aria-label]="prozesse[0].labels[$index] + ' – Arbeitszeit (Wert)'"
-                      [attr.aria-describedby]="getValueCtrl(ctrl).invalid && getValueCtrl(ctrl).touched ? 'menschlich-work-err-' + $index : null"
-                    />
-                    <select
-                      class="form-select w-auto"
-                      [formControl]="getUnitCtrl(ctrl)"
-                      [attr.aria-label]="prozesse[0].labels[$index] + ' – Arbeitszeit (Einheit)'"
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h6 class="mb-0">{{ p.titel }}</h6>
+              <span class="total-badge">{{ getProzessTotal($index) | dauer }}</span>
+            </div>
+
+            <!-- Balken/Flussdiagramm toggle (5.6): default Balken, ≥44px hit area. -->
+            <div class="btn-group mb-3" role="group" [attr.aria-label]="'Ansicht für ' + p.titel + ' wählen'">
+              <button
+                type="button"
+                class="btn view-toggle-btn"
+                [class.btn-primary]="viewMode() === 'balken'"
+                [class.btn-outline-primary]="viewMode() !== 'balken'"
+                [attr.aria-pressed]="viewMode() === 'balken'"
+                (click)="setViewMode('balken')"
+              >
+                Balken
+              </button>
+              <button
+                type="button"
+                class="btn view-toggle-btn"
+                [class.btn-primary]="viewMode() === 'flussdiagramm'"
+                [class.btn-outline-primary]="viewMode() !== 'flussdiagramm'"
+                [attr.aria-pressed]="viewMode() === 'flussdiagramm'"
+                (click)="setViewMode('flussdiagramm')"
+              >
+                Flussdiagramm
+              </button>
+            </div>
+
+            @if (viewMode() === 'balken') {
+              <ng-container
+                [ngTemplateOutlet]="procBar"
+                [ngTemplateOutletContext]="{ $implicit: $index, ns: p.key, showTitle: false }"
+              />
+            } @else {
+              <!--
+                Flowchart (5.5/R4): unlike #procBar above (which skips tabindex on 0-work
+                segments), EVERY box here gets tabindex="0" + its own aria-label, including
+                the 0-min "Auslöser" trigger step. This intentionally differs from the
+                Balken bar — R4 requires per-box focusability; the NFR "same information"
+                is about content parity, not an identical tab-stop count.
+              -->
+              <div
+                class="flow-scroll"
+                role="group"
+                [attr.aria-label]="'Ablaufdiagramm ' + p.titel + ', ' + p.stepCount + ' Schritte'"
+              >
+                <div class="flow-track">
+                  @for (schritt of getFlowchartSchritte($index); track schritt.nr) {
+                    @let folgeWartezeit = schritt.wait !== null
+                      ? ('. Folgende Wartezeit: ' + (schritt.wait | dauer) + '.')
+                      : '.';
+                    @let boxAriaLabel = 'Schritt ' + schritt.nr + ': ' + schritt.label + '. ' +
+                      p.arbeitszeitLabel + ': ' + (schritt.work | dauer) + folgeWartezeit;
+                    <div
+                      class="flow-box"
+                      tabindex="0"
+                      [ngbTooltip]="schritt.label"
+                      container="body"
+                      [attr.aria-label]="boxAriaLabel"
                     >
-                      @for (einheit of zeiteinheiten; track einheit) {
-                        <option [value]="einheit">{{ einheit }}</option>
+                      <span class="flow-box-nr" aria-hidden="true">{{ schritt.nr }}</span>
+                      <span class="flow-box-label" aria-hidden="true">{{ schritt.label }}</span>
+                      <span class="flow-chip flow-chip-work" aria-hidden="true">{{ schritt.work | dauer }}</span>
+                      @if (schritt.wait !== null) {
+                        <span class="flow-chip flow-chip-wait" aria-hidden="true">{{ schritt.wait | dauer }}</span>
                       }
-                    </select>
-                    @if (getValueCtrl(ctrl).invalid && getValueCtrl(ctrl).touched) {
-                      <div [id]="'menschlich-work-err-' + $index" class="text-danger small">
-                        Wert muss zwischen 0 und 479.520 liegen.
-                      </div>
+                    </div>
+                    @if (!$last) {
+                      <span class="flow-connector" aria-hidden="true">→</span>
                     }
-                  </div>
+                  }
                 </div>
+              </div>
+            }
 
-                <!-- Wait row after this step (only if not last) -->
-                @if ($index < getWaitsArray('menschlich').controls.length) {
+            <!-- Pies (5.3/5.4): Pie A on every tab, Pie B (role split) on the two agile tabs only. -->
+            <div class="pie-row mb-4">
+              <ng-container
+                [ngTemplateOutlet]="pieChart"
+                [ngTemplateOutletContext]="{
+                  result: getPieASlices($index),
+                  caption: 'Arbeit vs. Warten',
+                  ns: p.key + '-a',
+                  titleText: p.titel + ': Arbeit vs. Warten',
+                  descText: 'Kreisdiagramm Arbeit vs. Warten für ' + p.titel
+                }"
+              />
+              @if (p.key === 'menschlich' || p.key === 'agileKi') {
+                <ng-container
+                  [ngTemplateOutlet]="pieChart"
+                  [ngTemplateOutletContext]="{
+                    result: getPieBSlices($index),
+                    caption: 'Arbeitsverteilung nach Rolle',
+                    note: 'Summe = nur Arbeitszeit',
+                    ns: p.key + '-b',
+                    titleText: p.titel + ': Arbeitsverteilung nach Rolle',
+                    descText: 'Kreisdiagramm Rollenverteilung nach BA, Dev und Tester für ' + p.titel
+                  }"
+                />
+              }
+            </div>
+
+            <form [formGroup]="form" class="mt-4" id="form-{{ p.key }}" tabindex="-1">
+              <div [formGroupName]="p.key">
+                @for (ctrl of getWorksArray(p.key).controls; track $index) {
+                  <!-- Work step row -->
                   <div class="mb-2">
-                    <div class="wait-row">
-                      <span class="text-muted small">Wartezeit nach Schritt {{ $index + 1 }}:</span>
+                    <div class="step-row">
+                      <span class="step-label fw-semibold">
+                        {{ $index + 1 }}. {{ p.labels[$index] }}
+                      </span>
+                      <span class="text-muted small">{{ p.arbeitszeitLabel }}:</span>
                       <input
                         type="number"
                         class="form-control input-number"
-                        [formControl]="getWaitValueCtrl('menschlich', $index)"
+                        [formControl]="getValueCtrl(ctrl)"
                         min="0"
-                        max="479520"
-                        [attr.aria-label]="'Wartezeit nach Schritt ' + ($index + 1) + ' – (Wert)'"
-                        [attr.aria-describedby]="getWaitValueCtrl('menschlich', $index).invalid && getWaitValueCtrl('menschlich', $index).touched ? 'menschlich-wait-err-' + $index : null"
+                        [attr.max]="getValueMax(ctrl)"
+                        [attr.aria-label]="p.labels[$index] + ' – ' + p.arbeitszeitLabel + ' (Wert)'"
+                        [attr.aria-describedby]="getValueCtrl(ctrl).invalid && getValueCtrl(ctrl).touched ? p.key + '-work-err-' + $index : null"
                       />
                       <select
                         class="form-select w-auto"
-                        [formControl]="getWaitUnitCtrl('menschlich', $index)"
-                        [attr.aria-label]="'Wartezeit nach Schritt ' + ($index + 1) + ' – (Einheit)'"
+                        [formControl]="getUnitCtrl(ctrl)"
+                        [attr.aria-label]="p.labels[$index] + ' – ' + p.arbeitszeitLabel + ' (Einheit)'"
                       >
                         @for (einheit of zeiteinheiten; track einheit) {
                           <option [value]="einheit">{{ einheit }}</option>
                         }
                       </select>
-                      @if (getWaitValueCtrl('menschlich', $index).invalid && getWaitValueCtrl('menschlich', $index).touched) {
-                        <div [id]="'menschlich-wait-err-' + $index" class="text-danger small">
-                          Wert muss zwischen 0 und 479.520 liegen.
+                      @if (getValueCtrl(ctrl).invalid && getValueCtrl(ctrl).touched) {
+                        <div [id]="p.key + '-work-err-' + $index" class="text-danger small">
+                          Wert muss zwischen 0 und {{ getValueMax(ctrl).toLocaleString('de-DE') }} liegen.
                         </div>
                       }
                     </div>
                   </div>
-                }
-              }
-            </div>
-          </form>
-        </ng-template>
-      </li>
 
-      <!-- Tab 2: Halbautomatisch (6 steps) -->
-      <li [ngbNavItem]="2">
-        <button ngbNavLink>Halbautomatisch ({{ prozesse[1].stepCount }})</button>
-        <ng-template ngbNavContent>
-          <form [formGroup]="form">
-            <div formGroupName="halbautomatisch">
-              @for (ctrl of getWorksArray('halbautomatisch').controls; track $index) {
-                <div class="mb-2">
-                  <div class="step-row">
-                    <span class="step-label fw-semibold">
-                      {{ $index + 1 }}. {{ prozesse[1].labels[$index] }}
-                    </span>
-                    <span class="text-muted small">Arbeitszeit:</span>
-                    <input
-                      type="number"
-                      class="form-control input-number"
-                      [formControl]="getValueCtrl(ctrl)"
-                      min="0"
-                      max="479520"
-                      [attr.aria-label]="prozesse[1].labels[$index] + ' – Arbeitszeit (Wert)'"
-                      [attr.aria-describedby]="getValueCtrl(ctrl).invalid && getValueCtrl(ctrl).touched ? 'halb-work-err-' + $index : null"
-                    />
-                    <select
-                      class="form-select w-auto"
-                      [formControl]="getUnitCtrl(ctrl)"
-                      [attr.aria-label]="prozesse[1].labels[$index] + ' – Arbeitszeit (Einheit)'"
-                    >
-                      @for (einheit of zeiteinheiten; track einheit) {
-                        <option [value]="einheit">{{ einheit }}</option>
-                      }
-                    </select>
-                    @if (getValueCtrl(ctrl).invalid && getValueCtrl(ctrl).touched) {
-                      <div [id]="'halb-work-err-' + $index" class="text-danger small">
-                        Wert muss zwischen 0 und 479.520 liegen.
-                      </div>
-                    }
-                  </div>
-                </div>
-
-                @if ($index < getWaitsArray('halbautomatisch').controls.length) {
-                  <div class="mb-2">
-                    <div class="wait-row">
-                      <span class="text-muted small">Wartezeit nach Schritt {{ $index + 1 }}:</span>
-                      <input
-                        type="number"
-                        class="form-control input-number"
-                        [formControl]="getWaitValueCtrl('halbautomatisch', $index)"
-                        min="0"
-                        max="479520"
-                        [attr.aria-label]="'Wartezeit nach Schritt ' + ($index + 1) + ' – (Wert)'"
-                        [attr.aria-describedby]="getWaitValueCtrl('halbautomatisch', $index).invalid && getWaitValueCtrl('halbautomatisch', $index).touched ? 'halb-wait-err-' + $index : null"
-                      />
-                      <select
-                        class="form-select w-auto"
-                        [formControl]="getWaitUnitCtrl('halbautomatisch', $index)"
-                        [attr.aria-label]="'Wartezeit nach Schritt ' + ($index + 1) + ' – (Einheit)'"
-                      >
-                        @for (einheit of zeiteinheiten; track einheit) {
-                          <option [value]="einheit">{{ einheit }}</option>
+                  <!-- Wait row after this step (only if not last) -->
+                  @if ($index < getWaitsArray(p.key).controls.length) {
+                    <div class="mb-2">
+                      <div class="wait-row">
+                        <span class="text-muted small">Wartezeit nach Schritt {{ $index + 1 }}:</span>
+                        <input
+                          type="number"
+                          class="form-control input-number"
+                          [formControl]="getWaitValueCtrl(p.key, $index)"
+                          min="0"
+                          [attr.max]="getWaitValueMax(p.key, $index)"
+                          [attr.aria-label]="'Wartezeit nach Schritt ' + ($index + 1) + ' – (Wert)'"
+                          [attr.aria-describedby]="getWaitValueCtrl(p.key, $index).invalid && getWaitValueCtrl(p.key, $index).touched ? p.key + '-wait-err-' + $index : null"
+                        />
+                        <select
+                          class="form-select w-auto"
+                          [formControl]="getWaitUnitCtrl(p.key, $index)"
+                          [attr.aria-label]="'Wartezeit nach Schritt ' + ($index + 1) + ' – (Einheit)'"
+                        >
+                          @for (einheit of zeiteinheiten; track einheit) {
+                            <option [value]="einheit">{{ einheit }}</option>
+                          }
+                        </select>
+                        @if (getWaitValueCtrl(p.key, $index).invalid && getWaitValueCtrl(p.key, $index).touched) {
+                          <div [id]="p.key + '-wait-err-' + $index" class="text-danger small">
+                            Wert muss zwischen 0 und {{ getWaitValueMax(p.key, $index).toLocaleString('de-DE') }} liegen.
+                          </div>
                         }
-                      </select>
-                      @if (getWaitValueCtrl('halbautomatisch', $index).invalid && getWaitValueCtrl('halbautomatisch', $index).touched) {
-                        <div [id]="'halb-wait-err-' + $index" class="text-danger small">
-                          Wert muss zwischen 0 und 479.520 liegen.
-                        </div>
-                      }
-                    </div>
-                  </div>
-                }
-              }
-            </div>
-          </form>
-        </ng-template>
-      </li>
-
-      <!-- Tab 3: Vollautomatisch (2 steps) -->
-      <li [ngbNavItem]="3">
-        <button ngbNavLink>Vollautomatisch ({{ prozesse[2].stepCount }})</button>
-        <ng-template ngbNavContent>
-          <form [formGroup]="form">
-            <div formGroupName="vollautomatisch">
-              @for (ctrl of getWorksArray('vollautomatisch').controls; track $index) {
-                <div class="mb-2">
-                  <div class="step-row">
-                    <span class="step-label fw-semibold">
-                      {{ $index + 1 }}. {{ prozesse[2].labels[$index] }}
-                    </span>
-                    <span class="text-muted small">Arbeitszeit:</span>
-                    <input
-                      type="number"
-                      class="form-control input-number"
-                      [formControl]="getValueCtrl(ctrl)"
-                      min="0"
-                      max="479520"
-                      [attr.aria-label]="prozesse[2].labels[$index] + ' – Arbeitszeit (Wert)'"
-                      [attr.aria-describedby]="getValueCtrl(ctrl).invalid && getValueCtrl(ctrl).touched ? 'voll-work-err-' + $index : null"
-                    />
-                    <select
-                      class="form-select w-auto"
-                      [formControl]="getUnitCtrl(ctrl)"
-                      [attr.aria-label]="prozesse[2].labels[$index] + ' – Arbeitszeit (Einheit)'"
-                    >
-                      @for (einheit of zeiteinheiten; track einheit) {
-                        <option [value]="einheit">{{ einheit }}</option>
-                      }
-                    </select>
-                    @if (getValueCtrl(ctrl).invalid && getValueCtrl(ctrl).touched) {
-                      <div [id]="'voll-work-err-' + $index" class="text-danger small">
-                        Wert muss zwischen 0 und 479.520 liegen.
                       </div>
-                    }
-                  </div>
-                </div>
-
-                @if ($index < getWaitsArray('vollautomatisch').controls.length) {
-                  <div class="mb-2">
-                    <div class="wait-row">
-                      <span class="text-muted small">Wartezeit nach Schritt {{ $index + 1 }}:</span>
-                      <input
-                        type="number"
-                        class="form-control input-number"
-                        [formControl]="getWaitValueCtrl('vollautomatisch', $index)"
-                        min="0"
-                        max="479520"
-                        [attr.aria-label]="'Wartezeit nach Schritt ' + ($index + 1) + ' – (Wert)'"
-                        [attr.aria-describedby]="getWaitValueCtrl('vollautomatisch', $index).invalid && getWaitValueCtrl('vollautomatisch', $index).touched ? 'voll-wait-err-' + $index : null"
-                      />
-                      <select
-                        class="form-select w-auto"
-                        [formControl]="getWaitUnitCtrl('vollautomatisch', $index)"
-                        [attr.aria-label]="'Wartezeit nach Schritt ' + ($index + 1) + ' – (Einheit)'"
-                      >
-                        @for (einheit of zeiteinheiten; track einheit) {
-                          <option [value]="einheit">{{ einheit }}</option>
-                        }
-                      </select>
-                      @if (getWaitValueCtrl('vollautomatisch', $index).invalid && getWaitValueCtrl('vollautomatisch', $index).touched) {
-                        <div [id]="'voll-wait-err-' + $index" class="text-danger small">
-                          Wert muss zwischen 0 und 479.520 liegen.
-                        </div>
-                      }
                     </div>
-                  </div>
+                  }
                 }
-              }
-            </div>
-          </form>
-        </ng-template>
-      </li>
-
+              </div>
+            </form>
+          </ng-template>
+        </li>
+      }
     </ul>
 
     <div [ngbNavOutlet]="nav"></div>
   </div>
 </div>
-}
+
+<!-- SCENARIO CONTROLS CARD (collapsed by default, at the bottom, out of the way) -->
+<div class="card mt-4">
+  <div class="card-body">
+    <button
+      type="button"
+      class="btn btn-link p-0 text-decoration-none szenarien-toggle d-flex align-items-center gap-2"
+      (click)="showSzenarien = !showSzenarien"
+      [attr.aria-expanded]="showSzenarien"
+      aria-controls="szenarien-body"
+    >
+      <span aria-hidden="true">{{ showSzenarien ? '▾' : '▸' }}</span>
+      <span>Szenarien</span>
+      @if (geladenSzenario()) {
+        <span class="badge bg-primary ms-1">{{ geladenSzenario()!.name }}</span>
+      }
+    </button>
+
+    @if (showSzenarien) {
+      <div id="szenarien-body" class="mt-3">
+        <!-- Loaded scenario indicator -->
+        <div class="mb-3">
+          @if (geladenSzenario()) {
+            <span class="badge bg-primary me-2">Geladen: {{ geladenSzenario()!.name }}</span>
+          } @else {
+            <span class="text-muted fst-italic">Kein Szenario geladen</span>
+          }
+        </div>
+
+        <!-- Name input + save buttons -->
+        <div class="row g-2 align-items-start mb-3">
+          <div class="col-auto">
+            <label for="szenario-name" class="form-label">Szenario-Name</label>
+            <input
+              id="szenario-name"
+              type="text"
+              class="form-control"
+              [(ngModel)]="nameInput"
+              placeholder="Szenario-Name"
+              [attr.aria-describedby]="nameError ? 'name-error' : null"
+            />
+            @if (nameError) {
+              <div id="name-error" class="text-danger small mt-1">{{ nameError }}</div>
+            }
+          </div>
+          <div class="col-auto d-flex align-items-end gap-2" style="padding-top: 1.75rem">
+            @if (!geladenSzenario()) {
+              <button
+                type="button"
+                class="btn btn-primary"
+                (click)="neuSpeichern()"
+                [disabled]="form.invalid || scenarioLoading()"
+              >
+                Neu erstellen
+              </button>
+            }
+            @if (geladenSzenario()) {
+              <button
+                type="button"
+                class="btn btn-outline-primary"
+                (click)="aktualisieren()"
+                [disabled]="form.invalid || scenarioLoading()"
+              >
+                Aktualisieren
+              </button>
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                (click)="alsNeuSpeichern()"
+                [disabled]="form.invalid || scenarioLoading()"
+              >
+                Kopie speichern
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Scenario list -->
+        @if (scenarioLoading()) {
+          <app-loading-spinner />
+        } @else if (szenarien().length === 0) {
+          <p class="text-muted">Keine Szenarien gespeichert.</p>
+        } @else {
+          <ul class="list-group">
+            @for (s of szenarien(); track s.id) {
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <button
+                  type="button"
+                  class="btn btn-link p-0 text-start"
+                  (click)="ladeScenario(s)"
+                >
+                  {{ s.name }}
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-danger btn-sm"
+                  (click)="loeschen(s)"
+                  [disabled]="scenarioLoading()"
+                >
+                  Löschen
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    }
+  </div>
+</div>

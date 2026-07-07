@@ -11,6 +11,7 @@ export interface SzenarioDTO {
   id: number;
   name: string;
   humanSteps: ProzessDauer;
+  agileKiSteps: ProzessDauer;
   semiAutomatedSteps: ProzessDauer;
   automatedSteps: ProzessDauer;
   createdAt: string;
@@ -21,6 +22,7 @@ interface SzenarioRow {
   id: number;
   name: string;
   humanSteps: string;
+  agileKiSteps: string;
   semiAutomatedSteps: string;
   automatedSteps: string;
   createdAt: string;
@@ -32,6 +34,7 @@ function toDTO(row: SzenarioRow): SzenarioDTO {
     id: row.id,
     name: row.name,
     humanSteps: JSON.parse(row.humanSteps) as ProzessDauer,
+    agileKiSteps: JSON.parse(row.agileKiSteps) as ProzessDauer,
     semiAutomatedSteps: JSON.parse(row.semiAutomatedSteps) as ProzessDauer,
     automatedSteps: JSON.parse(row.automatedSteps) as ProzessDauer,
     createdAt: row.createdAt,
@@ -71,11 +74,12 @@ export const szenarioService = {
     const now = new Date().toISOString();
     try {
       const result = await client.execute({
-        sql: `INSERT INTO szenario (name, humanSteps, semiAutomatedSteps, automatedSteps, createdAt, updatedAt)
-              VALUES (?, ?, ?, ?, ?, ?)`,
+        sql: `INSERT INTO szenario (name, humanSteps, agileKiSteps, semiAutomatedSteps, automatedSteps, createdAt, updatedAt)
+              VALUES (?, ?, ?, ?, ?, ?, ?)`,
         args: [
           dto.name,
           JSON.stringify(dto.humanSteps),
+          JSON.stringify(dto.agileKiSteps),
           JSON.stringify(dto.semiAutomatedSteps),
           JSON.stringify(dto.automatedSteps),
           now,
@@ -99,10 +103,11 @@ export const szenarioService = {
     const now = new Date().toISOString();
     try {
       await client.execute({
-        sql: `UPDATE szenario SET name=?, humanSteps=?, semiAutomatedSteps=?, automatedSteps=?, updatedAt=? WHERE id=?`,
+        sql: `UPDATE szenario SET name=?, humanSteps=?, agileKiSteps=?, semiAutomatedSteps=?, automatedSteps=?, updatedAt=? WHERE id=?`,
         args: [
           dto.name,
           JSON.stringify(dto.humanSteps),
+          JSON.stringify(dto.agileKiSteps),
           JSON.stringify(dto.semiAutomatedSteps),
           JSON.stringify(dto.automatedSteps),
           now,

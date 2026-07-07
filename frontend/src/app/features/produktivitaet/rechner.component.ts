@@ -15,20 +15,38 @@ import {
   FormControl,
   FormGroup,
   ReactiveFormsModule,
-  Validators,
 } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
 import { NgbModal, NgbNavModule, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 import { debounceTime } from 'rxjs/operators';
-import { DEFAULT_DURATIONS, PROZESSE } from '../../core/models/prozess-defaults';
-import { Szenario, SzenarioCreate } from '../../core/models/szenario.model';
+import {
+  DEFAULT_DURATIONS,
+  PROZESS_ROLLEN,
+  PROZESSE,
+  ProzessKey,
+  Rolle,
+} from '../../core/models/prozess-defaults';
+import {
+  PROZESS_SZENARIO_FELD,
+  SzenarioProzessFeld,
+  ProzessDauer,
+  Szenario,
+  SzenarioCreate,
+} from '../../core/models/szenario.model';
 import { NotificationService } from '../../core/services/notification.service';
 import { SzenarioService } from '../../core/services/szenario.service';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 import { DauerPipe, minutenZuDauer } from '../../shared/pipes/dauer.pipe';
-import { ZEITEINHEITEN, ZeitEinheit, einheitZuFaktor } from './einheit';
-import { computeComparisonBars, computeSegments, SvgSegment } from './svg-util';
+import {
+  ZEITEINHEITEN,
+  ZeitEinheit,
+  durationValidatorsFor,
+  einheitZuFaktor,
+  feldWertZuMinuten,
+  maxWertFuerEinheit,
+} from './einheit';
+import { computeComparisonBars, computePieSlices, computeSegments, PieResult, SvgSegment } from './svg-util';
 
 interface ProzessSnapshot {
   works: number[];
@@ -41,11 +59,16 @@ interface SvgSnapshot {
   maxTotal: number;
 }
 
-const DURATION_VALIDATORS = [
-  Validators.required,
-  Validators.min(0),
-  Validators.max(479520),
-];
+/** Builds the initial per-process snapshot Record straight from DEFAULT_DURATIONS. */
+function baueInitialeProzessDaten(): Record<ProzessKey, ProzessSnapshot> {
+  const sum = (arr: number[]) => arr.reduce((s, v) => s + v, 0);
+  const daten = {} as Record<ProzessKey, ProzessSnapshot>;
+  for (const p of PROZESSE) {
+    const d = DEFAULT_DURATIONS[p.key];
+    daten[p.key] = { works: d.works, waits: d.waits, total: sum(d.works) + sum(d.waits) };
+  }
+  return daten;
+}
 
 @Component({
   selector: 'app-rechner',
@@ -99,22 +122,6 @@ const DURATION_VALIDATORS = [
         font-size: 0.85rem;
         color: #495057;
       }
-      .bar-meta {
-        display: inline-flex;
-        align-items: baseline;
-        gap: 0.6rem;
-        white-space: nowrap;
-      }
-      .bar-saved {
-        font-size: 0.85rem;
-        font-weight: 700;
-        color: #198754;
-      }
-      .bar-base {
-        font-size: 0.78rem;
-        font-weight: 600;
-        color: #6c757d;
-      }
       .process-svg {
         display: block;
         width: 100%;
@@ -134,151 +141,259 @@ const DURATION_VALIDATORS = [
         cursor: pointer;
       }
 
-      /* ── Hero ── */
-      .hero-card {
-        background: linear-gradient(135deg, #f4f7ff 0%, #ffffff 62%);
-        border: 1px solid #d7e0f5;
-      }
-      .hero-eyebrow {
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        font-size: 0.78rem;
-        font-weight: 600;
-        color: #6b7a99;
-        margin-bottom: 0.35rem;
-      }
-      .hero-title {
-        font-size: clamp(1.5rem, 3vw, 2.2rem);
+      /* ── Gesamtdauer je Prozess: fett + hervorgehoben ── */
+      .total-badge {
         font-weight: 700;
-        line-height: 1.2;
-        color: #1b2a52;
-        margin-bottom: 0.4rem;
-      }
-      .hero-total {
+        font-size: 1.05rem;
         color: #264892;
+        background: #eef3ff;
+        border: 1px solid #d7e0f5;
+        padding: 0.2rem 0.7rem;
+        border-radius: 0.5rem;
         white-space: nowrap;
       }
-      .hero-sub {
-        color: #495057;
-        max-width: 60ch;
-        margin-bottom: 1.25rem;
-      }
-      .hero-solid-svg {
-        display: block;
-        width: 100%;
-        height: 44px;
-        border-radius: 6px;
-        overflow: hidden;
-      }
-      .hero-solid-label {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        margin-top: 0.5rem;
-        font-weight: 600;
-        color: #1b2a52;
-      }
-      .hero-legend {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem 1.25rem;
-        margin: 0.6rem 0 0.2rem;
-      }
-      .hero-cta {
-        margin-top: 1rem;
-      }
-      .hero-cta .btn {
-        font-weight: 600;
-      }
-      .hero-reveal {
-        margin-top: 1.1rem;
-        animation: heroReveal 0.35s ease both;
-      }
-      @keyframes heroReveal {
-        from {
-          opacity: 0;
-          transform: translateY(-6px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-      .hero-reveal-title {
+
+      /* ── Karten-Überschriften kräftiger hervorheben ── */
+      .card-title {
+        font-size: 1.3rem;
         font-weight: 700;
         color: #1b2a52;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #d7e0f5;
+        margin-bottom: 1rem;
+      }
+
+      /* ── Szenarien-Umschalter (unten, eingeklappt) ── */
+      .szenarien-toggle {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #1b2a52;
+      }
+      .szenarien-toggle:hover {
+        color: #264892;
+      }
+
+      /* ── Prozessvergleich: klickbare Zeilen wählen den Tab ── */
+      .cmp-hit {
+        cursor: pointer;
+      }
+      .cmp-hit:hover {
+        fill: rgba(38, 72, 146, 0.07);
+      }
+      .cmp-hit.active {
+        fill: rgba(38, 72, 146, 0.11);
+      }
+      .cmp-hit:focus-visible {
+        outline: 3px solid #264892;
+        outline-offset: -3px;
+      }
+
+      /* ── Prozess-Tabs (Schritt-Zeiten): kräftiger hervorgehoben ── */
+      .schritt-tabs.nav-tabs {
+        border-bottom: 2px solid #d7e0f5;
+        gap: 0.3rem;
+      }
+      .schritt-tabs .nav-link {
+        font-weight: 600;
+        font-size: 1rem;
+        color: #264892;
+        padding: 0.6rem 1.1rem;
+        border: 1px solid transparent;
+        border-bottom: none;
+        border-radius: 8px 8px 0 0;
+        margin-bottom: -2px;
+        transition: background-color 0.15s ease, color 0.15s ease;
+      }
+      .schritt-tabs .nav-link:hover {
+        background: #eef3ff;
+        border-color: #d7e0f5;
+      }
+      .schritt-tabs .nav-link.active {
+        color: #fff;
+        background: #264892;
+        border-color: #264892;
+        box-shadow: 0 2px 6px rgba(38, 72, 146, 0.25);
+      }
+      .schritt-tabs .nav-link:focus-visible {
+        outline: 3px solid #264892;
+        outline-offset: 2px;
+      }
+
+      /* ── Balken/Flussdiagramm toggle (5.6) ── */
+      .view-toggle-btn {
+        min-height: 44px;
+        min-width: 44px;
+        padding: 0.5rem 1rem;
+      }
+
+      /* ── Pie charts (5.3/5.4) ── */
+      .pie-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2rem;
+        align-items: flex-start;
+      }
+      .pie-block {
+        flex: 1 1 320px;
+        max-width: 440px;
+        min-width: 260px;
+      }
+      .pie-caption {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: #264892;
         margin-bottom: 0.5rem;
       }
-      .hero-chip {
-        display: inline-flex;
+      /* Pie on the left, legend on the right. */
+      .pie-body {
+        display: flex;
         align-items: center;
-        gap: 0.4rem;
-        font-size: 0.9rem;
-        font-weight: 600;
-      }
-      .hero-chip::before {
-        content: '';
-        width: 14px;
-        height: 14px;
-        border-radius: 3px;
-        display: inline-block;
-      }
-      .hero-chip--work {
-        color: #264892;
-      }
-      .hero-chip--work::before {
-        background: #264892;
-      }
-      .hero-chip--wait {
-        color: #8a5d24;
-      }
-      .hero-chip--wait::before {
-        background: repeating-linear-gradient(
-          45deg,
-          #f4e6d3 0,
-          #f4e6d3 5px,
-          #cf944f 5px,
-          #cf944f 6.5px
-        );
-      }
-      .hero-why {
-        margin-top: 0.75rem;
-        color: #343a40;
-        max-width: 65ch;
-      }
-      .hero-goal {
-        display: flex;
-        align-items: flex-start;
-        gap: 0.6rem;
-        margin-top: 1.3rem;
-        padding: 0.85rem 1rem;
-        background: #eef3ff;
-        border-left: 4px solid #264892;
-        border-radius: 0.375rem;
-        color: #1b2a52;
-      }
-      .hero-goal-label {
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        font-size: 0.8rem;
-        color: #264892;
-      }
-      .hero-bridge {
-        display: flex;
+        gap: 1rem;
         flex-wrap: wrap;
+      }
+      .pie-side {
+        flex: 1 1 150px;
+        min-width: 150px;
+      }
+      .pie-svg {
+        display: block;
+        flex: 0 0 auto;
+        width: 140px;
+        height: 140px;
+        margin: 0;
+      }
+      /* White percent number inside a pie slice. */
+      .pie-slice-label {
+        fill: #fff;
+        font-size: 8px;
+        font-weight: 700;
+        pointer-events: none;
+      }
+      .pie-note {
+        font-size: 0.9rem;
+        color: #495057;
+        font-style: italic;
+        margin-bottom: 0.5rem;
+      }
+      .pie-empty-label {
+        text-align: center;
+        color: #495057;
+        font-size: 0.85rem;
+        margin-bottom: 0.5rem;
+      }
+      .pie-legend {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin: 0;
+      }
+      .pie-legend-item {
+        display: flex;
         align-items: center;
-        gap: 0.35rem 0.9rem;
-        margin-top: 1.2rem;
-        font-weight: 600;
-        color: #1b2a52;
+        gap: 0.5rem;
+        font-size: 1.05rem;
+        flex-wrap: wrap;
       }
-      .hero-scroll-link {
+      .pie-legend-swatch {
+        flex: 0 0 auto;
+        width: 18px;
+        height: 18px;
+        border-radius: 3px;
+        border: 1px solid #495057;
+      }
+      .pie-legend-label {
+        font-weight: 600;
+        color: #212529;
+      }
+      .pie-legend-value {
+        color: #495057;
+      }
+
+      /* ── Flowchart (5.5) ── */
+      .flow-scroll {
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1.5rem;
+        /* width:0 + min-width:100% keeps this scroll container from bubbling its
+           wide, non-wrapping .flow-track content up through the block ancestors
+           (tab-pane/tab-content/card-body/card) into the app shell's flex layout
+           (.main-content is a flex item with flex-grow-1 and no min-width reset —
+           without this, its automatic minimum size would inherit the flow-track's
+           multi-thousand-pixel min-content width and blow out the whole page). */
+        width: 0;
+        min-width: 100%;
+        box-sizing: border-box;
+      }
+      .flow-track {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: stretch;
+        width: max-content;
+      }
+      .flow-box {
+        flex: 0 0 auto;
+        width: 160px;
+        min-height: 150px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 0.4rem;
+        padding: 0.65rem 0.5rem;
+        border: 1px solid #264892;
+        border-radius: 0.5rem;
+        background: #fff;
+      }
+      .flow-box:focus-visible {
+        outline: 3px solid #264892;
+        outline-offset: 2px;
+      }
+      .flow-box-nr {
+        flex: 0 0 auto;
+        width: 22px;
+        height: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: #e9edf7;
         color: #264892;
-        font-weight: 600;
+        font-weight: 700;
+        font-size: 0.75rem;
       }
-      #prozessvergleich {
-        scroll-margin-top: 1rem;
+      .flow-box-label {
+        font-size: 0.78rem;
+        text-align: center;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-height: 2.9em;
+      }
+      .flow-chip {
+        flex: 0 0 auto;
+        font-size: 0.72rem;
+        font-weight: 600;
+        border-radius: 1rem;
+        padding: 0.1rem 0.6rem;
+      }
+      .flow-chip-work {
+        background: #264892;
+        color: #fff;
+      }
+      .flow-chip-wait {
+        background: #cf944f;
+        color: #212529;
+      }
+      .flow-connector {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        align-self: center;
+        padding: 0 0.4rem;
+        color: #495057;
+        font-size: 1.1rem;
       }
     `,
   ],
@@ -291,10 +406,32 @@ export class RechnerComponent implements OnInit {
   private notification = inject(NotificationService);
   private document = inject(DOCUMENT);
 
+  /**
+   * Skip-link handler: focus the tab's Schritt-Zeiten form directly.
+   * A raw `href="#form-…"` would resolve against `<base href="/">` → `/#form-…`,
+   * triggering a full-page redirect to /dashboard. Focus programmatically instead.
+   */
+  focusForm(event: Event, targetId: string): void {
+    event.preventDefault();
+    (this.document.getElementById(targetId) as HTMLElement | null)?.focus();
+  }
+
+  /**
+   * Selects a process from the Prozessvergleich chart: activates that
+   * process's tab (no scrolling — keep the user where they are).
+   */
+  selectProzess(index: number): void {
+    this.activeTab = index + 1;
+    this.setViewMode('balken');
+  }
+
   readonly prozesse = PROZESSE;
   readonly zeiteinheiten: ZeitEinheit[] = ZEITEINHEITEN;
 
   activeTab = 1;
+
+  /** Szenarien card is collapsed by default (kept out of the way at the page bottom). */
+  showSzenarien = false;
   nameInput = '';
   nameError: string | null = null;
 
@@ -304,86 +441,27 @@ export class RechnerComponent implements OnInit {
   scenarioLoading = signal(false);
   scenarioError = signal<string | null>(null);
 
-  // Per-process totals (minutes)
-  private menschlichTotal = signal(0);
-  private halbautomatischTotal = signal(0);
-  private vollautomatischTotal = signal(0);
+  /** Balken/Flussdiagramm toggle per process tab (set by ui-designer's toggle). Reset to 'balken' on tab change + scenario load. */
+  private viewModeSignal = signal<'balken' | 'flussdiagramm'>('balken');
+  readonly viewMode = this.viewModeSignal.asReadonly();
 
-  // Works/waits in minutes for each process (used by SVG)
-  private menschlichWorks = signal<number[]>([]);
-  private menschlichWaits = signal<number[]>([]);
-  private halbautomatischWorks = signal<number[]>([]);
-  private halbautomatischWaits = signal<number[]>([]);
-  private vollautomatischWorks = signal<number[]>([]);
-  private vollautomatischWaits = signal<number[]>([]);
+  /**
+   * Tracks each step's unit control's most-recently-seen value, so wireUnitConversion
+   * can detect a real user-driven unit change vs. a silent {emitEvent:false} reset
+   * (e.g. from patchSchritt during a scenario load). Keyed by the control instance
+   * because RxJS emission history (pairwise) can't see emitEvent:false patches.
+   */
+  private letzteEinheit = new Map<FormControl<ZeitEinheit>, ZeitEinheit>();
+
+  // One Record<ProzessKey, ProzessSnapshot> holds works/waits/total for all four processes.
+  private prozessDaten = signal<Record<ProzessKey, ProzessSnapshot>>(baueInitialeProzessDaten());
 
   svgSnapshot = computed<SvgSnapshot>(() => {
-    const prozesse: ProzessSnapshot[] = [
-      {
-        works: this.menschlichWorks(),
-        waits: this.menschlichWaits(),
-        total: this.menschlichTotal(),
-      },
-      {
-        works: this.halbautomatischWorks(),
-        waits: this.halbautomatischWaits(),
-        total: this.halbautomatischTotal(),
-      },
-      {
-        works: this.vollautomatischWorks(),
-        waits: this.vollautomatischWaits(),
-        total: this.vollautomatischTotal(),
-      },
-    ];
-    const maxTotal = Math.max(
-      this.menschlichTotal(),
-      this.halbautomatischTotal(),
-      this.vollautomatischTotal(),
-    );
+    const daten = this.prozessDaten();
+    const prozesse = PROZESSE.map((p) => daten[p.key]);
+    const maxTotal = Math.max(...prozesse.map((p) => p.total), 0);
     return { prozesse, maxTotal };
   });
-
-  // ── Hero: Fokus auf den heutigen (menschlichen) Prozess (live) ──
-  /** Summe der Arbeitszeit im menschlichen Prozess (Minuten). */
-  readonly heroArbeit = computed(() =>
-    this.menschlichWorks().reduce((s, v) => s + v, 0),
-  );
-  /** Summe der Wartezeit im menschlichen Prozess (Minuten). */
-  readonly heroWarten = computed(() =>
-    this.menschlichWaits().reduce((s, v) => s + v, 0),
-  );
-  /** Gesamtdauer des menschlichen Prozesses (Minuten). */
-  readonly heroGesamt = computed(() => this.heroArbeit() + this.heroWarten());
-  /** Arbeitsanteil in Prozent (0 bei leerem Prozess). */
-  readonly heroArbeitPct = computed(() => {
-    const g = this.heroGesamt();
-    return g > 0 ? Math.round((this.heroArbeit() / g) * 100) : 0;
-  });
-  /**
-   * Schrittweise Enthüllung im Hero:
-   * 0 = nur einfarbiger Gesamtbalken, 1 = Menschlich aufgeschlüsselt,
-   * 2 = Halbautomatisch ergänzt, 3 = Vollautomatisch ergänzt.
-   */
-  readonly revealStep = signal(0);
-
-  /** Detailbereich (Prozessvergleich, Szenarien, Schritt-Zeiten) ist anfangs ausgeblendet. */
-  readonly showDetails = signal(false);
-
-  /** Schaltet die Hero-Erzählung einen Schritt weiter. */
-  reveal(step: number): void {
-    this.revealStep.set(step);
-  }
-
-  /** Blendet den Detailbereich ein und scrollt nach dem Rendern sanft dorthin. */
-  scrollToDetail(event: Event): void {
-    event.preventDefault();
-    this.showDetails.set(true);
-    setTimeout(() => {
-      this.document
-        .getElementById('prozessvergleich')
-        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-  }
 
   form!: FormGroup;
 
@@ -401,63 +479,88 @@ export class RechnerComponent implements OnInit {
     this.ladeSzenarien();
   }
 
+  /** Resets the Balken/Flussdiagramm toggle when the user switches tabs. */
+  onNavChange(): void {
+    this.viewModeSignal.set('balken');
+  }
+
+  /** Setter for ui-designer's upcoming toggle. */
+  setViewMode(mode: 'balken' | 'flussdiagramm'): void {
+    this.viewModeSignal.set(mode);
+  }
+
   private baueFormular(): FormGroup {
-    return this.fb.group({
-      menschlich: this.fb.group({
-        works: this.fb.array(this.baueSchrittArray(DEFAULT_DURATIONS.menschlich.works)),
-        waits: this.fb.array(this.baueSchrittArray(DEFAULT_DURATIONS.menschlich.waits)),
-      }),
-      halbautomatisch: this.fb.group({
-        works: this.fb.array(this.baueSchrittArray(DEFAULT_DURATIONS.halbautomatisch.works)),
-        waits: this.fb.array(this.baueSchrittArray(DEFAULT_DURATIONS.halbautomatisch.waits)),
-      }),
-      vollautomatisch: this.fb.group({
-        works: this.fb.array(this.baueSchrittArray(DEFAULT_DURATIONS.vollautomatisch.works)),
-        waits: this.fb.array(this.baueSchrittArray(DEFAULT_DURATIONS.vollautomatisch.waits)),
-      }),
-    });
+    const gruppen: Record<string, FormGroup> = {};
+    for (const p of PROZESSE) {
+      gruppen[p.key] = this.fb.group({
+        works: this.fb.array(this.baueSchrittArray(DEFAULT_DURATIONS[p.key].works)),
+        waits: this.fb.array(this.baueSchrittArray(DEFAULT_DURATIONS[p.key].waits)),
+      });
+    }
+    return this.fb.group(gruppen);
   }
 
   private baueSchrittArray(minutes: number[]): FormGroup[] {
-    return minutes.map((min) =>
-      this.fb.group({
-        value: [min, DURATION_VALIDATORS],
+    return minutes.map((min) => {
+      const group = this.fb.group({
+        value: [min, durationValidatorsFor('Minuten')],
         unit: ['Minuten'],
-      }),
-    );
+      });
+      this.wireUnitConversion(group);
+      return group;
+    });
+  }
+
+  /**
+   * Subscribes to a step group's unit control so switching units converts the value
+   * in place (R5). The "previous unit" is tracked explicitly in the letzteEinheit map
+   * (keyed by control instance) rather than derived from RxJS emission history —
+   * patchSchritt's silent {emitEvent:false} reset during a scenario load never fires
+   * valueChanges, so a pairwise buffer would go stale and mislabel the loaded value.
+   */
+  private wireUnitConversion(group: FormGroup): void {
+    const unitCtrl = group.get('unit') as FormControl<ZeitEinheit>;
+    const valueCtrl = group.get('value') as FormControl<number>;
+
+    this.letzteEinheit.set(unitCtrl, unitCtrl.value);
+
+    unitCtrl.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((cur) => {
+        const prev = this.letzteEinheit.get(unitCtrl) ?? unitCtrl.value;
+        this.letzteEinheit.set(unitCtrl, cur);
+        if (prev === cur) return;
+
+        const minuten = feldWertZuMinuten(valueCtrl.value ?? 0, prev);
+        const konvertiert = minuten / einheitZuFaktor(cur);
+        const gerundet = Math.round(konvertiert * 100) / 100;
+
+        valueCtrl.patchValue(gerundet);
+        valueCtrl.setValidators(durationValidatorsFor(cur));
+        valueCtrl.updateValueAndValidity();
+      });
   }
 
   private berechne(val: ReturnType<FormGroup['getRawValue']>): void {
     const toMinutes = (groups: { value: number; unit: ZeitEinheit }[]) =>
       groups.map((g) => Math.round((g.value ?? 0) * einheitZuFaktor(g.unit ?? 'Minuten')));
-
-    const mWorks = toMinutes(val['menschlich']?.works ?? []);
-    const mWaits = toMinutes(val['menschlich']?.waits ?? []);
-    const hWorks = toMinutes(val['halbautomatisch']?.works ?? []);
-    const hWaits = toMinutes(val['halbautomatisch']?.waits ?? []);
-    const vWorks = toMinutes(val['vollautomatisch']?.works ?? []);
-    const vWaits = toMinutes(val['vollautomatisch']?.waits ?? []);
-
     const sum = (arr: number[]) => arr.reduce((s, v) => s + v, 0);
 
-    this.menschlichWorks.set(mWorks);
-    this.menschlichWaits.set(mWaits);
-    this.halbautomatischWorks.set(hWorks);
-    this.halbautomatischWaits.set(hWaits);
-    this.vollautomatischWorks.set(vWorks);
-    this.vollautomatischWaits.set(vWaits);
-
-    this.menschlichTotal.set(sum(mWorks) + sum(mWaits));
-    this.halbautomatischTotal.set(sum(hWorks) + sum(hWaits));
-    this.vollautomatischTotal.set(sum(vWorks) + sum(vWaits));
+    const daten = {} as Record<ProzessKey, ProzessSnapshot>;
+    for (const p of PROZESSE) {
+      const works = toMinutes(val[p.key]?.works ?? []);
+      const waits = toMinutes(val[p.key]?.waits ?? []);
+      daten[p.key] = { works, waits, total: sum(works) + sum(waits) };
+    }
+    this.prozessDaten.set(daten);
   }
 
   // FormArray accessors
-  getWorksArray(prozessKey: string): FormArray {
+  getWorksArray(prozessKey: ProzessKey): FormArray {
     return (this.form.get(prozessKey) as FormGroup).get('works') as FormArray;
   }
 
-  getWaitsArray(prozessKey: string): FormArray {
+  getWaitsArray(prozessKey: ProzessKey): FormArray {
     return (this.form.get(prozessKey) as FormGroup).get('waits') as FormArray;
   }
 
@@ -479,14 +582,26 @@ export class RechnerComponent implements OnInit {
     return (ctrl as FormGroup).get('unit') as FormControl;
   }
 
+  /** Current max allowed value for a step group's value input — depends on its own unit. */
+  getValueMax(ctrl: AbstractControl): number {
+    const unit = (this.getUnitCtrl(ctrl).value as ZeitEinheit) ?? 'Minuten';
+    return maxWertFuerEinheit(unit);
+  }
+
   /** Gets the 'value' FormControl from the waits array by index and process key. */
-  getWaitValueCtrl(prozessKey: string, index: number): FormControl {
+  getWaitValueCtrl(prozessKey: ProzessKey, index: number): FormControl {
     return this.getWaitsArray(prozessKey).at(index).get('value') as FormControl;
   }
 
   /** Gets the 'unit' FormControl from the waits array by index and process key. */
-  getWaitUnitCtrl(prozessKey: string, index: number): FormControl {
+  getWaitUnitCtrl(prozessKey: ProzessKey, index: number): FormControl {
     return this.getWaitsArray(prozessKey).at(index).get('unit') as FormControl;
+  }
+
+  /** Current max allowed value for a wait step's value input — depends on its own unit. */
+  getWaitValueMax(prozessKey: ProzessKey, index: number): number {
+    const unit = (this.getWaitUnitCtrl(prozessKey, index).value as ZeitEinheit) ?? 'Minuten';
+    return maxWertFuerEinheit(unit);
   }
 
   // Scenario CRUD
@@ -509,51 +624,58 @@ export class RechnerComponent implements OnInit {
     this.nameInput = s.name;
     this.nameError = null;
 
-    this.patchProzessArray('menschlich', s.humanSteps.works, s.humanSteps.waits);
-    this.patchProzessArray('halbautomatisch', s.semiAutomatedSteps.works, s.semiAutomatedSteps.waits);
-    this.patchProzessArray('vollautomatisch', s.automatedSteps.works, s.automatedSteps.waits);
+    for (const p of PROZESSE) {
+      const feld = PROZESS_SZENARIO_FELD[p.key];
+      const stored: ProzessDauer | undefined = s[feld];
+      const quelle =
+        stored && stored.works.length === p.stepCount ? stored : DEFAULT_DURATIONS[p.key];
+      this.patchProzessArray(p.key, quelle.works, quelle.waits);
+    }
+
+    // The {emitEvent:false} patches above suppress form.valueChanges → berechne(),
+    // so recompute explicitly. Required for the tabs/bars/pies to reflect the load.
+    this.berechne(this.form.getRawValue());
+
+    this.viewModeSignal.set('balken');
   }
 
-  private patchProzessArray(key: string, works: number[], waits: number[]): void {
+  private patchProzessArray(key: ProzessKey, works: number[], waits: number[]): void {
     const worksArray = this.getWorksArray(key);
     const waitsArray = this.getWaitsArray(key);
 
-    works.forEach((min, i) => {
-      if (worksArray.at(i)) {
-        worksArray.at(i).patchValue({ value: min, unit: 'Minuten' });
-      }
-    });
-    waits.forEach((min, i) => {
-      if (waitsArray.at(i)) {
-        waitsArray.at(i).patchValue({ value: min, unit: 'Minuten' });
-      }
-    });
+    const patchSchritt = (ctrl: AbstractControl | null, min: number) => {
+      if (!ctrl) return;
+      ctrl.patchValue({ value: min, unit: 'Minuten' }, { emitEvent: false });
+      // A field left on "Tage" (max 999) before the load stays capped there unless
+      // its max validator is reset back to the Minuten factory.
+      const valueCtrl = this.getValueCtrl(ctrl);
+      valueCtrl.setValidators(durationValidatorsFor('Minuten'));
+      valueCtrl.updateValueAndValidity({ emitEvent: false });
+
+      // The patch above never fires unitCtrl.valueChanges (emitEvent:false), so keep
+      // the tracked "previous unit" truthful for the next real user-driven switch.
+      const unitCtrl = this.getUnitCtrl(ctrl);
+      this.letzteEinheit.set(unitCtrl, 'Minuten');
+    };
+
+    works.forEach((min, i) => patchSchritt(worksArray.at(i), min));
+    waits.forEach((min, i) => patchSchritt(waitsArray.at(i), min));
   }
 
   private formZuPayload(): SzenarioCreate {
-    const toMinutesArr = (
-      groups: { value: number; unit: ZeitEinheit }[],
-    ) =>
-      groups.map((g) =>
-        Math.round((g.value ?? 0) * einheitZuFaktor(g.unit ?? 'Minuten')),
-      );
+    const toMinutesArr = (groups: { value: number; unit: ZeitEinheit }[]) =>
+      groups.map((g) => Math.round((g.value ?? 0) * einheitZuFaktor(g.unit ?? 'Minuten')));
 
     const val = this.form.value;
-    return {
-      name: this.nameInput.trim(),
-      humanSteps: {
-        works: toMinutesArr(val['menschlich'].works),
-        waits: toMinutesArr(val['menschlich'].waits),
-      },
-      semiAutomatedSteps: {
-        works: toMinutesArr(val['halbautomatisch'].works),
-        waits: toMinutesArr(val['halbautomatisch'].waits),
-      },
-      automatedSteps: {
-        works: toMinutesArr(val['vollautomatisch'].works),
-        waits: toMinutesArr(val['vollautomatisch'].waits),
-      },
-    };
+    const steps = {} as Record<SzenarioProzessFeld, ProzessDauer>;
+    for (const p of PROZESSE) {
+      steps[PROZESS_SZENARIO_FELD[p.key]] = {
+        works: toMinutesArr(val[p.key].works),
+        waits: toMinutesArr(val[p.key].waits),
+      };
+    }
+
+    return { name: this.nameInput.trim(), ...steps };
   }
 
   neuSpeichern(): void {
@@ -680,28 +802,12 @@ export class RechnerComponent implements OnInit {
     return computeSegments(snap.works, snap.waits, containerWidth);
   }
 
-  /**
-   * Segmente auf gemeinsamer Basis: Menschlich (Index 0) füllt die volle Breite,
-   * die anderen Prozesse sind proportional kürzer. Der ungenutzte Rest = gesparte Zeit.
-   */
-  getSharedSegments(prozessIndex: number, fullWidth: number): SvgSegment[] {
-    const base = this.getProzessTotal(0);
-    const total = this.getProzessTotal(prozessIndex);
-    const scaledWidth = base > 0 ? fullWidth * (total / base) : 0;
-    const snap = this.svgSnapshot().prozesse[prozessIndex];
-    return computeSegments(snap.works, snap.waits, scaledWidth);
-  }
-
-  /** Gegenüber dem menschlichen Prozess (Basis) gesparte Zeit in Minuten. */
-  getGesparteZeit(prozessIndex: number): number {
-    return Math.max(0, this.getProzessTotal(0) - this.getProzessTotal(prozessIndex));
-  }
-
-  /** Tooltip text for a wait segment. */
+  /** Tooltip text for a wait segment (includes the title of the step it follows). */
   getWaitTooltip(prozessIndex: number, stepIndex: number): string {
     const snap = this.svgSnapshot().prozesse[prozessIndex];
     const waitMin = snap.waits[stepIndex] ?? 0;
-    return `Wartezeit nach Schritt ${stepIndex + 1}: ${minutenZuDauer(waitMin)}`;
+    const label = this.prozesse[prozessIndex]?.labels[stepIndex] ?? `Schritt ${stepIndex + 1}`;
+    return `Wartezeit nach Schritt ${stepIndex + 1} (${label}): ${minutenZuDauer(waitMin)}`;
   }
 
   /** Builds the label/tooltip text for a work rect. */
@@ -717,6 +823,99 @@ export class RechnerComponent implements OnInit {
     return s;
   }
 
+  // ── Chart data helpers (4.6) — data only; ui-designer wires these into pies/flowchart ──
+
+  /** Work vs. wait totals (minutes) for a process — Pie A input. */
+  getWorkWaitTotals(index: number): { work: number; wait: number } {
+    const snap = this.svgSnapshot().prozesse[index];
+    if (!snap) return { work: 0, wait: 0 };
+    return {
+      work: snap.works.reduce((s, v) => s + v, 0),
+      wait: snap.waits.reduce((s, v) => s + v, 0),
+    };
+  }
+
+  /** 'Arbeitszeit' for the two agile processes, 'KI-Arbeitszeit' for the two KI processes. */
+  getArbeitszeitLabel(index: number): string {
+    return this.prozesse[index]?.arbeitszeitLabel ?? 'Arbeitszeit';
+  }
+
+  /**
+   * Role split of the work total (minutes), agile processes only — Pie B input.
+   * Returns null for the two KI-only processes (halbautomatisch/vollautomatisch),
+   * which have no per-step role assignment.
+   */
+  getRollenSplit(index: number): { ba: number; dev: number; tester: number } | null {
+    const key = this.prozesse[index]?.key;
+    if (key !== 'menschlich' && key !== 'agileKi') return null;
+
+    const snap = this.svgSnapshot().prozesse[index];
+    const rollen = PROZESS_ROLLEN[key];
+    const totals: Record<Rolle, number> = { BA: 0, Dev: 0, Tester: 0 };
+    snap.works.forEach((min, i) => {
+      const rolle = rollen[i];
+      if (rolle) totals[rolle] += min;
+    });
+    return { ba: totals.BA, dev: totals.Dev, tester: totals.Tester };
+  }
+
+  /** Per-box data for the flowchart view; the last step has no following wait. */
+  getFlowchartSchritte(
+    index: number,
+  ): { nr: number; label: string; work: number; wait: number | null }[] {
+    const snap = this.svgSnapshot().prozesse[index];
+    const labels = this.prozesse[index]?.labels ?? [];
+    if (!snap) return [];
+    return snap.works.map((work, i) => ({
+      nr: i + 1,
+      label: labels[i] ?? `Schritt ${i + 1}`,
+      work,
+      wait: i < snap.waits.length ? snap.waits[i] : null,
+    }));
+  }
+
   /** Readonly export so template can call minutenZuDauer() */
   readonly formatDuration = minutenZuDauer;
+
+  // ── Pie chart wrappers (5.2–5.4) — thin adapters over the pure svg-util helper,
+  // mirroring the existing getSegments()/getComparisonBars() pattern. Templates
+  // cannot call bare imported functions or do arc trigonometry themselves, so the
+  // geometry (computePieSlices) is wrapped here and consumed read-only by the template. ──
+
+  /** Pie A input (all 4 tabs): Arbeit vs. Warten, 2 slices. */
+  getPieASlices(index: number): PieResult {
+    const { work, wait } = this.getWorkWaitTotals(index);
+    const arbeitsLabel = this.getArbeitszeitLabel(index);
+    return computePieSlices(
+      [
+        { key: 'work', value: work, color: '#264892', label: arbeitsLabel },
+        { key: 'wait', value: wait, color: '#cf944f', label: 'Wartezeit' },
+      ],
+      50,
+      50,
+      45,
+    );
+  }
+
+  /**
+   * Pie B input (menschlich + agileKi tabs only): role split of the work total, 3 slices.
+   * Returns an isEmpty result (no slices) for the two KI-only tabs so the template never
+   * has to deal with a nullable result — it simply never renders Pie B for those tabs.
+   */
+  getPieBSlices(index: number): PieResult {
+    const split = this.getRollenSplit(index);
+    if (!split) {
+      return { slices: [], isEmpty: true, isFullCircle: false };
+    }
+    return computePieSlices(
+      [
+        { key: 'ba', value: split.ba, color: '#6f42c1', label: 'BA' },
+        { key: 'dev', value: split.dev, color: '#0f766e', label: 'Dev' },
+        { key: 'tester', value: split.tester, color: '#9a6700', label: 'Tester' },
+      ],
+      50,
+      50,
+      45,
+    );
+  }
 }

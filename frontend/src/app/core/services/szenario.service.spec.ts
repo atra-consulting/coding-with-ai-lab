@@ -17,6 +17,7 @@ describe('SzenarioService', () => {
     id: 1,
     name: 'Standard-Szenario',
     humanSteps: mockProzess,
+    agileKiSteps: { works: [0, 5, 5], waits: [240, 480] },
     semiAutomatedSteps: { works: [0, 5], waits: [240] },
     automatedSteps: { works: [0, 20], waits: [240] },
     createdAt: '2024-01-01T10:00:00.000Z',
@@ -26,6 +27,7 @@ describe('SzenarioService', () => {
   const mockCreate: SzenarioCreate = {
     name: 'Neues Szenario',
     humanSteps: mockProzess,
+    agileKiSteps: { works: [0, 5, 5], waits: [240, 480] },
     semiAutomatedSteps: { works: [0, 5], waits: [240] },
     automatedSteps: { works: [0, 20], waits: [240] },
   };
@@ -33,6 +35,7 @@ describe('SzenarioService', () => {
   const mockUpdate: SzenarioUpdate = {
     name: 'Geändertes Szenario',
     humanSteps: mockProzess,
+    agileKiSteps: { works: [0, 5, 5], waits: [240, 480] },
     semiAutomatedSteps: { works: [0, 5], waits: [240] },
     automatedSteps: { works: [0, 20], waits: [240] },
   };

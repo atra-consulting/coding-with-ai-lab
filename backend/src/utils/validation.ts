@@ -78,7 +78,7 @@ export const ChanceCreateSchema = z.object({
 export type ChanceCreateDTO = z.infer<typeof ChanceCreateSchema>;
 
 // ─── Szenario ─────────────────────────────────────────────────────────────────
-export const PROCESS_STEP_COUNTS = { human: 23, semiAutomated: 6, automated: 2 } as const;
+export const PROCESS_STEP_COUNTS = { human: 19, agileKi: 19, semiAutomated: 7, automated: 2 } as const;
 
 const DurationSchema = z
   .number()
@@ -98,6 +98,7 @@ function prozessSchema(workCount: number) {
 export const SzenarioSchema = z.object({
   name: z.string().min(1, 'Name ist erforderlich'),
   humanSteps: prozessSchema(PROCESS_STEP_COUNTS.human),
+  agileKiSteps: prozessSchema(PROCESS_STEP_COUNTS.agileKi),
   semiAutomatedSteps: prozessSchema(PROCESS_STEP_COUNTS.semiAutomated),
   automatedSteps: prozessSchema(PROCESS_STEP_COUNTS.automated),
 });

@@ -167,6 +167,7 @@ export const szenario = sqliteTable('szenario', {
   humanSteps: text('humanSteps').notNull(),
   semiAutomatedSteps: text('semiAutomatedSteps').notNull(),
   automatedSteps: text('automatedSteps').notNull(),
+  agileKiSteps: text('agileKiSteps').notNull(),
   createdAt: text('createdAt').notNull().default(sql`(datetime('now'))`),
   updatedAt: text('updatedAt').notNull().default(sql`(datetime('now'))`),
 });

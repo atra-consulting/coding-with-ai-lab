@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "task_key": "RECHNER-OVERHAUL",
+  "status": "completed",
+  "current_step": "13.3",
+  "started": "2026-07-06T00:00:00Z",
+  "updated": "2026-07-06T00:00:00Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Overhaul /produktivitaet/rechner: rename Menschlich->Agile mit Menschen (shorten waits), add copy Agile mit KI (5min processing per step), rename Halbautomatisch->KI-Prozess mit Feedback (new feedback step after step 1, shorten AI waits to 5min), rename Vollautomatisch->KI-Prozess vollautomatisch (shorten waits to 5min). New display: 4 tabs one per process, pie charts (wait vs work; BA/dev/tester split for agile processes), view-switcher button (flowchart/text options), time-unit conversion in step forms.",
+    "special_instructions": null,
+    "branch_name": "rechner-overhaul-tabs-processes",
+    "original_branch": "main",
+    "original_head": "ff6ee6bb3e5cf2b56fde6438c97199419987a63b",
+    "docs_folder": "docs",
+    "is_git_repo": true,
+    "workflow_scope": "full",
+    "pr_prefix": "feat:",
+    "pr_exists": true,
+    "pr_url": "https://github.com/atra-consulting/coding-with-ai-lab/pull/113"
+  },
+  "discovery": {
+    "agents_available": false,
+    "writer_agents": [],
+    "coding_agents": [],
+    "review_agents": [],
+    "test_coding_agents": [],
+    "test_review_agents": [],
+    "test_runner_agents": [],
+    "tooling_coding_agents": [],
+    "tooling_review_agents": ["python-reviewer", "shell-reviewer", "skill-reviewer"],
+    "test_command": "cd backend && npm test  |  cd frontend && npm run test:ci"
+  },
+  "artifacts": {
+    "prd_skipped": false,
+    "prd_file": "docs/prds/PRD-RECHNER-OVERHAUL.md",
+    "plan_file": "docs/plans/PLAN-RECHNER-OVERHAUL.md"
+  },
+  "completed_steps": []
+}

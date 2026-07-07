@@ -25,7 +25,7 @@ The DB driver is `@libsql/client` (libSQL/Turso), not better-sqlite3. The API is
 | TypeScript enum arrays and types | `backend/src/db/schema/enums.ts` |
 | Migration statements (DDL) | `backend/src/config/migrate.ts` |
 
-Migration approach: plain `CREATE TABLE IF NOT EXISTS` statements. Run on every startup before CRM seed data is loaded. After DDL, `seedAgentTasks()` (`backend/src/seed/agentTaskSeed.ts`) inserts the 18 `agent_task` rows idempotently (INSERT OR IGNORE, fixed ids 1–18) — so agent tasks exist in every deployment including Vercel cold-starts.
+Migration approach: plain `CREATE TABLE IF NOT EXISTS` statements, with one exception — `ensureSzenarioAgileKiColumn()` runs a guarded, idempotent `ALTER TABLE szenario ADD COLUMN agileKiSteps ...` for databases created before that column existed. It checks `PRAGMA table_info(szenario)` first and swallows a "duplicate column" error (concurrent cold-start guard), so it is safe to run on every startup. This is the codebase's first real ALTER-on-an-existing-table migration; every other table still relies on `CREATE TABLE IF NOT EXISTS` only. Both run on every startup before CRM seed data is loaded. After DDL, `seedAgentTasks()` (`backend/src/seed/agentTaskSeed.ts`) inserts the 18 `agent_task` rows idempotently (INSERT OR IGNORE, fixed ids 1–18) — so agent tasks exist in every deployment including Vercel cold-starts.
 
 ## Tables
 
@@ -117,19 +117,20 @@ No FKs. Indexes: `idx_agent_task_status_createdAt (status, createdAt)`, `idx_age
 
 ### Szenario (`szenario`)
 
-Saved scenarios for the Produktivität → Rechner cycle-time calculator. Each scenario stores per-step durations for three software-delivery processes (human, semi-automated, fully-automated). Global/shared across all logged-in users. Seeded idempotently on startup via `INSERT OR IGNORE` with fixed id 1 ("Standard-Szenario", `backend/src/seed/szenarioSeed.ts`).
+Saved scenarios for the Produktivität → Rechner cycle-time calculator. Each scenario stores per-step durations for four software-delivery processes: Agile mit Menschen, Agile mit KI, KI-Prozess mit Feedback, KI-Prozess vollautomatisch. Global/shared across all logged-in users. Seeded idempotently on startup via `INSERT OR IGNORE` with fixed id 1 ("Standard-Szenario", `backend/src/seed/szenarioSeed.ts`). The seed also runs an unconditional `UPDATE` of the Standard-Szenario row (id=1) to the current default numbers on every startup — so an already-seeded row still picks up new default numbers, not just newly created rows.
 
 | Column | SQLite Type | Constraints |
 |--------|-------------|-------------|
 | id | integer | PK, autoIncrement |
 | name | text | NOT NULL, UNIQUE |
-| humanSteps | text | NOT NULL, `CHECK (json_valid(...))` — JSON `{ works: number[23], waits: number[22] }` |
-| semiAutomatedSteps | text | NOT NULL, `CHECK (json_valid(...))` — JSON `{ works: number[6], waits: number[5] }` |
-| automatedSteps | text | NOT NULL, `CHECK (json_valid(...))` — JSON `{ works: number[2], waits: number[1] }` |
+| humanSteps | text | NOT NULL, `CHECK (json_valid(...))` — JSON `{ works: number[19], waits: number[18] }` — Agile mit Menschen |
+| semiAutomatedSteps | text | NOT NULL, `CHECK (json_valid(...))` — JSON `{ works: number[7], waits: number[6] }` — KI-Prozess mit Feedback |
+| automatedSteps | text | NOT NULL, `CHECK (json_valid(...))` — JSON `{ works: number[2], waits: number[1] }` — KI-Prozess vollautomatisch |
+| agileKiSteps | text | NOT NULL, `CHECK (json_valid(...))` — JSON `{ works: number[19], waits: number[18] }` — Agile mit KI |
 | createdAt | text | NOT NULL, default `datetime('now')` |
 | updatedAt | text | NOT NULL, default `datetime('now')` |
 
-`works` are per-step active times (minutes); `waits` are the between-step delays (one fewer than steps). No FKs. Index: `idx_szenario_createdAt (createdAt DESC)`.
+`agileKiSteps` was added after `automatedSteps`, both in column order and in DDL — see the guarded ALTER note above. `works` are per-step active times (minutes); `waits` are the between-step delays (one fewer than steps). No FKs. Index: `idx_szenario_createdAt (createdAt DESC)`.
 
 ## Storage Rules
 
