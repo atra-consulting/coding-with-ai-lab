@@ -105,8 +105,8 @@ All three currently hold the full 7-permission set (`FIRMEN`, `PERSONEN`, `ABTEI
 
 - **Dates:** stored and returned as ISO-8601 text strings. Assert with string equality, not `Date` equality.
 - **Monetary values:** stored as REAL. Use `toBeCloseTo` for computed amounts where floating-point drift is possible.
-- **better-sqlite3 is synchronous:** no `await` on raw DB calls inside helpers.
-- **Foreign keys:** `PRAGMA foreign_keys = ON` is set on the connection in `config/db.ts`. The `resetDatabase()` helper temporarily disables it with `OFF` for the bulk delete, then re-enables it.
+- **`@libsql/client` is async:** every raw DB call `await`s `client.execute(...)` / `client.batch(...)` inside helpers — no synchronous better-sqlite3 calls.
+- **Foreign keys:** `PRAGMA foreign_keys = ON` is set once at startup in `config/migrate.ts` (standalone `execute`, never inside a batch). The `resetDatabase()` helper temporarily disables it with `OFF` for the bulk delete, then re-enables it.
 
 ### Fixture row counts
 
