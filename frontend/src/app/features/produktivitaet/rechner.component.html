@@ -181,80 +181,73 @@
     <!-- Caption: this chart shows one solid bar per process, scaled to the longest total (no work/wait split here). -->
     <p class="text-muted small mb-3">Balken = Anteil an der längsten Gesamtdauer. Zeile anklicken, um den Prozess zu öffnen.</p>
 
-    <!-- Comparison bar: shared scale, all four processes -->
-    @let bars = getComparisonBars(380);
-    <svg
-      class="comparison-svg"
-      role="img"
-      [attr.viewBox]="'0 0 500 ' + (prozesse.length * 44)"
-      preserveAspectRatio="xMidYMid meet"
-      aria-labelledby="cmp-title"
-      aria-describedby="cmp-desc"
-    >
-      <title id="cmp-title">Prozessvergleich</title>
-      <desc id="cmp-desc">
+    <!-- Column header for the new Annahmen list only — name/bar/total are already self-explanatory
+         through their own styling. Hidden on narrow screens, where rows stack and each list carries
+         its own (visually hidden) heading instead. -->
+    <div class="cmp-header-row d-none d-md-flex" aria-hidden="true">
+      <span class="cmp-row-main"></span>
+      <span class="cmp-row-annahmen cmp-col-header">Annahmen</span>
+    </div>
+
+    <!-- Comparison rows: shared scale, all four processes -->
+    @let bars = getComparisonBars(300);
+    <div class="cmp-rows" role="group" aria-labelledby="cmp-title" aria-describedby="cmp-desc">
+      <span id="cmp-title" class="visually-hidden">Prozessvergleich</span>
+      <span id="cmp-desc" class="visually-hidden">
         @for (p of prozesse; track p.key) {
           {{ p.titel }}: {{ getProzessTotal($index) | dauer }}@if (!$last) {; }
         }
-      </desc>
+      </span>
 
       @for (p of prozesse; track p.key) {
         @let cmpIdx = $index;
-        <!-- grey track -->
-        <rect
-          x="0"
-          [attr.y]="cmpIdx * 44 + 18"
-          width="380"
-          height="16"
-          fill="#dedede"
-          rx="2"
-        />
-        <!-- filled bar proportional to max total -->
-        <rect
-          x="0"
-          [attr.y]="cmpIdx * 44 + 18"
-          [attr.width]="bars[cmpIdx].width"
-          height="16"
-          fill="#264892"
-          rx="2"
-        />
-        <!-- process name label -->
-        <text
-          x="0"
-          [attr.y]="cmpIdx * 44 + 13"
-          font-size="12"
-          font-family="sans-serif"
-          fill="#264892"
-          font-weight="600"
-        >{{ p.titel }}</text>
-        <!-- total label (right of bar) -->
-        <text
-          x="388"
-          [attr.y]="cmpIdx * 44 + 30"
-          font-size="11"
-          font-family="sans-serif"
-          fill="#495057"
-          text-anchor="start"
-        >{{ getProzessTotal(cmpIdx) | dauer }}</text>
-        <!-- transparent hit area: click/keyboard selects this process's tab -->
-        <rect
-          class="cmp-hit"
-          [class.active]="activeTab === cmpIdx + 1"
-          x="0"
-          [attr.y]="cmpIdx * 44"
-          width="500"
-          height="40"
-          rx="4"
-          fill="transparent"
-          tabindex="0"
-          role="button"
-          [attr.aria-label]="p.titel + ' auswählen (' + (getProzessTotal(cmpIdx) | dauer) + ')'"
-          (click)="selectProzess(cmpIdx)"
-          (keydown.enter)="selectProzess(cmpIdx)"
-          (keydown.space)="selectProzess(cmpIdx); $event.preventDefault()"
-        />
+        <div class="cmp-row">
+          <div class="cmp-row-content">
+            <div class="cmp-row-main">
+              <div class="bar-label-row">
+                <span class="bar-title">{{ p.titel }}</span>
+                <span class="bar-total">{{ getProzessTotal(cmpIdx) | dauer }}</span>
+              </div>
+
+              <!-- small comparison bar, shared scale via getComparisonBars() -->
+              <svg class="cmp-bar-svg" viewBox="0 0 300 16" preserveAspectRatio="none" aria-hidden="true">
+                <!-- grey track -->
+                <rect x="0" y="0" width="300" height="16" fill="#dedede" rx="2" />
+                <!-- filled bar proportional to max total -->
+                <rect x="0" y="0" [attr.width]="bars[cmpIdx].width" height="16" fill="#264892" rx="2" />
+              </svg>
+
+              <!-- caption: Agile mit KI only -->
+              @if (prozessCaption[p.key]; as caption) {
+                <p class="cmp-caption text-muted small mb-0 mt-1">{{ caption }}</p>
+              }
+            </div>
+
+            <!-- Annahmen: two bullets per process, real HTML text (not SVG) so screen readers can read them -->
+            <div class="cmp-row-annahmen">
+              <h6 class="visually-hidden">Annahmen zu {{ p.titel }}</h6>
+              <ul class="cmp-annahmen-list small text-muted mb-0">
+                @for (bullet of prozessAnnahmen[p.key]; track bullet) {
+                  <li>{{ bullet }}</li>
+                }
+              </ul>
+            </div>
+          </div>
+
+          <!-- transparent overlay covering the whole row: click/keyboard selects this process's tab -->
+          <div
+            class="cmp-hit"
+            [class.active]="activeTab === cmpIdx + 1"
+            tabindex="0"
+            role="button"
+            [attr.aria-label]="p.titel + ' auswählen (' + (getProzessTotal(cmpIdx) | dauer) + ')'"
+            (click)="selectProzess(cmpIdx)"
+            (keydown.enter)="selectProzess(cmpIdx)"
+            (keydown.space)="selectProzess(cmpIdx); $event.preventDefault()"
+          ></div>
+        </div>
       }
-    </svg>
+    </div>
   </div>
 </div>
 
