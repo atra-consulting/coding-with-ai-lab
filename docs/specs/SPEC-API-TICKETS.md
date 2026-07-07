@@ -87,7 +87,7 @@ X-Agent-Token: <AGENT_API_TOKEN>
 ```
 
 - Compared against `AGENT_API_TOKEN` env var via SHA-256 + constant-time `timingSafeEqual`.
-- If `AGENT_API_TOKEN` is **unset/empty**, every agent endpoint returns **401**.
+- If `AGENT_API_TOKEN` is **unset/empty**, the pure machine endpoints (`/next`, `/:id/start`, `/:id/done`, `/:id/ask`) return **401**. The endpoints that also accept an admin session (`POST /`, `GET /board`, `PATCH /:id/owner`, `PATCH /:id/status`, `POST /:id/comments`) still work with a valid admin session, even when the token is unset.
 - Missing or wrong token → **401**.
 - **Localhost bypass:** Set `AGENT_AUTH_ALLOW_LOOPBACK=1` in `backend/.env`. Requests from `127.0.0.1`, `::1`, or `::ffff:127.0.0.1` with no `Authorization` or `X-Agent-Token` header then skip validation. Requests with proxy-forwarding headers (`X-Forwarded-For`, `X-Real-IP`, `Forwarded`) are never bypassed. Local development only — never set in production.
 - Locally the backend auto-loads `backend/.env`; in CI set it as a GitHub Actions secret.
@@ -216,7 +216,7 @@ Response is the Spring-Data-style page shape:
 
 All tickets grouped by status. Each column sorted by `createdAt ASC`. Tickets include `commentCount`.
 
-Skills and agents can call this on localhost with the agent token or loopback bypass — peek the whole queue without claiming anything.
+Skills and agents can call this with the agent token from anywhere (CI, production). The loopback bypass works on localhost only. Either way, peek the whole queue without claiming anything.
 
 ```json
 {
@@ -318,7 +318,7 @@ curl -s -X POST -H "Authorization: Bearer $AGENT_API_TOKEN" \
 
 Used for drag-drop on the Kanban board (all five columns are valid drop targets, including `DEFINITION`). Moving into `DONE` sets `solution=DONE` and `resolvedAt`. Moving out of `DONE` clears `solution` and `resolvedAt`. Never changes `owner`. Note: the "Nach Bereit" button on the detail page is **not** this endpoint — it uses `POST /:id/hand-to-ai` (which also sets `owner=AI`).
 
-A skill can move a ticket to any column — including back to `DEFINITION` — with the agent token. This backs the semi-automatic "send back to refinement" flow.
+A skill can move a ticket to any column — including back to `DEFINITION` — with the agent token.
 
 | Result | Meaning |
 |--------|---------|
@@ -465,8 +465,8 @@ Deletes all rows in `ticket_comment` and `ticket`, then re-seeds the 12 workshop
 | `POST /ask` (agent) | `IN_PROGRESS` | `ON_HOLD` | `owner→HUMAN`, AGENT comment |
 | `POST /comments` + `handBackToAi` (admin) | `ON_HOLD` + `owner=HUMAN` | `TODO` | `owner→AI`, `solution`/`resolvedAt` cleared, HUMAN comment |
 | `POST /wont-do` (admin) | any (not `DONE`), `owner=HUMAN` | `DONE` | `solution=WONT_DO`, `resolvedAt` |
-| `PATCH /status → DONE` (admin) | any | `DONE` | `solution=DONE`, `resolvedAt` |
-| `PATCH /status → non-DONE` (admin) | any | target status | `solution`/`resolvedAt` cleared |
+| `PATCH /status → DONE` (agent · loopback · admin) | any | `DONE` | `solution=DONE`, `resolvedAt` |
+| `PATCH /status → non-DONE` (agent · loopback · admin) | any | target status | `solution`/`resolvedAt` cleared |
 
 ---
 
