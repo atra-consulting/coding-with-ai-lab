@@ -155,9 +155,12 @@ export const PROZESS_ANNAHMEN: Record<ProzessKey, string[]> = {
 };
 
 /**
- * Optional short caption shown under a process's bar in the Prozessvergleich card.
- * Only `agileKi` has one today.
+ * Short caption shown under each process's bar in the Prozessvergleich card.
+ * Names the roles / nature of each process.
  */
-export const PROZESS_CAPTION: Partial<Record<ProzessKey, string>> = {
+export const PROZESS_CAPTION: Record<ProzessKey, string> = {
+  menschlich: 'Agiler Prozess mit Refinement und PR-Review, Business Analyst, Entwickler, Tester',
   agileKi: 'Agiler Prozess mit Refinement und PR-Review, Business Analyst, Entwickler, Tester',
+  halbautomatisch: 'Business Analyst, Entwickler',
+  vollautomatisch: 'Nur KI',
 };
