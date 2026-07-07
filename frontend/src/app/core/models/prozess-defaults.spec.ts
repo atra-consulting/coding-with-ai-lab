@@ -189,19 +189,19 @@ describe('PROZESS_ANNAHMEN', () => {
   });
 });
 
-// ─── PROZESS_CAPTION — agileKi only ───────────────────────────────────────────
+// ─── PROZESS_CAPTION — one per process ────────────────────────────────────────
 
 describe('PROZESS_CAPTION', () => {
-  it('has the exact caption text for agileKi', () => {
-    expect(PROZESS_CAPTION.agileKi).toBe(
-      'Agiler Prozess mit Refinement und PR-Review, Business Analyst, Entwickler, Tester',
-    );
+  it('gives the two agile processes the same Refinement/PR-Review caption', () => {
+    const agileCaption =
+      'Agiler Prozess mit Refinement und PR-Review, Business Analyst, Entwickler, Tester';
+    expect(PROZESS_CAPTION.menschlich).toBe(agileCaption);
+    expect(PROZESS_CAPTION.agileKi).toBe(agileCaption);
   });
 
-  it('is undefined for the other three processes', () => {
-    expect(PROZESS_CAPTION.menschlich).toBeUndefined();
-    expect(PROZESS_CAPTION.halbautomatisch).toBeUndefined();
-    expect(PROZESS_CAPTION.vollautomatisch).toBeUndefined();
+  it('has the role captions for the two KI processes', () => {
+    expect(PROZESS_CAPTION.halbautomatisch).toBe('Business Analyst, Entwickler');
+    expect(PROZESS_CAPTION.vollautomatisch).toBe('Nur KI');
   });
 });
 

@@ -11,6 +11,7 @@ import { Szenario, SzenarioCreate } from '../../core/models/szenario.model';
 import {
   DEFAULT_DURATIONS,
   PROZESS_ANNAHMEN,
+  PROZESS_CAPTION,
   PROZESSE,
   ProzessKey,
 } from '../../core/models/prozess-defaults';
@@ -561,7 +562,7 @@ describe('RechnerComponent', () => {
     });
   });
 
-  // ─── DOM: Prozessvergleich Annahmen bullets + agileKi-only caption ────────
+  // ─── DOM: Prozessvergleich Annahmen bullets + per-process caption ─────────
 
   describe('DOM: Prozessvergleich Annahmen bullets and caption', () => {
     it('renders exactly 2 Annahmen bullets per process, matching PROZESS_ANNAHMEN in R1 order', () => {
@@ -577,21 +578,16 @@ describe('RechnerComponent', () => {
       });
     });
 
-    it('renders the agileKi caption exactly once, in the Agile mit KI row only', () => {
+    it('renders one caption per process, matching PROZESS_CAPTION', () => {
       const captions: NodeListOf<HTMLElement> = fixture.nativeElement.querySelectorAll('.cmp-caption');
-      expect(captions.length).toBe(1);
-      expect(captions[0].textContent?.trim()).toBe(
-        'Agiler Prozess mit Refinement und PR-Review, Business Analyst, Entwickler, Tester',
-      );
+      expect(captions.length).toBe(4);
 
       const rows: NodeListOf<HTMLElement> = fixture.nativeElement.querySelectorAll('.cmp-row');
-      const agileKiIndex = PROZESSE.findIndex((p) => p.key === 'agileKi');
-      expect(rows[agileKiIndex].querySelector('.cmp-caption')).not.toBeNull();
-
       rows.forEach((row, i) => {
-        if (i !== agileKiIndex) {
-          expect(row.querySelector('.cmp-caption')).toBeNull();
-        }
+        const key = PROZESSE[i].key;
+        const caption = row.querySelector('.cmp-caption');
+        expect(caption).not.toBeNull();
+        expect(caption?.textContent?.trim()).toBe(PROZESS_CAPTION[key]);
       });
     });
   });
