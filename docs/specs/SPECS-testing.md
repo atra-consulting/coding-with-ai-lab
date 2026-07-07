@@ -35,7 +35,7 @@ cd backend && npx playwright test -g "<test title>"          # targeted by title
 ### Global setup
 
 `backend/src/test/globalSetup.ts` runs before the suite:
-1. Kills any existing process on port 7070, then spawns the backend child process (`tsx src/index.ts`) with `NODE_ENV=test`.
+1. Kills any existing process on port 7070, then spawns the backend child process (`tsx src/index.ts`) with `NODE_ENV=test`, a fixed `AGENT_API_TOKEN` (exported as `TEST_AGENT_TOKEN`), and `AGENT_AUTH_ALLOW_LOOPBACK=1` — this bypasses the agent-token check for requests from localhost during the test run, so tests hitting agent-token-gated routes without a token from a loopback context may see a different status (e.g. 404 instead of 401) than a real deployment would return.
 2. Polls `GET /api/health` until the backend responds (30 s deadline).
 3. Returns a teardown function that SIGTERM-kills the backend.
 
@@ -99,7 +99,7 @@ All three currently hold the full 7-permission set (`FIRMEN`, `PERSONEN`, `ABTEI
 |--------|---------|
 | `loginCtx(benutzername, passwort)` | Creates a new `APIRequestContext` and logs in; returns the context with cookie. |
 | `login(request, benutzername, passwort)` | Logs in on an existing context. |
-| `resetDatabase()` | Deletes all rows in reverse FK order, then re-seeds CRM data via `runDataMigration()` and agent tasks via `seedAgentTasks()` (fixed IDs 1–16). |
+| `resetDatabase()` | Deletes all rows in reverse FK order (including `szenario`), then re-seeds CRM data via `runDataMigration()`, agent tasks via `seedAgentTasks()` (fixed IDs 1–23), and the Standard-Szenario via `seedSzenario()` (id=1). |
 
 ### SQLite quirks in tests
 
@@ -166,14 +166,18 @@ All error responses follow:
 | `firmen-crud.spec.ts` | GET/POST/PUT/DELETE `/api/firmen` and `/api/firmen/:id` |
 | `adressen-coords.spec.ts` | GET/POST/PUT `/api/adressen` — latitude/longitude fields |
 | `adressen-typ.spec.ts` | GET/POST/PUT `/api/adressen` — `typ` field (WORK, HOME, null) |
+| `adressen-search.spec.ts` | GET `/api/adressen?search=<term>` — city substring match, case-insensitive, empty-result handling, anon 401 |
+| `aktivitaeten-crud.spec.ts` | GET `/api/aktivitaeten` (paginated) and `/all`, POST/PUT/DELETE `/api/aktivitaeten/:id` — full CRUD, `datum` DESC sort, 404 on unknown id, anon 401 |
 | `agentTasks.spec.ts` | GET `/api/agent-tasks/next`, POST `/:id/reject`, POST `/:id/done`, GET `/api/agent-tasks`, GET `/api/agent-tasks/summary`, POST `/api/agent-tasks/reset` |
-| `agentTaskSeed.spec.ts` | `seedAgentTasks()` idempotency — 16 fixed-ID rows survive repeated seeding |
+| `agentTaskSeed.spec.ts` | `seedAgentTasks()` idempotency — 23 fixed-ID rows survive repeated seeding; per-source counts (7 EMAIL / 4 GITHUB_ISSUE / 6 APP_LOG / 6 ERROR_REPORT) |
 | `chancen-phase-filter.spec.ts` | GET `/api/chancen?phase=<value>` — per-phase filtering and invalid-phase 400 |
 | `chancen-search.spec.ts` | GET `/api/chancen?search=<term>` — case-insensitive title search, combined search+phase filter |
 | `cron.spec.ts` | GET `/api/cron/agent-tasks`, POST `/api/cron/runs/:id/complete`, GET `/api/cron/runs`, GET `/api/cron/jobs` |
 | `health.spec.ts` | GET `/api/health` — status, timestamp, version fields |
 | `personen-filter.spec.ts` | GET `/api/personen?abteilungId=<id>` — department filter, combined abteilungId+search |
 | `sessions-persistence.spec.ts` | Session row creation on login, cross-request persistence, DB row deletion on logout |
+| `szenario.spec.ts` | GET/POST/PUT/DELETE `/api/szenarien` and `/:id` — CRUD, works/waits JSON round-trip, array-length and duration-bound validation, duplicate-name 409, seeded Standard-Szenario (id=1) |
+| `tickets.spec.ts` | Kanban lifecycle across `/api/tickets` — `/next`, `/:id/start`, `/:id/done`, `/:id/ask`, `/:id/comments`, `/:id/wont-do`, PATCH `/:id/status` and `/:id/owner`, POST `/api/tickets`, `/:id/hand-to-ai`, `/board`, `/summary`, `/reset` — agent-token vs. admin-session auth matrix |
 
 ---
 
@@ -267,6 +271,11 @@ For components using `inject()` that cannot be overridden by a provider, use `Te
 | `core/services/agent-task.service.spec.ts` | `AgentTaskService` HTTP methods and URL shapes |
 | `core/services/cron.service.spec.ts` | `CronService` HTTP methods and URL shapes |
 | `core/services/person.service.spec.ts` | `PersonService` — pagination index conversion, HTTP calls |
+| `core/services/szenario.service.spec.ts` | `SzenarioService` — CRUD HTTP methods and URL shapes |
+| `core/services/ticket.service.spec.ts` | `TicketService` — board/summary/CRUD HTTP methods, query params, status/owner transitions |
+| `core/models/prozess-defaults.spec.ts` | `prozess-defaults` constants — canonical duration arrays, process metadata (titles, step counts, labels), role/minute splits |
+| `core/pipes/markdown.pipe.spec.ts` | `MarkdownPipe` — markdown-to-HTML rendering (headings, lists, inline code, bold, plain text) |
+| `shared/pipes/dauer.pipe.spec.ts` | `DauerPipe` / `minutenZuDauer` — minutes-to-duration formatting (d/h/m breakdown), null handling |
 | `core/guards/role.guard.spec.ts` | `roleGuard` (allow with matching role, deny with wrong role, deny when null) |
 | `layout/sidebar/sidebar.component.spec.ts` | `SidebarComponent` (render, permission filtering, collapse toggle) |
 | `features/firma/firma-list/firma-list.component.spec.ts` | `FirmaListComponent` — render, data binding, interactions |
@@ -277,6 +286,11 @@ For components using `inject()` that cannot be overridden by a provider, use `Te
 | `features/admin/agent-tasks/agent-task-list.component.spec.ts` | `AgentTaskListComponent` — list view, source param, `statusBadgeClass()` |
 | `features/admin/agent-tasks/agent-tasks-dashboard.component.spec.ts` | `AgentTasksDashboardComponent` — summary and per-source views |
 | `features/admin/cron/cron-dashboard.component.spec.ts` | `CronDashboardComponent` — ngOnInit, pagination, runNow() |
+| `features/admin/tickets/ticket-board.component.spec.ts` | `TicketBoardComponent` — board loading, drag-and-drop status transitions with rollback, badge helpers |
+| `features/admin/tickets/ticket-detail.component.spec.ts` | `TicketDetailComponent` — detail view, comment/hand-back-to-AI flow, "Won't Do" and owner-toggle actions |
+| `features/produktivitaet/einheit.spec.ts` | Zeiteinheit helpers — `einheitZuFaktor`, `feldWertZuMinuten`, `maxWertFuerEinheit`, `durationValidatorsFor`, round-trip conversion |
+| `features/produktivitaet/rechner.component.spec.ts` | `RechnerComponent` — productivity calculator: unit conversion, scenario load/save, role/pie/flowchart derivations |
+| `features/produktivitaet/svg-util.spec.ts` | SVG utility functions — `computeSegments`, `computeComparisonBars`, `computePieSlices` |
 
 ### Code standards (both stacks)
 

@@ -60,8 +60,10 @@ Full-Stack-CRM-Anwendung. Node.js/TypeScript-Backend mit Angular-Frontend.
 | Tabelle | Zweck |
 |---------|-------|
 | `agent_task` | Autonome KI-Aufgaben; Lifecycle: OPEN → IN_PROGRESS → DONE / REJECTED; Quellen: EMAIL, GITHUB_ISSUE, APP_LOG, ERROR_REPORT |
+| `ticket` + `ticket_comment` | Kanban-Ticketsystem für Workshop-Aufgaben; Owner AI oder HUMAN; Status DEFINITION → TODO → IN_PROGRESS → ON_HOLD → DONE |
 | `cron_run` | Laufzeitprotokoll für Cron-Jobs (Trigger, Status, Dauer, GitHub-Run-URL) |
 | `sessions` | Persistente express-session-Einträge; verwaltet von `LibsqlSessionStore` (kein in-memory Store) |
+| `szenario` | Gespeicherte Szenarien für den Produktivität-Rechner (Zykluszeit-Vergleich von vier Software-Delivery-Prozessen) |
 
 ## Spezifikationsdokumente
 
