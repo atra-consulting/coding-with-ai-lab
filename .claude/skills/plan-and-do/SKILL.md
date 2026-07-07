@@ -1,7 +1,7 @@
 ---
 name: "project:plan-and-do"
 description: "End-to-end implementation workflow from idea to code review. Use for building features, implementing tasks, fixing complex bugs, or any substantial coding work. Handles planning, implementation, testing, and review automatically."
-argument-hint: ["description" | ticket-url | ticket-number] [special-instructions|resume:<step>]
+argument-hint: "description" [special-instructions|resume:<step>] | ticket-url | ticket-number
 version: 1.12.0
 last-modified: 2026-07-07
 allowed-tools:
@@ -17,6 +17,7 @@ allowed-tools:
   - Bash(./run-all-tests.sh:*)
   - Bash(gh:*)
   - Bash(curl:*)
+  - Bash(rm:*)
   - Task
   - AskUserQuestion
 ---
@@ -227,6 +228,8 @@ The skill can process a Kanban ticket from the workshop ticket system instead of
 
 then set `ticket_mode = true` and extract `ticket_id`. Otherwise `ticket_mode = false` and the skill runs its normal freeform flow, unchanged. A real task description is never a bare number, so this is unambiguous.
 
+Ticket input does **not** support `resume:<step>` — each ticket run reads the live board state fresh in TM.1 and reacts; there is no saved-run resume for a ticket. (`resume:<step>` applies only to freeform description input.)
+
 **Board terminology.** The board at `/admin/tickets` shows **German labels only** — map them to the `status` enum:
 
 | Skill term | German column | `status` | notes |
@@ -241,7 +244,7 @@ then set `ticket_mode = true` and extract `ticket_id`. Otherwise `ticket_mode = 
 
 **Config (store in state under `config`).**
 - `ticket_api_base` — default `http://localhost:7070` (the backend). A bare number or a `localhost:7200` frontend URL both use `http://localhost:7070`. For a non-localhost URL, use that URL's origin as the base (replace a `:7200` frontend port with `:7070` if present); if unsure, ask the user for the backend base URL.
-- **Auth** — the backend needs `AGENT_API_TOKEN` set in `backend/.env` for **any** agent call to work: an unset token → **401** on every agent endpoint, even from localhost (loopback bypass is gated on the token being configured). From repo root, load it with `set -a && source backend/.env && set +a`. Then either send `-H "Authorization: Bearer $AGENT_API_TOKEN"` on every agent call, or — if `AGENT_AUTH_ALLOW_LOOPBACK=1` is also set — omit the header and let the localhost bypass through. If `backend/.env` has no `AGENT_API_TOKEN`, tell the user to set it (see the "Local setup" block in `docs/specs/SPEC-API-TICKETS.md`) and STOP. The admin session used for the claim comment does **not** need the agent token.
+- **Auth** — the backend needs `AGENT_API_TOKEN` set in `backend/.env` for **any** agent call to work: an unset token → **401** on every agent endpoint, even from localhost (loopback bypass is gated on the token being configured). Read `backend/.env` with the **Read** tool to get the `AGENT_API_TOKEN` value (do not `source` it into the shell), then send `-H "Authorization: Bearer <that value>"` on every agent call — or, if `AGENT_AUTH_ALLOW_LOOPBACK=1` is set, omit the header and let the localhost bypass through. If `backend/.env` has no `AGENT_API_TOKEN`, tell the user to set it (see the "Local setup" block in `docs/specs/SPEC-API-TICKETS.md`) and STOP. The admin session used for the claim comment does **not** need the agent token.
 - `ticket_url` — the frontend URL `http://localhost:7200/admin/tickets/<id>` (rebuild it when only a number was given).
 
 **Comment on every state change.** Agent verbs carry a comment only on `done` and `ask`. The claim (`/start` → In Progress) has **no** comment field, so the skill posts that one comment through a short-lived **admin session** (workshop admin user `admin` / `admin123`):
@@ -272,7 +275,7 @@ Each fresh `/plan-and-do <id>` run creates a new state file (Step 3.3), so ticke
 
 ### TM.2 — Claim → In Progress (run from Step 4.6, after the branch exists)
 
-1. `POST $ticket_api_base/api/tickets/<id>/start` → `IN_PROGRESS`. A `409` means it is no longer Ready+AI (someone claimed it since TM.1) — STOP and tell the user.
+1. `POST $ticket_api_base/api/tickets/<id>/start` → `IN_PROGRESS`. A `409` means it is no longer Ready+AI (someone claimed it since TM.1) — STOP and tell the user. (The branch/state file already created are harmless; the user can delete the branch.)
 2. On success set `config.ticket_claimed = true` in the state file (so the Quit hook and Step 8.2 know the ticket is live).
 3. Post the state-change comment via the admin session, e.g. `"Von der KI übernommen. Status → In Arbeit."` — append `" (Branch: <branch_name>)"` only when `is_git_repo`.
 
@@ -444,6 +447,8 @@ Write `[state_dir]/STATE-[task_key].json` using Write tool:
 ```
 
 Do NOT git add/commit yet. File committed on new branch in Step 4.
+
+**Ticket mode:** when `ticket_mode = true` (TM.1 ran in Step 1), write the **real** resolved values into this file now — `ticket_mode: true` plus the actual `ticket_id`, `ticket_url`, and `ticket_api_base` — not the defaults above. These gates (`ticket_mode` especially) are re-read after context compression per `## Context Recovery`; if they stay `false`/`null` here, a compacted run silently loses ticket mode and the ticket is never marked Done or handed back.
 
 ---
 
