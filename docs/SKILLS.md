@@ -32,6 +32,7 @@ End-to-End-Ablauf. Planung → Implementierung → Tests → Code Review.
   /plan-and-do "Redis-Cache für Sessions" "Nutze node-cache mit 5 Minuten TTL"
   ```
 - **Ohne Argument:** Der Skill sucht angefangene Aufgaben und fragt, ob du weitermachst.
+- **`help` / `doctor`:** Zeigt Hilfe oder läuft einen Selbsttest.
 - **Checkpoints:** Der Skill hält an festen Punkten an. Du behältst die Kontrolle.
 - Datei: `.claude/skills/plan-and-do/SKILL.md`
 
@@ -42,11 +43,12 @@ Workshop-Teilnehmer starten ihre Aufgaben mit diesem Skill.
 Prüft deinen Branch gegen `main`. Mit mehreren Runden aus Prüfen und Fixen.
 
 - **Wann nutzen:** Vor einem PR. Nach einer Änderung. Wenn du Feedback willst.
-- **Was passiert:** Der Skill sammelt die Änderungen. Reviewer-Agents prüfen sie. Der Skill schreibt die Findings nach `docs/reviews/`. Du entscheidest, was gefixt wird.
+- **Was passiert:** Der Skill sammelt die Änderungen. Reviewer-Agents prüfen sie. Der Skill schreibt die Findings nach `docs/reviews/`. Du entscheidest, welche Findings du fixt.
 - **Argumente (optional):**
   - leer → normaler Review
   - `dryrun` → zeigt das Ergebnis nur am Bildschirm, schreibt keine Datei
   - `base:<ref>` → prüft gegen einen anderen Branch oder Commit statt `main`
+  - `help` / `doctor` → Hilfe anzeigen oder Selbsttest laufen lassen
   - freier Text → Sonderanweisungen für den Review
 - **Beispiel:**
   ```
@@ -59,7 +61,7 @@ Prüft deinen Branch gegen `main`. Mit mehreren Runden aus Prüfen und Fixen.
 Aktualisiert `.claude/agents/`, `docs/specs/` und `CLAUDE.md`. Passend zu den Code-Änderungen.
 
 - **Wann nutzen:** Ein Feature ist fertig. Das Schema ändert sich. Die Infrastruktur wandert.
-- **Was passiert:** Reviewer-Agents vergleichen Code und Doku. Sie melden, was veraltet ist. Writer-Agents fixen genau diese Stellen. Der Skill ändert keinen Agent und keine Spec-Datei neu. Er passt nur bestehende an.
+- **Was passiert:** Reviewer-Agents vergleichen Code und Doku. Sie melden, was veraltet ist. Writer-Agents fixen genau diese Stellen. Der Skill legt keine neue Agent- oder Spec-Datei an. Er passt nur bestehende an.
 - **Argumente (optional):** freier Text als Fokus, oder `embedded` (Aufruf aus `plan-and-do`).
 - **Beispiel:**
   ```

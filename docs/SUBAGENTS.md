@@ -22,7 +22,7 @@ Zwei Wege:
 1. **Automatisch.** Claude liest die `description` jedes Agents. Passt die Aufgabe, ruft Claude den Agent selbst. Du machst nichts.
 2. **Per Name.** Du bittest direkt: „Nutze den `be-reviewer`, um diese Route zu prüfen." Claude startet genau diesen Agent.
 
-Skills wie `/plan-and-do` rufen viele Agents nacheinander. Erst Coder, dann Reviewer, dann Tester.
+Skills wie `/plan-and-do` rufen viele Agents nacheinander. Erst Coder, dann Tester, dann Reviewer.
 
 ## Die Agents im Überblick
 

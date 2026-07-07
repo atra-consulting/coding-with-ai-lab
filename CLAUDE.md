@@ -85,6 +85,7 @@ Frontend (8+ files): Model interface → Service → Route file → List/Detail/
 | admin | Local dev environment, SQLite database, process management | ops |
 | ba-reviewer | Review PRDs, specs, plans for gaps and issues | review |
 | ba-writer | Create business specs, requirements, plans | writing |
+| requirements-reviewer | Review requirements, user stories, PRDs for gaps and missing edge cases | review |
 | be-coder | Node.js / TypeScript backend code | coding |
 | be-reviewer | Review backend code, security, patterns | review |
 | db-coder | Drizzle ORM queries, entity schemas, data access | coding |

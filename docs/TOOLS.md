@@ -50,7 +50,7 @@ Details zur API: [docs/API-TASKS.md](API-TASKS.md).
 
 Ein Kanban-Board. Ein einfaches Ticketsystem für das Software-Factory-Training.
 
-- **Fünf Spalten:** `DEFINITION` („Definition"), `TODO` („Zu bereit"), `IN_PROGRESS`, `ON_HOLD`, `DONE`.
+- **Fünf Spalten:** `DEFINITION` („Definition"), `TODO` („Zu bereit"), `IN_PROGRESS` („In Arbeit"), `ON_HOLD` („Wartet"), `DONE` („Erledigt").
 - **Owner:** Jedes Ticket gehört `AI` oder `HUMAN`.
 - Neue Tickets starten bei `HUMAN` und `DEFINITION`. Ein Mensch verfeinert das Ticket. Dann gibt er es an die KI ab.
 - Der Agent arbeitet `AI`-Tickets. Er kann eine Frage stellen. Dann geht das Ticket zurück an den Menschen.
