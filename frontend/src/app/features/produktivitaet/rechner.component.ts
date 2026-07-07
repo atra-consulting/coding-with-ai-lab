@@ -270,7 +270,7 @@ function baueInitialeProzessDaten(): Record<ProzessKey, ProzessSnapshot> {
         pointer-events: none;
       }
       .pie-note {
-        font-size: 0.78rem;
+        font-size: 0.9rem;
         color: #495057;
         font-style: italic;
         margin-bottom: 0.5rem;
@@ -284,20 +284,20 @@ function baueInitialeProzessDaten(): Record<ProzessKey, ProzessSnapshot> {
       .pie-legend {
         display: flex;
         flex-direction: column;
-        gap: 0.35rem;
+        gap: 0.5rem;
         margin: 0;
       }
       .pie-legend-item {
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        font-size: 0.85rem;
+        font-size: 1.05rem;
         flex-wrap: wrap;
       }
       .pie-legend-swatch {
         flex: 0 0 auto;
-        width: 14px;
-        height: 14px;
+        width: 18px;
+        height: 18px;
         border-radius: 3px;
         border: 1px solid #495057;
       }
