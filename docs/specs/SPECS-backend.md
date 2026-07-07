@@ -120,7 +120,7 @@ Standard CRUD. Default sort: `createdAt,DESC`. Allowed sort fields: `titel`, `we
 
 ### Szenarien (`/api/szenarien`)
 
-Saved scenarios for the Produktivität-Rechner cycle-time calculator. All routes `requireAuth` (any logged-in user). Each body has four named process fields: `humanSteps` (19 steps), `agileKiSteps` (19 steps), `semiAutomatedSteps` (7 steps), `automatedSteps` (2 steps). Each process is `{ works: number[], waits: number[] }` (waits length = works length − 1); durations are integer minutes. Step counts enforced by `PROCESS_STEP_COUNTS` in `utils/validation.ts`; validated by `SzenarioSchema` (Zod). Omitting `agileKiSteps` fails validation → 400.
+Saved scenarios for the Produktivität-Rechner cycle-time calculator. All routes `requireAuth` (any logged-in user). Each body has four named process fields: `humanSteps` (19 steps), `agileKiSteps` (19 steps), `semiAutomatedSteps` (11 steps), `automatedSteps` (2 steps). Each process is `{ works: number[], waits: number[] }` (waits length = works length − 1); durations are integer minutes. Step counts enforced by `PROCESS_STEP_COUNTS` in `utils/validation.ts`; validated by `SzenarioSchema` (Zod). Omitting `agileKiSteps` fails validation → 400.
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
