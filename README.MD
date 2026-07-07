@@ -19,7 +19,7 @@
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-Drizzle%20ORM-003b57.svg">
 </p>
 
-> **Erstmal hier starten:** Für die vollständige Installationsanleitung (Node.js, Claude Code, IDE) bitte **[SETUP.md](SETUP.md)** lesen.
+> **Erstmal hier starten:** Für die vollständige Installationsanleitung (Node.js, Claude Code, IDE) bitte **[docs/SETUP.md](docs/SETUP.md)** lesen.
 
 > **English?** See **[docs/welcome_EN.MD](docs/welcome_EN.MD)** for an English introduction.
 
@@ -70,7 +70,7 @@ Der gemeinsame Teil (Schnellstart, Login, Tools) gilt für beide.
 | **Git CLI** | beliebig | Versionskontrolle und Branches |
 | **Claude Code** | aktuell | AI-gestütztes Programmieren im Terminal |
 
-Vollständige Installationsanleitung: **[SETUP.md](SETUP.md)**
+Vollständige Installationsanleitung: **[docs/SETUP.md](docs/SETUP.md)**
 
 ---
 
@@ -227,7 +227,7 @@ Playwright-MCP ermöglicht der AI, direkt mit der laufenden Anwendung im Browser
 | **Datenbank** | SQLite (via `@libsql/client`, Turso-kompatibel) |
 | **Auth** | Session-basiert (bcrypt + `express-session`) |
 
-Architektur-Details: **[docs/architecture.md](docs/architecture.md)**
+Architektur-Details: **[docs/specs/SPECS.md](docs/specs/SPECS.md)**
 
 ---
 
@@ -235,7 +235,7 @@ Architektur-Details: **[docs/architecture.md](docs/architecture.md)**
 
 | Dokument | Inhalt |
 |----------|--------|
-| [SETUP.md](SETUP.md) | Vollständige Installationsanleitung (Node.js, Claude Code, IDE) |
+| [docs/SETUP.md](docs/SETUP.md) | Vollständige Installationsanleitung (Node.js, Claude Code, IDE) |
 | [docs/CHEATSHEET-CLAUDE-CODE.md](docs/CHEATSHEET-CLAUDE-CODE.md) | Claude Code Spickzettel für Einsteiger |
 | [docs/welcome_DE.MD](docs/welcome_DE.MD) | Deutsche Workshop-Einführung |
 | [docs/welcome_EN.MD](docs/welcome_EN.MD) | English workshop introduction |
@@ -244,7 +244,6 @@ Architektur-Details: **[docs/architecture.md](docs/architecture.md)**
 | [docs/TRANSFER.md](docs/TRANSFER.md) | Skills & Subagents ins eigene Projekt übernehmen |
 | [docs/TOOLS.md](docs/TOOLS.md) | Produktivitäts-Rechner, Agent-Tasks, Ticket-Board |
 | [CLAUDE.md](CLAUDE.md) | Anweisungen und Konventionen für AI-Coding-Assistenten |
-| [docs/architecture.md](docs/architecture.md) | Systemarchitektur mit Mermaid-Diagrammen |
 | [docs/specs/SPECS.md](docs/specs/SPECS.md) | Detaillierte Spezifikationen pro Bereich |
 | [docs/adr/](docs/adr/) | Architecture Decision Records |
 | [docs/prds/](docs/prds/) | Product Requirement Documents |
@@ -256,10 +255,9 @@ Architektur-Details: **[docs/architecture.md](docs/architecture.md)**
 │   ├── src/          config · db · middleware · routes · seed · services
 │   └── data/         SQLite-Datenbankdatei (gitignored)
 ├── frontend/         Angular 21 SPA (core · features · layout · shared)
-├── docs/             Architektur, Specs, ADRs, PRDs, Tasks
+├── docs/             Installationsanleitung, Architektur, Specs, ADRs, PRDs, Tasks
 ├── start.sh          Startskript (macOS/Linux)
 ├── start.bat         Startskript (Windows)
-├── SETUP.md          Installationsanleitung
 └── CLAUDE.md         Anweisungen für AI-Coding-Assistenten
 ```
 

@@ -18,7 +18,7 @@
     ```
 - **Git CLI**: For version control, branching, and creating PRs with Claude
 
-Full installation guide: **[SETUP.md](../SETUP.md)**
+Full installation guide: **[SETUP.md](SETUP.md)**
 
 ## How to Start the Project
 
