@@ -272,7 +272,7 @@
   <div class="card-body">
     <h5 class="card-title">Schritt-Zeiten</h5>
 
-    <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" (navChange)="onNavChange()" class="nav-tabs schritt-tabs mb-3">
+    <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" (navChange)="onNavChange($event)" class="nav-tabs schritt-tabs mb-3">
       @for (p of prozesse; track p.key) {
         <li [ngbNavItem]="$index + 1">
           <button ngbNavLink>{{ p.titel }} ({{ p.stepCount }})</button>

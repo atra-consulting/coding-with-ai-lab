@@ -17,7 +17,7 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
-import { NgbModal, NgbNavModule, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbNavChangeEvent, NgbNavModule, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 import { debounceTime } from 'rxjs/operators';
 import {
   DEFAULT_DURATIONS,
@@ -250,6 +250,9 @@ function baueInitialeProzessDaten(): Record<ProzessKey, ProzessSnapshot> {
         padding-left: 1.1rem;
         /* Stays under .cmp-hit (z-index: 1) so clicking the Annahmen bullets also
            selects the process, like the rest of the row. */
+      }
+      .cmp-annahmen-list li {
+        font-weight: 600;
       }
       /* Transparent overlay covering the whole row: click/keyboard selects the process's tab.
          Kept as a sibling overlay (not a wrapper around the row content) so the real Annahmen/
@@ -509,7 +512,22 @@ export class RechnerComponent implements OnInit {
    */
   selectProzess(index: number): void {
     this.activeTab = index + 1;
+    this.revealProcess(index);
     this.setViewMode('balken');
+  }
+
+  /**
+   * Makes sure the given process's comparison bar is visible under the current
+   * bar filter. Reveal-only: raises barLimit if the process is hidden, never
+   * hides bars already shown. Selecting the last process shows all bars again
+   * (barLimit = 0). Keeps the "Prozesse" button label (barLimitLabel) in sync.
+   */
+  revealProcess(index: number): void {
+    const n = this.barLimit();
+    if (n !== 0 && index >= n) {
+      const next = index + 1;
+      this.barLimit.set(next >= PROZESSE.length ? 0 : next);
+    }
   }
 
   readonly prozesse = PROZESSE;
@@ -597,9 +615,13 @@ export class RechnerComponent implements OnInit {
     this.ladeSzenarien();
   }
 
-  /** Resets the Balken/Flussdiagramm toggle when the user switches tabs. */
-  onNavChange(): void {
+  /**
+   * On tab switch: reset the Balken/Flussdiagramm toggle and reveal the
+   * selected process's bar in the Prozessvergleich card (tab ids are 1-based).
+   */
+  onNavChange(event: NgbNavChangeEvent): void {
     this.viewModeSignal.set('balken');
+    this.revealProcess(Number(event.nextId) - 1);
   }
 
   /** Setter for ui-designer's upcoming toggle. */
