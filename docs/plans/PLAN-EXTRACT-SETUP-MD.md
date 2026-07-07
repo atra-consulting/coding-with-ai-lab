@@ -1,5 +1,7 @@
 # Implementation Plan: EXTRACT-SETUP-MD
 
+> **Nachtrag (2026-07-07):** `SETUP.md` liegt inzwischen unter `docs/SETUP.md`, nicht mehr im Wurzelverzeichnis. Der Plan unten beschreibt den damaligen Stand.
+
 ## Task
 
 Extract software installation instructions from `README.MD` into a new top-level `SETUP.md`. Expand `SETUP.md` with Claude Code installation instructions. Add "Git for Windows" as a prerequisite for Claude Code in the Windows section. Also add IDE recommendations (Visual Studio Code for participants without an IDE) and a Markdown viewer section.

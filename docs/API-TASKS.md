@@ -408,7 +408,6 @@ for each source in [EMAIL, GITHUB_ISSUE, APP_LOG, ERROR_REPORT]:
 
 ## See also
 
-- `docs/WORKSHOP-AUTONOMOUS-TASKS.md` — local testing, reset between runs, removing task-solution commits, solve-all script.
 - `docs/prds/PRD-AUTONOMOUS-TASK-SOURCES.md` — full requirements and acceptance criteria.
 - `docs/API-TICKETS.md` — Kanban ticket queue (separate system, adds the ask/answer conversation).
 - `.claude/prompts/agent-*.md` — the per-source prompts that call this API.

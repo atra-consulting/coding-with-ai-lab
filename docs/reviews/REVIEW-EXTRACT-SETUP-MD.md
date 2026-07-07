@@ -1,5 +1,7 @@
 # Review: EXTRACT-SETUP-MD
 
+> **Nachtrag (2026-07-07):** `SETUP.md` liegt inzwischen unter `docs/SETUP.md`, nicht mehr im Wurzelverzeichnis.
+
 **Branch:** extract-setup-md
 **Reviewer:** ba-reviewer
 **Date:** 2026-04-20

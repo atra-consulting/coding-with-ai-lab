@@ -1,5 +1,7 @@
 # PRD: Autonomous Task Sources
 
+> **Nachtrag (2026-07-07):** `docs/WORKSHOP-AUTONOMOUS-TASKS.md` gibt es nicht (mehr). Die Agent-Doku steht in `docs/API-TASKS.md`.
+
 ## Source
 
 Requested on 2026-06-13 for the "Claude Code for Advanced Users" workshop.

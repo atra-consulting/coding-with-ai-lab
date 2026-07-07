@@ -1,5 +1,7 @@
 # Implementation Plan: AUTONOMOUS-TASK-SOURCES
 
+> **Nachtrag (2026-07-07):** `docs/WORKSHOP-AUTONOMOUS-TASKS.md` gibt es nicht (mehr). Die Agent-Doku steht in `docs/API-TASKS.md`.
+
 Source PRD: `docs/prds/PRD-AUTONOMOUS-TASK-SOURCES.md`
 
 ## Test Command
