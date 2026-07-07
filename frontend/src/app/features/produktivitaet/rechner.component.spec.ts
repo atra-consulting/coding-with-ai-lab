@@ -662,5 +662,39 @@ describe('RechnerComponent', () => {
       const rows: NodeListOf<HTMLElement> = fixture.nativeElement.querySelectorAll('.cmp-row');
       expect(rows.length).toBe(1);
     });
+
+    it('revealProcess() raises barLimit so a hidden process bar becomes visible', () => {
+      component.barLimit.set(2); // shows processes 0 and 1
+      component.revealProcess(2); // select process index 2 (hidden)
+      expect(component.barLimit()).toBe(3);
+      expect(component.barLimitLabel()).toBe('Prozesse 1–3');
+      expect(component.isBarVisible(2)).toBeTrue();
+    });
+
+    it('revealProcess() shows all bars (barLimit 0) when the last process is selected', () => {
+      component.barLimit.set(2);
+      component.revealProcess(3); // last process
+      expect(component.barLimit()).toBe(0);
+      expect(component.barLimitLabel()).toBe('Alle Prozesse');
+    });
+
+    it('revealProcess() never hides bars already visible', () => {
+      component.barLimit.set(2);
+      component.revealProcess(0); // already visible
+      expect(component.barLimit()).toBe(2);
+    });
+
+    it('revealProcess() does nothing when all bars are shown (barLimit 0)', () => {
+      component.barLimit.set(0);
+      component.revealProcess(2);
+      expect(component.barLimit()).toBe(0);
+    });
+
+    it('onNavChange() reveals the newly selected process bar', () => {
+      component.barLimit.set(1); // only process 0 visible
+      component.onNavChange({ activeId: 1, nextId: 3, preventDefault: () => {} } as never);
+      expect(component.barLimit()).toBe(3); // process index 2 revealed
+      expect(component.isBarVisible(2)).toBeTrue();
+    });
   });
 });
