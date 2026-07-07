@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "task_key": "PLAN-AND-DO-TICKET-MODE",
+  "status": "in_progress",
+  "current_step": "4.5",
+  "started": "2026-07-07T20:43:39.000Z",
+  "updated": "2026-07-07T20:43:39.000Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Add ticket-input mode to plan-and-do/SKILL.md (accept ticket URL like http://localhost:7200/admin/tickets/8 or bare number 8). Move docs/API-TASKS.md to docs/specs/SPEC-API-TASKS.md and docs/API-TICKETS.md to docs/specs/SPEC-API-TICKETS.md. Skill works only on TODO+AI (Ready/AI) tickets: claim to In Progress, finish to Done, question/error to Blocked+Human, comment on each state change.",
+    "special_instructions": null,
+    "ticket_id": null,
+    "ticket_url": null,
+    "branch_name": "plan-and-do-ticket-mode-and-spec-move",
+    "original_branch": "main",
+    "docs_folder": "docs",
+    "workflow_scope": null,
+    "keep_files": null
+  },
+  "discovery": {
+    "agents_available": true,
+    "writer_agents": ["ba-writer"],
+    "coding_agents": ["be-coder", "db-coder", "fe-coder", "ui-designer", "python-coder", "shell-coder", "skill-coder"],
+    "review_agents": ["ba-reviewer", "requirements-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer", "python-reviewer", "shell-reviewer", "skill-reviewer"],
+    "test_command": null,
+    "youtrack_available": false,
+    "youtrack_mcp": null,
+    "youtrack_on_start": null,
+    "youtrack_on_resolve": null
+  },
+  "artifacts": {
+    "prd_skipped": null,
+    "prd_file": null,
+    "plan_file": null,
+    "pr_url": null
+  },
+  "completed_steps": []
+}
