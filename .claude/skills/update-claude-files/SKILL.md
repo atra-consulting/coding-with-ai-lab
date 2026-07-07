@@ -2,7 +2,7 @@
 name: "project:update-claude-files"
 description: "Update .claude/agents, docs/specs, and CLAUDE.md from source code changes. Use when features land, the schema changes, or infrastructure shifts. Keeps project documentation in sync with the code."
 argument-hint: (optional special instructions)
-version: 1.0.0
+version: 1.1.0
 last-modified: 2026-07-07
 allowed-tools:
   - Read
@@ -13,6 +13,7 @@ allowed-tools:
   - Bash(git:*)
   - Bash(mkdir:*)
   - Bash(rm:*)
+  - Task
   - AskUserQuestion
 ---
 
@@ -37,6 +38,19 @@ Use the `AskUserQuestion` tool for every prompt. Never print a question as prose
 ## Preserve Human-Authored Content
 
 Specs and agents are hand-written. Update only the facts the code changes made stale. Keep manual sections, domain language, and structure. Never replace careful prose with generic phrasing. Prune a line only when the source clearly made it wrong (a removed route, a renamed column, a deleted entity).
+
+## Subagents
+
+This skill delegates the work in two phases:
+
+- **Review** (PHASE 5) — reviewer agents compare code to docs and report the exact drift. They do not edit.
+- **Apply** (PHASE 6) — writer/coder agents apply those edits.
+
+Agent discovery comes from PHASE 2 (`.claude/agents/*.md`). Both modes may dispatch: the skill runs in the main loop (via the Skill tool), so `Task` works in standalone and embedded alike.
+
+If a needed agent is missing from `existing_agents`, the skill falls back to doing that step inline (its own Read/Grep + Edit).
+
+**Dispatch narration.** Before every `Task` call, print one line: `→ Launching <agent>: <purpose>`. For a parallel batch, print one line per agent first.
 
 ---
 
@@ -66,7 +80,7 @@ Then STOP.
 ### Skill Header (standalone only)
 
 ```
-Update Claude Files (v1.0.0)
+Update Claude Files (v1.1.0)
 ****************************
 
 Sync .claude/agents, docs/specs, and CLAUDE.md with the code.
@@ -106,9 +120,9 @@ Capture `project_root` (`pwd`) and `current_branch` (`git branch --show-current`
 
 ---
 
-## PHASE 2: AGENT GUARD (HARD STOP)
+## PHASE 2: AGENT GUARD & DISCOVERY
 
-Glob `.claude/agents/*.md`. Store matches as `existing_agents`.
+Glob `.claude/agents/*.md`. Store matches as `existing_agents`. This set drives dispatch: PHASE 5 picks reviewer agents from it, PHASE 6 picks writer/coder agents. A target whose mapped agent is absent falls back to inline handling.
 
 **If `existing_agents` is empty:**
 
@@ -202,54 +216,72 @@ This is separate from PHASE 3.3: there the changed/stale set was empty; here it 
 
 ---
 
-## PHASE 5: UPDATE .claude/agents/
+## PHASE 5: REVIEW — REVIEWER AGENTS FIND DRIFT
 
-Skip if no agent target is flagged.
+Note: PHASE 4 already stopped if the edit list was empty, so here at least one target is flagged.
 
-For each flagged, existing agent file:
-- Read it. Update only stale facts — scope, key locations, standards, and the `## Specifications` reading list.
-- Match this project's agent-to-spec mapping so each agent still points at the right specs (see `CLAUDE.md` `## Specifications` table for the canonical mapping).
-- Never create a new agent file. Never delete one. Preserve custom sections.
+Pick a reviewer per flagged target from the table. Dispatch only reviewers whose target is flagged. Launch them in parallel via `Task`, narrated (Dispatch narration rule). If a mapped reviewer is not in `existing_agents`, review that target **inline** instead (Read the doc + Grep the code yourself).
 
-**Standalone:** preview each change and confirm before a large edit (`AskUserQuestion`: 1-Apply, 2-Skip this file). Do not prompt for a one-line fix.
-**Embedded:** apply directly. No prompt.
+| Flagged target | Reviewer agent |
+|---|---|
+| `SPECS-backend.md` | `be-reviewer` |
+| `SPECS-database.md` | `db-reviewer` |
+| `SPECS-frontend.md` | `fe-reviewer` |
+| `SPECS-ui.md` | `ui-reviewer` |
+| `SPECS-testing.md` | `be-test-reviewer` and/or `fe-test-reviewer` (by changed scope) |
+| `SPECS-infrastructure.md` | `admin` (read-only reviewer — infra specialist) |
+| `DOMAIN.md`, `SPECS.md`, `CLAUDE.md` | `ba-reviewer` |
+| `.claude/agents/<name>.md` | `skill-reviewer` |
 
-Keep `CLAUDE.md`'s `## Agents` table in sync (done in PHASE 7).
+Every flagged target must have a reviewer row above — no target is silently dropped. If none matches, use `ba-reviewer` as the catch-all.
 
-Report: "Agents: [N] updated, [N] unchanged."
+Each reviewer gets: the target doc path, the changed source files (from PHASE 3), and this instruction —
+
+> "Compare the current code to this doc. List **only** what the source changes made stale or missing. For each, give the exact edit: section, the current text with enough surrounding context to locate it **uniquely** in the file, and the replacement. Do not rewrite prose that is still correct. Preserve human-authored content. Do NOT edit any file — report the change list only."
+
+Collect each reviewer's change list. Merge into one `change_plan` keyed by file.
+
+If every reviewer reports "no change needed" (the code and docs already agree — the Preserve rule): standalone displays "Docs already match the code."; embedded writes `status: no-changes`. STOP.
+
+**Standalone:** show `change_plan` (file → list of edits). `AskUserQuestion`: 1-Apply all, 2-Apply some (pick which files), 3-Cancel. On "Apply some", drop the unpicked files from `change_plan` before PHASE 6. On Cancel: STOP, change nothing.
+**Embedded:** no prompt. Apply all.
+
+PHASE 6 acts on the (possibly narrowed) `change_plan` only.
 
 ---
 
-## PHASE 6: UPDATE docs/specs/
+## PHASE 6: APPLY — WRITER / CODER AGENTS UPDATE FILES
 
-Skip if no spec target is flagged.
+Apply the approved `change_plan`. Group edits by updater agent and dispatch in parallel via `Task`, narrated. If an updater agent is missing from `existing_agents`, apply that group **inline** (your own Edit tool).
 
-For each flagged, existing spec file:
-- Read it. Update the sections the source changes made stale.
-- Preserve manual sections, domain language, and structure. Never create or delete a spec file.
-- Keep `SPECS.md` (the index) accurate if the set or scope of specs shifted.
+| Files to edit | Updater agent |
+|---|---|
+| `docs/specs/*.md` (`SPECS*`, `DOMAIN.md`), `CLAUDE.md` | `ba-writer` |
+| `.claude/agents/*.md` | `skill-coder` |
 
-**Standalone:** preview + confirm before a large edit.
-**Embedded:** apply directly.
+Each updater gets its change list plus these rules:
 
-Report: "Specs: [N] updated, [N] unchanged."
+- Apply the listed edits exactly. Use Edit (not full-file rewrite) to preserve unmatched sections.
+- Preserve human prose, manual sections, structure, and German domain terms.
+- Never create or delete a file.
+- For `CLAUDE.md`: also keep the `## Agents` table (one row per `.claude/agents/` file) and the `## Specifications` table (one row per `docs/specs/*.md`) in sync with the files on disk. Never drop a user-written rule.
+
+Collect the files each updater changed. Track `agents_changed`, `specs_changed`, `claude_md_changed` for the summary.
+
+Report: "Agents: [N] updated. Specs: [N] updated. CLAUDE.md: [sections or none]."
 
 ---
 
-## PHASE 7: UPDATE CLAUDE.md
+## PHASE 7: VERIFY
 
-Skip if `CLAUDE.md` is not flagged.
+Quick self-check on the edited files:
 
-Read `CLAUDE.md`. Update only the flagged sections. Keep two tables in sync with the files on disk:
-- `## Agents` — one row per file in `.claude/agents/` (name, purpose, type), read from each agent's frontmatter / description.
-- `## Specifications` — one row per `docs/specs/*.md`, with scope and primary agents.
+- Each edited doc still parses — headings intact, tables well-formed.
+- `CLAUDE.md` `## Agents` and `## Specifications` tables match the files on disk.
+- No file was created or deleted (the Non-Goals).
+- Human-authored prose preserved — the diff touches only stale facts.
 
-Preserve all user-written rules and custom sections. Add a new rule only when the code shows a new convention. Never drop a user rule.
-
-**Standalone:** show the diff, then `AskUserQuestion`: 1-Apply, 2-Edit, 3-Skip CLAUDE.md. Use the Edit tool (not Write) to preserve unmatched sections.
-**Embedded:** apply directly with the Edit tool.
-
-Report: "CLAUDE.md: [N] sections updated."
+Fix any issue inline with the Edit tool. Then continue to PHASE 8.
 
 ---
 
