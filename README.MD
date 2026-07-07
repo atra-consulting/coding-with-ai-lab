@@ -25,14 +25,35 @@
 
 ---
 
+## Zwei Wege durch dieses Repo
+
+Dieses Repo dient zwei Zielgruppen:
+
+- **Konferenz-Zuhörer** wollen die Skills und Subagents in ihr eigenes Projekt holen. Start: [Skills & Subagents übernehmen](#für-konferenz-zuhörer-skills--subagents-übernehmen).
+- **Workshop-Teilnehmer** wollen Aufgaben in dieser App lösen. Start: [Aufgaben bearbeiten](#für-workshop-teilnehmer-aufgaben-bearbeiten).
+
+Der gemeinsame Teil (Schnellstart, Login, Tools) gilt für beide.
+
 ## Inhalt
+
+**Gemeinsam**
 
 - [Voraussetzungen](#voraussetzungen)
 - [Schnellstart](#schnellstart)
 - [Demo-Login](#demo-login)
-- [Workshop: Branch-Konvention](#workshop-branch-konvention)
-- [Workshop: Aufgaben bearbeiten](#workshop-aufgaben-bearbeiten)
+- [Tools](#tools)
+
+**Für Konferenz-Zuhörer**
+
+- [Skills & Subagents übernehmen](#für-konferenz-zuhörer-skills--subagents-übernehmen)
+
+**Für Workshop-Teilnehmer**
+
+- [Aufgaben bearbeiten](#für-workshop-teilnehmer-aufgaben-bearbeiten)
 - [Nützliche Befehle](#nützliche-befehle)
+
+**Referenz**
+
 - [Playwright-MCP: Browser-Automation](#playwright-mcp-browser-automation)
 - [Features](#features)
 - [Tech-Stack](#tech-stack)
@@ -103,7 +124,38 @@ Drei vorkonfigurierte Benutzer:
 
 ---
 
-## Workshop: Branch-Konvention
+## Tools
+
+Die App hat drei Tools für Training und Demo. Starte die App, dann öffne die URL.
+
+| Tool | URL | Zugang |
+|------|-----|--------|
+| **Produktivitäts-Rechner** | <http://localhost:7200/produktivitaet/rechner> | Jeder Login |
+| **Agent-Task-Dashboard** | <http://localhost:7200/admin/agent-tasks> | Nur Admin |
+| **Ticket-Board** | <http://localhost:7200/admin/tickets> | Nur Admin |
+
+Details zu jedem Tool: **[docs/TOOLS.md](docs/TOOLS.md)**
+
+---
+
+## Für Konferenz-Zuhörer: Skills & Subagents übernehmen
+
+Du willst die Skills und Subagents aus diesem Repo in dein eigenes Projekt holen? So geht es.
+
+1. Lies, was es gibt: **[docs/SUBAGENTS.md](docs/SUBAGENTS.md)** (24 Subagents) und **[docs/SKILLS.md](docs/SKILLS.md)** (4 Skills).
+2. Folge der Anleitung: **[docs/TRANSFER.md](docs/TRANSFER.md)**. Kopieren, anpassen lassen, prüfen — Schritt für Schritt.
+
+| Dokument | Inhalt |
+|----------|--------|
+| [docs/SUBAGENTS.md](docs/SUBAGENTS.md) | Alle 24 Subagents. Zweck, Modell, Gruppen. |
+| [docs/SKILLS.md](docs/SKILLS.md) | Alle 4 Skills. Zweck, Argumente, Beispiele. |
+| [docs/TRANSFER.md](docs/TRANSFER.md) | Übernahme in dein Projekt. 8 Schritte. |
+
+---
+
+## Für Workshop-Teilnehmer: Aufgaben bearbeiten
+
+### Eigenen Branch anlegen
 
 Erstelle deinen eigenen Branch mit diesem Format:
 
@@ -117,9 +169,7 @@ Beispiel: `training-0626/max-mustermann` (Juni 2026, Max Mustermann)
 git checkout -b training-0626/max-mustermann
 ```
 
----
-
-## Workshop: Aufgaben bearbeiten
+### Aufgabe starten
 
 1. Aufgaben findest du im Ordner **`/tasks/`**
 2. Starte eine Aufgabe mit dem **`/plan-and-do`**-Skill in Claude Code:
@@ -189,6 +239,10 @@ Architektur-Details: **[docs/architecture.md](docs/architecture.md)**
 | [docs/CHEATSHEET-CLAUDE-CODE.md](docs/CHEATSHEET-CLAUDE-CODE.md) | Claude Code Spickzettel für Einsteiger |
 | [docs/welcome_DE.MD](docs/welcome_DE.MD) | Deutsche Workshop-Einführung |
 | [docs/welcome_EN.MD](docs/welcome_EN.MD) | English workshop introduction |
+| [docs/SUBAGENTS.md](docs/SUBAGENTS.md) | Alle 24 Subagents erklärt |
+| [docs/SKILLS.md](docs/SKILLS.md) | Alle 4 Custom-Skills erklärt |
+| [docs/TRANSFER.md](docs/TRANSFER.md) | Skills & Subagents ins eigene Projekt übernehmen |
+| [docs/TOOLS.md](docs/TOOLS.md) | Produktivitäts-Rechner, Agent-Tasks, Ticket-Board |
 | [CLAUDE.md](CLAUDE.md) | Anweisungen und Konventionen für AI-Coding-Assistenten |
 | [docs/architecture.md](docs/architecture.md) | Systemarchitektur mit Mermaid-Diagrammen |
 | [docs/specs/SPECS.md](docs/specs/SPECS.md) | Detaillierte Spezifikationen pro Bereich |
