@@ -3,7 +3,7 @@ import { FormGroup } from '@angular/forms';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { of, throwError } from 'rxjs';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbNavChangeEvent } from '@ng-bootstrap/ng-bootstrap';
 import { RechnerComponent } from './rechner.component';
 import { SzenarioService } from '../../core/services/szenario.service';
 import { NotificationService } from '../../core/services/notification.service';
@@ -692,7 +692,7 @@ describe('RechnerComponent', () => {
 
     it('onNavChange() reveals the newly selected process bar', () => {
       component.barLimit.set(1); // only process 0 visible
-      component.onNavChange({ activeId: 1, nextId: 3, preventDefault: () => {} } as never);
+      component.onNavChange({ activeId: 1, nextId: 3, preventDefault: () => {} } as NgbNavChangeEvent);
       expect(component.barLimit()).toBe(3); // process index 2 revealed
       expect(component.isBarVisible(2)).toBeTrue();
     });

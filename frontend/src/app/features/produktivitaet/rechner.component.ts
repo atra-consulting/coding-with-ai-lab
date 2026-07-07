@@ -251,6 +251,9 @@ function baueInitialeProzessDaten(): Record<ProzessKey, ProzessSnapshot> {
         /* Stays under .cmp-hit (z-index: 1) so clicking the Annahmen bullets also
            selects the process, like the rest of the row. */
       }
+      .cmp-annahmen-list li {
+        font-weight: 600;
+      }
       /* Transparent overlay covering the whole row: click/keyboard selects the process's tab.
          Kept as a sibling overlay (not a wrapper around the row content) so the real Annahmen/
          bar/total text underneath stays in the accessible tree for screen readers, instead of
