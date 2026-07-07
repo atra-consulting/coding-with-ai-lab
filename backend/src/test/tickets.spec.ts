@@ -18,8 +18,11 @@
  *   POST /api/tickets/reset           — deletes and reseeds 12 tickets
  *
  * Authorization matrix:
- *   - Agent endpoints (/next, /:id/done, /:id/ask): require Bearer token
- *   - Admin session endpoints: require ADMIN role (user=USER gets 403)
+ *   - Agent-token endpoints (/next, /:id/start, /:id/done, /:id/ask): Bearer token only
+ *   - Agent-token-or-admin endpoints (create, /:id, /:id/owner, /:id/comments):
+ *     agent token, loopback bypass, or admin session (first match wins)
+ *   - Admin-only endpoints (board, summary, list, /:id/status, /:id/wont-do,
+ *     /:id/hand-to-ai, reset): require ADMIN role (user=USER gets 403)
  *
  * Seeded state (after POST /reset or fresh DB):
  *   Ids 1-12. DEFINITION + owner=HUMAN: 1,2,3,4,5 (5 tickets, all FEATURE), each
@@ -201,12 +204,14 @@ test.describe('Auth matrix — admin endpoints', () => {
   let anon: APIRequestContext;
   let user: APIRequestContext;
   let agent: APIRequestContext;
+  let wrongToken: APIRequestContext;
   let admin: APIRequestContext;
 
   test.beforeAll(async () => {
     anon = await anonCtx();
     user = await loginCtx('user', 'test123');
     agent = await agentCtx();
+    wrongToken = await wrongTokenCtx();
     admin = await loginCtx('admin', 'admin123');
     await resetTickets(admin);
   });
@@ -215,6 +220,7 @@ test.describe('Auth matrix — admin endpoints', () => {
     await anon.dispose();
     await user.dispose();
     await agent.dispose();
+    await wrongToken.dispose();
     await admin.dispose();
   });
 
@@ -267,15 +273,26 @@ test.describe('Auth matrix — admin endpoints', () => {
     expect(resp.status()).toBe(403);
   });
 
-  // POST / (create)
-  test('POST / without session → 401', async () => {
+  // POST / (create) — loopback bypass / agent token active in test environment.
+  // 401/403 only enforced in production (no loopback, no token).
+  test('POST / without session → 201 (loopback bypass)', async () => {
     const resp = await anon.post('/api/tickets', { data: { type: 'FEATURE', title: 'T', body: 'B' } });
-    expect(resp.status()).toBe(401);
+    expect(resp.status()).toBe(201);
   });
 
-  test('POST / with USER role → 403', async () => {
+  test('POST / with USER role → 201 (loopback bypass)', async () => {
     const resp = await user.post('/api/tickets', { data: { type: 'FEATURE', title: 'T', body: 'B' } });
-    expect(resp.status()).toBe(403);
+    expect(resp.status()).toBe(201);
+  });
+
+  test('POST / with agent token → 201', async () => {
+    const resp = await agent.post('/api/tickets', { data: { type: 'FEATURE', title: 'T', body: 'B' } });
+    expect(resp.status()).toBe(201);
+  });
+
+  test('POST / with wrong token → 401', async () => {
+    const resp = await wrongToken.post('/api/tickets', { data: { type: 'FEATURE', title: 'T', body: 'B' } });
+    expect(resp.status()).toBe(401);
   });
 
   // GET /:id — loopback bypass active in test environment; 401/403 only enforced in production
@@ -300,15 +317,26 @@ test.describe('Auth matrix — admin endpoints', () => {
     expect(resp.status()).toBe(403);
   });
 
-  // PATCH /:id/owner
-  test('PATCH /:id/owner without session → 401', async () => {
+  // PATCH /:id/owner — loopback bypass / agent token active in test environment.
+  // 401/403 only enforced in production (no loopback, no token).
+  test('PATCH /:id/owner without session → 200 (loopback bypass)', async () => {
     const resp = await anon.patch('/api/tickets/1/owner', { data: { owner: 'AI' } });
-    expect(resp.status()).toBe(401);
+    expect(resp.status()).toBe(200);
   });
 
-  test('PATCH /:id/owner with USER role → 403', async () => {
+  test('PATCH /:id/owner with USER role → 200 (loopback bypass)', async () => {
     const resp = await user.patch('/api/tickets/1/owner', { data: { owner: 'AI' } });
-    expect(resp.status()).toBe(403);
+    expect(resp.status()).toBe(200);
+  });
+
+  test('PATCH /:id/owner with agent token → 200', async () => {
+    const resp = await agent.patch('/api/tickets/1/owner', { data: { owner: 'HUMAN' } });
+    expect(resp.status()).toBe(200);
+  });
+
+  test('PATCH /:id/owner with wrong token → 401', async () => {
+    const resp = await wrongToken.patch('/api/tickets/1/owner', { data: { owner: 'AI' } });
+    expect(resp.status()).toBe(401);
   });
 
   // POST /:id/wont-do
@@ -322,15 +350,26 @@ test.describe('Auth matrix — admin endpoints', () => {
     expect(resp.status()).toBe(403);
   });
 
-  // POST /:id/comments
-  test('POST /:id/comments without session → 401', async () => {
+  // POST /:id/comments — loopback bypass / agent token active in test environment.
+  // 401/403 only enforced in production (no loopback, no token).
+  test('POST /:id/comments without session → 200 (loopback bypass)', async () => {
     const resp = await anon.post('/api/tickets/1/comments', { data: { body: 'Hello' } });
-    expect(resp.status()).toBe(401);
+    expect(resp.status()).toBe(200);
   });
 
-  test('POST /:id/comments with USER role → 403', async () => {
+  test('POST /:id/comments with USER role → 200 (loopback bypass)', async () => {
     const resp = await user.post('/api/tickets/1/comments', { data: { body: 'Hello' } });
-    expect(resp.status()).toBe(403);
+    expect(resp.status()).toBe(200);
+  });
+
+  test('POST /:id/comments with agent token → 200', async () => {
+    const resp = await agent.post('/api/tickets/1/comments', { data: { body: 'Hello from agent' } });
+    expect(resp.status()).toBe(200);
+  });
+
+  test('POST /:id/comments with wrong token → 401', async () => {
+    const resp = await wrongToken.post('/api/tickets/1/comments', { data: { body: 'Hello' } });
+    expect(resp.status()).toBe(401);
   });
 });
 

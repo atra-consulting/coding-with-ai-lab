@@ -146,10 +146,11 @@ router.get(
 );
 
 // POST /api/tickets  (create)
+// Accepts agent token, loopback bypass, or admin session — so a headless skill
+// can file a ticket without an admin login.
 router.post(
   '/',
-  requireAuth,
-  requireRole('ADMIN'),
+  requireAgentTokenOrAdminSession,
   asyncHandler(async (req: Request, res: Response) => {
     const dto = validate(CreateBodySchema, req.body);
     const ticket = await ticketService.create(dto);
@@ -182,10 +183,11 @@ router.patch(
 );
 
 // PATCH /api/tickets/:id/owner
+// Accepts agent token, loopback bypass, or admin session — a skill can flip a
+// ticket's owner (e.g. to AI) without an admin login.
 router.patch(
   '/:id/owner',
-  requireAuth,
-  requireRole('ADMIN'),
+  requireAgentTokenOrAdminSession,
   asyncHandler(async (req: Request, res: Response) => {
     const id = parseInt(req.params['id'] as string, 10);
     const dto = validate(OwnerBodySchema, req.body);
@@ -248,11 +250,12 @@ router.post(
   }),
 );
 
-// POST /api/tickets/:id/comments  (admin only)
+// POST /api/tickets/:id/comments
+// Accepts agent token, loopback bypass, or admin session — a skill can post a
+// comment (e.g. asking for missing info) without an admin login.
 router.post(
   '/:id/comments',
-  requireAuth,
-  requireRole('ADMIN'),
+  requireAgentTokenOrAdminSession,
   asyncHandler(async (req: Request, res: Response) => {
     const id = parseInt(req.params['id'] as string, 10);
     const dto = validate(CommentBodySchema, req.body);
