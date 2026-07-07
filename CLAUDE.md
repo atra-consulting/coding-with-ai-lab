@@ -37,7 +37,7 @@ cd frontend && npx ng build                        # Frontend build check
 
 **Prerequisites:** Node.js 20.19+ (checked by `start.sh`).
 
-**Startup flow:** `runMigrations()` (DDL + idempotent `agent_task` seeding via `seedAgentTasks()` — INSERT OR IGNORE, fixed ids 1–16, runs on every startup including Vercel cold-starts) → `runDataMigration()` (loads `backend/src/seed/fixture.json` for CRM entities when DB empty, skipped if rows exist) → server listens on port 7070.
+**Startup flow:** `runMigrations()` (DDL + idempotent `agent_task` seeding via `seedAgentTasks()` — INSERT OR IGNORE, fixed ids 1–23, runs on every startup including Vercel cold-starts) → `runDataMigration()` (loads `backend/src/seed/fixture.json` for CRM entities when DB empty, skipped if rows exist) → server listens on port 7070.
 
 **Hot reload during development:**
 - **Backend:** `tsx --watch` restarts on file changes automatically.
