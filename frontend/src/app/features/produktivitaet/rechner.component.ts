@@ -215,10 +215,22 @@ function baueInitialeProzessDaten(): Record<ProzessKey, ProzessSnapshot> {
       }
       .cmp-caption {
         font-style: italic;
+        /* Sits above .cmp-hit (z-index: 1) so its text stays mouse-selectable;
+           the row-selection overlay still covers name/bar/total around it. */
+        position: relative;
+        z-index: 2;
+      }
+      .cmp-annahmen-label-inline {
+        display: block;
+        margin-bottom: 0.15rem;
       }
       .cmp-annahmen-list {
         margin: 0;
         padding-left: 1.1rem;
+        /* Sits above .cmp-hit (z-index: 1) so the bullet text stays mouse-selectable;
+           clicks still fall through to the row-selection overlay everywhere else. */
+        position: relative;
+        z-index: 2;
       }
       /* Transparent overlay covering the whole row: click/keyboard selects the process's tab.
          Kept as a sibling overlay (not a wrapper around the row content) so the real Annahmen/

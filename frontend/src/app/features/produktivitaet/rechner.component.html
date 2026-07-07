@@ -226,6 +226,10 @@
             <!-- Annahmen: two bullets per process, real HTML text (not SVG) so screen readers can read them -->
             <div class="cmp-row-annahmen">
               <h6 class="visually-hidden">Annahmen zu {{ p.titel }}</h6>
+              <!-- Visible label only below md: .cmp-header-row's "Annahmen" column header is d-none
+                   there, so without this the bullets would show with no visible label. aria-hidden
+                   because the visually-hidden <h6> above already names this list for screen readers. -->
+              <span class="cmp-annahmen-label-inline d-md-none text-muted small" aria-hidden="true">Annahmen</span>
               <ul class="cmp-annahmen-list small text-muted mb-0">
                 @for (bullet of prozessAnnahmen[p.key]; track bullet) {
                   <li>{{ bullet }}</li>
