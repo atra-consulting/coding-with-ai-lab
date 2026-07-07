@@ -20,7 +20,7 @@
  * check is required for that path.
  *
  * Fixture ids (from fixture.json):
- *   EMAIL        → ids 1-4, 17-18
+ *   EMAIL        → ids 1-4, 17-18, 23
  *   GITHUB_ISSUE → ids 5-8
  *   APP_LOG      → ids 9-12, 19-20
  *   ERROR_REPORT → ids 13-16, 21-22
@@ -149,12 +149,12 @@ test.describe('GET /api/agent-tasks/next', () => {
     });
   });
 
-  test('repeated calls return distinct EMAIL tasks; after all 6 claimed → 204', async () => {
-    // Reset so we start fresh with 6 OPEN EMAIL tasks
+  test('repeated calls return distinct EMAIL tasks; after all 7 claimed → 204', async () => {
+    // Reset so we start fresh with 7 OPEN EMAIL tasks
     await resetDatabase();
 
     const ids: number[] = [];
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 7; i++) {
       const resp = await agent.get('/api/agent-tasks/next?source=EMAIL');
 
       await test.step(`call ${i + 1} returns 200`, () => {
@@ -165,14 +165,14 @@ test.describe('GET /api/agent-tasks/next', () => {
       ids.push(body.id);
     }
 
-    await test.step('all 6 ids are distinct', () => {
+    await test.step('all 7 ids are distinct', () => {
       const unique = new Set(ids);
-      expect(unique.size).toBe(6);
+      expect(unique.size).toBe(7);
     });
 
-    // 7th call: no OPEN EMAIL tasks remain → 204
+    // 8th call: no OPEN EMAIL tasks remain → 204
     const exhaustedResp = await agent.get('/api/agent-tasks/next?source=EMAIL');
-    await test.step('7th call returns 204 (no content)', () => {
+    await test.step('8th call returns 204 (no content)', () => {
       expect(exhaustedResp.status()).toBe(204);
     });
   });
@@ -577,7 +577,7 @@ test.describe('GET /api/agent-tasks', () => {
     await agent.dispose();
   });
 
-  test('admin session → 200 with valid pagination shape and 22 total tasks', async () => {
+  test('admin session → 200 with valid pagination shape and 23 total tasks', async () => {
     const resp = await admin.get('/api/agent-tasks');
 
     await test.step('status 200', () => {
@@ -590,8 +590,8 @@ test.describe('GET /api/agent-tasks', () => {
       expect(Array.isArray(body.content)).toBe(true);
     });
 
-    await test.step('totalElements is 22 (fixture seed count)', () => {
-      expect(body.totalElements).toBe(22);
+    await test.step('totalElements is 23 (fixture seed count)', () => {
+      expect(body.totalElements).toBe(23);
     });
 
     await test.step('number is 0 (first page, 0-indexed)', () => {
@@ -714,9 +714,9 @@ test.describe('GET /api/agent-tasks/summary', () => {
       expect(sources).toContain('ERROR_REPORT');
     });
 
-    await test.step('fresh DB: OPEN counts match seed (GITHUB_ISSUE has 4, others have 6)', () => {
+    await test.step('fresh DB: OPEN counts match seed (GITHUB_ISSUE has 4, EMAIL has 7, others have 6)', () => {
       for (const entry of body) {
-        const expectedOpen = entry.source === 'GITHUB_ISSUE' ? 4 : 6;
+        const expectedOpen = entry.source === 'GITHUB_ISSUE' ? 4 : entry.source === 'EMAIL' ? 7 : 6;
         expect(entry.openCount).toBe(expectedOpen);
         expect(entry.inProgressCount).toBe(0);
         expect(entry.doneCount).toBe(0);
@@ -790,8 +790,8 @@ test.describe('POST /api/agent-tasks/reset', () => {
       expect(typeof resetBody.reset).toBe('number');
     });
 
-    await test.step('reset count equals total tasks (22)', () => {
-      expect(resetBody.reset).toBe(22);
+    await test.step('reset count equals total tasks (23)', () => {
+      expect(resetBody.reset).toBe(23);
     });
 
     // After reset, all tasks should be OPEN
@@ -799,9 +799,9 @@ test.describe('POST /api/agent-tasks/reset', () => {
     expect(postSummaryResp.status()).toBe(200);
     const postSummary = await postSummaryResp.json() as SummaryDTO[];
 
-    await test.step('after reset: OPEN counts match seed (GITHUB_ISSUE has 4, others have 6)', () => {
+    await test.step('after reset: OPEN counts match seed (GITHUB_ISSUE has 4, EMAIL has 7, others have 6)', () => {
       for (const entry of postSummary) {
-        const expectedOpen = entry.source === 'GITHUB_ISSUE' ? 4 : 6;
+        const expectedOpen = entry.source === 'GITHUB_ISSUE' ? 4 : entry.source === 'EMAIL' ? 7 : 6;
         expect(entry.openCount).toBe(expectedOpen);
         expect(entry.inProgressCount).toBe(0);
         expect(entry.doneCount).toBe(0);

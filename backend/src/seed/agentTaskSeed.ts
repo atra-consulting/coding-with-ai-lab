@@ -302,6 +302,19 @@ const AGENT_TASK_SEED: AgentTaskSeedRow[] = [
     createdAt: '2026-06-13T09:00:00.000Z',
     updatedAt: '2026-06-13T09:00:00.000Z',
   },
+  {
+    id: 23,
+    source: 'EMAIL',
+    title: 'Add notes to a person',
+    body: 'Ich möchte Notizen für eine Person anlegen.',
+    status: 'OPEN',
+    comment: null,
+    metadata: '{"sender":"n.klein@richter-partner.de","subject":"Notizen zu Personen"}',
+    pickedUpAt: null,
+    resolvedAt: null,
+    createdAt: '2026-06-15T09:00:00.000Z',
+    updatedAt: '2026-06-15T09:00:00.000Z',
+  },
 ];
 
 const INSERT_SQL =
