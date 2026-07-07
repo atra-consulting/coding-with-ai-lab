@@ -35,3 +35,6 @@ Thumbs.db
 # Claude Code local settings
 .claude/settings.local.json
 .vercel
+
+# update-claude-files embedded result (regenerated every run, never committed)
+docs/state/UPDATE-CLAUDE-FILES-RESULT.md

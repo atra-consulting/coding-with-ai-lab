@@ -2,8 +2,8 @@
 name: "project:plan-and-do"
 description: "End-to-end implementation workflow from idea to code review. Use for building features, implementing tasks, fixing complex bugs, or any substantial coding work. Handles planning, implementation, testing, and review automatically."
 argument-hint: ["description"] [special-instructions|resume:<step>]
-version: 1.10.2
-last-modified: 2026-06-23
+version: 1.11.0
+last-modified: 2026-07-07
 allowed-tools:
   - Read
   - Write
@@ -58,7 +58,7 @@ If NOT in plan mode → continue.
 ## SKILL HEADER
 
 ```
-Plan and Do (v1.10.2, 2026-06-23)
+Plan and Do (v1.11.0, 2026-07-07)
 ************************************
 
 Plan and implement any work from freeform description
@@ -785,21 +785,37 @@ Update state: `current_step` = "11.2". → STEP 12.
 
 ## STEP 12: DOCUMENTATION UPDATES
 
-### Step 12.1: Scan
+Reached only for `workflow_scope == "full"` — Steps 9.3 and 10.3 route the other scopes straight to Step 13. So the doc sync runs on the full path, right before the PR is opened.
 
-Check CLAUDE.md, docs/specs/, docs/prds/ for needed updates based on implementation.
+This step syncs the project docs (`.claude/agents/`, `docs/specs/`, `CLAUDE.md`) with the code this run produced. It runs **before** PR creation (POST-COMPLETION PC.2).
 
-### Step 12.2: Propose Updates
+The `update-claude-files` skill owns this sync. It scopes to the branch's changes and requires the project's agent roster.
 
-**If agents_available:** Launch agents to analyze and propose. Apply the **DISPATCH NARRATION RULE**.
-**Otherwise:** Analyze directly.
+### Step 12.1: Run the doc-sync skill
 
-**If updates needed:**
-- `workflow_scope == "full"` → Apply automatically. Display "Applying documentation updates: [list]." Commit: `docs: Update project documentation. [task_key]` (with `PRD:` footer if applicable). No prompt.
-- Other scopes → Call the `AskUserQuestion` tool with: 1-Apply, 2-Skip, 3-Quit.
-  - Apply → edit files, commit as above.
+**If `agents_available` and `is_git_repo`:** Invoke the skill in embedded mode, scoped to the branch. Substitute the real SHA from `config.original_head`:
+```
+/update-claude-files "embedded base:[original_head]"
+```
+Wait for completion. The skill writes `docs/state/UPDATE-CLAUDE-FILES-RESULT.md` (gitignored). It never prompts and never blocks.
 
-**No updates needed:** Display "No documentation updates needed." Continue.
+**If `is_git_repo` but NOT `agents_available`:** Skip the skill. Display:
+```
+No agents found — skipping doc sync.
+Install the agents first: https://github.com/atra-consulting/coding-with-ai-lab/tree/main/.claude/agents
+```
+Continue to Step 12.3 (do not block the PR).
+
+**If NOT `is_git_repo`:** Direct fallback — scan `CLAUDE.md` and `docs/specs/` for updates the implementation made necessary, and apply them directly (no branch diff available). Skip the result-file logic below.
+
+### Step 12.2: Commit the result
+
+**Only when the skill ran in Step 12.1 (`agents_available` and `is_git_repo`):**
+
+Read `docs/state/UPDATE-CLAUDE-FILES-RESULT.md`. Act on its `status`:
+- `status: updated` → Display "Applying documentation updates: [files from result]." Stage only the changed docs (`git add .claude/agents docs/specs CLAUDE.md`) and commit `docs: Update project documentation. [task_key]` (with `PRD:` footer when `prd_file` exists). Do NOT stage the result file — it is gitignored.
+- `status: no-changes` → Display "No documentation updates needed." Commit nothing.
+- `status: skipped-no-agents` or `status: error` → Display the note from the result file. Commit nothing. Continue — never block the PR.
 
 ### Step 12.3: Advance to Summary
 

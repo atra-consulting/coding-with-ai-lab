@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "task_key": "UPDATE-CLAUDE-FILES-SKILL",
+  "status": "completed",
+  "current_step": "13.2",
+  "started": "2026-07-07T00:00:00Z",
+  "updated": "2026-07-07T00:00:00Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Add ~/Desktop/custom-skills/production/update-claude-files/SKILL.md to this project and adapt it. Updates docs/specs/SPEC*.md, docs/specs/DOMAIN.md, .claude/agents/ subagents, and CLAUDE.md. Runs before PR creation in plan-and-do/SKILL.md, scoped to the branch's changes. Skips with a warning (install agents from GitHub URL) when no agents exist. Also runs standalone based on timestamps of last change and commits since then.",
+    "special_instructions": null,
+    "branch_name": "update-claude-files-skill-add-adapt",
+    "original_branch": "main",
+    "original_head": "885d0181ab2730ba23f146ef5dd9b96bfaa60939",
+    "docs_folder": "docs",
+    "is_git_repo": true,
+    "workflow_scope": "full",
+    "pr_prefix": "feat:",
+    "pr_exists": false,
+    "pr_url": null
+  },
+  "discovery": {
+    "agents_available": true,
+    "writer_agents": ["ba-writer"],
+    "coding_agents": ["be-coder", "db-coder", "fe-coder", "ui-designer"],
+    "review_agents": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer"],
+    "test_coding_agents": ["be-test-coder", "fe-test-coder"],
+    "test_review_agents": ["be-test-reviewer", "fe-test-reviewer"],
+    "test_runner_agents": ["be-test-runner", "fe-test-runner"],
+    "tooling_coding_agents": ["python-coder", "shell-coder", "skill-coder"],
+    "tooling_review_agents": ["python-reviewer", "shell-reviewer", "skill-reviewer"],
+    "test_command": "No suite (Markdown skill files); verified via skill-reviewer + read-through"
+  },
+  "artifacts": {
+    "prd_skipped": false,
+    "prd_file": "docs/prds/PRD-UPDATE-CLAUDE-FILES-SKILL.md",
+    "plan_file": "docs/plans/PLAN-UPDATE-CLAUDE-FILES-SKILL.md"
+  },
+  "completed_steps": []
+}
