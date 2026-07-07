@@ -1,8 +1,8 @@
 ---
 name: "project:plan-and-do"
 description: "End-to-end implementation workflow from idea to code review. Use for building features, implementing tasks, fixing complex bugs, or any substantial coding work. Handles planning, implementation, testing, and review automatically."
-argument-hint: ["description"] [special-instructions|resume:<step>]
-version: 1.11.0
+argument-hint: ["description" | ticket-url | ticket-number] [special-instructions|resume:<step>]
+version: 1.12.0
 last-modified: 2026-07-07
 allowed-tools:
   - Read
@@ -16,6 +16,7 @@ allowed-tools:
   - Bash(fvm:*)
   - Bash(./run-all-tests.sh:*)
   - Bash(gh:*)
+  - Bash(curl:*)
   - Task
   - AskUserQuestion
 ---
@@ -24,10 +25,13 @@ allowed-tools:
 
 <!--
 Usage: /plan-and-do ["description"] [special-instructions]
+Usage: /plan-and-do <ticket-url-or-number>          (process a Kanban ticket — see ## TICKET MODE)
 Usage: /plan-and-do                                (scans for resumable tasks)
 Example: /plan-and-do "Add Redis caching for sessions"
 Example with instructions: /plan-and-do "Add Redis caching" "Use node-cache with 5 min TTL"
-Variables: $ARGUMENTS (captures freeform description and optional special instructions)
+Example ticket (URL): /plan-and-do http://localhost:7200/admin/tickets/8
+Example ticket (number): /plan-and-do 8
+Variables: $ARGUMENTS (freeform description + optional special instructions, OR a ticket URL/number)
 Workflow: End-to-end implementation from task description to code review
 Prerequisites: git, test execution capability
 -->
@@ -58,7 +62,7 @@ If NOT in plan mode → continue.
 ## SKILL HEADER
 
 ```
-Plan and Do (v1.11.0, 2026-07-07)
+Plan and Do (v1.12.0, 2026-07-07)
 ************************************
 
 Plan and implement any work from freeform description
@@ -133,8 +137,9 @@ Never do any of these — each is a bug:
 When user chooses "quit" at any checkpoint:
 1. Update state file: set `status` = "paused"
 2. **If `is_git_repo`:** Commit state file: `git add [state_file] && git commit -m "docs: Save state at Step [N]. [task_key]"`
-3. Display: "Progress saved. Resume with: /plan-and-do [input]"
-4. STOP (clean exit)
+3. **If `ticket_mode = true`:** Run **TM.4 (Blocked + Human)** with the reason "Von der KI pausiert — wartet auf Eingabe." so the ticket does not stay stuck in "In Arbeit". (Skip if the ticket was never claimed, i.e. Step 4.6 has not run.)
+4. Display: "Progress saved. Resume with: /plan-and-do [input]"
+5. STOP (clean exit)
 
 ### Standard Checkpoint
 
@@ -212,6 +217,60 @@ If you lose track of variables after context compression, re-read `[docs_folder]
 
 ---
 
+## TICKET MODE
+
+The skill can process a Kanban ticket from the workshop ticket system instead of a freeform description. Full API contract: `docs/specs/SPEC-API-TICKETS.md` (read the "For skill authors" section).
+
+**When it triggers.** In Step 1, if the *entire* trimmed `$ARGUMENTS` (ignoring any `resume:<n>` token) is one of:
+- a **ticket URL** — matches `…/admin/tickets/<id>` for any host/port, e.g. `http://localhost:7200/admin/tickets/8`
+- a **bare positive integer** — matches `^\d+$`, e.g. `8`
+
+then set `ticket_mode = true` and extract `ticket_id`. Otherwise `ticket_mode = false` and the skill runs its normal freeform flow, unchanged. A real task description is never a bare number, so this is unambiguous.
+
+**Board terminology.** The board at `/admin/tickets` shows **German labels only** — map them to the `status` enum:
+
+| Skill term | German column | `status` | notes |
+|------------|---------------|----------|-------|
+| Ready | **Zu bereit** | `TODO` | claimable **only** when `owner=AI` |
+| In Progress | **In Arbeit** | `IN_PROGRESS` | |
+| Blocked | **Wartet** | `ON_HOLD` | `owner` flips to `HUMAN` |
+| Done | **Erledigt** | `DONE` | `solution=DONE` |
+| (intake) | Definition | `DEFINITION` | never processed |
+
+`owner` (`AI` | `HUMAN`) is a **separate field**, not a column or a visible label. **The skill only processes tickets that are `TODO` + `owner=AI`** — i.e. in the "Ready" ("Zu bereit") column and owned by the AI.
+
+**Config (store in state under `config`).**
+- `ticket_api_base` — default `http://localhost:7070` (the backend). Only override if the pasted URL names a different backend host; a bare number or a `localhost:7200` frontend URL both use `http://localhost:7070`.
+- **Auth** — from repo root, if `backend/.env` exists load it with `set -a && source backend/.env && set +a`; if `AGENT_API_TOKEN` is set, send `-H "Authorization: Bearer $AGENT_API_TOKEN"` on every agent call. Otherwise rely on the localhost loopback bypass (`AGENT_AUTH_ALLOW_LOOPBACK=1`).
+- `ticket_url` — the frontend URL `http://localhost:7200/admin/tickets/<id>` (rebuild it when only a number was given).
+
+**Comment on every state change.** Agent verbs carry a comment only on `done` and `ask`. The claim (`/start` → In Progress) has **no** comment field, so the skill posts that one comment through a short-lived **admin session** (workshop admin user `admin` / `admin123`):
+```bash
+# Login body uses German field names: benutzername / passwort. Cookie name is set by the server (-c captures it).
+curl -s -c /tmp/pad-cookies.txt -X POST -H "Content-Type: application/json" \
+  -d '{"benutzername":"admin","passwort":"admin123"}' "$ticket_api_base/api/auth/login"
+curl -s -b /tmp/pad-cookies.txt -X POST -H "Content-Type: application/json" \
+  -d '{"body":"<message>"}' "$ticket_api_base/api/tickets/<id>/comments"
+```
+Use the admin session **only** for the extra In-Progress comment. Do the real transitions with the agent verbs below. (`done` and `ask` already post their own comments, so no admin comment is needed there.)
+
+### TM.1 — Resolve & verify (run from Step 1, ticket mode only)
+1. `GET $ticket_api_base/api/tickets/<id>`. A `404` → tell the user "Ticket &lt;id&gt; not found" and STOP the whole skill.
+2. Require `status == "TODO"` **and** `owner == "AI"`. If not, display the actual status + owner (e.g. "Ticket 8 is In Arbeit / HUMAN — not Ready+AI, nothing to do") and STOP. Never process a ticket that is not Ready+AI.
+3. Set `user_description` = ticket `title` + two newlines + `body` (append the existing `comments` thread for context). Set `task_key = TICKET-<id>-<2–4 kebab words from the title>`. Set `ticket_url`.
+
+### TM.2 — Claim → In Progress (run from Step 4.6, after the branch exists)
+1. `POST $ticket_api_base/api/tickets/<id>/start` → `IN_PROGRESS`. A `409` means it is no longer Ready+AI (already claimed) — STOP and tell the user.
+2. Post the state-change comment via the admin session, e.g. `"Von der KI übernommen. Status → In Arbeit (Branch: <branch_name>)."`
+
+### TM.3 — Finish → Done (run from Step 13.4, on success)
+`POST $ticket_api_base/api/tickets/<id>/done` with body `{"comment":"<2–3 sentence summary of the change + the PR link if one was created>"}`. Moves the ticket to `DONE` (`solution=DONE`); the `comment` is the state-change comment.
+
+### TM.4 — Question / error → Blocked + Human (run on any unanswerable question, unrecoverable error, or Quit while in ticket mode)
+`POST $ticket_api_base/api/tickets/<id>/ask` with body `{"question":"<the exact question or error text, plus what you already tried>"}`. This moves the ticket to `ON_HOLD` ("Wartet"), sets `owner=HUMAN`, and posts the text as an `AGENT` comment — the state-change comment **and** the reassignment to Human in a single call. Then STOP the skill.
+
+---
+
 ## PARAMETER PARSING
 
 **If $ARGUMENTS contains "help" or "doctor":**
@@ -225,7 +284,8 @@ Read `plan-and-do-modes.md` and execute matching section. STOP.
 
    **Path A — Freeform text** (non-empty):
    - Store as `user_description`
-   - Extract UPPERCASE task name (2-4 words, hyphenated). Example: "Add Redis caching" → "ADD-REDIS-CACHING"
+   - **Ticket detection (see `## TICKET MODE`):** If the trimmed input is a ticket URL (`…/admin/tickets/<id>`) or a bare integer (`^\d+$`), set `ticket_mode = true`, then run **TM.1 (Resolve & verify)** now. TM.1 sets `user_description`, `task_key`, `ticket_id`, `ticket_url`. If TM.1 stops (not found, or not Ready+AI), STOP the whole skill. Otherwise skip the UPPERCASE-name extraction below (TM.1 already set `task_key`) and go straight to `branch_prefix`. Set `ticket_api_base` per the TICKET MODE config.
+   - **If not a ticket** (`ticket_mode = false`): Extract UPPERCASE task name (2-4 words, hyphenated). Example: "Add Redis caching" → "ADD-REDIS-CACHING"
    - Display understanding and key. Do NOT ask for approval — just show it and continue.
    - Set `branch_prefix` = lowercase task_key, `input_mode` = "freeform"
 
@@ -332,6 +392,10 @@ Write `[state_dir]/STATE-[task_key].json` using Write tool:
     "input_mode": "freeform",
     "user_description": "[user_description]",
     "special_instructions": null,
+    "ticket_mode": false,
+    "ticket_id": null,
+    "ticket_url": null,
+    "ticket_api_base": null,
     "branch_name": null,
     "original_branch": null,
     "original_head": null,
@@ -439,6 +503,12 @@ Update state with `branch_name`, `original_branch`, `original_head`, `pr_exists`
 git add [state_dir]/STATE-[task_key].json
 git commit -m "docs: Initialize state tracking for [task_key]"
 ```
+
+### Step 4.6: Claim Ticket (ticket mode only)
+
+**If `ticket_mode = false`:** Skip this step.
+
+**If `ticket_mode = true`:** Run **TM.2 (Claim → In Progress)** now — the branch exists, so the In-Progress comment can name it. This flips the ticket `TODO → IN_PROGRESS` and posts the state-change comment. A `409` here means the ticket is no longer Ready+AI — STOP and tell the user.
 
 ---
 
@@ -678,6 +748,8 @@ For each task in PLAN:
 
 If questions arise: explain the issue, then call the `AskUserQuestion` tool with numbered alternatives.
 
+**Ticket mode:** If a blocking question cannot be answered or an error cannot be recovered (here or during testing in Step 9), run **TM.4 (Blocked + Human)** with that question/error as the text, then STOP. This is how a ticket-mode run "asks a question or runs into an error": comment + move to "Wartet" + reassign to Human.
+
 ---
 
 ## STEP 9: TESTING
@@ -854,6 +926,7 @@ Agents Used: [list or "None (direct mode)"]
 [If PRD exists]: Specifications: [full absolute path to prd_file]
 Plan: [full absolute path to plan_file]
 State: [full absolute path to state_file]
+[If ticket_mode]: Ticket: [ticket_url] → Erledigt (Done)
 
 Commits:
 [List SHAs and messages]
@@ -871,6 +944,12 @@ If state file exists: update `status` = "completed", commit.
 Read `plan-and-do-modes.md` and execute "POST-COMPLETION WORKFLOW" section. This handles: cleanup uncommitted changes, push confirmation, PR creation, PR merge, and branch switch.
 
 **CRITICAL:** PRs MUST target `original_branch` (the branch active when the skill started, stored in state file `config.original_branch`). Never default to main/master.
+
+### Step 13.4: Finish Ticket (ticket mode only)
+
+**If `ticket_mode = false`:** Skip this step.
+
+**If `ticket_mode = true`:** Run **TM.3 (Finish → Done)** — the last step, so any PR created in Step 13.3 is already known and its URL goes into the Done comment. This moves the ticket to `DONE` ("Erledigt"). Run this on any successful completion regardless of `workflow_scope`. If the run ended by asking a question or hitting an unrecoverable error, TM.4 (Blocked + Human) already ran instead — do **not** also mark it Done.
 
 ---
 
