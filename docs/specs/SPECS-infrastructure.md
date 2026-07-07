@@ -58,7 +58,6 @@ coding-with-ai-lab/
 │       ├── agent-task-runner.yml   # Autonomous agent for OPEN agent_task rows
 │       └── github-issue-agent.yml  # GitHub-issue refinement agent
 ├── docs/
-│   ├── architecture.md
 │   ├── adr/                    # Architecture Decision Records
 │   ├── prds/                   # Product Requirement Documents
 │   ├── uxdr/                   # UX Design Records
@@ -222,7 +221,6 @@ No JWT secrets. No RSA key paths. No cookie-flag overrides.
 
 | Directory | Contents |
 |-----------|---------|
-| docs/architecture.md | System overview |
 | docs/adr/ | Architecture Decision Records |
 | docs/prds/ | Product Requirement Documents |
 | docs/uxdr/ | UX Design Records |
