@@ -2,7 +2,7 @@
 name: "project:do-semi-automatic"
 description: "Headless skill that works one Ready+AI Kanban ticket per run — judges it, sends it back to Definition (owner HUMAN) if under-specified, or builds it fully via plan-and-do, documenting every status change with a comment. No push, no PR. For headless claude -p runs."
 argument-hint: "[ticket-id]"
-version: 1.0.1
+version: 1.0.2
 last-modified: 2026-07-08
 allowed-tools:
   - Read
@@ -31,7 +31,7 @@ Wenn der Skill mit einer Zahl aufgerufen wird (z. B. `/do-semi-automatic 8`), is
 
 ## Fehlerbehandlung bei mutierenden Aufrufen
 
-Gilt für **jeden** POST/PATCH-Aufruf in Schritt 3a, 3b, 3b-Blocker und 4. HTTP-Code immer erfassen (`-w '%{http_code}'` bzw. `-o /dev/null -w '%{http_code}'`, wie schon in Schritt 1). Bei jedem Nicht-2xx-Code: Endpunkt, Code und Response-Body ausgeben und **sofort beenden**, ohne die verbleibenden Aufrufe des Schritts auszuführen. Nie einen Erfolg (erledigt, zurückgegeben, blockiert) melden, wenn der zugehörige Aufruf fehlgeschlagen ist.
+Gilt für **jeden** POST/PATCH-Aufruf in Schritt 3a, 3b, 3b-Blocker und 4. HTTP-Code immer erfassen (`-w '%{http_code}'` bzw. `-o /dev/null -w '%{http_code}'`, wie schon in Schritt 1). Bei jedem Nicht-2xx-Code: Endpunkt und Code ausgeben und **sofort beenden**, ohne die verbleibenden Aufrufe des Schritts auszuführen. Nie einen Erfolg (erledigt, zurückgegeben, blockiert) melden, wenn der zugehörige Aufruf fehlgeschlagen ist.
 
 ## Schritt 0 — Umgebungsvariablen laden
 
@@ -200,7 +200,7 @@ Generische Kommentare wie „unklar" sind nicht akzeptabel. Den fehlenden Punkt 
    > - PRD überspringen → direkt zum Plan.
    > - Plan-Freigabe → „Approve, implement, and review" (kein PR).
    > - Jeder Review-Befund → alle Korrekturen genehmigen.
-   > - Falls plan-and-do nach dem Test-Befehl fragt: für Backend-Änderungen `cd backend && npm test` antworten, für Frontend-Änderungen `cd frontend && npx ng test --watch=false`; wenn unklar, `cd backend && npm test`.
+   > - Falls plan-and-do nach dem Test-Befehl fragt: für Backend-Änderungen `cd backend && npm test` antworten, für Frontend-Änderungen `cd frontend && npm run test:ci`; wenn unklar, `cd backend && npm test`.
    > - Jeder andere Checkpoint → Continue / empfohlene Option.
    >
    > Planungsdateien behalten. NIEMALS pushen, KEINEN PR anlegen. Wenn mitten im Bauen eine echte Produktentscheidung fehlt, ODER Tests/Build nach vertretbarem Versuch nicht automatisch grün werden: den Build stoppen und zu Schritt 3b-Blocker übergehen (siehe unten), statt zu raten oder zu hängen.
@@ -220,7 +220,7 @@ ASK_CODE=$(curl -s -o /dev/null -w '%{http_code}' -X POST \
 ```
 
 - HTTP `200` → Das setzt das Ticket auf `ON_HOLD` („Wartet"), `owner` zurück auf `HUMAN`, und postet den Text als `AGENT`-Kommentar — `/ask` trägt seinen Kommentar selbst. Dann **beenden**. Das Ticket **nicht** als erledigt markieren.
-- Jeder andere Code → Fehler ausgeben (Endpunkt, Code, Response-Body) und **beenden**. Nicht als „blockiert" melden — der Ticket-Status ist unklar, das Ticket steht weiterhin auf `IN_PROGRESS`.
+- Jeder andere Code → Fehler ausgeben (Endpunkt, Code) und **beenden**. Nicht als „blockiert" melden — der Ticket-Status ist unklar, das Ticket steht weiterhin auf `IN_PROGRESS`.
 
 ## Schritt 4 — Erledigt markieren
 
@@ -243,7 +243,7 @@ DONE_CODE=$(curl -s -o /dev/null -w '%{http_code}' -X POST \
 ```
 
 - HTTP `200` → Dies setzt `solution=DONE`. Dann **beenden**. Ein Ticket pro Durchlauf.
-- Jeder andere Code (z. B. `409`, weil das Ticket nicht mehr `IN_PROGRESS` ist) → Fehler ausgeben (Endpunkt, Code, Response-Body). **Nicht** als erledigt melden — das Ticket ist weiterhin `IN_PROGRESS` und muss manuell abgeschlossen werden. Dann **beenden**.
+- Jeder andere Code (z. B. `409`, weil das Ticket nicht mehr `IN_PROGRESS` ist) → Fehler ausgeben (Endpunkt, Code). **Nicht** als erledigt melden — das Ticket ist weiterhin `IN_PROGRESS` und muss manuell abgeschlossen werden. Dann **beenden**.
 
 ## Kommentar-Regel
 
