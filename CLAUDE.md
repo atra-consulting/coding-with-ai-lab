@@ -6,7 +6,7 @@ Full-stack CRM application. Node.js/TypeScript (Express + Drizzle ORM + libSQL/S
 
 ### Autonomous Agents (advanced workshop)
 
-Two independent Claude-Code-in-CI agents. Both are documented in full in [`docs/API-TASKS.md`](docs/API-TASKS.md); the workshop walkthrough is [`docs/WORKSHOP-AUTONOMOUS-TASKS.md`](docs/WORKSHOP-AUTONOMOUS-TASKS.md).
+Two independent Claude-Code-in-CI agents. Both are documented in full in [`docs/API-TASKS.md`](docs/API-TASKS.md).
 
 - **Agent-task runner** — drains the `agent_task` table (sources `EMAIL`, `GITHUB_ISSUE`, `APP_LOG`, `ERROR_REPORT`; lifecycle `OPEN → IN_PROGRESS → DONE | REJECTED`) via the `/api/agent-tasks` API, decides solve-or-reject, implements, and merges. Admin dashboard at `/admin/agent-tasks`. Workflow `.github/workflows/agent-task-runner.yml`, prompts `.claude/prompts/agent-*.md`.
 - **GitHub-issue agent** — works real GitHub issues labelled `Refinement needed`, one per run, triggered from the `solve-github-issues` card in `/admin/cron`. Implements-or-asks; opens a PR against `main` (never merged) or comments a question and adds `Input needed`. Status tracked on GitHub Project board #7. Workflow `.github/workflows/github-issue-agent.yml`, prompt `.claude/prompts/agent-github-refinement.md`.
