@@ -494,6 +494,33 @@ export class RechnerComponent implements OnInit {
   readonly prozesse = PROZESSE;
   readonly zeiteinheiten: ZeitEinheit[] = ZEITEINHEITEN;
 
+  /**
+   * Prozessvergleich card: cycles how many of the four comparison bars are shown.
+   * 0 = alle Balken, 1 = nur Balken 1, 2 = Balken 1–2, 3 = Balken 1–3. The bar
+   * SCALE stays fixed (getComparisonBars() is untouched) — this only hides rows,
+   * it never resizes the remaining bars. Affects the Prozessvergleich card only,
+   * not the Schritt-Zeiten tabs.
+   */
+  barLimit = signal(0);
+
+  cycleBarLimit(): void {
+    this.barLimit.set((this.barLimit() + 1) % 4);
+  }
+
+  isBarVisible(index: number): boolean {
+    const n = this.barLimit();
+    return n === 0 || index < n;
+  }
+
+  readonly barLimitLabel = computed(() => {
+    switch (this.barLimit()) {
+      case 1: return 'Nur Balken 1';
+      case 2: return 'Balken 1–2';
+      case 3: return 'Balken 1–3';
+      default: return 'Alle Balken';
+    }
+  });
+
   /** Prozessvergleich card: two "Annahmen" bullets per process + the Agile-mit-KI-only caption. */
   readonly prozessAnnahmen = PROZESS_ANNAHMEN;
   readonly prozessCaption = PROZESS_CAPTION;

@@ -591,4 +591,63 @@ describe('RechnerComponent', () => {
       });
     });
   });
+
+  // ─── Prozessvergleich bar filter (barLimit / cycleBarLimit / isBarVisible) ─
+
+  describe('Prozessvergleich bar filter', () => {
+    it('defaults barLimit() to 0, with all four bars visible', () => {
+      expect(component.barLimit()).toBe(0);
+      expect(component.isBarVisible(0)).toBeTrue();
+      expect(component.isBarVisible(1)).toBeTrue();
+      expect(component.isBarVisible(2)).toBeTrue();
+      expect(component.isBarVisible(3)).toBeTrue();
+    });
+
+    it('cycleBarLimit() steps 0 → 1 → 2 → 3 → 0', () => {
+      expect(component.barLimit()).toBe(0);
+
+      component.cycleBarLimit();
+      expect(component.barLimit()).toBe(1);
+
+      component.cycleBarLimit();
+      expect(component.barLimit()).toBe(2);
+
+      component.cycleBarLimit();
+      expect(component.barLimit()).toBe(3);
+
+      component.cycleBarLimit();
+      expect(component.barLimit()).toBe(0);
+    });
+
+    it('at barLimit 2, only bars 0 and 1 are visible', () => {
+      component.barLimit.set(2);
+
+      expect(component.isBarVisible(0)).toBeTrue();
+      expect(component.isBarVisible(1)).toBeTrue();
+      expect(component.isBarVisible(2)).toBeFalse();
+      expect(component.isBarVisible(3)).toBeFalse();
+    });
+
+    it('barLimitLabel() returns the right label for each of the four states', () => {
+      component.barLimit.set(0);
+      expect(component.barLimitLabel()).toBe('Alle Balken');
+
+      component.barLimit.set(1);
+      expect(component.barLimitLabel()).toBe('Nur Balken 1');
+
+      component.barLimit.set(2);
+      expect(component.barLimitLabel()).toBe('Balken 1–2');
+
+      component.barLimit.set(3);
+      expect(component.barLimitLabel()).toBe('Balken 1–3');
+    });
+
+    it('renders exactly one .cmp-row when barLimit is set to 1', () => {
+      component.barLimit.set(1);
+      fixture.detectChanges();
+
+      const rows: NodeListOf<HTMLElement> = fixture.nativeElement.querySelectorAll('.cmp-row');
+      expect(rows.length).toBe(1);
+    });
+  });
 });
