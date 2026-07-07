@@ -549,6 +549,42 @@ describe('TicketBoardComponent — onDrop() error rollback', () => {
 
     expect(mockNotification.error).toHaveBeenCalled();
   }));
+
+  it('keeps the filtered view arrays consistent with the master arrays after a failed drop while recentOnly is active', fakeAsync(() => {
+    const fixture = TestBed.createComponent(TicketBoardComponent);
+    const component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    // Make the affected tickets "recent" so they survive the recentOnly filter,
+    // then switch to the filtered view — view arrays become copies, not the master arrays.
+    const now = new Date().toISOString();
+    component.todo.forEach((t) => {
+      t.updatedAt = now;
+      t.createdAt = now;
+    });
+    component.inProgress.forEach((t) => {
+      t.updatedAt = now;
+      t.createdAt = now;
+    });
+    component.toggleRecent();
+    expect(component.recentOnly).toBeTrue();
+
+    const ticket = component.todo[0];
+    const dropEvent = {
+      previousContainer: { data: component.todo },
+      container: { data: component.inProgress },
+      previousIndex: 0,
+      currentIndex: 0,
+      item: { data: ticket },
+    } as unknown as CdkDragDrop<Ticket[]>;
+
+    component.onDrop(dropEvent, 'IN_PROGRESS');
+    tick();
+
+    // After the rollback, the filtered view arrays must reflect the rolled-back master arrays.
+    expect(component.viewTodo).toEqual(component.todo);
+    expect(component.viewInProgress).toEqual(component.inProgress);
+  }));
 });
 
 // ─── Done column: solution badge ──────────────────────────────────────────────
@@ -726,5 +762,123 @@ describe('TicketBoardComponent — typeBadgeClass() and typeLabel()', () => {
 
   it('typeLabel returns "Aufgabe" for CHORE', () => {
     expect(component.typeLabel('CHORE')).toBe('Aufgabe');
+  });
+});
+
+// ─── "Kürzlich geändert" toggle ────────────────────────────────────────────────
+
+describe('TicketBoardComponent — recent-only toggle', () => {
+  let fixture: ComponentFixture<TicketBoardComponent>;
+  let component: TicketBoardComponent;
+
+  beforeEach(async () => {
+    const mockService = makeMockTicketService();
+    mockService.getBoard.and.returnValue(of(makeMockBoard()));
+    mockService.getSummary.and.returnValue(of(MOCK_SUMMARY));
+    await setupTestBed(mockService);
+
+    fixture = TestBed.createComponent(TicketBoardComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('defaults recentOnly to false', () => {
+    expect(component.recentOnly).toBeFalse();
+  });
+
+  it('populates the view arrays with the full arrays after loadBoard()', () => {
+    expect(component.viewDefinition).toEqual(component.definition);
+    expect(component.viewTodo).toEqual(component.todo);
+    expect(component.viewInProgress).toEqual(component.inProgress);
+    expect(component.viewOnHold).toEqual(component.onHold);
+    expect(component.viewDone).toEqual(component.done);
+  });
+
+  it('isRecent() returns true for a ticket updated 30 minutes ago', () => {
+    const ticket = makeTicket(100, {
+      updatedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+      createdAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+    });
+    expect(component.isRecent(ticket)).toBeTrue();
+  });
+
+  it('isRecent() returns false when both createdAt and updatedAt are 90 minutes ago', () => {
+    const ticket = makeTicket(101, {
+      updatedAt: new Date(Date.now() - 90 * 60 * 1000).toISOString(),
+      createdAt: new Date(Date.now() - 90 * 60 * 1000).toISOString(),
+    });
+    expect(component.isRecent(ticket)).toBeFalse();
+  });
+
+  it('toggleRecent() sets recentOnly to true and filters the view arrays to only recent tickets', () => {
+    // Make one ticket recent, the rest old — reuse the TODO column (2 tickets)
+    component.todo[0].updatedAt = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    component.todo[0].createdAt = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    component.todo[1].updatedAt = new Date(Date.now() - 90 * 60 * 1000).toISOString();
+    component.todo[1].createdAt = new Date(Date.now() - 90 * 60 * 1000).toISOString();
+
+    component.toggleRecent();
+
+    expect(component.recentOnly).toBeTrue();
+    expect(component.viewTodo.length).toBe(1);
+    expect(component.viewTodo[0].id).toBe(component.todo[0].id);
+  });
+
+  it('toggling recentOnly a second time restores the full view arrays (same references)', () => {
+    component.toggleRecent();
+    expect(component.recentOnly).toBeTrue();
+
+    component.toggleRecent();
+
+    expect(component.recentOnly).toBeFalse();
+    expect(component.viewDefinition).toBe(component.definition);
+    expect(component.viewTodo).toBe(component.todo);
+    expect(component.viewInProgress).toBe(component.inProgress);
+    expect(component.viewOnHold).toBe(component.onHold);
+    expect(component.viewDone).toBe(component.done);
+  });
+
+  it('renders the "Kürzlich geändert" label by default and flips to "Alle" when pressed', () => {
+    const button: HTMLButtonElement = fixture.nativeElement.querySelector(
+      '.page-header button.btn-outline-secondary',
+    );
+    expect(button).toBeTruthy();
+    expect(button.textContent).toContain('Kürzlich geändert');
+
+    button.click();
+    fixture.detectChanges();
+
+    expect(button.textContent).toContain('Alle');
+    expect(button.getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('shows the recent-only info banner while filtering is active, and hides it again when toggled off', () => {
+    let banner: HTMLElement | null = fixture.nativeElement.querySelector('.alert-info');
+    expect(banner).toBeNull();
+
+    component.toggleRecent();
+    fixture.detectChanges();
+
+    banner = fixture.nativeElement.querySelector('.alert-info');
+    expect(banner).toBeTruthy();
+    expect(banner!.textContent).toContain('Gefiltert');
+
+    component.toggleRecent();
+    fixture.detectChanges();
+
+    banner = fixture.nativeElement.querySelector('.alert-info');
+    expect(banner).toBeNull();
+  });
+
+  it('shows "Keine kürzlich geänderten Tickets" in every column while filtering is active', () => {
+    // The mock board tickets are all far outside the 60-minute window, so every column empties out.
+    component.toggleRecent();
+    fixture.detectChanges();
+
+    const emptyMessages: NodeListOf<HTMLElement> = fixture.nativeElement.querySelectorAll('.column-empty');
+    expect(emptyMessages.length).toBe(5);
+    emptyMessages.forEach((el) => {
+      expect(el.textContent).toContain('Keine kürzlich geänderten Tickets');
+    });
   });
 });

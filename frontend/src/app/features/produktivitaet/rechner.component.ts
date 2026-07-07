@@ -160,6 +160,27 @@ function baueInitialeProzessDaten(): Record<ProzessKey, ProzessSnapshot> {
         margin-bottom: 1rem;
       }
 
+      /* ── Prozessvergleich title row: carries the full-width underline itself
+         (instead of .card-title) because the filter button now shares the row —
+         .card-title's own border-bottom would only underline the heading text. ── */
+      .cmp-title-row {
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #d7e0f5;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+      .cmp-title-row .card-title {
+        border-bottom: none;
+        padding-bottom: 0;
+        margin-bottom: 0;
+      }
+
+      /* ── Prozessvergleich filter button: keep its label on one line ── */
+      .bar-filter-btn {
+        white-space: nowrap;
+      }
+
       /* ── Szenarien-Umschalter (unten, eingeklappt) ── */
       .szenarien-toggle {
         font-size: 1.3rem;
@@ -214,7 +235,7 @@ function baueInitialeProzessDaten(): Record<ProzessKey, ProzessSnapshot> {
         height: 16px;
       }
       .cmp-caption {
-        font-style: italic;
+        font-style: normal;
         /* Sits above .cmp-hit (z-index: 1) so its text stays mouse-selectable;
            the row-selection overlay still covers name/bar/total around it. */
         position: relative;
@@ -493,6 +514,33 @@ export class RechnerComponent implements OnInit {
 
   readonly prozesse = PROZESSE;
   readonly zeiteinheiten: ZeitEinheit[] = ZEITEINHEITEN;
+
+  /**
+   * Prozessvergleich card: cycles how many of the four comparison bars are shown.
+   * 0 = alle Balken, 1 = nur Balken 1, 2 = Balken 1–2, 3 = Balken 1–3. The bar
+   * SCALE stays fixed (getComparisonBars() is untouched) — this only hides rows,
+   * it never resizes the remaining bars. Affects the Prozessvergleich card only,
+   * not the Schritt-Zeiten tabs.
+   */
+  barLimit = signal(0);
+
+  cycleBarLimit(): void {
+    this.barLimit.set((this.barLimit() + 1) % 4);
+  }
+
+  isBarVisible(index: number): boolean {
+    const n = this.barLimit();
+    return n === 0 || index < n;
+  }
+
+  readonly barLimitLabel = computed(() => {
+    switch (this.barLimit()) {
+      case 1: return 'Nur Prozess 1';
+      case 2: return 'Prozesse 1–2';
+      case 3: return 'Prozesse 1–3';
+      default: return 'Alle Prozesse';
+    }
+  });
 
   /** Prozessvergleich card: two "Annahmen" bullets per process + the Agile-mit-KI-only caption. */
   readonly prozessAnnahmen = PROZESS_ANNAHMEN;

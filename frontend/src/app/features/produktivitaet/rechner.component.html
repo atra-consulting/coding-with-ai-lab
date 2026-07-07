@@ -176,7 +176,17 @@
 <!-- VISUALIZATION CARD: shared-scale comparison across all four processes -->
 <div id="prozessvergleich" class="card mb-4 viz-card">
   <div class="card-body">
-    <h5 class="card-title">Prozessvergleich</h5>
+    <!-- Heading + process filter on one line; filter button pinned to the far right. -->
+    <div class="cmp-title-row d-flex justify-content-between align-items-center">
+      <h5 class="card-title mb-0">Prozessvergleich</h5>
+      <!-- Process filter: cycles how many of the four comparison bars are shown (scale stays fixed). -->
+      <button
+        type="button"
+        class="btn btn-outline-primary btn-sm bar-filter-btn"
+        (click)="cycleBarLimit()"
+        [attr.aria-label]="'Sichtbare Prozesse wechseln, aktuell: ' + barLimitLabel()"
+      >{{ barLimitLabel() }}</button>
+    </div>
 
     <!-- Caption: this chart shows one solid bar per process, scaled to the longest total (no work/wait split here). -->
     <p class="text-muted small mb-3">Balken = Anteil an der längsten Gesamtdauer. Zeile anklicken, um den Prozess zu öffnen.</p>
@@ -200,56 +210,58 @@
       </span>
 
       @for (p of prozesse; track p.key) {
-        @let cmpIdx = $index;
-        <div class="cmp-row">
-          <div class="cmp-row-content">
-            <div class="cmp-row-main">
-              <div class="bar-label-row">
-                <span class="bar-title">{{ p.titel }}</span>
-                <span class="bar-total">{{ getProzessTotal(cmpIdx) | dauer }}</span>
+        @if (isBarVisible($index)) {
+          @let cmpIdx = $index;
+          <div class="cmp-row">
+            <div class="cmp-row-content">
+              <div class="cmp-row-main">
+                <div class="bar-label-row">
+                  <span class="bar-title">{{ p.titel }}</span>
+                  <span class="bar-total">{{ getProzessTotal(cmpIdx) | dauer }}</span>
+                </div>
+
+                <!-- caption: one per process -->
+                @if (prozessCaption[p.key]; as caption) {
+                  <p class="cmp-caption text-muted small mb-1 mt-0">{{ caption }}</p>
+                }
+
+                <!-- small comparison bar, shared scale via getComparisonBars() -->
+                <svg class="cmp-bar-svg" viewBox="0 0 300 16" preserveAspectRatio="none" aria-hidden="true">
+                  <!-- grey track -->
+                  <rect x="0" y="0" width="300" height="16" fill="#dedede" rx="2" />
+                  <!-- filled bar proportional to max total -->
+                  <rect x="0" y="0" [attr.width]="bars[cmpIdx].width" height="16" fill="#264892" rx="2" />
+                </svg>
               </div>
 
-              <!-- small comparison bar, shared scale via getComparisonBars() -->
-              <svg class="cmp-bar-svg" viewBox="0 0 300 16" preserveAspectRatio="none" aria-hidden="true">
-                <!-- grey track -->
-                <rect x="0" y="0" width="300" height="16" fill="#dedede" rx="2" />
-                <!-- filled bar proportional to max total -->
-                <rect x="0" y="0" [attr.width]="bars[cmpIdx].width" height="16" fill="#264892" rx="2" />
-              </svg>
-
-              <!-- caption: one per process -->
-              @if (prozessCaption[p.key]; as caption) {
-                <p class="cmp-caption text-muted small mb-0 mt-1">{{ caption }}</p>
-              }
+              <!-- Annahmen: two bullets per process, real HTML text (not SVG) so screen readers can read them -->
+              <div class="cmp-row-annahmen">
+                <h6 class="visually-hidden">Annahmen zu {{ p.titel }}</h6>
+                <!-- Visible label only below md: .cmp-header-row's "Annahmen" column header is d-none
+                     there, so without this the bullets would show with no visible label. aria-hidden
+                     because the visually-hidden <h6> above already names this list for screen readers. -->
+                <span class="cmp-annahmen-label-inline d-md-none text-muted small" aria-hidden="true">Annahmen</span>
+                <ul class="cmp-annahmen-list small text-muted mb-0">
+                  @for (bullet of prozessAnnahmen[p.key]; track bullet) {
+                    <li>{{ bullet }}</li>
+                  }
+                </ul>
+              </div>
             </div>
 
-            <!-- Annahmen: two bullets per process, real HTML text (not SVG) so screen readers can read them -->
-            <div class="cmp-row-annahmen">
-              <h6 class="visually-hidden">Annahmen zu {{ p.titel }}</h6>
-              <!-- Visible label only below md: .cmp-header-row's "Annahmen" column header is d-none
-                   there, so without this the bullets would show with no visible label. aria-hidden
-                   because the visually-hidden <h6> above already names this list for screen readers. -->
-              <span class="cmp-annahmen-label-inline d-md-none text-muted small" aria-hidden="true">Annahmen</span>
-              <ul class="cmp-annahmen-list small text-muted mb-0">
-                @for (bullet of prozessAnnahmen[p.key]; track bullet) {
-                  <li>{{ bullet }}</li>
-                }
-              </ul>
-            </div>
+            <!-- transparent overlay covering the whole row: click/keyboard selects this process's tab -->
+            <div
+              class="cmp-hit"
+              [class.active]="activeTab === cmpIdx + 1"
+              tabindex="0"
+              role="button"
+              [attr.aria-label]="p.titel + ' auswählen (' + (getProzessTotal(cmpIdx) | dauer) + ')'"
+              (click)="selectProzess(cmpIdx)"
+              (keydown.enter)="selectProzess(cmpIdx)"
+              (keydown.space)="selectProzess(cmpIdx); $event.preventDefault()"
+            ></div>
           </div>
-
-          <!-- transparent overlay covering the whole row: click/keyboard selects this process's tab -->
-          <div
-            class="cmp-hit"
-            [class.active]="activeTab === cmpIdx + 1"
-            tabindex="0"
-            role="button"
-            [attr.aria-label]="p.titel + ' auswählen (' + (getProzessTotal(cmpIdx) | dauer) + ')'"
-            (click)="selectProzess(cmpIdx)"
-            (keydown.enter)="selectProzess(cmpIdx)"
-            (keydown.space)="selectProzess(cmpIdx); $event.preventDefault()"
-          ></div>
-        </div>
+        }
       }
     </div>
   </div>
@@ -272,33 +284,32 @@
               >Zur Eingabe springen</a
             >
 
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <h6 class="mb-0">{{ p.titel }}</h6>
+            <h6 class="visually-hidden">{{ p.titel }}</h6>
+            <div class="d-flex justify-content-between align-items-center mb-3 gap-2">
+              <!-- Balken/Flussdiagramm toggle (5.6): default Balken, ≥44px hit area. -->
+              <div class="btn-group" role="group" [attr.aria-label]="'Ansicht für ' + p.titel + ' wählen'">
+                <button
+                  type="button"
+                  class="btn view-toggle-btn"
+                  [class.btn-primary]="viewMode() === 'balken'"
+                  [class.btn-outline-primary]="viewMode() !== 'balken'"
+                  [attr.aria-pressed]="viewMode() === 'balken'"
+                  (click)="setViewMode('balken')"
+                >
+                  Balken
+                </button>
+                <button
+                  type="button"
+                  class="btn view-toggle-btn"
+                  [class.btn-primary]="viewMode() === 'flussdiagramm'"
+                  [class.btn-outline-primary]="viewMode() !== 'flussdiagramm'"
+                  [attr.aria-pressed]="viewMode() === 'flussdiagramm'"
+                  (click)="setViewMode('flussdiagramm')"
+                >
+                  Flussdiagramm
+                </button>
+              </div>
               <span class="total-badge">{{ getProzessTotal($index) | dauer }}</span>
-            </div>
-
-            <!-- Balken/Flussdiagramm toggle (5.6): default Balken, ≥44px hit area. -->
-            <div class="btn-group mb-3" role="group" [attr.aria-label]="'Ansicht für ' + p.titel + ' wählen'">
-              <button
-                type="button"
-                class="btn view-toggle-btn"
-                [class.btn-primary]="viewMode() === 'balken'"
-                [class.btn-outline-primary]="viewMode() !== 'balken'"
-                [attr.aria-pressed]="viewMode() === 'balken'"
-                (click)="setViewMode('balken')"
-              >
-                Balken
-              </button>
-              <button
-                type="button"
-                class="btn view-toggle-btn"
-                [class.btn-primary]="viewMode() === 'flussdiagramm'"
-                [class.btn-outline-primary]="viewMode() !== 'flussdiagramm'"
-                [attr.aria-pressed]="viewMode() === 'flussdiagramm'"
-                (click)="setViewMode('flussdiagramm')"
-              >
-                Flussdiagramm
-              </button>
             </div>
 
             @if (viewMode() === 'balken') {
