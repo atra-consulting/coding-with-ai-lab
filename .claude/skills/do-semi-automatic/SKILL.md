@@ -1,8 +1,8 @@
 ---
 name: "project:do-semi-automatic"
-description: "Headless-Skill, der pro Lauf genau ein Ready+AI-Kanban-Ticket bearbeitet — beurteilt es, schickt es bei fehlender Spezifikation zurück nach Definition oder baut es via plan-and-do, wobei jede Statusänderung mit einem Kommentar dokumentiert wird. Kein Push, kein PR. Für headless claude -p Läufe."
+description: "Headless skill that works one Ready+AI Kanban ticket per run — judges it, sends it back to Definition (owner HUMAN) if under-specified, or builds it fully via plan-and-do, documenting every status change with a comment. No push, no PR. For headless claude -p runs."
 argument-hint: "[ticket-id]"
-version: 1.0.0
+version: 1.0.1
 last-modified: 2026-07-08
 allowed-tools:
   - Read
@@ -22,12 +22,16 @@ API-Referenz: `docs/specs/SPEC-API-TICKETS.md` (Abschnitt „For skill authors")
 ## Konfiguration
 
 - API-Basis-URL: Umgebungsvariable `APP_BASE_URL`, sonst `http://localhost:7070`.
-- Auth-Header bei **jedem** API-Aufruf: `Authorization: Bearer $AGENT_API_TOKEN`. Lokal greift statt dessen der Loopback-Bypass (`AGENT_AUTH_ALLOW_LOOPBACK=1`), falls kein Header gesetzt ist. Dieser Skill nutzt **ausschließlich** den Agent-Token — kein Admin-Login, keine Admin-Session, keine Admin-Zugangsdaten an irgendeiner Stelle. Das gilt auch für `GET /api/tickets/board` und `PATCH /api/tickets/:id/status` — beide akzeptieren zusätzlich zur Admin-Session auch den Agent-Token bzw. den Loopback-Bypass.
+- Auth-Header bei **jedem** API-Aufruf: `Authorization: Bearer $AGENT_API_TOKEN`. Lokal greift statt dessen der Loopback-Bypass (`AGENT_AUTH_ALLOW_LOOPBACK=1`), falls kein Header gesetzt ist — reiner Hintergrund-Kontext, dieser Skill sendet den Header immer, da Schritt 0 ohne gesetztes `AGENT_API_TOKEN` sofort abbricht. Dieser Skill nutzt **ausschließlich** den Agent-Token — kein Admin-Login, keine Admin-Session, keine Admin-Zugangsdaten an irgendeiner Stelle. Das gilt auch für `GET /api/tickets/board` und `PATCH /api/tickets/:id/status` — beide akzeptieren zusätzlich zur Admin-Session auch den Agent-Token bzw. den Loopback-Bypass.
 - Ein Ticket pro Durchlauf.
 
 ## Parameter
 
 Wenn der Skill mit einer Zahl aufgerufen wird (z. B. `/do-semi-automatic 8`), ist das eine Ticket-ID. Dann die „Nächstes Ticket finden"-Auswahl in Schritt 1 überspringen. Statt dessen das Ticket per ID laden und prüfen, ob es Ready+AI ist (siehe unten).
+
+## Fehlerbehandlung bei mutierenden Aufrufen
+
+Gilt für **jeden** POST/PATCH-Aufruf in Schritt 3a, 3b, 3b-Blocker und 4. HTTP-Code immer erfassen (`-w '%{http_code}'` bzw. `-o /dev/null -w '%{http_code}'`, wie schon in Schritt 1). Bei jedem Nicht-2xx-Code: Endpunkt, Code und Response-Body ausgeben und **sofort beenden**, ohne die verbleibenden Aufrufe des Schritts auszuführen. Nie einen Erfolg (erledigt, zurückgegeben, blockiert) melden, wenn der zugehörige Aufruf fehlgeschlagen ist.
 
 ## Schritt 0 — Umgebungsvariablen laden
 
@@ -122,39 +126,39 @@ Dem Urteil des Subagenten ohne Abweichung folgen.
 
 *(NICHT ablehnen, `plan-and-do` NICHT aufrufen.)*
 
-Der Reihe nach, jeweils mit dem Agent-Token:
+Der Reihe nach, jeweils mit dem Agent-Token. Nach jedem Aufruf den HTTP-Code prüfen (siehe „Fehlerbehandlung bei mutierenden Aufrufen" oben) — schlägt einer fehl, sofort beenden und **nicht** als „zurückgegeben" melden:
 
 1. Kommentar hinterlassen, der genau benennt, was fehlt bzw. welche Entscheidung offen ist:
 
    ```bash
-   curl -s -X POST \
+   COMMENT_CODE=$(curl -s -o /dev/null -w '%{http_code}' -X POST \
      -H "Authorization: Bearer $AGENT_API_TOKEN" \
      -H "Content-Type: application/json" \
      -d '{"body": "GENAU WAS FEHLT ODER UNKLAR IST, damit ein Mensch das Ticket vervollständigen kann"}' \
-     "${APP_BASE_URL:-http://localhost:7070}/api/tickets/<id>/comments"
+     "${APP_BASE_URL:-http://localhost:7070}/api/tickets/<id>/comments")
    ```
 
 2. Owner auf `HUMAN` setzen:
 
    ```bash
-   curl -s -X PATCH \
+   OWNER_CODE=$(curl -s -o /dev/null -w '%{http_code}' -X PATCH \
      -H "Authorization: Bearer $AGENT_API_TOKEN" \
      -H "Content-Type: application/json" \
      -d '{"owner": "HUMAN"}' \
-     "${APP_BASE_URL:-http://localhost:7070}/api/tickets/<id>/owner"
+     "${APP_BASE_URL:-http://localhost:7070}/api/tickets/<id>/owner")
    ```
 
 3. Status zurück auf `DEFINITION` setzen:
 
    ```bash
-   curl -s -X PATCH \
+   STATUS_CODE=$(curl -s -o /dev/null -w '%{http_code}' -X PATCH \
      -H "Authorization: Bearer $AGENT_API_TOKEN" \
      -H "Content-Type: application/json" \
      -d '{"status": "DEFINITION"}' \
-     "${APP_BASE_URL:-http://localhost:7070}/api/tickets/<id>/status"
+     "${APP_BASE_URL:-http://localhost:7070}/api/tickets/<id>/status")
    ```
 
-Dann **beenden**. Das Ticket landet in der Definition-Spalte bei `owner=HUMAN` und war nie `IN_PROGRESS`.
+Waren alle drei Codes `200`: **beenden**. Das Ticket landet in der Definition-Spalte bei `owner=HUMAN` und war nie `IN_PROGRESS`.
 
 Generische Kommentare wie „unklar" sind nicht akzeptabel. Den fehlenden Punkt konkret benennen.
 
@@ -175,12 +179,14 @@ Generische Kommentare wie „unklar" sind nicht akzeptabel. Den fehlenden Punkt 
 2. Statuswechsel dokumentieren (`/start` kennt kein Kommentarfeld):
 
    ```bash
-   curl -s -X POST \
+   COMMENT_CODE=$(curl -s -o /dev/null -w '%{http_code}' -X POST \
      -H "Authorization: Bearer $AGENT_API_TOKEN" \
      -H "Content-Type: application/json" \
      -d '{"body": "In Bearbeitung genommen. Baue jetzt via plan-and-do."}' \
-     "${APP_BASE_URL:-http://localhost:7070}/api/tickets/<id>/comments"
+     "${APP_BASE_URL:-http://localhost:7070}/api/tickets/<id>/comments")
    ```
+
+   HTTP-Code prüfen (siehe „Fehlerbehandlung bei mutierenden Aufrufen" oben). Nicht-2xx → Fehler ausgeben und **beenden**, `plan-and-do` NICHT aufrufen.
 
 3. `plan-and-do` via Skill-Tool aufrufen. Ticket-Titel + Body plus die gelösten Entscheidungen aus den `HUMAN`-Kommentaren als Beschreibung übergeben:
 
@@ -190,7 +196,14 @@ Generische Kommentare wie „unklar" sind nicht akzeptabel. Den fehlenden Punkt 
 
    Diese Daueranweisungen dem Aufruf voranstellen und auf JEDEN Checkpoint anwenden, ohne je anzuhalten:
 
-   > Vollständig autonom und unbeaufsichtigt ausführen. Zu keinem Zeitpunkt `AskUserQuestion` aufrufen oder auf Eingaben warten. Standardantworten: PRD überspringen → direkt zum Plan; Plan-Freigabe → „Approve, implement, and review" (kein PR); jeder Review-Befund → alle Korrekturen genehmigen; jeder andere Checkpoint → Continue / empfohlene Option. Planungsdateien behalten. NIEMALS pushen, KEINEN PR anlegen. Wenn mitten im Bauen eine echte Produktentscheidung fehlt, ODER Tests/Build nach vertretbarem Versuch nicht automatisch grün werden: den Build stoppen und zu Schritt 3b-Blocker übergehen (siehe unten), statt zu raten oder zu hängen.
+   > Vollständig autonom und unbeaufsichtigt ausführen. Zu keinem Zeitpunkt `AskUserQuestion` aufrufen oder auf Eingaben warten. Standardantworten:
+   > - PRD überspringen → direkt zum Plan.
+   > - Plan-Freigabe → „Approve, implement, and review" (kein PR).
+   > - Jeder Review-Befund → alle Korrekturen genehmigen.
+   > - Falls plan-and-do nach dem Test-Befehl fragt: für Backend-Änderungen `cd backend && npm test` antworten, für Frontend-Änderungen `cd frontend && npx ng test --watch=false`; wenn unklar, `cd backend && npm test`.
+   > - Jeder andere Checkpoint → Continue / empfohlene Option.
+   >
+   > Planungsdateien behalten. NIEMALS pushen, KEINEN PR anlegen. Wenn mitten im Bauen eine echte Produktentscheidung fehlt, ODER Tests/Build nach vertretbarem Versuch nicht automatisch grün werden: den Build stoppen und zu Schritt 3b-Blocker übergehen (siehe unten), statt zu raten oder zu hängen.
 
    `plan-and-do` bis zur Fertigstellung laufen lassen (umsetzen → testen → reviewen). **Keinen PR erstellen. Nichts pushen.** Das im Ergebnis explizit vermerken.
 
@@ -199,14 +212,15 @@ Generische Kommentare wie „unklar" sind nicht akzeptabel. Den fehlenden Punkt 
 Wenn mitten im Bauen eine echte, nicht beantwortbare Produktentscheidung fehlt, ODER Tests/der Build nach einem vertretbaren Versuch nicht automatisch grün werden: den Build abbrechen, NICHT raten, NICHT hängen bleiben.
 
 ```bash
-curl -s -X POST \
+ASK_CODE=$(curl -s -o /dev/null -w '%{http_code}' -X POST \
   -H "Authorization: Bearer $AGENT_API_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"question": "DIE GENAUE FRAGE ODER DER FEHLERTEXT, plus was bereits versucht wurde"}' \
-  "${APP_BASE_URL:-http://localhost:7070}/api/tickets/<id>/ask"
+  "${APP_BASE_URL:-http://localhost:7070}/api/tickets/<id>/ask")
 ```
 
-Das setzt das Ticket auf `ON_HOLD` („Wartet"), `owner` zurück auf `HUMAN`, und postet den Text als `AGENT`-Kommentar — `/ask` trägt seinen Kommentar selbst. Dann **beenden**. Das Ticket **nicht** als erledigt markieren.
+- HTTP `200` → Das setzt das Ticket auf `ON_HOLD` („Wartet"), `owner` zurück auf `HUMAN`, und postet den Text als `AGENT`-Kommentar — `/ask` trägt seinen Kommentar selbst. Dann **beenden**. Das Ticket **nicht** als erledigt markieren.
+- Jeder andere Code → Fehler ausgeben (Endpunkt, Code, Response-Body) und **beenden**. Nicht als „blockiert" melden — der Ticket-Status ist unklar, das Ticket steht weiterhin auf `IN_PROGRESS`.
 
 ## Schritt 4 — Erledigt markieren
 
@@ -221,14 +235,15 @@ BRANCH=$(git branch --show-current)
 Dann das Ticket als erledigt markieren. `$BRANCH` in den Kommentar einsetzen, `$AGENT_API_TOKEN` in den Header. Kein PR-Link — es gibt keinen PR:
 
 ```bash
-curl -s -X POST \
+DONE_CODE=$(curl -s -o /dev/null -w '%{http_code}' -X POST \
   -H "Authorization: Bearer $AGENT_API_TOKEN" \
   -H "Content-Type: application/json" \
   -d "{\"comment\": \"KURZE ZUSAMMENFASSUNG WAS GEBAUT WURDE (Branch: $BRANCH)\"}" \
-  "${APP_BASE_URL:-http://localhost:7070}/api/tickets/<id>/done"
+  "${APP_BASE_URL:-http://localhost:7070}/api/tickets/<id>/done")
 ```
 
-Dies setzt `solution=DONE`. Dann **beenden**. Ein Ticket pro Durchlauf.
+- HTTP `200` → Dies setzt `solution=DONE`. Dann **beenden**. Ein Ticket pro Durchlauf.
+- Jeder andere Code (z. B. `409`, weil das Ticket nicht mehr `IN_PROGRESS` ist) → Fehler ausgeben (Endpunkt, Code, Response-Body). **Nicht** als erledigt melden — das Ticket ist weiterhin `IN_PROGRESS` und muss manuell abgeschlossen werden. Dann **beenden**.
 
 ## Kommentar-Regel
 
