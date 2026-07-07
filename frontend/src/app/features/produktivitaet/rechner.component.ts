@@ -141,6 +141,18 @@ function baueInitialeProzessDaten(): Record<ProzessKey, ProzessSnapshot> {
         cursor: pointer;
       }
 
+      /* ── Gesamtdauer je Prozess: fett + hervorgehoben ── */
+      .total-badge {
+        font-weight: 700;
+        font-size: 1.05rem;
+        color: #264892;
+        background: #eef3ff;
+        border: 1px solid #d7e0f5;
+        padding: 0.2rem 0.7rem;
+        border-radius: 0.5rem;
+        white-space: nowrap;
+      }
+
       /* ── Karten-Überschriften kräftiger hervorheben ── */
       .card-title {
         font-size: 1.3rem;
