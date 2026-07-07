@@ -176,18 +176,20 @@
 <!-- VISUALIZATION CARD: shared-scale comparison across all four processes -->
 <div id="prozessvergleich" class="card mb-4 viz-card">
   <div class="card-body">
-    <h5 class="card-title">Prozessvergleich</h5>
+    <!-- Heading + process filter on one line; filter button pinned to the far right. -->
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h5 class="card-title mb-0">Prozessvergleich</h5>
+      <!-- Process filter: cycles how many of the four comparison bars are shown (scale stays fixed). -->
+      <button
+        type="button"
+        class="btn btn-outline-primary btn-sm"
+        (click)="cycleBarLimit()"
+        [attr.aria-label]="'Sichtbare Prozesse wechseln, aktuell: ' + barLimitLabel()"
+      >{{ barLimitLabel() }}</button>
+    </div>
 
     <!-- Caption: this chart shows one solid bar per process, scaled to the longest total (no work/wait split here). -->
     <p class="text-muted small mb-3">Balken = Anteil an der längsten Gesamtdauer. Zeile anklicken, um den Prozess zu öffnen.</p>
-
-    <!-- Bar filter: cycles how many of the four comparison bars are shown (scale stays fixed). -->
-    <button
-      type="button"
-      class="btn btn-outline-primary btn-sm mb-3"
-      (click)="cycleBarLimit()"
-      [attr.aria-label]="'Sichtbare Balken wechseln, aktuell: ' + barLimitLabel()"
-    >{{ barLimitLabel() }}</button>
 
     <!-- Column header for the new Annahmen list only — name/bar/total are already self-explanatory
          through their own styling. Hidden on narrow screens, where rows stack and each list carries

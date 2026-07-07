@@ -630,16 +630,16 @@ describe('RechnerComponent', () => {
 
     it('barLimitLabel() returns the right label for each of the four states', () => {
       component.barLimit.set(0);
-      expect(component.barLimitLabel()).toBe('Alle Balken');
+      expect(component.barLimitLabel()).toBe('Alle Prozesse');
 
       component.barLimit.set(1);
-      expect(component.barLimitLabel()).toBe('Nur Balken 1');
+      expect(component.barLimitLabel()).toBe('Nur Prozess 1');
 
       component.barLimit.set(2);
-      expect(component.barLimitLabel()).toBe('Balken 1–2');
+      expect(component.barLimitLabel()).toBe('Prozesse 1–2');
 
       component.barLimit.set(3);
-      expect(component.barLimitLabel()).toBe('Balken 1–3');
+      expect(component.barLimitLabel()).toBe('Prozesse 1–3');
     });
 
     it('renders exactly one .cmp-row when barLimit is set to 1', () => {

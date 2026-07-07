@@ -514,10 +514,10 @@ export class RechnerComponent implements OnInit {
 
   readonly barLimitLabel = computed(() => {
     switch (this.barLimit()) {
-      case 1: return 'Nur Balken 1';
-      case 2: return 'Balken 1–2';
-      case 3: return 'Balken 1–3';
-      default: return 'Alle Balken';
+      case 1: return 'Nur Prozess 1';
+      case 2: return 'Prozesse 1–2';
+      case 3: return 'Prozesse 1–3';
+      default: return 'Alle Prozesse';
     }
   });
 
