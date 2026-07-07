@@ -526,7 +526,7 @@ while GET /next returns 200:
 # 204 → nothing left to claim
 ```
 
-**What's different from tasks** (see `docs/API-TASKS.md`):
+**What's different from tasks** (see `docs/specs/SPEC-API-TASKS.md`):
 
 - **No `reject`.** A ticket is never thrown away. When you lack a decision, you `ask` — the ticket goes to a human and comes back to the `AI` queue once answered (with your question and their reply in the `comments` thread). Re-claim it later via `GET /next` and continue.
 - **`/next` takes no required parameter.** Tasks require `?source=`; tickets only have an optional `?type=`.
@@ -540,5 +540,5 @@ while GET /next returns 200:
 ## See also
 
 - `docs/prds/PRD-KANBAN-TICKET-SYSTEM.md` — full requirements and acceptance criteria.
-- `docs/API-TASKS.md` — agent-task queue (separate system, different lifecycle).
+- `docs/specs/SPEC-API-TASKS.md` — agent-task queue (separate system, different lifecycle).
 - `backend/src/seed/ticketSeed.ts` — seed data definitions.

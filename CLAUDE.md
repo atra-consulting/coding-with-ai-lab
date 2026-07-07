@@ -6,16 +6,16 @@ Full-stack CRM application. Node.js/TypeScript (Express + Drizzle ORM + libSQL/S
 
 ### Autonomous Agents (advanced workshop)
 
-Two independent Claude-Code-in-CI agents. Both are documented in full in [`docs/API-TASKS.md`](docs/API-TASKS.md).
+Two independent Claude-Code-in-CI agents. Both are documented in full in [`docs/specs/SPEC-API-TASKS.md`](docs/specs/SPEC-API-TASKS.md).
 
 - **Agent-task runner** — drains the `agent_task` table (sources `EMAIL`, `GITHUB_ISSUE`, `APP_LOG`, `ERROR_REPORT`; lifecycle `OPEN → IN_PROGRESS → DONE | REJECTED`) via the `/api/agent-tasks` API, decides solve-or-reject, implements, and merges. Admin dashboard at `/admin/agent-tasks`. Workflow `.github/workflows/agent-task-runner.yml`, prompts `.claude/prompts/agent-*.md`.
 - **GitHub-issue agent** — works real GitHub issues labelled `Refinement needed`, one per run, triggered from the `solve-github-issues` card in `/admin/cron`. Implements-or-asks; opens a PR against `main` (never merged) or comments a question and adds `Input needed`. Status tracked on GitHub Project board #7. Workflow `.github/workflows/github-issue-agent.yml`, prompt `.claude/prompts/agent-github-refinement.md`.
 
-Agent endpoints authenticate with `requireAgentToken` (`AGENT_API_TOKEN`); cron triggers with `requireCronAuth` (`CRON_SECRET` or admin session). See [`docs/API-TASKS.md`](docs/API-TASKS.md) for endpoint signatures, required secrets, and board mechanics.
+Agent endpoints authenticate with `requireAgentToken` (`AGENT_API_TOKEN`); cron triggers with `requireCronAuth` (`CRON_SECRET` or admin session). See [`docs/specs/SPEC-API-TASKS.md`](docs/specs/SPEC-API-TASKS.md) for endpoint signatures, required secrets, and board mechanics.
 
 ### Ticket System (Kanban, advanced workshop)
 
-A fake ticketing system for the software-factory training. Sits beside `agent-tasks`. Full docs in [`docs/API-TICKETS.md`](docs/API-TICKETS.md).
+A fake ticketing system for the software-factory training. Sits beside `agent-tasks`. Full docs in [`docs/specs/SPEC-API-TICKETS.md`](docs/specs/SPEC-API-TICKETS.md).
 
 - `ticket` + `ticket_comment` tables. Kanban board with five columns: `DEFINITION` (intake, labelled "Definition"), `TODO` (labelled "Zu bereit"), `IN_PROGRESS`, `ON_HOLD`, `DONE`. `status` is a DB enum (`CHECK` constraint). Each ticket has an **owner** — `AI` or `HUMAN`. New tickets start `owner=HUMAN`, `status=DEFINITION`. A human refines a Definition ticket then routes it: **"An KI übergeben"** (`PATCH /:id/owner {AI}` → owner=AI, stays in `DEFINITION`) or **"Nach Bereit"** (`POST /:id/hand-to-ai` → owner=AI, →`TODO`). A coding agent works `AI` tickets; humans work the rest.
 - The agent claims (`GET /api/tickets/next`), finishes (`POST /:id/done`), or **asks a question** (`POST /:id/ask` → `ON_HOLD`, owner back to `HUMAN`, question posted as an `AGENT` comment). A human answers via `POST /:id/comments` with `handBackToAi` → back to `TODO`, owner `AI`. Comments form a thread.

@@ -22,7 +22,7 @@
 #                             of ANTHROPIC_API_KEY (a pay-as-you-go API key); do not set both.
 #
 # The Vercel-side env vars (CRON_SECRET, GH_DISPATCH_TOKEN) live in Vercel, not here —
-# see docs/API-TASKS.md "Environment Variables".
+# see docs/specs/SPEC-API-TASKS.md "Environment Variables".
 
 name: Agent Task Runner
 

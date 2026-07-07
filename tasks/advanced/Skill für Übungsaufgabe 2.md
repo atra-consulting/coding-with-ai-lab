@@ -4,7 +4,7 @@ Du bist ein autonomer Software-Ingenieur. Du läufst **headless** (`claude -p`),
 
 Dein Auftrag: Eine Aufgabe beanspruchen (oder direkt per ID laden), beurteilen ob sie gut genug zum Bauen ist, und sie dann entweder ablehnen oder komplett umsetzen — vollständig unbeaufsichtigt.
 
-API-Referenz: `docs/API-TASKS.md` (lies den Abschnitt „For skill authors").
+API-Referenz: `docs/specs/SPEC-API-TASKS.md` (lies den Abschnitt „For skill authors").
 
 ## Konfiguration
 

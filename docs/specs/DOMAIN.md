@@ -87,7 +87,7 @@ Note: the user model carries a `permissions` array, but no middleware enforces i
 
 ## Out of Scope: System Tables
 
-These three tables are app infrastructure. They are not CRM business data. For details see [docs/API-TASKS.md](../API-TASKS.md).
+These three tables are app infrastructure. They are not CRM business data. For details see [docs/specs/SPEC-API-TASKS.md](SPEC-API-TASKS.md).
 
 - **agent_task** — queue for autonomous-AI tasks.
 - **cron_run** — audit log of scheduled cron runs.

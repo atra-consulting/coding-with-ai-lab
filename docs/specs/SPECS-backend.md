@@ -149,7 +149,7 @@ Agent endpoints are authenticated via `requireAgentToken` (see [agentAuth.ts](#a
 
 ### Tickets (`/api/tickets`)
 
-Fake Kanban ticket system for the software-factory training. Board mechanics and full contract: see [docs/API-TICKETS.md](../API-TICKETS.md). Status enum: `DEFINITION → TODO → IN_PROGRESS → ON_HOLD → DONE`. Owner: `AI` or `HUMAN`. New tickets start `owner=HUMAN`, `status=DEFINITION`.
+Fake Kanban ticket system for the software-factory training. Board mechanics and full contract: see [docs/specs/SPEC-API-TICKETS.md](SPEC-API-TICKETS.md). Status enum: `DEFINITION → TODO → IN_PROGRESS → ON_HOLD → DONE`. Owner: `AI` or `HUMAN`. New tickets start `owner=HUMAN`, `status=DEFINITION`.
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|

@@ -41,7 +41,7 @@ Das Dashboard zeigt die `agent_task`-Tabelle. Ein autonomer Claude-Agent in CI a
 
 **Wozu?** Das Tool zeigt einen autonomen Agenten im „Software-Factory"-Betrieb. Der Skill dahinter: [`/do-factory-automatic`](SKILLS.md#do-factory-automatic--autonom-ohne-mensch).
 
-Details zur API: [docs/API-TASKS.md](API-TASKS.md).
+Details zur API: [docs/specs/SPEC-API-TASKS.md](specs/SPEC-API-TASKS.md).
 
 ## Ticket-Board
 
@@ -58,4 +58,4 @@ Ein Kanban-Board. Ein einfaches Ticketsystem für das Software-Factory-Training.
 
 **Wozu?** Das Tool zeigt die Zusammenarbeit von Mensch und KI an Tickets.
 
-Details zur API: [docs/API-TICKETS.md](API-TICKETS.md).
+Details zur API: [docs/specs/SPEC-API-TICKETS.md](specs/SPEC-API-TICKETS.md).
