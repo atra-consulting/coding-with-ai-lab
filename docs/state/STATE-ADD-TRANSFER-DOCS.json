@@ -2,7 +2,7 @@
   "version": 1,
   "task_key": "ADD-TRANSFER-DOCS",
   "status": "in_progress",
-  "current_step": "4.5",
+  "current_step": "7.5",
   "started": "2026-07-07T00:00:00Z",
   "updated": "2026-07-07T00:00:00Z",
   "config": {
@@ -14,24 +14,24 @@
     "branch_name": "add-transfer-docs",
     "original_branch": "main",
     "docs_folder": "docs",
-    "workflow_scope": null,
-    "keep_files": null
+    "workflow_scope": "create-pr",
+    "keep_files": false
   },
   "discovery": {
     "agents_available": true,
     "writer_agents": ["ba-writer"],
     "coding_agents": ["be-coder", "fe-coder", "db-coder", "ui-designer", "python-coder", "shell-coder", "skill-coder"],
     "review_agents": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer", "python-reviewer", "shell-reviewer", "skill-reviewer", "requirements-reviewer"],
-    "test_command": null,
+    "test_command": "cd frontend && npx ng build",
     "youtrack_available": false,
     "youtrack_mcp": null,
     "youtrack_on_start": null,
     "youtrack_on_resolve": null
   },
   "artifacts": {
-    "prd_skipped": null,
+    "prd_skipped": true,
     "prd_file": null,
-    "plan_file": null,
+    "plan_file": "docs/plans/PLAN-ADD-TRANSFER-DOCS.md",
     "pr_url": null
   },
   "completed_steps": []
