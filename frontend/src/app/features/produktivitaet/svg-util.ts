@@ -67,6 +67,11 @@ export interface PieSlice extends PieSliceInput {
   path: string;
   /** This slice's share of the total, rounded to 1 decimal (so a ~3% share reads "3.0", not "0"). */
   percent: number;
+  /** Centroid for an in-slice text label (white percent number). */
+  labelX: number;
+  labelY: number;
+  /** Only show the in-slice label when the wedge is big enough to fit it (tiny slices rely on the legend). */
+  showLabel: boolean;
 }
 
 export interface PieResult {
@@ -116,7 +121,7 @@ export function computePieSlices(slices: PieSliceInput[], cx: number, cy: number
 
   if (total <= 0) {
     return {
-      slices: slices.map((s) => ({ ...s, path: '', percent: 0 })),
+      slices: slices.map((s) => ({ ...s, path: '', percent: 0, labelX: cx, labelY: cy, showLabel: false })),
       isEmpty: true,
       isFullCircle: false,
     };
@@ -131,8 +136,12 @@ export function computePieSlices(slices: PieSliceInput[], cx: number, cy: number
     const startAngle = angle;
     const endAngle = angle + fraction * 360;
     angle = endAngle;
+    const full = isFullCircle && s.value > 0;
     const path = !isFullCircle && s.value > 0 ? describePieSlicePath(cx, cy, r, startAngle, endAngle) : '';
-    return { ...s, path, percent };
+    // In-slice label centroid: centre of the wedge for a normal slice, dead centre for a full circle.
+    const labelPos = full ? { x: cx, y: cy } : polarToCartesian(cx, cy, r * 0.6, (startAngle + endAngle) / 2);
+    const showLabel = s.value > 0 && (full || fraction >= 0.08);
+    return { ...s, path, percent, labelX: labelPos.x, labelY: labelPos.y, showLabel };
   });
 
   const fullCircleColor = isFullCircle ? computed.find((s) => s.value > 0)?.color : undefined;

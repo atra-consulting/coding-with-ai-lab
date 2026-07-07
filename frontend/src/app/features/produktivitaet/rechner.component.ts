@@ -222,9 +222,9 @@ function baueInitialeProzessDaten(): Record<ProzessKey, ProzessSnapshot> {
         align-items: flex-start;
       }
       .pie-block {
-        flex: 1 1 220px;
-        max-width: 320px;
-        min-width: 200px;
+        flex: 1 1 320px;
+        max-width: 440px;
+        min-width: 260px;
       }
       .pie-caption {
         font-weight: 600;
@@ -232,12 +232,30 @@ function baueInitialeProzessDaten(): Record<ProzessKey, ProzessSnapshot> {
         color: #264892;
         margin-bottom: 0.5rem;
       }
+      /* Pie on the left, legend on the right. */
+      .pie-body {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+      .pie-side {
+        flex: 1 1 150px;
+        min-width: 150px;
+      }
       .pie-svg {
         display: block;
-        width: 100%;
-        max-width: 200px;
-        height: auto;
-        margin: 0 auto 0.5rem;
+        flex: 0 0 auto;
+        width: 140px;
+        height: 140px;
+        margin: 0;
+      }
+      /* White percent number inside a pie slice. */
+      .pie-slice-label {
+        fill: #fff;
+        font-size: 8px;
+        font-weight: 700;
+        pointer-events: none;
       }
       .pie-note {
         font-size: 0.78rem;

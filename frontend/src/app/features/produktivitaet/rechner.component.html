@@ -115,45 +115,61 @@
   <div class="pie-block">
     <p class="pie-caption">{{ caption }}</p>
 
-    <svg
-      class="pie-svg"
-      viewBox="0 0 100 100"
-      role="img"
-      [attr.aria-labelledby]="'pie-title-' + ns"
-      [attr.aria-describedby]="'pie-desc-' + ns"
-    >
-      <title [id]="'pie-title-' + ns">{{ titleText }}</title>
-      <desc [id]="'pie-desc-' + ns">{{ descText }}</desc>
+    <div class="pie-body">
+      <svg
+        class="pie-svg"
+        viewBox="0 0 100 100"
+        role="img"
+        [attr.aria-labelledby]="'pie-title-' + ns"
+        [attr.aria-describedby]="'pie-desc-' + ns"
+      >
+        <title [id]="'pie-title-' + ns">{{ titleText }}</title>
+        <desc [id]="'pie-desc-' + ns">{{ descText }}</desc>
 
-      @if (result.isEmpty) {
-        <circle cx="50" cy="50" r="45" fill="#dedede" stroke="#495057" stroke-width="1" aria-hidden="true" />
-      } @else if (result.isFullCircle) {
-        <circle
-          cx="50"
-          cy="50"
-          r="45"
-          [attr.fill]="result.fullCircleColor"
-          stroke="#495057"
-          stroke-width="1"
-          aria-hidden="true"
-        />
-      } @else {
-        @for (slice of result.slices; track slice.key) {
-          @if (slice.value > 0) {
-            <path [attr.d]="slice.path" [attr.fill]="slice.color" stroke="#495057" stroke-width="1" aria-hidden="true" />
+        @if (result.isEmpty) {
+          <circle cx="50" cy="50" r="45" fill="#dedede" stroke="#495057" stroke-width="1" aria-hidden="true" />
+        } @else if (result.isFullCircle) {
+          <circle
+            cx="50"
+            cy="50"
+            r="45"
+            [attr.fill]="result.fullCircleColor"
+            stroke="#495057"
+            stroke-width="1"
+            aria-hidden="true"
+          />
+          <text x="50" y="50" text-anchor="middle" dominant-baseline="central" class="pie-slice-label" aria-hidden="true">100%</text>
+        } @else {
+          @for (slice of result.slices; track slice.key) {
+            @if (slice.value > 0) {
+              <path [attr.d]="slice.path" [attr.fill]="slice.color" stroke="#495057" stroke-width="1" aria-hidden="true" />
+            }
+          }
+          @for (slice of result.slices; track slice.key) {
+            @if (slice.showLabel) {
+              <text
+                [attr.x]="slice.labelX"
+                [attr.y]="slice.labelY"
+                text-anchor="middle"
+                dominant-baseline="central"
+                class="pie-slice-label"
+                aria-hidden="true"
+              >{{ slice.percent.toFixed(0) }}%</text>
+            }
           }
         }
-      }
-    </svg>
+      </svg>
 
-    @if (result.isEmpty) {
-      <p class="pie-empty-label">Keine Daten</p>
-    }
-    @if (note) {
-      <p class="pie-note">{{ note }}</p>
-    }
-
-    <ng-container [ngTemplateOutlet]="pieLegend" [ngTemplateOutletContext]="{ slices: result.slices }" />
+      <div class="pie-side">
+        @if (result.isEmpty) {
+          <p class="pie-empty-label">Keine Daten</p>
+        }
+        <ng-container [ngTemplateOutlet]="pieLegend" [ngTemplateOutletContext]="{ slices: result.slices }" />
+        @if (note) {
+          <p class="pie-note">{{ note }}</p>
+        }
+      </div>
+    </div>
   </div>
 </ng-template>
 
