@@ -49,6 +49,7 @@ import { TicketCreateComponent } from './ticket-create.component';
           class="btn btn-outline-secondary"
           (click)="toggleRecent()"
           [attr.aria-pressed]="recentOnly"
+          title="Letzte 60 Minuten"
         >
           {{ recentOnly ? 'Alle' : 'Kürzlich geändert' }}
         </button>
@@ -190,6 +191,12 @@ import { TicketCreateComponent } from './ticket-create.component';
         </div>
       }
 
+      @if (recentOnly) {
+        <div class="alert alert-info py-2 px-3 mb-3 small" role="status">
+          Gefiltert: nur Tickets der letzten 60 Minuten. Die Kennzahlen oben zeigen weiterhin alle Tickets.
+        </div>
+      }
+
       <!-- Kanban Board -->
       <div class="board-container" cdkDropListGroup>
         <!-- Definition -->
@@ -229,7 +236,7 @@ import { TicketCreateComponent } from './ticket-create.component';
               </div>
             }
             @if (viewDefinition.length === 0) {
-              <div class="column-empty">Keine Tickets</div>
+              <div class="column-empty">{{ recentOnly ? 'Keine kürzlich geänderten Tickets' : 'Keine Tickets' }}</div>
             }
           </div>
         </div>
@@ -271,7 +278,7 @@ import { TicketCreateComponent } from './ticket-create.component';
               </div>
             }
             @if (viewTodo.length === 0) {
-              <div class="column-empty">Keine Tickets</div>
+              <div class="column-empty">{{ recentOnly ? 'Keine kürzlich geänderten Tickets' : 'Keine Tickets' }}</div>
             }
           </div>
         </div>
@@ -313,7 +320,7 @@ import { TicketCreateComponent } from './ticket-create.component';
               </div>
             }
             @if (viewInProgress.length === 0) {
-              <div class="column-empty">Keine Tickets</div>
+              <div class="column-empty">{{ recentOnly ? 'Keine kürzlich geänderten Tickets' : 'Keine Tickets' }}</div>
             }
           </div>
         </div>
@@ -355,7 +362,7 @@ import { TicketCreateComponent } from './ticket-create.component';
               </div>
             }
             @if (viewOnHold.length === 0) {
-              <div class="column-empty">Keine Tickets</div>
+              <div class="column-empty">{{ recentOnly ? 'Keine kürzlich geänderten Tickets' : 'Keine Tickets' }}</div>
             }
           </div>
         </div>
@@ -402,7 +409,7 @@ import { TicketCreateComponent } from './ticket-create.component';
               </div>
             }
             @if (viewDone.length === 0) {
-              <div class="column-empty">Keine Tickets</div>
+              <div class="column-empty">{{ recentOnly ? 'Keine kürzlich geänderten Tickets' : 'Keine Tickets' }}</div>
             }
           </div>
         </div>
@@ -597,6 +604,11 @@ import { TicketCreateComponent } from './ticket-create.component';
 
       .ticket-drag-handle:active {
         cursor: grabbing;
+      }
+
+      .cdk-drag-disabled .ticket-drag-handle {
+        cursor: not-allowed;
+        opacity: 0.5;
       }
 
       .ticket-body-click {
@@ -832,6 +844,7 @@ export class TicketBoardComponent implements OnInit {
           rolledBack.solution = originalSolution;
           this.dropError = 'Fehler beim Verschieben des Tickets. Bitte versuche es erneut.';
           this.notification.error('Ticket konnte nicht verschoben werden.');
+          this.refreshView();
         },
       });
   }
