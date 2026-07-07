@@ -160,6 +160,27 @@ function baueInitialeProzessDaten(): Record<ProzessKey, ProzessSnapshot> {
         margin-bottom: 1rem;
       }
 
+      /* ── Prozessvergleich title row: carries the full-width underline itself
+         (instead of .card-title) because the filter button now shares the row —
+         .card-title's own border-bottom would only underline the heading text. ── */
+      .cmp-title-row {
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #d7e0f5;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+      .cmp-title-row .card-title {
+        border-bottom: none;
+        padding-bottom: 0;
+        margin-bottom: 0;
+      }
+
+      /* ── Prozessvergleich filter button: keep its label on one line ── */
+      .bar-filter-btn {
+        white-space: nowrap;
+      }
+
       /* ── Szenarien-Umschalter (unten, eingeklappt) ── */
       .szenarien-toggle {
         font-size: 1.3rem;
@@ -214,7 +235,7 @@ function baueInitialeProzessDaten(): Record<ProzessKey, ProzessSnapshot> {
         height: 16px;
       }
       .cmp-caption {
-        font-style: italic;
+        font-style: normal;
         /* Sits above .cmp-hit (z-index: 1) so its text stays mouse-selectable;
            the row-selection overlay still covers name/bar/total around it. */
         position: relative;

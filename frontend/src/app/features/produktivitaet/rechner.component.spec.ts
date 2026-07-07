@@ -649,5 +649,18 @@ describe('RechnerComponent', () => {
       const rows: NodeListOf<HTMLElement> = fixture.nativeElement.querySelectorAll('.cmp-row');
       expect(rows.length).toBe(1);
     });
+
+    it('clicking the filter button cycles to "Nur Prozess 1" and shows exactly one .cmp-row', () => {
+      const button: HTMLButtonElement = fixture.nativeElement.querySelector('#prozessvergleich button');
+      expect(button).toBeTruthy();
+      expect(button.textContent?.trim()).toBe('Alle Prozesse');
+
+      button.click();
+      fixture.detectChanges();
+
+      expect(button.textContent?.trim()).toBe('Nur Prozess 1');
+      const rows: NodeListOf<HTMLElement> = fixture.nativeElement.querySelectorAll('.cmp-row');
+      expect(rows.length).toBe(1);
+    });
   });
 });
