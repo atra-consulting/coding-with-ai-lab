@@ -160,7 +160,7 @@ Check one target at a time. For each doc target `T`:
    ```
 3. A non-empty result → `T` is stale.
 
-Collect stale targets as `stale_targets`. Then apply roll-ups — these targets have no direct source globs of their own: if any `SPECS-*.md` is stale, add `SPECS.md` (the index). If any backend, frontend, or build/config target (spec or agent) is stale, add `CLAUDE.md`.
+Collect stale targets as `stale_targets`. Then apply roll-ups — these two targets have no direct source-glob rows for the categories below: if any other spec file (`SPECS-*.md` **or** `DOMAIN.md`) is stale, add `SPECS.md` (the index). If any backend, frontend, or build/config target (spec or agent) is stale, add `CLAUDE.md`.
 
 ### Step 3.3: Nothing To Do
 
