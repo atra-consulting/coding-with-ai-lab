@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "task_key": "WRITE-TRIAGE-FEEDBACK-SKILL",
+  "status": "in_progress",
+  "current_step": "4.5",
+  "started": "2026-07-08T00:00:00Z",
+  "updated": "2026-07-08T00:00:00Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Write the /triage-feedback project skill, similar to tasks/advanced/Skill für Übungsaufgabe 2.md. Big change: the result is ALWAYS a new ticket (see docs/specs/SPEC-API-TICKETS.md) in status Definition, assigned to AI. In step 3a the skill adds a comment to the ticket requesting the missing info. In step 3b the ticket is not changed. The skill does NOT push to remote and does NOT create a PR. Read the env vars from backend/.env and set them before the skill uses the app APIs.",
+    "special_instructions": "No push to remote, no PR. Result always a new ticket (Definition/AI). Step 3a: comment on ticket requesting missing info. Step 3b: ticket unchanged. Read backend/.env env vars before using app APIs.",
+    "ticket_mode": false,
+    "ticket_id": null,
+    "ticket_url": null,
+    "ticket_api_base": null,
+    "ticket_claimed": false,
+    "branch_name": "solution-jfs-2026",
+    "original_branch": "solution-jfs-2026",
+    "original_head": "533168d1613fa9f93a958255a72de1d0b3a33e73",
+    "docs_folder": "docs",
+    "is_git_repo": true,
+    "workflow_scope": null,
+    "pr_prefix": null,
+    "pr_exists": false,
+    "pr_url": null
+  },
+  "discovery": {
+    "agents_available": true,
+    "writer_agents": ["ba-writer"],
+    "coding_agents": ["be-coder", "db-coder", "fe-coder", "ui-designer"],
+    "review_agents": ["ba-reviewer", "requirements-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer"],
+    "test_coding_agents": ["be-test-coder", "fe-test-coder"],
+    "test_review_agents": ["be-test-reviewer", "fe-test-reviewer"],
+    "test_runner_agents": ["be-test-runner", "fe-test-runner"],
+    "tooling_coding_agents": ["python-coder", "shell-coder", "skill-coder"],
+    "tooling_review_agents": ["python-reviewer", "shell-reviewer", "skill-reviewer"],
+    "test_command": null
+  },
+  "artifacts": {
+    "prd_skipped": null,
+    "prd_file": null,
+    "plan_file": null
+  },
+  "completed_steps": []
+}
