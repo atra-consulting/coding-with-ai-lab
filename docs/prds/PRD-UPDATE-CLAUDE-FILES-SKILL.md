@@ -27,7 +27,7 @@ Docs drift from code. `.claude/agents/`, `docs/specs/`, and `CLAUDE.md` go stale
 
 ### R1 — New skill file
 
-Create `.claude/skills/update-claude-files/SKILL.md`. Frontmatter name `project:update-claude-files`. Follows this project's writing style (short, simple, active voice). `allowed-tools`: Read, Write, Edit, Grep, Glob, `Bash(git:*)`, `Bash(ls:*)`, `Bash(mkdir:*)`, `Bash(rm:*)`, AskUserQuestion.
+Create `.claude/skills/update-claude-files/SKILL.md`. Frontmatter name `project:update-claude-files`. Follows this project's writing style (short, simple, active voice). `allowed-tools`: Read, Write, Edit, Grep, Glob, `Bash(git:*)`, `Bash(mkdir:*)`, `Bash(rm:*)`, `Task` (added in v1.1 — see below), AskUserQuestion.
 
 ### R2 — Update targets (this project's real docs)
 
@@ -107,6 +107,8 @@ Edit `.claude/skills/plan-and-do/SKILL.md` Step 12 (Documentation Updates). Step
 
 ## Implementation Approach
 
+**v1.0 shipped with inline editing** — the main loop did the drift analysis and applied the doc edits itself. **v1.1 (see the revision section below) replaced that with subagent delegation.**
+
 1. Write the new skill file. Phases modeled on `bpf-update-claude-files` but pinned to this project's stack, doc names, and curated agent roster. Add the R3 agent guard up front. Use git-based staleness (no `Updated:` line injection). Standalone and embedded modes only.
 2. Edit plan-and-do Step 12 to call the skill embedded, guard for no agents, read the result file, and commit real changes before PR creation.
 3. Verify both skill files parse (frontmatter valid) and cross-references are correct.
@@ -131,4 +133,44 @@ No unit tests — these are Markdown skill files. Verification:
 - Standalone: detects stale docs per-target from commits since each doc's last change; updates in place; commits; exits cleanly when nothing is stale.
 - Embedded: scoped to the branch diff (`base:<sha>`, validated); always writes a result file; never prompts; never blocks the PR.
 - No agents → warning + GitHub URL → stop, in both modes.
-- plan-and-do Step 12 calls the skill, reads the result, and commits real doc changes before the PR is opened; commits nothing when there are no changes.Mer
+- plan-and-do Step 12 calls the skill, reads the result, and commits real doc changes before the PR is opened; commits nothing when there are no changes.
+
+---
+
+## Revision — v1.1: Subagent Delegation
+
+**Source:** follow-up user request. Make the skill use subagents like `plan-and-do` does, so reviewer agents review files and coder/writer agents update them. v1.0 did all analysis and edits inline in the main loop.
+
+**Motivation:** for large or multi-area drift, one main loop eyeballing diffs is less reliable than dispatching a domain specialist per area (parallel, deeper). This mirrors how `plan-and-do` delegates.
+
+### R8 — Two-phase agent model
+
+- Add `Task` to `allowed-tools`. Discover agents from the PHASE 2 glob (`.claude/agents/*.md`).
+- **PHASE 5 — Review.** One domain reviewer per flagged target compares current code to the doc and returns a precise change list (section, current text with unique context, replacement). Reviewers do not edit. Mapping:
+
+  | Flagged target | Reviewer |
+  |---|---|
+  | `SPECS-backend.md` | `be-reviewer` |
+  | `SPECS-database.md` | `db-reviewer` |
+  | `SPECS-frontend.md` | `fe-reviewer` |
+  | `SPECS-ui.md` | `ui-reviewer` |
+  | `SPECS-testing.md` | `be-test-reviewer` / `fe-test-reviewer` |
+  | `SPECS-infrastructure.md` | `admin` (read-only) |
+  | `DOMAIN.md`, `SPECS.md`, `CLAUDE.md` | `ba-reviewer` |
+  | `.claude/agents/*.md` | `skill-reviewer` |
+
+  Catch-all `ba-reviewer` if none matches — no flagged target is silently dropped.
+- **PHASE 6 — Apply.** `ba-writer` applies spec/CLAUDE/DOMAIN edits; `skill-coder` applies agent-file edits. Preserve rule and Non-Goals unchanged (never create/delete a file).
+- **PHASE 7 — Verify.** Self-check the edited files (tables well-formed, CLAUDE.md tables match disk, no file added/deleted).
+
+### R9 — Fallback and mode behavior
+
+- **Inline fallback.** If a mapped agent is absent from `existing_agents`, the skill does that step inline (its own Read/Grep + Edit). The R3 empty-roster guard is unchanged.
+- **Modes.** Standalone shows the consolidated change plan and confirms (Apply all / Apply some / Cancel). Embedded auto-applies — still never prompts, always writes the result file, never blocks the PR. Both modes may dispatch: the skill runs in the main loop via the Skill tool, so `Task` works in either.
+
+### v1.1 Success Criteria (in addition to the above)
+
+- Reviewer agents produce the drift analysis; writer/coder agents apply it. Reviewers never edit.
+- Every flagged target has a reviewer (incl. `SPECS-infrastructure.md`).
+- Missing agent → inline fallback, not failure.
+- Embedded still never prompts and never blocks the PR.
