@@ -301,7 +301,7 @@ Single-flight + skip-when-idle, then dispatch:
 ### GET `/api/cron/github-issues` — GitHub-issue agent dispatcher
 Same auth as `/agent-tasks` (admin session via the per-job "Jetzt ausführen" button, or `CRON_SECRET`). Manual-only — there is no Vercel cron for it.
 - A `solve-github-issues` run already `RUNNING` → records a `SKIPPED` run.
-- Otherwise creates a `RUNNING` run and fires `repository_dispatch` (`solve-github-issues`, `client_payload.cronRunId`) → the [`github-issue-agent.yml`](../.github/workflows/github-issue-agent.yml) workflow. Dispatch failure → `FAILED`.
+- Otherwise creates a `RUNNING` run and fires `repository_dispatch` (`solve-github-issues`, `client_payload.cronRunId`) → the [`github-issue-agent.yml`](../../.github/workflows/github-issue-agent.yml) workflow. Dispatch failure → `FAILED`.
 - No work-queue pre-check (the issues live on GitHub): it always dispatches; the agent reports the outcome via the same `/runs/:id/complete` callback (`tasksSolved=1` implemented, `tasksRejected=1` input-needed, both `0` if no issue was open).
 - **Always returns `200`** with the `cron_run` object.
 
@@ -348,8 +348,8 @@ A **second** autonomous agent, separate from the agent-task runner. It works aga
 
 **Pieces**
 - **Trigger:** `GET /api/cron/github-issues` (above) → `repository_dispatch` `solve-github-issues`.
-- **Workflow:** [`.github/workflows/github-issue-agent.yml`](../.github/workflows/github-issue-agent.yml) — runs `claude -p` once with the prompt below, then calls `/runs/:id/complete`.
-- **Prompt:** [`.claude/prompts/agent-github-refinement.md`](../.claude/prompts/agent-github-refinement.md).
+- **Workflow:** [`.github/workflows/github-issue-agent.yml`](../../.github/workflows/github-issue-agent.yml) — runs `claude -p` once with the prompt below, then calls `/runs/:id/complete`.
+- **Prompt:** [`.claude/prompts/agent-github-refinement.md`](../../.claude/prompts/agent-github-refinement.md).
 - **Token:** `GH_PROJECT_TOKEN` (see env table) — needs Projects-v2 write, which the default `GITHUB_TOKEN` lacks.
 
 **Per-run flow**
@@ -396,7 +396,7 @@ for each source in [EMAIL, GITHUB_ISSUE, APP_LOG, ERROR_REPORT]:
     # 204 → this source is drained
 ```
 
-**What's different from tickets** (see `docs/API-TICKETS.md`):
+**What's different from tickets** (see `docs/specs/SPEC-API-TICKETS.md`):
 
 - **Tasks are one-shot.** Claim, then either `done` or `reject` — no conversation. There is no "ask a question" path and no comment thread. If a task lacks information, you `reject` it (with a reason) rather than hand it back.
 - **`/next` requires `?source=`.** Tickets have no required parameter (only an optional `?type=`).
@@ -409,5 +409,5 @@ for each source in [EMAIL, GITHUB_ISSUE, APP_LOG, ERROR_REPORT]:
 ## See also
 
 - `docs/prds/PRD-AUTONOMOUS-TASK-SOURCES.md` — full requirements and acceptance criteria.
-- `docs/API-TICKETS.md` — Kanban ticket queue (separate system, adds the ask/answer conversation).
+- `docs/specs/SPEC-API-TICKETS.md` — Kanban ticket queue (separate system, adds the ask/answer conversation).
 - `.claude/prompts/agent-*.md` — the per-source prompts that call this API.

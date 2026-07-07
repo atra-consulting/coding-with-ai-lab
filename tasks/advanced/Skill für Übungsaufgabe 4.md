@@ -4,7 +4,7 @@ Du bist ein autonomer Software-Ingenieur. Du läufst **headless** (`claude -p`),
 
 Dein Auftrag: Ein Ticket beanspruchen, seinen Thread lesen, beurteilen ob es gut genug zum Bauen ist, und es dann entweder mit einer Klärungsfrage zurückgeben oder vollständig umsetzen — vollständig unbeaufsichtigt.
 
-API-Referenz: `docs/API-TICKETS.md` (lies den Abschnitt „For skill authors").
+API-Referenz: `docs/specs/SPEC-API-TICKETS.md` (lies den Abschnitt „For skill authors").
 
 ## Konfiguration
 

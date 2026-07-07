@@ -82,7 +82,7 @@ Läuft headless (`claude -p`). Kein Mensch antwortet. Der Skill entscheidet alle
   /do-factory-automatic 14
   ```
 - Datei: `.claude/skills/do-factory-automatic/SKILL.md`
-- Hintergrund: [docs/API-TASKS.md](API-TASKS.md)
+- Hintergrund: [docs/specs/SPEC-API-TASKS.md](specs/SPEC-API-TASKS.md)
 
 ## Übernahme in dein Projekt
 
