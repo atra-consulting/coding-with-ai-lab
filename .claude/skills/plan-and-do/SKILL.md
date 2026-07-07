@@ -167,7 +167,7 @@ Read project's CLAUDE.md for `## Agents` section.
 4. Ends with `-writer` or `-analyst` → `writer_agents` (e.g., `ba-writer`)
 5. Ends with `-coder` or `-designer` → `coding_agents` (e.g., `be-coder`, `fe-coder`, `ui-designer`)
 6. Ends with `-reviewer` → `review_agents` (e.g., `be-reviewer`, `fe-reviewer`)
-7. Anything else (e.g., `admin`, `md-reader`) → skip as utility
+7. Anything else (e.g., `admin`) → skip as utility
 
 The order matters: `be-test-coder` must hit rule 1, NOT rule 5. Always check for `-test-` first. Rule 0 runs before all others.
 
