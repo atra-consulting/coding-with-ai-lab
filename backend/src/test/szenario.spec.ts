@@ -18,13 +18,13 @@
  *                agileKiSteps round-trips element-by-element with values distinct from
  *                humanSteps, so a column-swap bug in create()/update() would be caught.
  *   Seed: after startup, the seeded Standard-Szenario (id=1) reflects the 4-process
- *         canonical totals (3,880 / 2,970 / 290 / 25) and has a valid 19-length
+ *         canonical totals (3,880 / 2,190 / 440 / 25) and has a valid 19-length
  *         agileKiSteps. The pre-existing-DB ALTER/upgrade path (adding the
  *         agileKiSteps column to an old 3-process DB) is NOT exercised here — it
  *         is a manual/scripted check (see PLAN-RECHNER-OVERHAUL.md §8), not
  *         automatable against the fresh CI DB this harness always starts with.
  *
- * Process step counts: human 19, agileKi 19, semiAutomated 7, automated 2.
+ * Process step counts: human 19, agileKi 19, semiAutomated 11, automated 2.
  */
 import { test, expect, request as playwrightRequest } from '@playwright/test';
 import type { APIRequestContext } from '@playwright/test';
@@ -66,8 +66,8 @@ const AGILE_KI_WAITS_18: number[] = [
 const AGILE_KI_WORKS_19_ALT: number[] = AGILE_KI_WORKS_19.map((w) => w + 1);
 const AGILE_KI_WAITS_18_ALT: number[] = AGILE_KI_WAITS_18.map((w) => w + 1);
 
-const SEMI_WORKS_7: number[] = [0, 5, 15, 15, 10, 30, 20];
-const SEMI_WAITS_6: number[] = [5, 60, 60, 5, 60, 5];
+const SEMI_WORKS_11: number[] = [0, 5, 10, 10, 5, 10, 10, 5, 10, 30, 20];
+const SEMI_WAITS_10: number[] = [5, 60, 5, 60, 60, 5, 60, 5, 60, 5];
 
 const AUTO_WORKS_2: number[] = [0, 20];
 const AUTO_WAITS_1: number[] = [5];
@@ -77,13 +77,19 @@ const AUTO_WAITS_1: number[] = [5];
 // values) even though the works arrays happen to coincide, because the two
 // constants serve different purposes: these assert against the real seed
 // written by szenarioSeed.ts, the others exist to catch column swaps in
-// arbitrary CRUD payloads. SEMI_WORKS_7/SEMI_WAITS_6/AUTO_WORKS_2/AUTO_WAITS_1
+// arbitrary CRUD payloads. SEMI_WORKS_11/SEMI_WAITS_10/AUTO_WORKS_2/AUTO_WAITS_1
 // above are already seed-exact, so no separate SEED_* constants are needed
 // for those two processes.
 const SEED_AGILE_KI_WORKS: number[] = [
   0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
 ];
-const SEED_AGILE_KI_WAITS: number[] = HUMAN_WAITS_18;
+// Own literal (halved from HUMAN_WAITS_18 starting at step 5) — must stay
+// byte-identical to AGILE_KI_WAITS in szenarioSeed.ts / migrate.ts. Deliberately
+// NOT `= HUMAN_WAITS_18` (that would make this assertion pass even if the seed's
+// agileKiSteps waits were wrong, as long as they happened to equal the human waits).
+const SEED_AGILE_KI_WAITS: number[] = [
+  120, 120, 120, 960, 240, 0, 15, 60, 60, 60, 15, 120, 30, 0, 15, 120, 15, 30,
+];
 
 /** Build a minimal valid szenario payload with a unique name. */
 function validPayload(name: string) {
@@ -91,7 +97,7 @@ function validPayload(name: string) {
     name,
     humanSteps: { works: HUMAN_WORKS_19, waits: HUMAN_WAITS_18 },
     agileKiSteps: { works: AGILE_KI_WORKS_19, waits: AGILE_KI_WAITS_18 },
-    semiAutomatedSteps: { works: SEMI_WORKS_7, waits: SEMI_WAITS_6 },
+    semiAutomatedSteps: { works: SEMI_WORKS_11, waits: SEMI_WAITS_10 },
     automatedSteps: { works: AUTO_WORKS_2, waits: AUTO_WAITS_1 },
   };
 }
@@ -352,7 +358,7 @@ test.describe('CRUD happy path', () => {
         name: updatedName,
         humanSteps: { works: HUMAN_WORKS_19, waits: HUMAN_WAITS_18 },
         agileKiSteps: { works: AGILE_KI_WORKS_19_ALT, waits: AGILE_KI_WAITS_18_ALT },
-        semiAutomatedSteps: { works: SEMI_WORKS_7, waits: SEMI_WAITS_6 },
+        semiAutomatedSteps: { works: SEMI_WORKS_11, waits: SEMI_WAITS_10 },
         automatedSteps: { works: AUTO_WORKS_2, waits: AUTO_WAITS_1 },
       },
     });
@@ -496,7 +502,7 @@ test.describe('Validation errors', () => {
       // no name field
       humanSteps: { works: HUMAN_WORKS_19, waits: HUMAN_WAITS_18 },
       agileKiSteps: { works: AGILE_KI_WORKS_19, waits: AGILE_KI_WAITS_18 },
-      semiAutomatedSteps: { works: SEMI_WORKS_7, waits: SEMI_WAITS_6 },
+      semiAutomatedSteps: { works: SEMI_WORKS_11, waits: SEMI_WAITS_10 },
       automatedSteps: { works: AUTO_WORKS_2, waits: AUTO_WAITS_1 },
     };
 
@@ -539,7 +545,7 @@ test.describe('Validation errors', () => {
         name: `Invalid-Works-${Date.now()}`,
         humanSteps: { works: shortWorks, waits: HUMAN_WAITS_18 },
         agileKiSteps: { works: AGILE_KI_WORKS_19, waits: AGILE_KI_WAITS_18 },
-        semiAutomatedSteps: { works: SEMI_WORKS_7, waits: SEMI_WAITS_6 },
+        semiAutomatedSteps: { works: SEMI_WORKS_11, waits: SEMI_WAITS_10 },
         automatedSteps: { works: AUTO_WORKS_2, waits: AUTO_WAITS_1 },
       },
     });
@@ -565,7 +571,7 @@ test.describe('Validation errors', () => {
         name: `Invalid-Waits-${Date.now()}`,
         humanSteps: { works: HUMAN_WORKS_19, waits: shortWaits },
         agileKiSteps: { works: AGILE_KI_WORKS_19, waits: AGILE_KI_WAITS_18 },
-        semiAutomatedSteps: { works: SEMI_WORKS_7, waits: SEMI_WAITS_6 },
+        semiAutomatedSteps: { works: SEMI_WORKS_11, waits: SEMI_WAITS_10 },
         automatedSteps: { works: AUTO_WORKS_2, waits: AUTO_WAITS_1 },
       },
     });
@@ -592,7 +598,7 @@ test.describe('Validation errors', () => {
         name: `Negative-Duration-${Date.now()}`,
         humanSteps: { works: worksWithNegative, waits: HUMAN_WAITS_18 },
         agileKiSteps: { works: AGILE_KI_WORKS_19, waits: AGILE_KI_WAITS_18 },
-        semiAutomatedSteps: { works: SEMI_WORKS_7, waits: SEMI_WAITS_6 },
+        semiAutomatedSteps: { works: SEMI_WORKS_11, waits: SEMI_WAITS_10 },
         automatedSteps: { works: AUTO_WORKS_2, waits: AUTO_WAITS_1 },
       },
     });
@@ -620,7 +626,7 @@ test.describe('Validation errors', () => {
         name: `Over-Max-Duration-${Date.now()}`,
         humanSteps: { works: worksOverMax, waits: HUMAN_WAITS_18 },
         agileKiSteps: { works: AGILE_KI_WORKS_19, waits: AGILE_KI_WAITS_18 },
-        semiAutomatedSteps: { works: SEMI_WORKS_7, waits: SEMI_WAITS_6 },
+        semiAutomatedSteps: { works: SEMI_WORKS_11, waits: SEMI_WAITS_10 },
         automatedSteps: { works: AUTO_WORKS_2, waits: AUTO_WAITS_1 },
       },
     });
@@ -649,7 +655,7 @@ test.describe('Validation errors', () => {
         name,
         humanSteps: { works: worksAtMax, waits: HUMAN_WAITS_18 },
         agileKiSteps: { works: AGILE_KI_WORKS_19, waits: AGILE_KI_WAITS_18 },
-        semiAutomatedSteps: { works: SEMI_WORKS_7, waits: SEMI_WAITS_6 },
+        semiAutomatedSteps: { works: SEMI_WORKS_11, waits: SEMI_WAITS_10 },
         automatedSteps: { works: AUTO_WORKS_2, waits: AUTO_WAITS_1 },
       },
     });
@@ -754,13 +760,13 @@ test.describe('Validation for semiAutomated and automated step counts', () => {
     await adminCtx.dispose();
   });
 
-  test('POST with semiAutomatedSteps.works length 6 (not 7) → 400', async () => {
+  test('POST with semiAutomatedSteps.works length 10 (not 11) → 400', async () => {
     const resp = await adminCtx.post('/api/szenarien', {
       data: {
         name: `Invalid-Semi-Works-${Date.now()}`,
         humanSteps: { works: HUMAN_WORKS_19, waits: HUMAN_WAITS_18 },
         agileKiSteps: { works: AGILE_KI_WORKS_19, waits: AGILE_KI_WAITS_18 },
-        semiAutomatedSteps: { works: SEMI_WORKS_7.slice(0, 6), waits: SEMI_WAITS_6 },
+        semiAutomatedSteps: { works: SEMI_WORKS_11.slice(0, 10), waits: SEMI_WAITS_10 },
         automatedSteps: { works: AUTO_WORKS_2, waits: AUTO_WAITS_1 },
       },
     });
@@ -782,7 +788,7 @@ test.describe('Validation for semiAutomated and automated step counts', () => {
         name: `Invalid-Auto-Waits-${Date.now()}`,
         humanSteps: { works: HUMAN_WORKS_19, waits: HUMAN_WAITS_18 },
         agileKiSteps: { works: AGILE_KI_WORKS_19, waits: AGILE_KI_WAITS_18 },
-        semiAutomatedSteps: { works: SEMI_WORKS_7, waits: SEMI_WAITS_6 },
+        semiAutomatedSteps: { works: SEMI_WORKS_11, waits: SEMI_WAITS_10 },
         automatedSteps: { works: AUTO_WORKS_2, waits: [] },
       },
     });
@@ -824,7 +830,7 @@ test.describe('Validation for agileKiSteps step counts', () => {
         name: `Invalid-AgileKi-Works-${Date.now()}`,
         humanSteps: { works: HUMAN_WORKS_19, waits: HUMAN_WAITS_18 },
         agileKiSteps: { works: shortWorks, waits: AGILE_KI_WAITS_18 },
-        semiAutomatedSteps: { works: SEMI_WORKS_7, waits: SEMI_WAITS_6 },
+        semiAutomatedSteps: { works: SEMI_WORKS_11, waits: SEMI_WAITS_10 },
         automatedSteps: { works: AUTO_WORKS_2, waits: AUTO_WAITS_1 },
       },
     });
@@ -850,7 +856,7 @@ test.describe('Validation for agileKiSteps step counts', () => {
         name: `Invalid-AgileKi-Waits-${Date.now()}`,
         humanSteps: { works: HUMAN_WORKS_19, waits: HUMAN_WAITS_18 },
         agileKiSteps: { works: AGILE_KI_WORKS_19, waits: shortWaits },
-        semiAutomatedSteps: { works: SEMI_WORKS_7, waits: SEMI_WAITS_6 },
+        semiAutomatedSteps: { works: SEMI_WORKS_11, waits: SEMI_WAITS_10 },
         automatedSteps: { works: AUTO_WORKS_2, waits: AUTO_WAITS_1 },
       },
     });
@@ -913,7 +919,7 @@ test.describe('Seed defaults — Standard-Szenario reflects canonical totals', (
     });
 
     await test.step('semiAutomatedSteps matches the exact seeded arrays', () => {
-      expect(body.semiAutomatedSteps).toEqual({ works: SEMI_WORKS_7, waits: SEMI_WAITS_6 });
+      expect(body.semiAutomatedSteps).toEqual({ works: SEMI_WORKS_11, waits: SEMI_WAITS_10 });
     });
 
     await test.step('automatedSteps matches the exact seeded arrays', () => {
@@ -927,14 +933,14 @@ test.describe('Seed defaults — Standard-Szenario reflects canonical totals', (
       expect(total).toBe(3880);
     });
 
-    await test.step('agileKiSteps works+waits sums to 2,970', () => {
+    await test.step('agileKiSteps works+waits sums to 2,190', () => {
       const total = sum(body.agileKiSteps.works) + sum(body.agileKiSteps.waits);
-      expect(total).toBe(2970);
+      expect(total).toBe(2190);
     });
 
-    await test.step('semiAutomatedSteps works+waits sums to 290', () => {
+    await test.step('semiAutomatedSteps works+waits sums to 440', () => {
       const total = sum(body.semiAutomatedSteps.works) + sum(body.semiAutomatedSteps.waits);
-      expect(total).toBe(290);
+      expect(total).toBe(440);
     });
 
     await test.step('automatedSteps works+waits sums to 25', () => {

@@ -1657,6 +1657,54 @@ test.describe('POST /api/tickets/reset', () => {
     }
   });
 
+  test('after reset: a DEFINITION ticket body has both ## Business and ## Technical sections', async () => {
+    await admin.post('/api/tickets/reset');
+
+    const resp = await admin.get('/api/tickets/1');
+    expect(resp.status()).toBe(200);
+    const ticket = await resp.json() as Ticket;
+
+    await test.step('ticket 1 is DEFINITION', () => {
+      expect(ticket.status).toBe('DEFINITION');
+    });
+    await test.step('body contains ## Business', () => {
+      expect(ticket.body).toContain('## Business');
+    });
+    await test.step('body contains ## Technical', () => {
+      expect(ticket.body).toContain('## Technical');
+    });
+  });
+
+  test('after reset: ticket 7 (CSV-export separator question) comment addresses @Entwickler', async () => {
+    await admin.post('/api/tickets/reset');
+
+    const resp = await admin.get('/api/tickets/7');
+    expect(resp.status()).toBe(200);
+    const ticket = await resp.json() as Ticket;
+
+    await test.step('ticket 7 has exactly 1 seeded comment', () => {
+      expect(ticket.comments.length).toBe(1);
+    });
+    await test.step('comment body starts with @Entwickler', () => {
+      expect(ticket.comments[0].body.startsWith('@Entwickler')).toBe(true);
+    });
+  });
+
+  test('after reset: ticket 1 (DEFINITION) comment addresses @Business Analyst', async () => {
+    await admin.post('/api/tickets/reset');
+
+    const resp = await admin.get('/api/tickets/1');
+    expect(resp.status()).toBe(200);
+    const ticket = await resp.json() as Ticket;
+
+    await test.step('ticket 1 has exactly 1 seeded comment', () => {
+      expect(ticket.comments.length).toBe(1);
+    });
+    await test.step('comment body starts with @Business Analyst', () => {
+      expect(ticket.comments[0].body.startsWith('@Business Analyst')).toBe(true);
+    });
+  });
+
   test('after reset: mutations from previous tests are gone', async () => {
     // Create a new ticket to confirm it disappears after reset
     const createResp = await admin.post('/api/tickets', {
