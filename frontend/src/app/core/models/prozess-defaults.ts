@@ -8,9 +8,9 @@ export type Rolle = 'BA' | 'Dev' | 'Tester';
 
 const MENSCHLICH_LABELS: string[] = [
   'Auslöser: Anfrage oder Fehler',
-  'BA analysiert die Situation',
-  'BA bespricht mit Entwickler',
-  'BA schreibt Ticket',
+  'Business Analyst analysiert die Situation',
+  'Business Analyst bespricht mit Entwickler',
+  'Business Analyst schreibt Ticket',
   'Team bespricht Ticket im Refinement; Ticket → „Bereit"',
   'Entwickler A übernimmt Ticket, startet Arbeit',
   'Entwickler A beendet Arbeit, testet',
@@ -35,11 +35,15 @@ export const PROZESS_STEP_LABELS: Record<ProzessKey, string[]> = {
   agileKi: MENSCHLICH_LABELS,
   halbautomatisch: [
     'Auslöser: Anfrage oder Fehler',
-    'KI schreibt Ticket, weist Mensch zu',
-    'Mensch gibt KI Feedback zur Anfrage',
-    'Mensch weist Ticket an KI zur Umsetzung',
-    'KI analysiert, beginnt Code, braucht Input, weist Mensch zu',
-    'Mensch beantwortet Fragen, weist Ticket an KI',
+    'KI schreibt Ticket, weist Business Analyst zu',
+    'Business Analyst gibt KI Feedback, weist an KI zu',
+    'KI überarbeitet, weist Business Analyst zu',
+    'Business Analyst genehmigt, weist an KI zu',
+    'Entwickler gibt KI Feedback, weist an KI zu',
+    'KI überarbeitet, weist Entwickler zu',
+    'Entwickler genehmigt, weist an KI zu',
+    'KI analysiert, beginnt Code, braucht Input, weist Entwickler zu',
+    'Entwickler beantwortet Fragen, weist an KI zu',
     'KI analysiert Antwort, schreibt Code, testet',
   ],
   vollautomatisch: [
@@ -63,14 +67,15 @@ export const DEFAULT_DURATIONS: Record<ProzessKey, ProzessDauer> = {
   },
   agileKi: {
     works: [0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5],
-    // Same waits array reference as Agile mit Menschen: waiting dominates the total,
-    // so AI-assisted work only trims the end-to-end time from 3,880 to 2,970 minutes.
-    // This modest improvement is intentional — do not "fix" it.
-    waits: MENSCHLICH_WAITS,
+    // Own waits array (no longer shared with Agile mit Menschen): halves the human
+    // waiting times from step 5 onward, since the AI is always available.
+    // Total 90 work + 2,100 wait = 2,190 minutes.
+    waits: [120, 120, 120, 960, 240, 0, 15, 60, 60, 60, 15, 120, 30, 0, 15, 120, 15, 30],
   },
   halbautomatisch: {
-    works: [0, 5, 15, 15, 10, 30, 20],
-    waits: [5, 60, 60, 5, 60, 5],
+    // Sum: 115 work + 325 wait = 440 minutes.
+    works: [0, 5, 10, 10, 5, 10, 10, 5, 10, 30, 20],
+    waits: [5, 60, 5, 60, 60, 5, 60, 5, 60, 5],
   },
   vollautomatisch: {
     works: [0, 20],
@@ -126,7 +131,7 @@ export const PROZESSE: ProzessDescriptor[] = [
     key: 'halbautomatisch',
     titel: 'KI-Prozess mit Feedback',
     labels: PROZESS_STEP_LABELS.halbautomatisch,
-    stepCount: 7,
+    stepCount: 11,
     arbeitszeitLabel: 'KI-Arbeitszeit',
   },
   {
@@ -137,3 +142,22 @@ export const PROZESSE: ProzessDescriptor[] = [
     arbeitszeitLabel: 'KI-Arbeitszeit',
   },
 ];
+
+/**
+ * Simplifying assumptions per process, shown as two bullets under each process's
+ * total in the Prozessvergleich card.
+ */
+export const PROZESS_ANNAHMEN: Record<ProzessKey, string[]> = {
+  menschlich: ['Mensch macht alles', 'Mensch macht Fehler'],
+  agileKi: ['KI macht alles', 'KI macht Fehler'],
+  halbautomatisch: ['KI macht alles', 'Ausführung fehlerfrei'],
+  vollautomatisch: ['KI macht alles', 'Planung und Ausführung fehlerfrei'],
+};
+
+/**
+ * Optional short caption shown under a process's bar in the Prozessvergleich card.
+ * Only `agileKi` has one today.
+ */
+export const PROZESS_CAPTION: Partial<Record<ProzessKey, string>> = {
+  agileKi: 'Agiler Prozess mit Refinement und PR-Review, Business Analyst, Entwickler, Tester',
+};
