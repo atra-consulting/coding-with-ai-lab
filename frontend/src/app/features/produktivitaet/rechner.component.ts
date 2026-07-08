@@ -3,7 +3,6 @@ import {
   DestroyRef,
   OnInit,
   computed,
-  effect,
   inject,
   signal,
 } from '@angular/core';
@@ -541,14 +540,13 @@ export class RechnerComponent implements OnInit {
    * 0 = alle Balken, 1 = nur Balken 1, 2 = Balken 1–2, 3 = Balken 1–3. The bar
    * SCALE stays fixed (getComparisonBars() is untouched) — this only hides rows,
    * it never resizes the remaining bars. Affects the Prozessvergleich card only,
-   * not the Schritt-Zeiten tabs. Persisted per browser session (sessionStorage) so
-   * it survives navigation between screens — mirrors ticket-board.component.ts's
-   * recentOnly pattern.
+   * not the Schritt-Zeiten tabs. Hydrated from sessionStorage on init; persisted
+   * only in cycleBarLimit() — mirrors ticket-board.component.ts's recentOnly
+   * pattern (read on init, write only in the explicit toggle handler). Incidental
+   * widening via revealProcess() (tab navigation, selectProzess) updates the
+   * in-memory signal only and is not persisted.
    */
   barLimit = signal(this.readBarLimit());
-
-  /** Persists barLimit on every change (cycleBarLimit, revealProcess, selectProzess). */
-  private readonly persistBarLimit = effect(() => this.writeBarLimit(this.barLimit()));
 
   private readBarLimit(): number {
     try {
@@ -570,6 +568,7 @@ export class RechnerComponent implements OnInit {
 
   cycleBarLimit(): void {
     this.barLimit.set((this.barLimit() + 1) % 4);
+    this.writeBarLimit(this.barLimit());
   }
 
   isBarVisible(index: number): boolean {

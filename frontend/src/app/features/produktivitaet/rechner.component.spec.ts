@@ -711,17 +711,18 @@ describe('RechnerComponent', () => {
 
   // ─── barLimit sessionStorage persistence (RECHNER-PROZESS-VERBESSERUNGEN) ──
   //
-  // barLimit is now hydrated from sessionStorage on construction (readBarLimit())
-  // and persisted via a field effect() (persistBarLimit) on every change — mirrors
-  // ticket-board.component.ts's recentOnly pattern, so the "Alle Prozesse" filter
-  // survives navigation between screens within the same browser session.
+  // barLimit is hydrated from sessionStorage on construction (readBarLimit()) and
+  // persisted only inside cycleBarLimit(), the explicit "Alle Prozesse" toggle
+  // handler — mirrors ticket-board.component.ts's recentOnly pattern (read on
+  // init, write only in the explicit toggle). Incidental widening via
+  // revealProcess() (tab navigation, selectProzess) updates the in-memory signal
+  // only and must NOT be persisted.
 
   describe('barLimit sessionStorage persistence', () => {
     const STORAGE_KEY = 'rechner.barLimit';
 
     it('cycleBarLimit() writes the new value to sessionStorage', () => {
       component.cycleBarLimit();
-      fixture.detectChanges(); // flushes the field effect() that persists barLimit
 
       expect(sessionStorage.getItem(STORAGE_KEY)).toBe('1');
     });
@@ -768,10 +769,21 @@ describe('RechnerComponent', () => {
 
       expect(() => {
         component.cycleBarLimit();
-        fixture.detectChanges(); // flushes the field effect() that persists barLimit
       }).not.toThrow();
       // The in-memory update still happens even though persistence failed silently.
       expect(component.barLimit()).toBe(1);
+    });
+
+    it('navigation-driven widening (revealProcess via selectProzess) does NOT persist to sessionStorage', () => {
+      component.barLimit.set(2); // shows processes 0 and 1; sessionStorage stays untouched
+      sessionStorage.removeItem(STORAGE_KEY);
+
+      // selectProzess() calls revealProcess(), which widens barLimit as a
+      // side effect of tab navigation — this must stay in-memory only.
+      component.selectProzess(2);
+
+      expect(component.barLimit()).toBe(3); // in-memory signal did widen
+      expect(sessionStorage.getItem(STORAGE_KEY)).toBeNull(); // but nothing was persisted
     });
   });
 
