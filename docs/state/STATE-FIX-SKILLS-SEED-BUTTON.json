@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "task_key": "FIX-SKILLS-SEED-BUTTON",
+  "status": "in_progress",
+  "current_step": "3.3",
+  "started": "2026-07-08T18:43:01+0200",
+  "updated": "2026-07-08T18:43:01+0200",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Four batched changes: (1) write-ticket skill — set source agent-task to closed when taken, add acceptance criteria to generated tickets, make ticket-description headings less prominent. (2) /admin/tickets 'Kürzlich geändert' toggle must persist state across navigation to a ticket and back. (3) agent-task 23 seed: title=Improve chances, metadata subject=Verbesserungen für Chancen, contents=free notes-field text + Phase label color. (4) do-semi-automatic skill — fix marking ticket Done at end; verify In Progress transition.",
+    "special_instructions": null,
+    "ticket_mode": false,
+    "ticket_id": null,
+    "ticket_url": null,
+    "ticket_api_base": null,
+    "ticket_claimed": false,
+    "branch_name": "solution-jfs-2026",
+    "original_branch": "solution-jfs-2026",
+    "original_head": "411d7c30825ab527246455b0f2284309c0db1381",
+    "docs_folder": "docs",
+    "is_git_repo": true,
+    "workflow_scope": null,
+    "pr_prefix": null,
+    "pr_exists": false,
+    "pr_url": null
+  },
+  "discovery": {
+    "agents_available": true,
+    "writer_agents": ["ba-writer"],
+    "coding_agents": ["be-coder", "db-coder", "fe-coder", "ui-designer"],
+    "review_agents": ["ba-reviewer", "requirements-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer"],
+    "test_coding_agents": ["be-test-coder", "fe-test-coder"],
+    "test_review_agents": ["be-test-reviewer", "fe-test-reviewer"],
+    "test_runner_agents": ["be-test-runner", "fe-test-runner"],
+    "tooling_coding_agents": ["python-coder", "shell-coder", "skill-coder"],
+    "tooling_review_agents": ["python-reviewer", "shell-reviewer", "skill-reviewer"],
+    "test_command": null
+  },
+  "artifacts": {
+    "prd_skipped": null,
+    "prd_file": null,
+    "plan_file": null
+  },
+  "completed_steps": []
+}
