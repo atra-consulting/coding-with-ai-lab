@@ -102,6 +102,13 @@ describe('RechnerComponent', () => {
   let httpMock: HttpTestingController;
 
   beforeEach(async () => {
+    // The component now hydrates barLimit from sessionStorage on construction
+    // and persists it via a field effect() on every change — start from a
+    // known-clean slate BEFORE the component is created, so hydration always
+    // starts from empty. Mirrors ticket-board.component.spec.ts's recentOnly
+    // sessionStorage-isolation pattern (Karma runs specs in random order).
+    sessionStorage.removeItem('rechner.barLimit');
+
     mockSzenarioService = makeMockSzenarioService();
 
     await TestBed.configureTestingModule({
@@ -124,6 +131,9 @@ describe('RechnerComponent', () => {
 
   afterEach(() => {
     httpMock.verify();
+    // Several tests below mutate barLimit (which persists to sessionStorage via
+    // its field effect) — clear it so it can't leak into a sibling spec.
+    sessionStorage.removeItem('rechner.barLimit');
   });
 
   // ─── Component creation ───────────────────────────────────────────────────
@@ -695,6 +705,65 @@ describe('RechnerComponent', () => {
       component.onNavChange({ activeId: 1, nextId: 3, preventDefault: () => {} } as NgbNavChangeEvent);
       expect(component.barLimit()).toBe(3); // process index 2 revealed
       expect(component.isBarVisible(2)).toBeTrue();
+    });
+  });
+
+  // ─── barLimit sessionStorage persistence (RECHNER-PROZESS-VERBESSERUNGEN) ──
+  //
+  // barLimit is now hydrated from sessionStorage on construction (readBarLimit())
+  // and persisted via a field effect() (persistBarLimit) on every change — mirrors
+  // ticket-board.component.ts's recentOnly pattern, so the "Alle Prozesse" filter
+  // survives navigation between screens within the same browser session.
+
+  describe('barLimit sessionStorage persistence', () => {
+    const STORAGE_KEY = 'rechner.barLimit';
+
+    it('cycleBarLimit() writes the new value to sessionStorage', () => {
+      component.cycleBarLimit();
+      fixture.detectChanges(); // flushes the field effect() that persists barLimit
+
+      expect(sessionStorage.getItem(STORAGE_KEY)).toBe('1');
+    });
+
+    it('a component constructed while sessionStorage holds "2" starts with barLimit() === 2 (remembered across screens)', () => {
+      sessionStorage.setItem(STORAGE_KEY, '2');
+
+      const freshComponent = TestBed.createComponent(RechnerComponent).componentInstance;
+
+      expect(freshComponent.barLimit()).toBe(2);
+    });
+
+    it('a junk stored value ("x") yields barLimit() === 0 on construction', () => {
+      sessionStorage.setItem(STORAGE_KEY, 'x');
+
+      const freshComponent = TestBed.createComponent(RechnerComponent).componentInstance;
+
+      expect(freshComponent.barLimit()).toBe(0);
+    });
+
+    it('an out-of-range stored value ("9") yields barLimit() === 0 on construction', () => {
+      sessionStorage.setItem(STORAGE_KEY, '9');
+
+      const freshComponent = TestBed.createComponent(RechnerComponent).componentInstance;
+
+      expect(freshComponent.barLimit()).toBe(0);
+    });
+  });
+
+  // ─── DEFAULT_DURATIONS: KI-step duration guard (RECHNER-PROZESS-VERBESSERUNGEN) ─
+
+  describe('DEFAULT_DURATIONS KI-step duration guard', () => {
+    it('the KI-labelled steps of halbautomatisch (indices 1,3,6,8,10) sum to 60 minutes', () => {
+      const works = DEFAULT_DURATIONS.halbautomatisch.works;
+      const kiSum = [1, 3, 6, 8, 10].reduce((sum, i) => sum + works[i], 0);
+
+      expect(kiSum).toBe(60);
+    });
+
+    it('DEFAULT_DURATIONS.vollautomatisch.works sums to 60 minutes', () => {
+      const sum = DEFAULT_DURATIONS.vollautomatisch.works.reduce((s, v) => s + v, 0);
+
+      expect(sum).toBe(60);
     });
   });
 });
