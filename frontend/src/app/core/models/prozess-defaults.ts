@@ -73,12 +73,12 @@ export const DEFAULT_DURATIONS: Record<ProzessKey, ProzessDauer> = {
     waits: [120, 120, 120, 960, 240, 0, 15, 60, 60, 60, 15, 120, 30, 0, 15, 120, 15, 30],
   },
   halbautomatisch: {
-    // Sum: 115 work + 325 wait = 440 minutes.
-    works: [0, 5, 10, 10, 5, 10, 10, 5, 10, 30, 20],
+    // Sum: 120 work + 325 wait = 445 minutes.
+    works: [0, 5, 10, 11, 5, 10, 11, 5, 11, 30, 22],
     waits: [5, 60, 5, 60, 60, 5, 60, 5, 60, 5],
   },
   vollautomatisch: {
-    works: [0, 20],
+    works: [0, 60],
     // Changed from [240]: a fully-automated process has nobody left to wait on.
     waits: [5],
   },

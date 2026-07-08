@@ -3,6 +3,7 @@ import {
   DestroyRef,
   OnInit,
   computed,
+  effect,
   inject,
   signal,
 } from '@angular/core';
@@ -533,14 +534,39 @@ export class RechnerComponent implements OnInit {
   readonly prozesse = PROZESSE;
   readonly zeiteinheiten: ZeitEinheit[] = ZEITEINHEITEN;
 
+  private readonly BAR_LIMIT_STORAGE_KEY = 'rechner.barLimit';
+
   /**
    * Prozessvergleich card: cycles how many of the four comparison bars are shown.
    * 0 = alle Balken, 1 = nur Balken 1, 2 = Balken 1–2, 3 = Balken 1–3. The bar
    * SCALE stays fixed (getComparisonBars() is untouched) — this only hides rows,
    * it never resizes the remaining bars. Affects the Prozessvergleich card only,
-   * not the Schritt-Zeiten tabs.
+   * not the Schritt-Zeiten tabs. Persisted per browser session (sessionStorage) so
+   * it survives navigation between screens — mirrors ticket-board.component.ts's
+   * recentOnly pattern.
    */
-  barLimit = signal(0);
+  barLimit = signal(this.readBarLimit());
+
+  /** Persists barLimit on every change (cycleBarLimit, revealProcess, selectProzess). */
+  private readonly persistBarLimit = effect(() => this.writeBarLimit(this.barLimit()));
+
+  private readBarLimit(): number {
+    try {
+      const raw = sessionStorage.getItem(this.BAR_LIMIT_STORAGE_KEY);
+      const parsed = parseInt(raw ?? '', 10);
+      return parsed === 0 || parsed === 1 || parsed === 2 || parsed === 3 ? parsed : 0;
+    } catch {
+      return 0;
+    }
+  }
+
+  private writeBarLimit(value: number): void {
+    try {
+      sessionStorage.setItem(this.BAR_LIMIT_STORAGE_KEY, String(value));
+    } catch {
+      // Ignore storage errors (e.g. private browsing mode)
+    }
+  }
 
   cycleBarLimit(): void {
     this.barLimit.set((this.barLimit() + 1) % 4);
