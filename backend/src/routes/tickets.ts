@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { requireAuth, requireRole } from '../middleware/auth.js';
-import { requireAgentToken, requireAgentTokenOrAdminSession } from '../middleware/agentAuth.js';
+import { requireAgentTokenOrAdminSession } from '../middleware/agentAuth.js';
 import { ticketService } from '../services/ticketService.js';
 import { parsePaginationParams, parseSort } from '../utils/pagination.js';
 import { validate } from '../utils/validation.js';
@@ -52,9 +52,11 @@ const OwnerBodySchema = z.object({
 
 // GET /api/tickets/next
 // Claim oldest TODO+AI ticket. Optional ?type filter.
+// Accepts agent token, loopback bypass, or admin session — a headless skill
+// can claim the next ticket without an admin login.
 router.get(
   '/next',
-  requireAgentToken,
+  requireAgentTokenOrAdminSession,
   asyncHandler(async (req: Request, res: Response) => {
     const typeParam = req.query['type'] as string | undefined;
 
@@ -198,9 +200,11 @@ router.patch(
 );
 
 // POST /api/tickets/:id/start  (agent)
+// Accepts agent token, loopback bypass, or admin session — a headless skill
+// can start a ticket without an admin login.
 router.post(
   '/:id/start',
-  requireAgentToken,
+  requireAgentTokenOrAdminSession,
   asyncHandler(async (req: Request, res: Response) => {
     const id = parseInt(req.params['id'] as string, 10);
     res.json(await ticketService.start(id));
@@ -208,9 +212,11 @@ router.post(
 );
 
 // POST /api/tickets/:id/done  (agent)
+// Accepts agent token, loopback bypass, or admin session — a headless skill
+// can finish a ticket without an admin login.
 router.post(
   '/:id/done',
-  requireAgentToken,
+  requireAgentTokenOrAdminSession,
   asyncHandler(async (req: Request, res: Response) => {
     const id = parseInt(req.params['id'] as string, 10);
     const dto = validate(DoneBodySchema, req.body);
@@ -219,9 +225,11 @@ router.post(
 );
 
 // POST /api/tickets/:id/ask  (agent)
+// Accepts agent token, loopback bypass, or admin session — a headless skill
+// can ask a question without an admin login.
 router.post(
   '/:id/ask',
-  requireAgentToken,
+  requireAgentTokenOrAdminSession,
   asyncHandler(async (req: Request, res: Response) => {
     const id = parseInt(req.params['id'] as string, 10);
     const dto = validate(AskBodySchema, req.body);
