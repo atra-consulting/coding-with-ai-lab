@@ -1,49 +1,57 @@
-# Code Review - solution-jfs-2026 (FIX-SKILLS-SEED-BUTTON)
+# Code Review - solution-jfs-2026 (RECHNER-PROZESS-VERBESSERUNGEN)
 
-**Date**: 2026-07-08
+**Date**: 2026-07-09
 **Branch**: solution-jfs-2026
-**Base**: 411d7c30825ab527246455b0f2284309c0db1381
-**Files Reviewed**: 8 (skill, backend route, seed, 2 backend tests, spec, frontend component + spec)
+**Base**: f02b2c598f9a52f3d73f3d6bb4cb949ce29bd405 (start of this run)
+**Files Reviewed**: 6 code files (+ 2 docs artifacts)
 **Review Rounds**: 2 (max 3)
 
 ## Summary
 
-Four batched workshop fixes: write-ticket skill (close taken task, add acceptance criteria, softer `####` headings), ticket-board "Kürzlich geändert" toggle persistence via sessionStorage, agent-task 23 seed rewording, and widened auth on the ticket verb endpoints. Round 1 found three WARNINGs (no CRITICAL). Two were fixed directly (doc consistency). One — a new GET-based CSRF surface from widening `GET /next` — was resolved by user decision to revert `/next` to agent-token-only while keeping the three POST verbs widened. Round 2 verified the revert clean and complete. No remaining issues.
+Reviewed the RECHNER-PROZESS-VERBESSERUNGEN change set: (1) persist the "Alle
+Prozesse" toggle (`barLimit`) to `sessionStorage`, (2) set KI-Arbeitszeit to 1h for
+the two KI processes (frontend defaults + backend seed + tests).
+
+Backend: no issues. Frontend: one WARNING (behavioral/product decision) and one
+SUGGESTION (comment accuracy). No CRITICAL issues. Both test suites pass
+(frontend 522/0, backend 331/0). Arithmetic, frontend↔backend seed parity, effect
+cleanup, field-initializer ordering, storage error handling, and test isolation all
+verified correct.
 
 ## Review Rounds
 
 ### Round 1
 
-**Issues found**: 3 | **Fixes applied**: 3
+**Issues found**: 2 | **Fixes applied**: 0 (deferred to caller checkpoint — embedded, implement-review scope)
 
 | # | Severity | File | Issue | Found by | Proposed Fix | Fix by | Applied | Applied by |
 |---|----------|------|-------|----------|--------------|--------|---------|------------|
-| 1 | WARNING | `backend/src/routes/tickets.ts:57` | Widening `GET /next` (a state-mutating GET) to accept an admin session opens a GET-based CSRF surface (`SameSite=Lax` cookie rides cross-site top-level GET nav). POST verbs unaffected. | be-reviewer | Revert `GET /next` to `requireAgentToken`; keep POST verbs widened | be-coder + be-test-coder | Reverted route, tests (→401), and spec; import restored | be-coder (`37d6ea2`), be-test-coder (`3105464`) |
-| 2 | WARNING | `docs/specs/SPEC-API-TICKETS.md:440,446` | ASCII state-machine diagram tagged `POST /done` / `POST /ask` as `(agent)`-only, contradicting the transitions table below | ba-reviewer | Remove stale `(agent)` tags; table is authoritative | direct fix | Tags removed | direct fix |
-| 3 | WARNING | `.claude/skills/write-ticket/SKILL.md:211` | New "endet **immer** geschlossen (DONE)" contradicts the two documented failure paths that leave the task open | skill-reviewer | Soften to "soll immer … außer bei Fehlerfällen" | direct fix | Wording softened | direct fix |
+| 1 | WARNING | `frontend/src/app/features/produktivitaet/rechner.component.ts:551` | Persist `effect()` fires on every `barLimit` write; `revealProcess()` (via `onNavChange`, tab clicks) silently widens `barLimit`, so incidental widening persists, not only deliberate "Alle Prozesse" clicks. Product decision. | fe-reviewer | Persist only on explicit `cycleBarLimit()` (call `writeBarLimit()` there) instead of a global `effect()`. | fe-coder | Removed the `effect`; `cycleBarLimit()` now writes directly. Navigation widening no longer persists. | fe-coder |
+| 2 | SUGGESTION | `frontend/src/app/features/produktivitaet/rechner.component.ts:545` | Comment cites ticket-board `recentOnly` as the mirrored pattern, but implementation differed (effect-based). | fe-reviewer | Make the comment accurate. | fe-coder | Comment rewritten; now genuinely mirrors ticket-board (read-on-init, write-in-handler). | fe-coder |
 
-Frontend (`ticket-board.component.ts` / spec): reviewed clean — persistence correct, restore-before-load ordering right, try/catch covers read+write, sessionStorage is the correct scope. No fix needed.
+User chose (plan-and-do Step 10.3): persist only on explicit click + fix comment. Fix commit `5cf75cf`.
 
 ### Round 2
 
-Clean pass. Fix verification only. The `GET /next` revert confirmed correct and complete across route, import, tests, and spec; the three still-widened POST verbs (`/:id/start`, `/:id/done`, `/:id/ask`) retain their guard, tests, and docs. No regressions.
+Clean pass. No issues found. Fix verified by fe-reviewer: only `cycleBarLimit()` writes; hydration intact; `effect` import removed; new regression test proves navigation widening does not persist. Build clean, rechner spec 64/64.
 
 ## Remaining Issues
 
 No remaining issues.
 
-Below-threshold notes (not actioned): storage-helper style differs from `LayoutService` (strings vs `JSON.stringify`) — cosmetic; ASCII-diagram auth tags now asymmetric (`/wont-do` keeps `(admin)`, others untagged) — the transitions table carries authoritative auth; a pre-existing edge (write-ticket: if ticket creation fails after `/start`, the source agent-task stays `IN_PROGRESS`) is out of this change's scope — worth a follow-up ticket.
-
 ## Project Context Validation
 
-- Auth widening matches the existing `requireAgentTokenOrAdminSession` pattern and memory `headless-skills-avoid-admin-session` (widen backend auth over admin login). Spec kept in lockstep with code.
-- Backend `INSERT OR IGNORE` seed idempotency respected — the seed test asserts the exported constant, not the live DB (avoids the `backend-tests-wipe-ticket-board` staleness/flakiness trap).
-- Frontend follows Angular 21 standalone / `inject()` conventions.
+- No PRD (skipped by user for this small task). Change matches CLAUDE.md conventions:
+  Angular 21 signals/`inject()`, backend seed mirrors the frontend single source of
+  truth, ISO dates unaffected.
+- Backend seed overwrite-on-startup keeps the Standard-Szenario pinned to the new
+  defaults; no migration needed.
 
 ## Next Steps
 
-- Re-run test suites after review fixes (plan-and-do Step 11).
-- agent-task 23 rewording only appears on a fresh DB (`./start.sh --reset-db`).
+- Decide on WARNING #1 (persist-on-explicit-toggle vs current behavior).
+- Optionally apply SUGGESTION #2 (comment fix).
+- Suites already green; ready for PR when findings resolved.
 
 ---
 Generated with Claude Code - review v1.8.2
