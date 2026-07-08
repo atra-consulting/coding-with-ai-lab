@@ -923,6 +923,13 @@ describe('TicketBoardComponent — recentOnly sessionStorage persistence', () =>
     return { fixture, component: fixture.componentInstance };
   }
 
+  beforeEach(() => {
+    // Defensive: start from a known-clean slate regardless of what a sibling
+    // spec (possibly run before this one under Jasmine's random spec order)
+    // may have left behind — don't rely on other blocks cleaning up first.
+    sessionStorage.removeItem(STORAGE_KEY);
+  });
+
   afterEach(() => {
     sessionStorage.removeItem(STORAGE_KEY);
   });
