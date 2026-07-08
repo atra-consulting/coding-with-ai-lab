@@ -306,7 +306,7 @@ export const AGENT_TASK_SEED: AgentTaskSeedRow[] = [
     id: 23,
     source: 'EMAIL',
     title: 'Improve chances',
-    body: 'Ich möchte zu einer Chance eine einfache, freie Notiz schreiben. Es gibt schon ein Beschreiibungs-Feld - ich will trotzdem ein neues Feld. Ein mehrzeiliges Textfeld reicht, bearbeitbar beim Anlegen und Ändern. Pflicht ist es nicht. Bitte nichts Kompliziertes, keine Formatierung oder Verknüpfungen. Außerdem soll das \'Phase\'-Label in der Detail-Ansicht die gleiche Farbe wie in der Chancen-Liste haben.',
+    body: 'Ich möchte zu einer Chance eine einfache, freie Notiz schreiben. Es gibt schon ein Beschreiibungs-Feld - ich will trotzdem ein neues Feld. Ein mehrzeiliges Textfeld reicht, bearbeitbar beim Anlegen und Ändern. Pflicht ist es nicht. Bitte nichts Kompliziertes, keine Formatierung oder Verknüpfungen. Außerdem soll das \'Phase\'-Label in der Chancen-Liste genauso wie in der Detail-Ansicht aussehen.',
     status: 'OPEN',
     comment: null,
     metadata: '{"sender":"n.klein@richter-partner.de","subject":"Verbesserungen für Chancen"}',
