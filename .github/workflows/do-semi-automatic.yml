@@ -1,10 +1,3 @@
-# Converted CI Workflow — `do-semi-automatic.yml`
-
-This is the repurposed GitHub Actions workflow from the `remove-do-factory-automatic-skill` branch. The old `do-factory-automatic.yml` (which ran the deleted `/do-factory-automatic` agent-task skill) was renamed and converted to run `/project:do-semi-automatic`, which works one Kanban ticket per run.
-
-Target path in the repo: `.github/workflows/do-semi-automatic.yml`
-
-```yaml
 # Do Semi Automatic — runs the /do-semi-automatic SKILL headless in CI.
 #
 # Based on agent-task-runner.yml. Key differences:
@@ -209,4 +202,3 @@ jobs:
             -H "Content-Type: application/json" \
             -d "{\"status\":\"${STATUS}\",\"tasksSolved\":${SOLVED},\"tasksRejected\":${REJECTED},\"githubRunUrl\":\"${GITHUB_RUN_URL}\"}" \
             "${APP_BASE_URL%/}/api/cron/runs/${CRON_RUN_ID}/complete"
-```
