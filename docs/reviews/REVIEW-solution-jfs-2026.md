@@ -2,62 +2,53 @@
 
 **Date**: 2026-07-08
 **Branch**: solution-jfs-2026
-**Base**: 852242c04324d9d76ea52c62fd905a6e0ccdce36
-**Files Reviewed**: 4 (skill, backend route, backend tests, spec) + 2 planning files (skipped)
-**Review Rounds**: 3 (max 3)
+**Base**: main
+**Files Reviewed**: 1 (`.claude/skills/plan-and-do/SKILL.md`)
+**Review Rounds**: 1 (max 3)
 
 ## Summary
 
-Reviewed the DO-SEMI-AUTOMATIC-SKILL change: a new headless skill `.claude/skills/do-semi-automatic/SKILL.md`, a backend auth widening in `backend/src/routes/tickets.ts` (`GET /board` and `PATCH /:id/status` now accept agent token / loopback / admin session), the matching `docs/specs/SPEC-API-TICKETS.md` update, and extended Playwright tests. All 322 backend tests pass. Three review rounds; all findings fixed. Final round clean.
+Focused review. Special instruction: make sure `plan-and-do/SKILL.md` calls **only** the project skills `review` and `update-claude-files` — never a global/plugin skill of the same base name (e.g. `bpf:review`).
+
+Finding: every call used the **bare** name `/review` and `/update-claude-files`. Bare names are ambiguous. Plugin skills `bpf-review` (`bpf:review`) and `bpf-update-claude-files` share the same base name. So the sub-skill could resolve to the wrong one.
+
+Fix: namespace every invocation with the `project:` prefix. The project skills carry `name: "project:review"` and `name: "project:update-claude-files"` in their frontmatter, so `/project:review` and `/project:update-claude-files` are unambiguous. Added two explicit notes.
 
 ## Review Rounds
 
 ### Round 1
 
-**Issues found**: 7 | **Fixes applied**: 7
+**Issues found**: 1 | **Fixes applied**: 1
 
 | # | Severity | File | Issue | Found by | Proposed Fix | Fix by | Applied | Applied by |
 |---|----------|------|-------|----------|--------------|--------|---------|------------|
-| 1 | WARNING | `.claude/skills/do-semi-automatic/SKILL.md` | Frontmatter `description` in German; siblings use English | skill-reviewer | Rewrite description in English | skill-coder | Description now English, version→1.0.1 | skill-coder |
-| 2 | WARNING | `.claude/skills/do-semi-automatic/SKILL.md` | plan-and-do pre-auth block has no answer for the "test command" checkpoint → headless hang | skill-reviewer | Add standing test-command answer | skill-coder | Added backend/frontend test-cmd bullet | skill-coder |
-| 3 | WARNING | `.claude/skills/do-semi-automatic/SKILL.md` | Mutating calls (3a/3b/4) don't check HTTP codes → silent failure | skill-reviewer | Capture code, stop on non-2xx | skill-coder | Added shared error rule + per-call code capture | skill-coder |
-| 4 | SUGGESTION | `.claude/skills/do-semi-automatic/SKILL.md` | Loopback note describes a path the skill never takes | skill-reviewer | Clarify as background-only | skill-coder | Clarified | skill-coder |
-| 5 | WARNING | `docs/specs/SPEC-API-TICKETS.md:468` | Transition table tags `PATCH /status` as `(admin)` (stale) | ba-reviewer | Retag agent·loopback·admin | be-coder | Retagged | be-coder |
-| 6 | WARNING | `docs/specs/SPEC-API-TICKETS.md:90` | "unset token → 401" bullet inaccurate for multi-auth endpoints | ba-reviewer | Split pure vs. session-fallback endpoints | be-coder | Bullet corrected | be-coder |
-| 7 | SUGGESTION | `docs/specs/SPEC-API-TICKETS.md:219,321` | Imprecise localhost wording; invented "flow" name | ba-reviewer | Tighten wording | be-coder | Reworded | be-coder |
+| 1 | WARNING | `.claude/skills/plan-and-do/SKILL.md:825` (also 486, 826, 831, 851, 853, 891, 992) | Bare `/review` and `/update-claude-files` calls are ambiguous with plugin skills `bpf:review` / `bpf:update-claude-files` | built-in review | Namespace every call as `/project:review` / `/project:update-claude-files`; add disambiguation notes | direct fix | Renamed all 8 references; added a note at Step 10.1 and Step 12.1 | direct fix |
 
-be-reviewer: clean (one pre-existing, optional test-coverage suggestion, not a regression).
+## Changes Applied
 
-### Round 2
+- **Step 10.1 (Invoke Review)** — invocation block now `/project:review "embedded base:[original_head]"` / `/project:review "embedded"`; added note: *"Always invoke the project skill `project:review` — never a plugin or global skill of the same base name (e.g. `bpf:review`)."*
+- **Step 4.4b note (line 486)** — `/project:review "embedded"`.
+- **Step 10.1 prose (line 831)** — `/project:review "embedded"`.
+- **Step 10.3 (lines 851, 853)** — re-run `/project:review`.
+- **Step 12.1 (Run doc-sync skill)** — invocation now `/project:update-claude-files "embedded base:[original_head]"`; added the same disambiguation note.
+- **Success Criteria (line 992)** — "Code review via /project:review completed".
 
-**Issues found**: 4 | **Fixes applied**: 4
-
-| # | Severity | File | Issue | Found by | Proposed Fix | Fix by | Applied | Applied by |
-|---|----------|------|-------|----------|--------------|--------|---------|------------|
-| 1 | CRITICAL | `.claude/skills/do-semi-automatic/SKILL.md:203` | Frontend test cmd `ng test --watch=false` not headless → hang | skill-reviewer | Use `npm run test:ci` | skill-coder | Changed to `npm run test:ci`, version→1.0.2 | skill-coder |
-| 2 | WARNING | `.claude/skills/do-semi-automatic/SKILL.md:34` | Error rule prints "response body" but calls use `-o /dev/null` | skill-reviewer | Print endpoint+code only | skill-coder | Rule + 2 inline restatements trimmed | skill-coder |
-| 3 | WARNING | `docs/specs/SPEC-API-TICKETS.md:460,466` | Sibling rows (`owner`, `comments`) still tagged `(admin)` (pre-existing) | ba-reviewer | Retag agent·loopback·admin | be-coder | Retagged both | be-coder |
-| 4 | SUGGESTION | `docs/specs/SPEC-API-TICKETS.md:79,90` | Session-fallback list omits `GET /:id` | ba-reviewer | Add `GET /:id` | be-coder | Added | be-coder |
-
-### Round 3
-
-Clean pass. No issues found. (One sub-threshold, pre-existing stylistic note on auth-method ordering in some parentheticals — not a finding.)
+Left unchanged (descriptive help-text, not skill calls): `plan-and-do-modes.md` lines 55 and 83 ("Performs local code review using /review", "Code Review (local, via /review)"). These are documentation bullets in help/doctor output — they never trigger a skill invocation.
 
 ## Remaining Issues
 
-No remaining issues.
+No remaining issues. Every invocation-causing reference to the two sub-skills is now project-namespaced.
 
 ## Project Context Validation
 
-- Backend change follows the established `requireAgentTokenOrAdminSession` pattern (CLAUDE.md: agent endpoints use agent-token middleware). Admin-only endpoints untouched. All 322 Playwright tests pass.
-- Skill file matches sibling conventions (`do-factory-automatic`, `write-ticket`), German body, English frontmatter description, headless-safe, no `AskUserQuestion`.
-- Spec doc now internally consistent with the route middleware.
+- `.claude/skills/review/SKILL.md` frontmatter: `name: "project:review"` — confirms `/project:review` targets the project skill.
+- `.claude/skills/update-claude-files/SKILL.md` frontmatter: `name: "project:update-claude-files"` — confirms `/project:update-claude-files` targets the project skill.
+- Both project skills exist on disk and support embedded mode + `base:<ref>`, so the namespaced calls behave identically to before — only the resolution target is now pinned.
 
 ## Next Steps
 
-- Ensure all tests pass (done — 322 passing).
-- Update documentation if needed (done).
-- No PR (workflow scope: implement-review).
+- Optional: run `/project:plan-and-do` end-to-end once to confirm the namespaced sub-skill calls resolve.
+- Commit when ready.
 
 ---
 Generated with Claude Code - review v1.8.2
