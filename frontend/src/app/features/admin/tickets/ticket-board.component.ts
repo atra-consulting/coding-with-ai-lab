@@ -724,6 +724,7 @@ export class TicketBoardComponent implements OnInit {
 
   recentOnly = false;
   private readonly RECENT_WINDOW_MS = 60 * 60 * 1000;
+  private readonly RECENT_ONLY_STORAGE_KEY = 'ticketBoard.recentOnly';
 
   viewDefinition: Ticket[] = [];
   viewTodo: Ticket[] = [];
@@ -743,6 +744,8 @@ export class TicketBoardComponent implements OnInit {
   readonly faGripVertical = faGripVertical;
 
   ngOnInit(): void {
+    this.recentOnly = this.readRecentOnly();
+
     // Wire summary refreshes through switchMap so rapid drops cancel prior calls
     this.summaryTrigger$
       .pipe(
@@ -804,7 +807,24 @@ export class TicketBoardComponent implements OnInit {
 
   toggleRecent(): void {
     this.recentOnly = !this.recentOnly;
+    this.writeRecentOnly(this.recentOnly);
     this.refreshView();
+  }
+
+  private readRecentOnly(): boolean {
+    try {
+      return sessionStorage.getItem(this.RECENT_ONLY_STORAGE_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  }
+
+  private writeRecentOnly(value: boolean): void {
+    try {
+      sessionStorage.setItem(this.RECENT_ONLY_STORAGE_KEY, value ? 'true' : 'false');
+    } catch {
+      // Ignore storage errors (e.g. private browsing mode)
+    }
   }
 
   onDrop(event: CdkDragDrop<Ticket[]>, targetStatus: TicketStatus): void {
