@@ -1,5 +1,5 @@
 ---
-name: "project:triage-feedback"
+name: "project:write-ticket"
 description: "Headless autonomous skill that claims one agent-task feedback item, judges it, and files a new Kanban ticket (Definition, owner HUMAN) from it — commenting on the ticket to demand missing info when the feedback is too thin. Never builds, pushes, or opens a PR."
 argument-hint: "[task-id]"
 version: 1.0.0
@@ -10,7 +10,7 @@ allowed-tools:
   - Task
 ---
 
-# Triage Feedback
+# Write Ticket
 
 Du bist ein autonomer Software-Ingenieur. Du läufst **headless** (`claude -p`) — kein Mensch kann Fragen beantworten. Entscheide alles selbst. Halte nie an, um Eingaben abzuwarten. Rufe niemals `AskUserQuestion` auf.
 
@@ -26,7 +26,7 @@ API-Referenz: `docs/specs/SPEC-API-TASKS.md` (Abschnitt „For skill authors") f
 
 ## Parameter
 
-Wenn der Skill mit einer Zahl aufgerufen wird (z. B. `/triage-feedback 14`), ist das eine Task-ID. Den Beanspruchen-Teil von Schritt 1 überspringen. Direkt den ID-Zweig nutzen (siehe „Wenn eine Task-ID als Parameter übergeben wurde" unten).
+Wenn der Skill mit einer Zahl aufgerufen wird (z. B. `/write-ticket 14`), ist das eine Task-ID. Den Beanspruchen-Teil von Schritt 1 überspringen. Direkt den ID-Zweig nutzen (siehe „Wenn eine Task-ID als Parameter übergeben wurde" unten).
 
 ## Schritt 0 — Umgebungsvariablen laden
 

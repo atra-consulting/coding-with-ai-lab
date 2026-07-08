@@ -2,7 +2,7 @@
 
 ## Goal
 
-Write a new project skill `/triage-feedback`. Modeled on `tasks/advanced/Skill für Übungsaufgabe 2.md` and its shipped sibling `.claude/skills/do-factory-automatic/SKILL.md`. The skill triages one piece of feedback (an agent task) into a **new Kanban ticket**.
+Write a new project skill `/write-ticket`. Modeled on `tasks/advanced/Skill für Übungsaufgabe 2.md` and its shipped sibling `.claude/skills/do-factory-automatic/SKILL.md`. The skill triages one piece of feedback (an agent task) into a **new Kanban ticket**.
 
 ## Test Command
 
@@ -10,13 +10,13 @@ Write a new project skill `/triage-feedback`. Modeled on `tasks/advanced/Skill f
 
 ## Deliverable
 
-One new file: `.claude/skills/triage-feedback/SKILL.md`.
+One new file: `.claude/skills/write-ticket/SKILL.md`.
 
 ## Key design (please confirm at the checkpoint)
 
 The skill keeps the template's shape (headless, autonomous, no `AskUserQuestion`). It claims one agent task, judges it, then **always** produces a Kanban ticket. It differs from `do-factory-automatic` on the outcome:
 
-| Aspect | do-factory-automatic (template) | /triage-feedback (this skill) |
+| Aspect | do-factory-automatic (template) | /write-ticket (this skill) |
 |--------|--------------------------------|-------------------------------|
 | Feedback source | agent task (`/api/agent-tasks`) | same |
 | Judgment | `requirements-reviewer` subagent | same |
@@ -40,9 +40,9 @@ The skill keeps the template's shape (headless, autonomous, no `AskUserQuestion`
 
 ### 1. Skill file scaffold
 
-- [ ] Create `.claude/skills/triage-feedback/SKILL.md`.
+- [ ] Create `.claude/skills/write-ticket/SKILL.md`.
 - [ ] YAML frontmatter matching `do-factory-automatic` conventions:
-  - `name: "project:triage-feedback"`
+  - `name: "project:write-ticket"`
   - `description:` one line — headless skill that triages one agent-task feedback item into a new Kanban ticket (Definition, owner AI); comments to demand missing info when the feedback is too thin.
   - `argument-hint: "[task-id]"`
   - `version: 1.0.0`, `last-modified: 2026-07-08`
