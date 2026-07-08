@@ -208,7 +208,7 @@ Weiter zu Schritt 4. Im Freitext-Modus entfällt Schritt 4 (siehe dort) — dann
 
 *(Läuft in JEDEM Durchlauf, der eine echte Agent-Task übernommen hat — Queue-, Task-ID- und Task-URL-Modus, ausnahmslos in BEIDEN Zweigen 3a und 3b. Im Freitext-Modus entfällt Schritt 4 komplett: Es gibt keine Agent-Task, die abzuschließen wäre. Dann direkt weiter zu Schritt 5 — Schritt 4 nur überspringen, nicht den ganzen Durchlauf.)*
 
-Eine übernommene Agent-Task endet **immer** geschlossen (`DONE`). In BEIDEN Zweigen (3a und 3b) die ursprüngliche Feedback-Aufgabe abschließen.
+Eine übernommene Agent-Task **soll** immer geschlossen werden (`DONE`). Nur wenn der `/done`-Aufruf selbst fehlschlägt — oder in Zweig 3a schon der Kommentar fehlschlägt — bleibt sie offen (siehe die Fehlerfälle unten). In BEIDEN Zweigen (3a und 3b) die ursprüngliche Feedback-Aufgabe abschließen.
 
 ```bash
 DONE_CODE=$(curl -s -o /dev/null -w '%{http_code}' -X POST \

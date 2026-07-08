@@ -437,13 +437,13 @@ Deletes all rows in `ticket_comment` and `ticket`, then re-seeds the 12 workshop
                    │                          DONE                                    │
                    │           solution = DONE | WONT_DO                              │
                    └─────────────────────────────────────────────────────────────────┘
-                         ▲ POST /done (agent)            ▲ POST /wont-do (admin)
+                         ▲ POST /done                    ▲ POST /wont-do (admin)
                          │ solution=DONE                 │ solution=WONT_DO
                          │                               │ owner must be HUMAN
                     IN_PROGRESS                       ON_HOLD  (owner=HUMAN)
                          ▲                               ▲          │
             GET /next    │                 POST /ask     │          │ POST /comments
-           OR /start     │                 (agent)       │          │ handBackToAi=true
+           OR /start     │                               │          │ handBackToAi=true
            (owner=AI)    │                               │          │ owner→AI
                          │                               │          │
                         TODO  ◀──────────────────────────────────────┘
