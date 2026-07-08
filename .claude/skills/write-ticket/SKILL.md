@@ -2,7 +2,7 @@
 name: "project:write-ticket"
 description: "Headless autonomous skill that claims one agent-task feedback item (or takes a task ID, a task URL, or free-floating feedback text), judges it, and files a new Kanban ticket (Definition, owner HUMAN) from it — commenting on the ticket to demand missing info when the feedback is too thin. Never builds, pushes, or opens a PR."
 argument-hint: "[task-id | task-url | feedback-text]"
-version: 1.1.0
+version: 1.2.0
 last-modified: 2026-07-08
 allowed-tools:
   - Read
@@ -20,7 +20,8 @@ API-Referenz: `docs/specs/SPEC-API-TASKS.md` (Abschnitt „For skill authors") f
 
 ## Konfiguration
 
-- API-Basis-URL: Umgebungsvariable `APP_BASE_URL`, sonst `http://localhost:7070`.
+- API-Basis-URL: Umgebungsvariable `APP_BASE_URL`, sonst `http://localhost:7070`. Das ist die Backend-API.
+- Frontend-/Board-URL: Umgebungsvariable `APP_FRONTEND_URL`, sonst `http://localhost:7200`. Das ist das Board, das ein Mensch im Browser öffnet — nicht die API. Dieselbe Basis baut zwei Links: den Quell-Link im `## Feedback`-Abschnitt des Ticket-Bodys (Schritt 3) und den finalen Ticket-Link im Abschluss-Print (Schritt 5).
 - Auth-Header bei jedem API-Aufruf: `Authorization: Bearer $AGENT_API_TOKEN`. Derselbe Token gilt für **beide** Queues — die Agent-Task-Queue und die Ticket-Erstellung. Ticket-Anlage und Kommentare akzeptieren den Agent-Token (bzw. den Loopback-Bypass), also ist **kein Admin-Login** nötig.
 - Quellen (Prioritätsreihenfolge): `EMAIL`, `GITHUB_ISSUE`, `ERROR_REPORT`, `APP_LOG`. Mit `TASK_SOURCE` überschreibbar — dann nur diese eine Quelle.
 
@@ -129,55 +130,75 @@ Der Subagent liefert ein klares, binäres Urteil: entweder **„gut genug zum Ba
 
 Zusätzlich bitten, einen Ticket-`type` vorzuschlagen: `FEATURE`, `BUG` oder `CHORE`. Ohne klaren Vorschlag `FEATURE` als Default nehmen.
 
+Zusätzlich — **auf JEDEM Durchlauf, unabhängig vom Urteil** — folgenden strukturierten Inhalt für die Ticket-Vorlage aus Schritt 3 anfordern:
+
+- **Fachlich/Business**: Anforderungen und Plan in einfachem, nicht-technischem Deutsch. Was ändert sich für den Nutzer, warum, und die groben Schritte. Keine Dateipfade, kein Code.
+- **Technisch**: Anforderungen und Plan für Entwickler. Konkrete Schritte, betroffene Dateien/Bereiche/Endpunkte, Lösungsansatz.
+- **Offene Fragen** — NUR wenn das Urteil „muss verfeinert werden" lautet: eine Liste konkreter Fragen. Jede Zeile eine Frage, die mit „?" endet. Keine Aussagen, keine Befunde — nur Fragen.
+
+Fachlich und Technisch liefert der Subagent **immer** — auch bei „gut genug zum Bauen". Offene Fragen nur beim Urteil „muss verfeinert werden".
+
 Dem Urteil des Subagenten ohne Abweichung folgen. Das Urteil entscheidet **nicht**, ob ein Ticket entsteht — ein Ticket entsteht immer (Schritt 3). Es entscheidet nur, ob danach ein Kommentar mit offenen Fragen folgt (Schritt 3a) oder nicht (Schritt 3b).
 
 ## Schritt 3 — Ticket anlegen (IMMER)
 
 Unabhängig vom Urteil aus Schritt 2: **immer** ein neues Ticket anlegen.
 
+Den `body` als Markdown-Vorlage mit drei Abschnitten aufbauen, in genau dieser Reihenfolge:
+
+1. `## Feedback` — **ganz am Anfang.** Den ursprünglichen Input WÖRTLICH als Markdown-Zitat (`>`) einfügen. Nicht zusammenfassen, nicht umformulieren — der Originaltext bleibt unverändert.
+   - Queue-, ID- oder URL-Modus: `title` und `body` der Agent-Task (plus `metadata`, falls vorhanden) wörtlich zitieren. Danach eine Link-Zeile anfügen: `Quelle: <APP_FRONTEND_URL>/admin/agent-tasks/<id>` (Basis aus `APP_FRONTEND_URL`, siehe Konfiguration).
+   - Freitext-Modus: den exakt übergebenen Text wörtlich zitieren. **Keine** Link-Zeile — es gibt keine Agent-Task. Die `Quelle:`-Zeile hier komplett weglassen. Nie einen leeren oder kaputten Link ausgeben.
+2. `## Fachlich (für Business)` — der Fachlich-Abschnitt aus Schritt 2.
+3. `## Technisch (für Entwickler)` — der Technisch-Abschnitt aus Schritt 2.
+
+`type` und `title` wie bisher setzen.
+
 ```bash
 curl -s -w '\n%{http_code}' -X POST \
   -H "Authorization: Bearer $AGENT_API_TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"type": "<Typ aus Schritt 2, Default FEATURE>", "title": "<Titel aus dem Feedback>", "body": "<Feedback-Body plus relevante Details aus Titel/Metadata>"}' \
+  -d '{"type": "<Typ aus Schritt 2, Default FEATURE>", "title": "<Titel aus dem Feedback>", "body": "<Markdown-Vorlage: ## Feedback, dann ## Fachlich (für Business), dann ## Technisch (für Entwickler)>"}' \
   "${APP_BASE_URL:-http://localhost:7070}/api/tickets"
 ```
+
+**Wichtig:** Der komplette mehrteilige Body — alle drei Abschnitte, inklusive Zeilenumbrüche und Zitat-Markup (`>`) — muss vollständig als JSON-String escaped werden, bevor er in `-d` landet. Sonst ist das JSON ungültig.
 
 Body und HTTP-Code separat aus der Ausgabe lesen (`body` = alles vor der letzten Zeile, `http_code` = letzte Zeile).
 
 - HTTP `201` → JSON parsen, neue Ticket-`id` behalten (im Folgenden `<newId>`). Weiter zu Schritt 3a oder 3b, je nach Urteil aus Schritt 2.
-- Jeder andere Code → Fehler ausgeben und **beenden**.
+- Jeder andere Code → Fehler ausgeben und **beenden**. Kein Ticket angelegt — der Abschluss-Print (Schritt 5) entfällt dann.
 
 Das neue Ticket landet automatisch mit `status=DEFINITION` und `owner=HUMAN` — das ist genau der Zielzustand. Owner **nicht** ändern. Ticket **nicht** nach `TODO` verschieben.
 
 ## Schritt 3a — Feedback zu dünn: muss verfeinert werden
 
-Auf dem NEUEN Ticket einen Kommentar hinterlassen, der genau benennt, was fehlt:
+Auf dem NEUEN Ticket einen Kommentar hinterlassen. Der Kommentar-Body enthält **NUR Fragen** — jede Zeile eine Frage, die mit „?" endet. Keine Aussagen, keine Fakten, kein Befund. Die Fragen aus den „Offene Fragen" des Subagenten (Schritt 2) übernehmen.
+
+**Verboten:** Aussagen über den bestehenden Code oder Zustand voranstellen — z. B. „X existiert bereits im Code", „Y fehlt", „Z ist unklar" — und danach erst fragen. Das ist ein Aussagen-Kommentar, kein Fragen-Kommentar, und ist nicht erlaubt. Nur die Frage selbst gehört in den Kommentar, ohne Vorspann, ohne Befund.
 
 ```bash
 COMMENT_CODE=$(curl -s -o /dev/null -w '%{http_code}' -X POST \
   -H "Authorization: Bearer $AGENT_API_TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"body": "GENAU WAS FEHLT ODER UNKLAR IST, damit ein Mensch das Ticket vervollständigen kann"}' \
+  -d '{"body": "NUR FRAGEN — je eine pro Zeile, jede endet mit ?"}' \
   "${APP_BASE_URL:-http://localhost:7070}/api/tickets/<newId>/comments")
 ```
 
-- HTTP `200` → weiter zu Schritt 4 (im Freitext-Modus dort sofort beenden).
+- HTTP `200` → weiter zu Schritt 4. Im Freitext-Modus entfällt Schritt 4 (siehe dort) — dann direkt weiter zu Schritt 5 (Abschluss-Print), erst danach beenden.
 - Jeder andere Code → „Fehler: Kommentar für Ticket #<newId> lieferte HTTP $COMMENT_CODE. Durchlauf beendet." ausgeben und **beenden**. (Nicht zu Schritt 4 gehen — sonst meldet der Skill fälschlich eine hinterlegte Rückfrage.)
-
-Den Text aus dem Grund des Subagenten aus Schritt 2 ableiten. Generische Kommentare wie „unklar" sind nicht akzeptabel — die Lücken konkret benennen.
 
 Der Endpunkt speichert den Kommentar immer als `author=HUMAN` — unabhängig davon, wer ihn aufruft.
 
 ## Schritt 3b — Feedback gut genug
 
-Nichts weiter am Ticket tun. Kein Kommentar, keine Status- oder Owner-Änderung. Das Ticket bleibt in `DEFINITION` bei `owner=HUMAN` und wartet dort auf einen Menschen zur weiteren Verfeinerung oder Übergabe an die KI.
+Nichts weiter am Ticket tun. Kein Kommentar, keine Status- oder Owner-Änderung. Das Ticket bleibt in `DEFINITION` bei `owner=HUMAN` und wartet dort auf einen Menschen zur weiteren Verfeinerung oder Übergabe an die KI. Der Ticket-Body trägt bereits beide Abschnitte — Fachlich und Technisch — aus Schritt 3. Deshalb kein Kommentar nötig.
 
-Weiter zu Schritt 4 (im Freitext-Modus dort sofort beenden).
+Weiter zu Schritt 4. Im Freitext-Modus entfällt Schritt 4 (siehe dort) — dann direkt weiter zu Schritt 5 (Abschluss-Print), erst danach beenden.
 
 ## Schritt 4 — Feedback-Task als erledigt markieren
 
-*(Nur wenn eine Agent-Task existiert — also im Queue-, Task-ID- oder Task-URL-Modus. Im Freitext-Modus entfällt Schritt 4 komplett: Es gibt keine Agent-Task, die abzuschließen wäre. Dann direkt **beenden**.)*
+*(Nur wenn eine Agent-Task existiert — also im Queue-, Task-ID- oder Task-URL-Modus. Im Freitext-Modus entfällt Schritt 4 komplett: Es gibt keine Agent-Task, die abzuschließen wäre. Dann direkt weiter zu Schritt 5 — Schritt 4 nur überspringen, nicht den ganzen Durchlauf.)*
 
 In BEIDEN Zweigen (3a und 3b): die ursprüngliche Feedback-Aufgabe abschließen.
 
@@ -198,6 +219,27 @@ HTTP-Code prüfen:
 
 - HTTP `200` → erfolgreich abgeschlossen.
 - Jeder andere Code → „Fehler: /done für Aufgabe <id> lieferte HTTP $DONE_CODE. Ticket #<newId> ist bereits angelegt, aber die Agent-Task bleibt offen." ausgeben. (Das Ticket steht schon — also klar sagen, dass nur das Abschließen der Quelle fehlgeschlagen ist, nicht der ganze Durchlauf.)
+
+In BEIDEN Fällen (HTTP `200` oder Fehler) weiter zu Schritt 5 — der Abschluss-Print läuft trotzdem, das Ticket steht ja bereits.
+
+## Schritt 5 — Ticket-ID und URL ausgeben (IMMER)
+
+*(Läuft nach Schritt 4 — im Freitext-Modus direkt nach Schritt 3a oder 3b, weil Schritt 4 dort entfällt. Der letzte Schritt in JEDEM Durchlauf, der ein Ticket angelegt hat — in allen vier Eingabemodi, in beiden Zweigen 3a und 3b.)*
+
+Als allerletzte Ausgabe des Durchlaufs genau diesen Block drucken:
+
+```
+============================================
+TICKET #<newId> ANGELEGT
+<APP_FRONTEND_URL>/admin/tickets/<newId>
+============================================
+```
+
+`<newId>` aus Schritt 3. `<APP_FRONTEND_URL>` aus der Konfiguration (`APP_FRONTEND_URL`, sonst `http://localhost:7200`).
+
+Dieser Print läuft **immer**, wenn Schritt 3 ein Ticket angelegt hat — egal ob Schritt 3a (zu dünn) oder 3b (gut genug) lief, und egal in welchem der vier Eingabemodi (Queue, ID, URL, Freitext). Er ist die letzte Ausgabe des Durchlaufs.
+
+Übersprungen wird er **nur**, wenn gar kein Ticket angelegt wurde — Schritt 3 lieferte einen anderen Code als `201`, und der Durchlauf wurde dort bereits mit einem Fehler beendet.
 
 Dann **beenden**. Ein Feedback-Element pro Durchlauf.
 
