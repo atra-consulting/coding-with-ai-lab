@@ -2,7 +2,7 @@
 name: "project:write-ticket"
 description: "Headless autonomous skill that claims one agent-task feedback item (or takes a task ID, a task URL, or free-floating feedback text), judges it, and files a new Kanban ticket (Definition, owner HUMAN) from it — commenting on the ticket to demand missing info when the feedback is too thin. Never builds, pushes, or opens a PR."
 argument-hint: "[task-id | task-url | feedback-text]"
-version: 1.2.0
+version: 1.3.0
 last-modified: 2026-07-08
 allowed-tools:
   - Read
@@ -192,7 +192,7 @@ COMMENT_CODE=$(curl -s -o /dev/null -w '%{http_code}' -X POST \
 ```
 
 - HTTP `200` → weiter zu Schritt 4. Im Freitext-Modus entfällt Schritt 4 (siehe dort) — dann direkt weiter zu Schritt 5 (Abschluss-Print), erst danach beenden.
-- Jeder andere Code → „Fehler: Kommentar für Ticket #<newId> lieferte HTTP $COMMENT_CODE." ausgeben. **Nicht** zu Schritt 4 gehen — sonst meldet der Skill fälschlich eine hinterlegte Rückfrage. Aber weiter zu Schritt 5 (Abschluss-Print), dann **beenden**. Das Ticket steht ja schon — die ID und URL gehören trotzdem ausgegeben.
+- Jeder andere Code → „Fehler: Kommentar für Ticket #<newId> lieferte HTTP $COMMENT_CODE." ausgeben. **Nicht** zu Schritt 4 gehen — sonst meldet der Skill fälschlich eine hinterlegte Rückfrage. Aber weiter zu Schritt 5 (Abschluss-Print), dann **beenden**. Das Ticket steht ja schon — die ID und URL gehören trotzdem ausgegeben. Hinweis: Schritt 4 entfällt, also bleibt die Agent-Task offen.
 
 Der Endpunkt speichert den Kommentar immer als `author=HUMAN` — unabhängig davon, wer ihn aufruft.
 
