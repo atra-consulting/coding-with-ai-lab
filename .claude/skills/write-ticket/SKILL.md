@@ -18,6 +18,12 @@ Auftrag: Ein Feedback-Element aus der Agent-Task-Queue beanspruchen (oder direkt
 
 API-Referenz: `docs/specs/SPEC-API-TASKS.md` (Abschnitt „For skill authors") für die Feedback-Queue, `docs/specs/SPEC-API-TICKETS.md` (Abschnitt „For skill authors") für die Ticket-Erstellung.
 
+## Schreibstil
+
+Dein Schreibstil: kurze Sätze, kein Passiv, einfache Wörter. Nutze Aufzählungspunkte, wo es passt.
+
+Gilt für alles, was der Skill schreibt — die Abschnitte `## Fachlich (für Business)` und `## Technisch (für Entwickler)` im Ticket-Body und die Fragen im Kommentar.
+
 ## Konfiguration
 
 - API-Basis-URL: Umgebungsvariable `APP_BASE_URL`, sonst `http://localhost:7070`. Das ist die Backend-API.
@@ -186,7 +192,7 @@ COMMENT_CODE=$(curl -s -o /dev/null -w '%{http_code}' -X POST \
 ```
 
 - HTTP `200` → weiter zu Schritt 4. Im Freitext-Modus entfällt Schritt 4 (siehe dort) — dann direkt weiter zu Schritt 5 (Abschluss-Print), erst danach beenden.
-- Jeder andere Code → „Fehler: Kommentar für Ticket #<newId> lieferte HTTP $COMMENT_CODE. Durchlauf beendet." ausgeben und **beenden**. (Nicht zu Schritt 4 gehen — sonst meldet der Skill fälschlich eine hinterlegte Rückfrage.)
+- Jeder andere Code → „Fehler: Kommentar für Ticket #<newId> lieferte HTTP $COMMENT_CODE." ausgeben. **Nicht** zu Schritt 4 gehen — sonst meldet der Skill fälschlich eine hinterlegte Rückfrage. Aber weiter zu Schritt 5 (Abschluss-Print), dann **beenden**. Das Ticket steht ja schon — die ID und URL gehören trotzdem ausgegeben.
 
 Der Endpunkt speichert den Kommentar immer als `author=HUMAN` — unabhängig davon, wer ihn aufruft.
 
