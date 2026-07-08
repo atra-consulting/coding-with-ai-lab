@@ -208,36 +208,65 @@ test.describe('Auth matrix — agent endpoints', () => {
 //
 // /next, /:id/start, /:id/done, and /:id/ask were widened from
 // requireAgentToken to requireAgentTokenOrAdminSession: agent token, loopback
-// bypass, or admin session (first match wins). This suite drives an admin
-// session through claim → start → ask/done and asserts 200 at every step —
-// the newly-allowed path. Regression coverage for the agent-token happy path
-// on these same endpoints already lives in the 'GET /api/tickets/next',
-// 'POST /api/tickets/:id/done', 'POST /api/tickets/:id/ask', and
-// 'POST /api/tickets/:id/start' suites below; the wrong-token → 401 case is
-// covered just above (and again in the ':id/start' suite), so neither is
-// duplicated here.
+// bypass, or admin session (first match wins).
 //
-// Note: this test environment also sets AGENT_AUTH_ALLOW_LOOPBACK=1, so a
-// plain localhost request without any session would already succeed via the
-// loopback bypass (see 'Auth matrix — agent endpoints' above). These
-// assertions therefore confirm the admin-session path is reachable end to
-// end (200, not 401/403) — the observable contract change — rather than
-// proving in isolation which branch of the OR granted access.
+// IMPORTANT: this test environment sets AGENT_AUTH_ALLOW_LOOPBACK=1, and the
+// loopback bypass fires FIRST — purely on remoteAddress plus the absence of
+// an auth/forwarding header — before the middleware ever reaches the
+// admin-session check. A plain admin-context call from localhost would
+// therefore return 200 even if these four routes were reverted to plain
+// requireAgentToken, proving nothing about the widening. Every test below
+// sends 'X-Forwarded-For' to disable the loopback bypass (same pattern as
+// src/test/agentTasks.spec.ts:220-234 and :295-301), so the 200s here
+// genuinely exercise the admin-session branch, and each has a same-header,
+// no-session negative control that asserts 401 — the case that would fail if
+// the widening were reverted.
+//
+// Regression coverage for the agent-token happy path on these same endpoints
+// already lives in the 'GET /api/tickets/next', 'POST /api/tickets/:id/done',
+// 'POST /api/tickets/:id/ask', and 'POST /api/tickets/:id/start' suites
+// below; the wrong-token → 401 case is covered in 'Auth matrix — agent
+// endpoints' above (and again in the ':id/start' suite), so neither is
+// duplicated here.
 test.describe('Auth matrix — admin session on widened agent endpoints', () => {
+  const NO_LOOPBACK_HEADERS = { 'X-Forwarded-For': '10.0.0.1' };
+
   let admin: APIRequestContext;
+  let anon: APIRequestContext;
 
   test.beforeEach(async () => {
     admin = await loginCtx('admin', 'admin123');
     await resetTickets(admin);
+    anon = await anonCtx();
   });
 
   test.afterEach(async () => {
     await admin.dispose();
+    await anon.dispose();
   });
 
-  test('POST /:id/start with admin session → 200, drives TODO+AI ticket to IN_PROGRESS', async () => {
+  // ── GET /next ──────────────────────────────────────────────────────────────
+
+  test('GET /next with admin session + X-Forwarded-For (loopback bypass disabled) → 200, claims a TODO+AI ticket', async () => {
+    const resp = await admin.get('/api/tickets/next', { headers: NO_LOOPBACK_HEADERS });
+
+    await test.step('status 200', () => { expect(resp.status()).toBe(200); });
+
+    const body = await resp.json() as Ticket;
+    await test.step('status is IN_PROGRESS', () => { expect(body.status).toBe('IN_PROGRESS'); });
+    await test.step('owner is AI', () => { expect(body.owner).toBe('AI'); });
+  });
+
+  test('GET /next without session + X-Forwarded-For (loopback bypass disabled) → 401 (negative control)', async () => {
+    const resp = await anon.get('/api/tickets/next', { headers: NO_LOOPBACK_HEADERS });
+    expect(resp.status()).toBe(401);
+  });
+
+  // ── POST /:id/start ─────────────────────────────────────────────────────────
+
+  test('POST /:id/start with admin session + X-Forwarded-For (loopback bypass disabled) → 200, drives TODO+AI ticket to IN_PROGRESS', async () => {
     // Ticket 6 is TODO+AI after reset.
-    const resp = await admin.post('/api/tickets/6/start', { data: {} });
+    const resp = await admin.post('/api/tickets/6/start', { data: {}, headers: NO_LOOPBACK_HEADERS });
 
     await test.step('status 200', () => { expect(resp.status()).toBe(200); });
 
@@ -246,14 +275,22 @@ test.describe('Auth matrix — admin session on widened agent endpoints', () => 
     await test.step('owner remains AI', () => { expect(body.owner).toBe('AI'); });
   });
 
-  test('POST /:id/done with admin session → 200 on an IN_PROGRESS ticket', async () => {
-    // Drive ticket 6 to IN_PROGRESS via the admin session first.
-    const startResp = await admin.post('/api/tickets/6/start', { data: {} });
+  test('POST /:id/start without session + X-Forwarded-For (loopback bypass disabled) → 401 (negative control)', async () => {
+    const resp = await anon.post('/api/tickets/6/start', { data: {}, headers: NO_LOOPBACK_HEADERS });
+    expect(resp.status()).toBe(401);
+  });
+
+  // ── POST /:id/done ──────────────────────────────────────────────────────────
+
+  test('POST /:id/done with admin session + X-Forwarded-For (loopback bypass disabled) → 200 on an IN_PROGRESS ticket', async () => {
+    // Drive ticket 6 to IN_PROGRESS via the admin session first, same header
+    // set throughout so the whole chain runs on the admin-session branch.
+    const startResp = await admin.post('/api/tickets/6/start', { data: {}, headers: NO_LOOPBACK_HEADERS });
     expect(startResp.status()).toBe(200);
     const started = await startResp.json() as Ticket;
     expect(started.status).toBe('IN_PROGRESS');
 
-    const resp = await admin.post('/api/tickets/6/done', { data: {} });
+    const resp = await admin.post('/api/tickets/6/done', { data: {}, headers: NO_LOOPBACK_HEADERS });
 
     await test.step('status 200', () => { expect(resp.status()).toBe(200); });
 
@@ -262,13 +299,25 @@ test.describe('Auth matrix — admin session on widened agent endpoints', () => 
     await test.step('solution is DONE', () => { expect(body.solution).toBe('DONE'); });
   });
 
-  test('POST /:id/ask with admin session → 200 on an IN_PROGRESS ticket', async () => {
-    // Drive ticket 6 to IN_PROGRESS via the admin session first.
-    const startResp = await admin.post('/api/tickets/6/start', { data: {} });
+  test('POST /:id/done without session + X-Forwarded-For (loopback bypass disabled) → 401 (negative control)', async () => {
+    // Drive ticket 6 to IN_PROGRESS via the admin session (same header) first,
+    // so the anon call below hits the auth guard rather than a 409 wrong-state.
+    const startResp = await admin.post('/api/tickets/6/start', { data: {}, headers: NO_LOOPBACK_HEADERS });
+    expect(startResp.status()).toBe(200);
+
+    const resp = await anon.post('/api/tickets/6/done', { data: {}, headers: NO_LOOPBACK_HEADERS });
+    expect(resp.status()).toBe(401);
+  });
+
+  // ── POST /:id/ask ───────────────────────────────────────────────────────────
+
+  test('POST /:id/ask with admin session + X-Forwarded-For (loopback bypass disabled) → 200 on an IN_PROGRESS ticket', async () => {
+    const startResp = await admin.post('/api/tickets/6/start', { data: {}, headers: NO_LOOPBACK_HEADERS });
     expect(startResp.status()).toBe(200);
 
     const resp = await admin.post('/api/tickets/6/ask', {
       data: { question: 'Admin-session question — is this reachable now?' },
+      headers: NO_LOOPBACK_HEADERS,
     });
 
     await test.step('status 200', () => { expect(resp.status()).toBe(200); });
@@ -276,6 +325,17 @@ test.describe('Auth matrix — admin session on widened agent endpoints', () => 
     const body = await resp.json() as Ticket;
     await test.step('status is ON_HOLD', () => { expect(body.status).toBe('ON_HOLD'); });
     await test.step('owner is HUMAN', () => { expect(body.owner).toBe('HUMAN'); });
+  });
+
+  test('POST /:id/ask without session + X-Forwarded-For (loopback bypass disabled) → 401 (negative control)', async () => {
+    const startResp = await admin.post('/api/tickets/6/start', { data: {}, headers: NO_LOOPBACK_HEADERS });
+    expect(startResp.status()).toBe(200);
+
+    const resp = await anon.post('/api/tickets/6/ask', {
+      data: { question: 'Should be rejected before reaching the service.' },
+      headers: NO_LOOPBACK_HEADERS,
+    });
+    expect(resp.status()).toBe(401);
   });
 });
 
