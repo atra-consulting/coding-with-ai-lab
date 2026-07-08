@@ -74,7 +74,7 @@ Same fields as ticket, but `comments` is replaced by `commentCount: number`.
 
 ## Authentication
 
-Three schemes. Most verb endpoints accept more than one — the claim/finish/ask verbs (`/next`, `/:id/start`, `/:id/done`, `/:id/ask`) plus the write endpoints a skill needs (`create`, `/:id/owner`, `/:id/comments`, `/:id/status`) plus `GET /:id` and `GET /board` accept **agent token · loopback bypass · admin session** (first match wins).
+Three schemes. Most verb endpoints accept more than one — the finish/ask verbs (`/:id/start`, `/:id/done`, `/:id/ask`) plus the write endpoints a skill needs (`create`, `/:id/owner`, `/:id/comments`, `/:id/status`) plus `GET /:id` and `GET /board` accept **agent token · loopback bypass · admin session** (first match wins). `GET /next` is the exception: it's a GET that mutates state (claims a ticket), so it accepts **agent token · loopback bypass only** — never an admin session, to avoid a GET-based CSRF surface (a `SameSite=Lax` session cookie still rides cross-site top-level GET navigations).
 
 ### Agent token (used by `/next`, `/:id/start`, `/:id/done`, `/:id/ask`, `POST /`, `GET /:id`, `GET /board`, `PATCH /:id/owner`, `PATCH /:id/status`, `POST /:id/comments`)
 
@@ -113,7 +113,9 @@ Standard browser session cookie + role `ADMIN` (`requireAuth` + `requireRole('AD
 
 **Admin-only** (session required, no token or loopback accepted): `GET /`, `GET /summary`, `POST /:id/wont-do`, `POST /:id/hand-to-ai`, `POST /reset`.
 
-**Admin session _or_ agent token _or_ loopback bypass** (first match wins): `GET /next`, `POST /:id/start`, `POST /:id/done`, `POST /:id/ask`, `GET /:id`, `GET /board`, `POST /` (create), `PATCH /:id/owner`, `PATCH /:id/status`, `POST /:id/comments`. A wrong token is rejected outright (never falls through to the session check). These let a headless skill claim, work, and finish a ticket — or file, refine, peek, and move one — without an admin login.
+**Agent token _or_ loopback bypass only** (no admin session — GET mutates state, so an admin session would open a CSRF hole via cross-site GET navigation): `GET /next`.
+
+**Admin session _or_ agent token _or_ loopback bypass** (first match wins): `POST /:id/start`, `POST /:id/done`, `POST /:id/ask`, `GET /:id`, `GET /board`, `POST /` (create), `PATCH /:id/owner`, `PATCH /:id/status`, `POST /:id/comments`. A wrong token is rejected outright (never falls through to the session check). These let a headless skill work and finish a ticket — or file, refine, peek, and move one — without an admin login.
 
 The admin board UI is at **`/admin/tickets`**.
 
@@ -121,8 +123,8 @@ The admin board UI is at **`/admin/tickets`**.
 
 ## Endpoints
 
-### GET `/api/tickets/next?type=TYPE` — claim the next ticket (agent token · loopback · admin)
-**Auth:** agent token · loopback bypass · admin session (first match wins). `type` is optional.
+### GET `/api/tickets/next?type=TYPE` — claim the next ticket (agent token · loopback bypass)
+**Auth:** agent token · loopback bypass (first match wins). **No admin session** — this is a GET that mutates state (claims a ticket); accepting an admin session cookie here would open a CSRF hole (a `SameSite=Lax` session cookie still rides cross-site top-level GET navigations). `type` is optional.
 
 Atomically flips the oldest `TODO` + `owner=AI` ticket to `IN_PROGRESS` (sets `pickedUpAt`). The status flip is the claim guard. Optional `type` filter (`FEATURE`, `BUG`, `CHORE`).
 
@@ -131,8 +133,7 @@ Atomically flips the oldest `TODO` + `owner=AI` ticket to `IN_PROGRESS` (sets `p
 | `200` + ticket | claimed (includes `comments` array) |
 | `204` (no body) | no matching TODO+AI ticket |
 | `400` | `type` provided but not a valid enum value |
-| `401` | bad/missing token and no admin session |
-| `403` | logged in but not admin (production, no token) |
+| `401` | bad/missing token |
 
 ```bash
 curl -s -H "Authorization: Bearer $AGENT_API_TOKEN" \
@@ -463,7 +464,7 @@ Deletes all rows in `ticket_comment` and `ticket`, then re-seeds the 12 workshop
 |---------|------|----|-------------|
 | `PATCH /:id/owner {AI}` (agent · loopback · admin) | `DEFINITION` | `DEFINITION` | `owner→AI` ("An KI übergeben") |
 | `POST /:id/hand-to-ai` (admin) | `DEFINITION` | `TODO` | `owner→AI` ("Nach Bereit") |
-| `GET /next` (agent · loopback · admin) | `TODO` + `owner=AI` | `IN_PROGRESS` | sets `pickedUpAt` |
+| `GET /next` (agent · loopback) | `TODO` + `owner=AI` | `IN_PROGRESS` | sets `pickedUpAt` |
 | `POST /start` (agent · loopback · admin) | `TODO` + `owner=AI` | `IN_PROGRESS` | sets `pickedUpAt` |
 | `POST /done` (agent · loopback · admin) | `IN_PROGRESS` | `DONE` | `solution=DONE`, `resolvedAt` |
 | `POST /ask` (agent · loopback · admin) | `IN_PROGRESS` | `ON_HOLD` | `owner→HUMAN`, AGENT comment |

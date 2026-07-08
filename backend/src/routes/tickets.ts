@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { requireAuth, requireRole } from '../middleware/auth.js';
-import { requireAgentTokenOrAdminSession } from '../middleware/agentAuth.js';
+import { requireAgentToken, requireAgentTokenOrAdminSession } from '../middleware/agentAuth.js';
 import { ticketService } from '../services/ticketService.js';
 import { parsePaginationParams, parseSort } from '../utils/pagination.js';
 import { validate } from '../utils/validation.js';
@@ -52,11 +52,13 @@ const OwnerBodySchema = z.object({
 
 // GET /api/tickets/next
 // Claim oldest TODO+AI ticket. Optional ?type filter.
-// Accepts agent token, loopback bypass, or admin session — a headless skill
-// can claim the next ticket without an admin login.
+// Agent token or loopback bypass only — this is a GET that mutates state
+// (claims a ticket), so it must not accept an admin session cookie: a
+// SameSite=Lax cookie still rides cross-site top-level GET navigations,
+// which would open a CSRF hole for claiming tickets.
 router.get(
   '/next',
-  requireAgentTokenOrAdminSession,
+  requireAgentToken,
   asyncHandler(async (req: Request, res: Response) => {
     const typeParam = req.query['type'] as string | undefined;
 
