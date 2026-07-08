@@ -2,7 +2,7 @@
   "version": 1,
   "task_key": "FIX-SKILLS-SEED-BUTTON",
   "status": "in_progress",
-  "current_step": "3.3",
+  "current_step": "7.5",
   "started": "2026-07-08T18:43:01+0200",
   "updated": "2026-07-08T18:43:01+0200",
   "config": {
@@ -19,7 +19,7 @@
     "original_head": "411d7c30825ab527246455b0f2284309c0db1381",
     "docs_folder": "docs",
     "is_git_repo": true,
-    "workflow_scope": null,
+    "workflow_scope": "implement-review",
     "pr_prefix": null,
     "pr_exists": false,
     "pr_url": null
@@ -34,12 +34,12 @@
     "test_runner_agents": ["be-test-runner", "fe-test-runner"],
     "tooling_coding_agents": ["python-coder", "shell-coder", "skill-coder"],
     "tooling_review_agents": ["python-reviewer", "shell-reviewer", "skill-reviewer"],
-    "test_command": null
+    "test_command": "backend: cd backend && npm test ; frontend: cd frontend && npm run test:ci"
   },
   "artifacts": {
-    "prd_skipped": null,
+    "prd_skipped": true,
     "prd_file": null,
-    "plan_file": null
+    "plan_file": "docs/plans/PLAN-FIX-SKILLS-SEED-BUTTON.md"
   },
   "completed_steps": []
 }
