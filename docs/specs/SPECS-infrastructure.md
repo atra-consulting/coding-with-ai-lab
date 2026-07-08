@@ -54,9 +54,11 @@ coding-with-ai-lab/
 │       └── layout/             # Navbar, sidebar
 ├── .github/
 │   └── workflows/
-│       ├── deploy.yml              # Test + deploy to Vercel on push to main
-│       ├── agent-task-runner.yml   # Autonomous agent for OPEN agent_task rows
-│       └── github-issue-agent.yml  # GitHub-issue refinement agent
+│       ├── deploy.yml                 # Test + deploy to Vercel on push to main
+│       ├── agent-task-runner.yml      # Autonomous agent for OPEN agent_task rows
+│       ├── do-factory-automatic.yml   # /do-factory-automatic skill — one agent_task per run, opens a PR
+│       ├── do-semi-automatic.yml      # /do-semi-automatic skill — one Kanban ticket per run, opens a PR
+│       └── github-issue-agent.yml     # GitHub-issue refinement agent
 ├── docs/
 │   ├── adr/                    # Architecture Decision Records
 │   ├── prds/                   # Product Requirement Documents
@@ -229,12 +231,14 @@ No JWT secrets. No RSA key paths. No cookie-flag overrides.
 
 ## CI/CD
 
-Three GitHub Actions workflows in `.github/workflows/`:
+Five GitHub Actions workflows in `.github/workflows/`:
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
 | `deploy.yml` | Push to `main` (after tests pass) | Runs backend type-check + Playwright tests, frontend unit tests + build, then deploys to Vercel (production) |
 | `agent-task-runner.yml` | `repository_dispatch` event `solve-agent-tasks` | Runs the autonomous agent against OPEN `agent_task` rows |
+| `do-factory-automatic.yml` | `repository_dispatch` event `solve-agent-tasks`; also `workflow_dispatch`, daily `schedule` | Runs the `/do-factory-automatic` skill against one OPEN `agent_task`; pushes a branch and opens a PR (never merges) |
+| `do-semi-automatic.yml` | `repository_dispatch` event `solve-tickets` (dormant — no cron dispatches it yet); also `workflow_dispatch`, daily `schedule` | Runs the `/do-semi-automatic` skill against one Ready+AI Kanban ticket; pushes a branch and opens a PR (never merges) |
 | `github-issue-agent.yml` | `repository_dispatch` event `solve-github-issues` | Runs the GitHub-issue refinement agent against one labelled issue |
 
 ### Vercel Deployment

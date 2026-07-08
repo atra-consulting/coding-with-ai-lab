@@ -154,20 +154,20 @@ Fake Kanban ticket system for the software-factory training. Board mechanics and
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | GET | `/api/tickets/next?type=X` | requireAgentToken | Claim oldest `TODO`+`AI` ticket → `IN_PROGRESS`. Optional `type` filter. 204 when none |
-| GET | `/api/tickets/board` | requireAuth + requireRole('ADMIN') | Full board, grouped by column |
+| GET | `/api/tickets/board` | requireAgentTokenOrAdminSession | Full board, grouped by column (agent token, loopback, or admin session) |
 | GET | `/api/tickets/summary` | requireAuth + requireRole('ADMIN') | Per-column counts |
 | POST | `/api/tickets/reset` | requireAuth + requireRole('ADMIN') | Re-seed the 12 workshop tickets |
 | GET | `/api/tickets` | requireAuth + requireRole('ADMIN') | Paginated list; filter by `type`, `status`, `owner` |
-| POST | `/api/tickets` | requireAuth + requireRole('ADMIN') | Create → 201 (`owner=HUMAN`, `status=DEFINITION`) |
+| POST | `/api/tickets` | requireAgentTokenOrAdminSession | Create → 201 (`owner=HUMAN`, `status=DEFINITION`; agent token, loopback, or admin session) |
 | GET | `/api/tickets/:id` | requireAgentTokenOrAdminSession | Single ticket (agent token, loopback, or admin session) |
-| PATCH | `/api/tickets/:id/status` | requireAuth + requireRole('ADMIN') | Move to another column |
-| PATCH | `/api/tickets/:id/owner` | requireAuth + requireRole('ADMIN') | Reassign owner. `{owner:AI}` = "An KI übergeben" (stays `DEFINITION`) |
-| POST | `/api/tickets/:id/start` | requireAgentToken | Claim a specific ticket by id → `IN_PROGRESS` |
-| POST | `/api/tickets/:id/done` | requireAgentToken | Finish → `solution=DONE` |
-| POST | `/api/tickets/:id/ask` | requireAgentToken | Ask a question → `ON_HOLD`, owner back to `HUMAN` |
+| PATCH | `/api/tickets/:id/status` | requireAgentTokenOrAdminSession | Move to another column (agent token, loopback, or admin session) |
+| PATCH | `/api/tickets/:id/owner` | requireAgentTokenOrAdminSession | Reassign owner (agent token, loopback, or admin session). `{owner:AI}` = "An KI übergeben" (stays `DEFINITION`) |
+| POST | `/api/tickets/:id/start` | requireAgentTokenOrAdminSession | Claim a specific ticket by id → `IN_PROGRESS` (agent token, loopback, or admin session) |
+| POST | `/api/tickets/:id/done` | requireAgentTokenOrAdminSession | Finish → `solution=DONE` (agent token, loopback, or admin session) |
+| POST | `/api/tickets/:id/ask` | requireAgentTokenOrAdminSession | Ask a question → `ON_HOLD`, owner back to `HUMAN` (agent token, loopback, or admin session) |
 | POST | `/api/tickets/:id/wont-do` | requireAuth + requireRole('ADMIN') | Set `solution=WONT_DO` (only on `owner=HUMAN`) |
 | POST | `/api/tickets/:id/hand-to-ai` | requireAuth + requireRole('ADMIN') | "Nach Bereit": owner=AI, → `TODO` |
-| POST | `/api/tickets/:id/comments` | requireAuth + requireRole('ADMIN') | Add comment; `handBackToAi` returns ticket to `TODO`+`AI` |
+| POST | `/api/tickets/:id/comments` | requireAgentTokenOrAdminSession | Add comment (agent token, loopback, or admin session); `handBackToAi` returns ticket to `TODO`+`AI` |
 
 ### Cron (`/api/cron`)
 
@@ -270,7 +270,7 @@ All 3 users currently hold all 7 permissions: `FIRMEN`, `PERSONEN`, `ABTEILUNGEN
 - Returns 401 if the env var is not set, the header is absent, or the token does not match.
 - **Loopback bypass (dev only).** When env var `AGENT_AUTH_ALLOW_LOOPBACK=1`, a request from `127.0.0.1` / `::1` / `::ffff:127.0.0.1` with **no** auth header and **no** proxy-forwarding header (`X-Forwarded-For`, `X-Real-IP`, `Forwarded`) skips the token check. Never set this in production. The forwarding-header refusal stops a same-host reverse proxy (which appears as `127.0.0.1` on the socket) from opening the bypass.
 
-`requireAgentTokenOrAdminSession` (in `src/middleware/agentAuth.ts`): guards endpoints that both agents and the admin UI read — currently `GET /api/agent-tasks/:id` and `GET /api/tickets/:id`. First match wins:
+`requireAgentTokenOrAdminSession` (in `src/middleware/agentAuth.ts`): guards endpoints that both agents and the admin UI use — `GET /api/agent-tasks/:id` plus nine Tickets endpoints (`GET /:id`, `GET /board`, `POST /` create, `PATCH /:id/status`, `PATCH /:id/owner`, `POST /:id/start`, `POST /:id/done`, `POST /:id/ask`, `POST /:id/comments`; see the Tickets table above). First match wins:
 
 1. Loopback bypass — same gating as above (also requires `AGENT_API_TOKEN` set).
 2. Agent token — if a token header is present, it must match; a wrong token is rejected (401), never falling through to the session.

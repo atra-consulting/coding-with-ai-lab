@@ -169,7 +169,7 @@ All error responses follow:
 | `adressen-search.spec.ts` | GET `/api/adressen?search=<term>` — city substring match, case-insensitive, empty-result handling, anon 401 |
 | `aktivitaeten-crud.spec.ts` | GET `/api/aktivitaeten` (paginated) and `/all`, POST/PUT/DELETE `/api/aktivitaeten/:id` — full CRUD, `datum` DESC sort, 404 on unknown id, anon 401 |
 | `agentTasks.spec.ts` | GET `/api/agent-tasks/next`, POST `/:id/reject`, POST `/:id/done`, GET `/api/agent-tasks`, GET `/api/agent-tasks/summary`, POST `/api/agent-tasks/reset` |
-| `agentTaskSeed.spec.ts` | `seedAgentTasks()` idempotency — 23 fixed-ID rows survive repeated seeding; per-source counts (7 EMAIL / 4 GITHUB_ISSUE / 6 APP_LOG / 6 ERROR_REPORT) |
+| `agentTaskSeed.spec.ts` | `seedAgentTasks()` idempotency — 23 fixed-ID rows survive repeated seeding; per-source counts (7 EMAIL / 4 GITHUB_ISSUE / 6 APP_LOG / 6 ERROR_REPORT); `AGENT_TASK_SEED` row 23 reworded title/subject/body (Chancen-Notiz), asserted against the exported constant, not the live DB |
 | `chancen-phase-filter.spec.ts` | GET `/api/chancen?phase=<value>` — per-phase filtering and invalid-phase 400 |
 | `chancen-search.spec.ts` | GET `/api/chancen?search=<term>` — case-insensitive title search, combined search+phase filter |
 | `cron.spec.ts` | GET `/api/cron/agent-tasks`, POST `/api/cron/runs/:id/complete`, GET `/api/cron/runs`, GET `/api/cron/jobs` |
@@ -177,7 +177,7 @@ All error responses follow:
 | `personen-filter.spec.ts` | GET `/api/personen?abteilungId=<id>` — department filter, combined abteilungId+search |
 | `sessions-persistence.spec.ts` | Session row creation on login, cross-request persistence, DB row deletion on logout |
 | `szenario.spec.ts` | GET/POST/PUT/DELETE `/api/szenarien` and `/:id` — CRUD, works/waits JSON round-trip, array-length and duration-bound validation, duplicate-name 409, seeded Standard-Szenario (id=1) |
-| `tickets.spec.ts` | Kanban lifecycle across `/api/tickets` — `/next`, `/:id/start`, `/:id/done`, `/:id/ask`, `/:id/comments`, `/:id/wont-do`, PATCH `/:id/status` and `/:id/owner`, POST `/api/tickets`, `/:id/hand-to-ai`, `/board`, `/summary`, `/reset` — agent-token vs. admin-session auth matrix |
+| `tickets.spec.ts` | Kanban lifecycle across `/api/tickets` — `/next`, `/:id/start`, `/:id/done`, `/:id/ask`, `/:id/comments`, `/:id/wont-do`, PATCH `/:id/status` and `/:id/owner`, POST `/api/tickets`, `/:id/hand-to-ai`, `/board`, `/summary`, `/reset` — auth matrix: agent-token-or-admin-session on start/done/ask/board/status/owner/comments/create/GET :id; `/next` stays agent-token-only (GET-based CSRF surface) |
 
 ---
 
@@ -286,7 +286,7 @@ For components using `inject()` that cannot be overridden by a provider, use `Te
 | `features/admin/agent-tasks/agent-task-list.component.spec.ts` | `AgentTaskListComponent` — list view, source param, `statusBadgeClass()` |
 | `features/admin/agent-tasks/agent-tasks-dashboard.component.spec.ts` | `AgentTasksDashboardComponent` — summary and per-source views |
 | `features/admin/cron/cron-dashboard.component.spec.ts` | `CronDashboardComponent` — ngOnInit, pagination, runNow() |
-| `features/admin/tickets/ticket-board.component.spec.ts` | `TicketBoardComponent` — board loading, drag-and-drop status transitions with rollback, badge helpers |
+| `features/admin/tickets/ticket-board.component.spec.ts` | `TicketBoardComponent` — board loading, drag-and-drop status transitions with rollback, badge helpers, recentOnly ("Kürzlich geändert") filter toggle with sessionStorage persistence |
 | `features/admin/tickets/ticket-detail.component.spec.ts` | `TicketDetailComponent` — detail view, comment/hand-back-to-AI flow, "Won't Do" and owner-toggle actions |
 | `features/produktivitaet/einheit.spec.ts` | Zeiteinheit helpers — `einheitZuFaktor`, `feldWertZuMinuten`, `maxWertFuerEinheit`, `durationValidatorsFor`, round-trip conversion |
 | `features/produktivitaet/rechner.component.spec.ts` | `RechnerComponent` — productivity calculator: unit conversion, scenario load/save, role/pie/flowchart derivations |
