@@ -99,7 +99,7 @@ Läuft headless (`claude -p`). Kein Mensch antwortet. Arbeitet genau ein Kanban-
 - Datei: `.claude/skills/do-semi-automatic/SKILL.md`
 - Hintergrund: [docs/specs/SPEC-API-TICKETS.md](specs/SPEC-API-TICKETS.md)
 
-### `/write-ticket` — Feedback zu einem Ticket triagieren
+### `/write-ticket` — Feedback in ein neues Ticket triagieren
 
 Läuft headless (`claude -p`). Kein Mensch antwortet. Baut nie Code.
 
