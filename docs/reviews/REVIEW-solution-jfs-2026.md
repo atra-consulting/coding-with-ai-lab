@@ -50,7 +50,7 @@ No remaining issues.
 ## Project Context Validation
 
 - Backend change follows the established `requireAgentTokenOrAdminSession` pattern (CLAUDE.md: agent endpoints use agent-token middleware). Admin-only endpoints untouched. All 322 Playwright tests pass.
-- Skill file matches sibling conventions (`do-factory-automatic`, `triage-feedback`), German body, English frontmatter description, headless-safe, no `AskUserQuestion`.
+- Skill file matches sibling conventions (`do-factory-automatic`, `write-ticket`), German body, English frontmatter description, headless-safe, no `AskUserQuestion`.
 - Spec doc now internally consistent with the route middleware.
 
 ## Next Steps

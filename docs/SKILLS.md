@@ -1,6 +1,6 @@
 # Skills
 
-Dieses Projekt hat vier eigene Skills. Sie liegen in `.claude/skills/`. Jeder Skill ist ein Ordner mit einer `SKILL.md`.
+Dieses Projekt hat sechs eigene Skills. Sie liegen in `.claude/skills/`. Jeder Skill ist ein Ordner mit einer `SKILL.md`.
 
 ## Was ist ein Skill?
 
@@ -83,6 +83,36 @@ Läuft headless (`claude -p`). Kein Mensch antwortet. Der Skill entscheidet alle
   ```
 - Datei: `.claude/skills/do-factory-automatic/SKILL.md`
 - Hintergrund: [docs/specs/SPEC-API-TASKS.md](specs/SPEC-API-TASKS.md)
+
+### `/do-semi-automatic` — autonom, ein Ticket pro Lauf
+
+Läuft headless (`claude -p`). Kein Mensch antwortet. Arbeitet genau ein Kanban-Ticket pro Lauf.
+
+- **Wann nutzen:** In CI. Für unbeaufsichtigte Läufe. Wenn ein Ticket „Bereit" ist und der KI gehört.
+- **Was passiert:** Der Skill nimmt ein Ticket (oder eines per ID). Er beurteilt es. Zu dünn beschrieben? Zurück nach „Definition", Owner Mensch. Gut genug? Er baut es voll über `plan-and-do`. Jede Status-Änderung dokumentiert er mit einem kleinen Kommentar. Kein Push, kein PR.
+- **Argumente (optional):** `[ticket-id]`. Mit ID überspringt der Skill die Suche.
+- **Wichtig:** Der Skill ruft nie `AskUserQuestion`. Er hält nie an. Er braucht `AGENT_API_TOKEN` in der Umgebung.
+- **Beispiel:**
+  ```
+  /do-semi-automatic 7
+  ```
+- Datei: `.claude/skills/do-semi-automatic/SKILL.md`
+- Hintergrund: [docs/specs/SPEC-API-TICKETS.md](specs/SPEC-API-TICKETS.md)
+
+### `/write-ticket` — Feedback zu einem Ticket triagieren
+
+Läuft headless (`claude -p`). Kein Mensch antwortet. Baut nie Code.
+
+- **Wann nutzen:** In CI. Um Feedback aus der Agent-Task-Queue in ein Kanban-Ticket zu verwandeln.
+- **Was passiert:** Der Skill nimmt ein Feedback-Element (Agent-Task, oder eines per ID). Er beurteilt es mit dem `requirements-reviewer`-Subagent. Er legt immer ein neues Ticket an — Status „Definition", Owner Mensch. Ist das Feedback zu dünn, kommentiert er genau, was fehlt. Er pusht nie und öffnet nie einen PR.
+- **Argumente (optional):** `[task-id]`. Mit ID überspringt der Skill die Suche.
+- **Wichtig:** Der Skill ruft nie `AskUserQuestion`. Er hält nie an. Er braucht `AGENT_API_TOKEN` in der Umgebung.
+- **Beispiel:**
+  ```
+  /write-ticket 14
+  ```
+- Datei: `.claude/skills/write-ticket/SKILL.md`
+- Hintergrund: [docs/specs/SPEC-API-TASKS.md](specs/SPEC-API-TASKS.md) · [docs/specs/SPEC-API-TICKETS.md](specs/SPEC-API-TICKETS.md)
 
 ## Übernahme in dein Projekt
 
