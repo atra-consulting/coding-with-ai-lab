@@ -2,7 +2,7 @@
 name: "project:write-ticket"
 description: "Headless autonomous skill that claims one agent-task feedback item (or takes a task ID, a task URL, or free-floating feedback text), judges it, and files a new Kanban ticket (Definition, owner HUMAN) from it — commenting on the ticket to demand missing info when the feedback is too thin. Never builds, pushes, or opens a PR."
 argument-hint: "[task-id | task-url | feedback-text]"
-version: 1.3.0
+version: 1.4.0
 last-modified: 2026-07-08
 allowed-tools:
   - Read
@@ -22,12 +22,12 @@ API-Referenz: `docs/specs/SPEC-API-TASKS.md` (Abschnitt „For skill authors") f
 
 Dein Schreibstil: kurze Sätze, kein Passiv, einfache Wörter. Nutze Aufzählungspunkte, wo es passt.
 
-Gilt für alles, was der Skill schreibt — die Abschnitte `## Fachlich (für Business)` und `## Technisch (für Entwickler)` im Ticket-Body und die Fragen im Kommentar.
+Gilt für alles, was der Skill schreibt — die Abschnitte `#### Fachlich (für Business)`, `#### Technisch (für Entwickler)` und `#### Akzeptanzkriterien` im Ticket-Body und die Fragen im Kommentar.
 
 ## Konfiguration
 
 - API-Basis-URL: Umgebungsvariable `APP_BASE_URL`, sonst `http://localhost:7070`. Das ist die Backend-API.
-- Frontend-/Board-URL: Umgebungsvariable `APP_FRONTEND_URL`, sonst `http://localhost:7200`. Das ist das Board, das ein Mensch im Browser öffnet — nicht die API. Dieselbe Basis baut zwei Links: den Quell-Link im `## Feedback`-Abschnitt des Ticket-Bodys (Schritt 3) und den finalen Ticket-Link im Abschluss-Print (Schritt 5).
+- Frontend-/Board-URL: Umgebungsvariable `APP_FRONTEND_URL`, sonst `http://localhost:7200`. Das ist das Board, das ein Mensch im Browser öffnet — nicht die API. Dieselbe Basis baut zwei Links: den Quell-Link im `#### Feedback`-Abschnitt des Ticket-Bodys (Schritt 3) und den finalen Ticket-Link im Abschluss-Print (Schritt 5).
 - Auth-Header bei jedem API-Aufruf: `Authorization: Bearer $AGENT_API_TOKEN`. Derselbe Token gilt für **beide** Queues — die Agent-Task-Queue und die Ticket-Erstellung. Ticket-Anlage und Kommentare akzeptieren den Agent-Token (bzw. den Loopback-Bypass), also ist **kein Admin-Login** nötig.
 - Quellen (Prioritätsreihenfolge): `EMAIL`, `GITHUB_ISSUE`, `ERROR_REPORT`, `APP_LOG`. Mit `TASK_SOURCE` überschreibbar — dann nur diese eine Quelle.
 
@@ -140,9 +140,10 @@ Zusätzlich — **auf JEDEM Durchlauf, unabhängig vom Urteil** — folgenden st
 
 - **Fachlich/Business**: Anforderungen und Plan in einfachem, nicht-technischem Deutsch. Was ändert sich für den Nutzer, warum, und die groben Schritte. Keine Dateipfade, kein Code.
 - **Technisch**: Anforderungen und Plan für Entwickler. Konkrete Schritte, betroffene Dateien/Bereiche/Endpunkte, Lösungsansatz.
+- **Akzeptanzkriterien**: konkrete, testbare Kriterien für die Änderung. Jede Zeile ein prüfbares Kriterium — kein vages „funktioniert gut", sondern klar erkennbar, wann die Änderung fertig ist.
 - **Offene Fragen** — NUR wenn das Urteil „muss verfeinert werden" lautet: eine Liste konkreter Fragen. Jede Zeile eine Frage, die mit „?" endet. Keine Aussagen, keine Befunde — nur Fragen.
 
-Fachlich und Technisch liefert der Subagent **immer** — auch bei „gut genug zum Bauen". Offene Fragen nur beim Urteil „muss verfeinert werden".
+Fachlich, Technisch und Akzeptanzkriterien liefert der Subagent **immer** — auch bei „gut genug zum Bauen". Offene Fragen nur beim Urteil „muss verfeinert werden".
 
 Dem Urteil des Subagenten ohne Abweichung folgen. Das Urteil entscheidet **nicht**, ob ein Ticket entsteht — ein Ticket entsteht immer (Schritt 3). Es entscheidet nur, ob danach ein Kommentar mit offenen Fragen folgt (Schritt 3a) oder nicht (Schritt 3b).
 
@@ -150,13 +151,14 @@ Dem Urteil des Subagenten ohne Abweichung folgen. Das Urteil entscheidet **nicht
 
 Unabhängig vom Urteil aus Schritt 2: **immer** ein neues Ticket anlegen.
 
-Den `body` als Markdown-Vorlage mit drei Abschnitten aufbauen, in genau dieser Reihenfolge:
+Den `body` als Markdown-Vorlage mit vier Abschnitten aufbauen, in genau dieser Reihenfolge:
 
-1. `## Feedback` — **ganz am Anfang.** Den ursprünglichen Input WÖRTLICH als Markdown-Zitat (`>`) einfügen. Nicht zusammenfassen, nicht umformulieren — der Originaltext bleibt unverändert.
+1. `#### Feedback` — **ganz am Anfang.** Den ursprünglichen Input WÖRTLICH als Markdown-Zitat (`>`) einfügen. Nicht zusammenfassen, nicht umformulieren — der Originaltext bleibt unverändert.
    - Queue-, ID- oder URL-Modus: `title` und `body` der Agent-Task (plus `metadata`, falls vorhanden) wörtlich zitieren. Danach eine Link-Zeile anfügen: `Quelle: <APP_FRONTEND_URL>/admin/agent-tasks/<id>` (Basis aus `APP_FRONTEND_URL`, siehe Konfiguration).
    - Freitext-Modus: den exakt übergebenen Text wörtlich zitieren. **Keine** Link-Zeile — es gibt keine Agent-Task. Die `Quelle:`-Zeile hier komplett weglassen. Nie einen leeren oder kaputten Link ausgeben.
-2. `## Fachlich (für Business)` — der Fachlich-Abschnitt aus Schritt 2.
-3. `## Technisch (für Entwickler)` — der Technisch-Abschnitt aus Schritt 2.
+2. `#### Fachlich (für Business)` — der Fachlich-Abschnitt aus Schritt 2.
+3. `#### Technisch (für Entwickler)` — der Technisch-Abschnitt aus Schritt 2.
+4. `#### Akzeptanzkriterien` — die Akzeptanzkriterien aus Schritt 2, als Aufzählungsliste. Jede Zeile ein Kriterium.
 
 `type` und `title` wie bisher setzen.
 
@@ -164,11 +166,11 @@ Den `body` als Markdown-Vorlage mit drei Abschnitten aufbauen, in genau dieser R
 curl -s -w '\n%{http_code}' -X POST \
   -H "Authorization: Bearer $AGENT_API_TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"type": "<Typ aus Schritt 2, Default FEATURE>", "title": "<Titel aus dem Feedback>", "body": "<Markdown-Vorlage: ## Feedback, dann ## Fachlich (für Business), dann ## Technisch (für Entwickler)>"}' \
+  -d '{"type": "<Typ aus Schritt 2, Default FEATURE>", "title": "<Titel aus dem Feedback>", "body": "<Markdown-Vorlage: #### Feedback, dann #### Fachlich (für Business), dann #### Technisch (für Entwickler), dann #### Akzeptanzkriterien>"}' \
   "${APP_BASE_URL:-http://localhost:7070}/api/tickets"
 ```
 
-**Wichtig:** Der komplette mehrteilige Body — alle drei Abschnitte, inklusive Zeilenumbrüche und Zitat-Markup (`>`) — muss vollständig als JSON-String escaped werden, bevor er in `-d` landet. Sonst ist das JSON ungültig.
+**Wichtig:** Der komplette mehrteilige Body — alle vier Abschnitte, inklusive Zeilenumbrüche und Zitat-Markup (`>`) — muss vollständig als JSON-String escaped werden, bevor er in `-d` landet. Sonst ist das JSON ungültig.
 
 Body und HTTP-Code separat aus der Ausgabe lesen (`body` = alles vor der letzten Zeile, `http_code` = letzte Zeile).
 
@@ -198,15 +200,15 @@ Der Endpunkt speichert den Kommentar immer als `author=HUMAN` — unabhängig da
 
 ## Schritt 3b — Feedback gut genug
 
-Nichts weiter am Ticket tun. Kein Kommentar, keine Status- oder Owner-Änderung. Das Ticket bleibt in `DEFINITION` bei `owner=HUMAN` und wartet dort auf einen Menschen zur weiteren Verfeinerung oder Übergabe an die KI. Der Ticket-Body trägt bereits beide Abschnitte — Fachlich und Technisch — aus Schritt 3. Deshalb kein Kommentar nötig.
+Nichts weiter am Ticket tun. Kein Kommentar, keine Status- oder Owner-Änderung. Das Ticket bleibt in `DEFINITION` bei `owner=HUMAN` und wartet dort auf einen Menschen zur weiteren Verfeinerung oder Übergabe an die KI. Der Ticket-Body trägt bereits alle drei Abschnitte — Fachlich, Technisch und Akzeptanzkriterien — aus Schritt 3. Deshalb kein Kommentar nötig.
 
 Weiter zu Schritt 4. Im Freitext-Modus entfällt Schritt 4 (siehe dort) — dann direkt weiter zu Schritt 5 (Abschluss-Print), erst danach beenden.
 
-## Schritt 4 — Feedback-Task als erledigt markieren
+## Schritt 4 — Feedback-Task schließen (IMMER, wenn eine Agent-Task existiert)
 
-*(Nur wenn eine Agent-Task existiert — also im Queue-, Task-ID- oder Task-URL-Modus. Im Freitext-Modus entfällt Schritt 4 komplett: Es gibt keine Agent-Task, die abzuschließen wäre. Dann direkt weiter zu Schritt 5 — Schritt 4 nur überspringen, nicht den ganzen Durchlauf.)*
+*(Läuft in JEDEM Durchlauf, der eine echte Agent-Task übernommen hat — Queue-, Task-ID- und Task-URL-Modus, ausnahmslos in BEIDEN Zweigen 3a und 3b. Im Freitext-Modus entfällt Schritt 4 komplett: Es gibt keine Agent-Task, die abzuschließen wäre. Dann direkt weiter zu Schritt 5 — Schritt 4 nur überspringen, nicht den ganzen Durchlauf.)*
 
-In BEIDEN Zweigen (3a und 3b): die ursprüngliche Feedback-Aufgabe abschließen.
+Eine übernommene Agent-Task endet **immer** geschlossen (`DONE`). In BEIDEN Zweigen (3a und 3b) die ursprüngliche Feedback-Aufgabe abschließen.
 
 ```bash
 DONE_CODE=$(curl -s -o /dev/null -w '%{http_code}' -X POST \
