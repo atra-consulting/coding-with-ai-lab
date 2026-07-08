@@ -2,12 +2,12 @@
   "version": 1,
   "task_key": "RECHNER-PROZESS-VERBESSERUNGEN",
   "status": "in_progress",
-  "current_step": "3.3",
+  "current_step": "7.5",
   "started": "2026-07-08T00:00:00Z",
   "updated": "2026-07-08T00:00:00Z",
   "config": {
     "input_mode": "freeform",
-    "user_description": "1) On /produktivitaet/rechner make the 'Alle Prozesse' button remember its state across screens, like 'Kürzlich geändert/Alle' in /admin/tickets. 2) On /produktivitaet/rechner set AI coding time to 1h total for 'KI-Prozess mit Feedback' and 1h for 'KI-Prozess vollautomatisch'. 3) For processes 2-4 add a third pie chart showing time spent by humans and by AI.",
+    "user_description": "1) On /produktivitaet/rechner make the 'Alle Prozesse' button (barLimit toggle) remember its state across screens via sessionStorage, like 'Kürzlich geändert/Alle' in /admin/tickets. 2) On /produktivitaet/rechner set the whole KI-Arbeitszeit to 1h total for 'KI-Prozess mit Feedback' (halbautomatisch) and 'KI-Prozess vollautomatisch' (vollautomatisch), in both frontend prozess-defaults.ts and backend szenarioSeed.ts. NOTE: original task 3 (new human/AI pie chart) was DROPPED by the user.",
     "special_instructions": null,
     "ticket_mode": false,
     "ticket_id": null,
@@ -19,7 +19,7 @@
     "original_head": "f02b2c598f9a52f3d73f3d6bb4cb949ce29bd405",
     "docs_folder": "docs",
     "is_git_repo": true,
-    "workflow_scope": null,
+    "workflow_scope": "implement-review",
     "pr_prefix": null,
     "pr_exists": false,
     "pr_url": null
@@ -34,12 +34,12 @@
     "test_runner_agents": ["be-test-runner", "fe-test-runner"],
     "tooling_coding_agents": ["python-coder", "shell-coder", "skill-coder"],
     "tooling_review_agents": ["python-reviewer", "shell-reviewer", "skill-reviewer"],
-    "test_command": null
+    "test_command": "frontend: cd frontend && npx ng test --watch=false | backend: cd backend && npx playwright test"
   },
   "artifacts": {
-    "prd_skipped": null,
+    "prd_skipped": true,
     "prd_file": null,
-    "plan_file": null
+    "plan_file": "docs/plans/PLAN-RECHNER-PROZESS-VERBESSERUNGEN.md"
   },
   "completed_steps": []
 }
