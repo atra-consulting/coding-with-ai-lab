@@ -1,8 +1,8 @@
 {
   "version": 1,
   "task_key": "FIX-SKILLS-SEED-BUTTON",
-  "status": "in_progress",
-  "current_step": "7.5",
+  "status": "completed",
+  "current_step": "13",
   "started": "2026-07-08T18:43:01+0200",
   "updated": "2026-07-08T18:43:01+0200",
   "config": {

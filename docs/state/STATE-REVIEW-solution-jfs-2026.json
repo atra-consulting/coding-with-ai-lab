@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "branch": "solution-jfs-2026",
+  "main_branch": "411d7c30825ab527246455b0f2284309c0db1381",
+  "docs_folder": "docs",
+  "special_instructions": null,
+  "review_agents_available": true,
+  "fix_agents_available": true,
+  "all_reviewers": ["ba-reviewer", "requirements-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer"],
+  "all_coders": ["be-coder", "db-coder", "fe-coder"],
+  "all_designers": ["ui-designer"],
+  "changed_files": [
+    ".claude/skills/write-ticket/SKILL.md",
+    "backend/src/routes/tickets.ts",
+    "backend/src/seed/agentTaskSeed.ts",
+    "backend/src/test/agentTaskSeed.spec.ts",
+    "backend/src/test/tickets.spec.ts",
+    "docs/specs/SPEC-API-TICKETS.md",
+    "frontend/src/app/features/admin/tickets/ticket-board.component.spec.ts",
+    "frontend/src/app/features/admin/tickets/ticket-board.component.ts"
+  ],
+  "dry_run_mode": false,
+  "started": "2026-07-08T18:43:01+0200"
+}

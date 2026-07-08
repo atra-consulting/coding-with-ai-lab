@@ -1,54 +1,49 @@
-# Code Review - solution-jfs-2026
+# Code Review - solution-jfs-2026 (FIX-SKILLS-SEED-BUTTON)
 
 **Date**: 2026-07-08
 **Branch**: solution-jfs-2026
-**Base**: main
-**Files Reviewed**: 1 (`.claude/skills/plan-and-do/SKILL.md`)
-**Review Rounds**: 1 (max 3)
+**Base**: 411d7c30825ab527246455b0f2284309c0db1381
+**Files Reviewed**: 8 (skill, backend route, seed, 2 backend tests, spec, frontend component + spec)
+**Review Rounds**: 2 (max 3)
 
 ## Summary
 
-Focused review. Special instruction: make sure `plan-and-do/SKILL.md` calls **only** the project skills `review` and `update-claude-files` — never a global/plugin skill of the same base name (e.g. `bpf:review`).
-
-Finding: every call used the **bare** name `/review` and `/update-claude-files`. Bare names are ambiguous. Plugin skills `bpf-review` (`bpf:review`) and `bpf-update-claude-files` share the same base name. So the sub-skill could resolve to the wrong one.
-
-Fix: namespace every invocation with the `project:` prefix. The project skills carry `name: "project:review"` and `name: "project:update-claude-files"` in their frontmatter, so `/project:review` and `/project:update-claude-files` are unambiguous. Added two explicit notes.
+Four batched workshop fixes: write-ticket skill (close taken task, add acceptance criteria, softer `####` headings), ticket-board "Kürzlich geändert" toggle persistence via sessionStorage, agent-task 23 seed rewording, and widened auth on the ticket verb endpoints. Round 1 found three WARNINGs (no CRITICAL). Two were fixed directly (doc consistency). One — a new GET-based CSRF surface from widening `GET /next` — was resolved by user decision to revert `/next` to agent-token-only while keeping the three POST verbs widened. Round 2 verified the revert clean and complete. No remaining issues.
 
 ## Review Rounds
 
 ### Round 1
 
-**Issues found**: 1 | **Fixes applied**: 1
+**Issues found**: 3 | **Fixes applied**: 3
 
 | # | Severity | File | Issue | Found by | Proposed Fix | Fix by | Applied | Applied by |
 |---|----------|------|-------|----------|--------------|--------|---------|------------|
-| 1 | WARNING | `.claude/skills/plan-and-do/SKILL.md:825` (also 486, 826, 831, 851, 853, 891, 992) | Bare `/review` and `/update-claude-files` calls are ambiguous with plugin skills `bpf:review` / `bpf:update-claude-files` | built-in review | Namespace every call as `/project:review` / `/project:update-claude-files`; add disambiguation notes | direct fix | Renamed all 8 references; added a note at Step 10.1 and Step 12.1 | direct fix |
+| 1 | WARNING | `backend/src/routes/tickets.ts:57` | Widening `GET /next` (a state-mutating GET) to accept an admin session opens a GET-based CSRF surface (`SameSite=Lax` cookie rides cross-site top-level GET nav). POST verbs unaffected. | be-reviewer | Revert `GET /next` to `requireAgentToken`; keep POST verbs widened | be-coder + be-test-coder | Reverted route, tests (→401), and spec; import restored | be-coder (`37d6ea2`), be-test-coder (`3105464`) |
+| 2 | WARNING | `docs/specs/SPEC-API-TICKETS.md:440,446` | ASCII state-machine diagram tagged `POST /done` / `POST /ask` as `(agent)`-only, contradicting the transitions table below | ba-reviewer | Remove stale `(agent)` tags; table is authoritative | direct fix | Tags removed | direct fix |
+| 3 | WARNING | `.claude/skills/write-ticket/SKILL.md:211` | New "endet **immer** geschlossen (DONE)" contradicts the two documented failure paths that leave the task open | skill-reviewer | Soften to "soll immer … außer bei Fehlerfällen" | direct fix | Wording softened | direct fix |
 
-## Changes Applied
+Frontend (`ticket-board.component.ts` / spec): reviewed clean — persistence correct, restore-before-load ordering right, try/catch covers read+write, sessionStorage is the correct scope. No fix needed.
 
-- **Step 10.1 (Invoke Review)** — invocation block now `/project:review "embedded base:[original_head]"` / `/project:review "embedded"`; added note: *"Always invoke the project skill `project:review` — never a plugin or global skill of the same base name (e.g. `bpf:review`)."*
-- **Step 4.4b note (line 486)** — `/project:review "embedded"`.
-- **Step 10.1 prose (line 831)** — `/project:review "embedded"`.
-- **Step 10.3 (lines 851, 853)** — re-run `/project:review`.
-- **Step 12.1 (Run doc-sync skill)** — invocation now `/project:update-claude-files "embedded base:[original_head]"`; added the same disambiguation note.
-- **Success Criteria (line 992)** — "Code review via /project:review completed".
+### Round 2
 
-Left unchanged (descriptive help-text, not skill calls): `plan-and-do-modes.md` lines 55 and 83 ("Performs local code review using /review", "Code Review (local, via /review)"). These are documentation bullets in help/doctor output — they never trigger a skill invocation.
+Clean pass. Fix verification only. The `GET /next` revert confirmed correct and complete across route, import, tests, and spec; the three still-widened POST verbs (`/:id/start`, `/:id/done`, `/:id/ask`) retain their guard, tests, and docs. No regressions.
 
 ## Remaining Issues
 
-No remaining issues. Every invocation-causing reference to the two sub-skills is now project-namespaced.
+No remaining issues.
+
+Below-threshold notes (not actioned): storage-helper style differs from `LayoutService` (strings vs `JSON.stringify`) — cosmetic; ASCII-diagram auth tags now asymmetric (`/wont-do` keeps `(admin)`, others untagged) — the transitions table carries authoritative auth; a pre-existing edge (write-ticket: if ticket creation fails after `/start`, the source agent-task stays `IN_PROGRESS`) is out of this change's scope — worth a follow-up ticket.
 
 ## Project Context Validation
 
-- `.claude/skills/review/SKILL.md` frontmatter: `name: "project:review"` — confirms `/project:review` targets the project skill.
-- `.claude/skills/update-claude-files/SKILL.md` frontmatter: `name: "project:update-claude-files"` — confirms `/project:update-claude-files` targets the project skill.
-- Both project skills exist on disk and support embedded mode + `base:<ref>`, so the namespaced calls behave identically to before — only the resolution target is now pinned.
+- Auth widening matches the existing `requireAgentTokenOrAdminSession` pattern and memory `headless-skills-avoid-admin-session` (widen backend auth over admin login). Spec kept in lockstep with code.
+- Backend `INSERT OR IGNORE` seed idempotency respected — the seed test asserts the exported constant, not the live DB (avoids the `backend-tests-wipe-ticket-board` staleness/flakiness trap).
+- Frontend follows Angular 21 standalone / `inject()` conventions.
 
 ## Next Steps
 
-- Optional: run `/project:plan-and-do` end-to-end once to confirm the namespaced sub-skill calls resolve.
-- Commit when ready.
+- Re-run test suites after review fixes (plan-and-do Step 11).
+- agent-task 23 rewording only appears on a fresh DB (`./start.sh --reset-db`).
 
 ---
 Generated with Claude Code - review v1.8.2
