@@ -39,7 +39,7 @@ Das Dashboard zeigt die `agent_task`-Tabelle. Ein autonomer Claude-Agent in CI a
 - **Lebenszyklus:** `OPEN → IN_PROGRESS → DONE | REJECTED`.
 - Der Agent zieht die nächste Task. Er entscheidet: lösen oder ablehnen. Er setzt sie um und merged.
 
-**Wozu?** Das Tool zeigt einen autonomen Agenten im „Software-Factory"-Betrieb. Der Skill dahinter: [`/do-factory-automatic`](SKILLS.md#do-factory-automatic--autonom-ohne-mensch).
+**Wozu?** Das Tool zeigt einen autonomen Agenten im „Software-Factory"-Betrieb. Dahinter läuft der `agent-task-runner`-Workflow in CI (`.github/workflows/agent-task-runner.yml`).
 
 Details zur API: [docs/specs/SPEC-API-TASKS.md](specs/SPEC-API-TASKS.md).
 

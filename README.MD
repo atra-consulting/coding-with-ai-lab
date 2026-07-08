@@ -142,13 +142,13 @@ Details zu jedem Tool: **[docs/TOOLS.md](docs/TOOLS.md)**
 
 Du willst die Skills und Subagents aus diesem Repo in dein eigenes Projekt holen? So geht es.
 
-1. Lies, was es gibt: **[docs/SUBAGENTS.md](docs/SUBAGENTS.md)** (24 Subagents) und **[docs/SKILLS.md](docs/SKILLS.md)** (6 Skills).
+1. Lies, was es gibt: **[docs/SUBAGENTS.md](docs/SUBAGENTS.md)** (24 Subagents) und **[docs/SKILLS.md](docs/SKILLS.md)** (5 Skills).
 2. Folge der Anleitung: **[docs/TRANSFER.md](docs/TRANSFER.md)**. Kopieren, anpassen lassen, prüfen — Schritt für Schritt.
 
 | Dokument | Inhalt |
 |----------|--------|
 | [docs/SUBAGENTS.md](docs/SUBAGENTS.md) | Alle 24 Subagents. Zweck, Modell, Gruppen. |
-| [docs/SKILLS.md](docs/SKILLS.md) | Alle 6 Skills. Zweck, Argumente, Beispiele. |
+| [docs/SKILLS.md](docs/SKILLS.md) | Alle 5 Skills. Zweck, Argumente, Beispiele. |
 | [docs/TRANSFER.md](docs/TRANSFER.md) | Übernahme in dein Projekt. 8 Schritte. |
 
 ---
@@ -240,7 +240,7 @@ Architektur-Details: **[docs/specs/SPECS.md](docs/specs/SPECS.md)**
 | [docs/welcome_DE.MD](docs/welcome_DE.MD) | Deutsche Workshop-Einführung |
 | [docs/welcome_EN.MD](docs/welcome_EN.MD) | English workshop introduction |
 | [docs/SUBAGENTS.md](docs/SUBAGENTS.md) | Alle 24 Subagents erklärt |
-| [docs/SKILLS.md](docs/SKILLS.md) | Alle 6 Custom-Skills erklärt |
+| [docs/SKILLS.md](docs/SKILLS.md) | Alle 5 Custom-Skills erklärt |
 | [docs/TRANSFER.md](docs/TRANSFER.md) | Skills & Subagents ins eigene Projekt übernehmen |
 | [docs/TOOLS.md](docs/TOOLS.md) | Produktivitäts-Rechner, Agent-Tasks, Ticket-Board |
 | [CLAUDE.md](CLAUDE.md) | Anweisungen und Konventionen für AI-Coding-Assistenten |

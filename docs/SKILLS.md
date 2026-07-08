@@ -1,6 +1,6 @@
 # Skills
 
-Dieses Projekt hat sechs eigene Skills. Sie liegen in `.claude/skills/`. Jeder Skill ist ein Ordner mit einer `SKILL.md`.
+Dieses Projekt hat fünf eigene Skills. Sie liegen in `.claude/skills/`. Jeder Skill ist ein Ordner mit einer `SKILL.md`.
 
 ## Was ist ein Skill?
 
@@ -68,21 +68,6 @@ Aktualisiert `.claude/agents/`, `docs/specs/` und `CLAUDE.md`. Passend zu den Co
   /update-claude-files Fokus auf die neue Ticket-API
   ```
 - Datei: `.claude/skills/update-claude-files/SKILL.md`
-
-### `/do-factory-automatic` — autonom, ohne Mensch
-
-Läuft headless (`claude -p`). Kein Mensch antwortet. Der Skill entscheidet alles selbst.
-
-- **Wann nutzen:** In CI. In einer „Software-Factory". Für unbeaufsichtigte Läufe.
-- **Was passiert:** Der Skill beansprucht die nächste Agent-Task (oder eine per ID). Er beurteilt: baubar oder ablehnen? Dann lehnt er ab oder setzt sie voll um — über `plan-and-do`.
-- **Argumente (optional):** `[task-id]`. Mit ID überspringt der Skill die Suche.
-- **Wichtig:** Der Skill ruft nie `AskUserQuestion`. Er hält nie an. Er braucht `AGENT_API_TOKEN` in der Umgebung.
-- **Beispiel:**
-  ```
-  /do-factory-automatic 14
-  ```
-- Datei: `.claude/skills/do-factory-automatic/SKILL.md`
-- Hintergrund: [docs/specs/SPEC-API-TASKS.md](specs/SPEC-API-TASKS.md)
 
 ### `/do-semi-automatic` — autonom, ein Ticket pro Lauf
 
