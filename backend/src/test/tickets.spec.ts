@@ -18,12 +18,15 @@
  *   POST /api/tickets/reset           — deletes and reseeds 12 tickets
  *
  * Authorization matrix:
- *   - Agent-token endpoints (/next, /:id/start, /:id/done, /:id/ask): Bearer token only
- *   - Agent-token-or-admin endpoints (create, /:id, /:id/owner, /:id/comments,
- *     /board, /:id/status): agent token, loopback bypass, or admin session
- *     (first match wins). /board and /:id/status were widened from admin-only
- *     to this matrix so a skill can read the board / move a ticket without an
- *     admin login.
+ *   - Agent-token-or-admin endpoints (/next, /:id/start, /:id/done, /:id/ask,
+ *     create, /:id, /:id/owner, /:id/comments, /board, /:id/status): agent
+ *     token, loopback bypass, or admin session (first match wins). A wrong
+ *     token is still rejected (401) regardless of loopback/session. /next,
+ *     /:id/start, /:id/done, and /:id/ask were widened from agent-token-only
+ *     to this matrix so an admin session (not just a headless skill or the
+ *     agent token) can also drive a ticket through claim → start → ask/done.
+ *     /board and /:id/status were widened from admin-only to this matrix so
+ *     a skill can read the board / move a ticket without an admin login.
  *   - Admin-only endpoints (summary, list, /:id/wont-do, /:id/hand-to-ai,
  *     reset): require ADMIN role (user=USER gets 403)
  *
@@ -198,6 +201,81 @@ test.describe('Auth matrix — agent endpoints', () => {
   test('POST /:id/ask with wrong token → 401', async () => {
     const resp = await wrong.post('/api/tickets/6/ask', { data: { question: 'What?' } });
     expect(resp.status()).toBe(401);
+  });
+});
+
+// ─── Suite: Auth matrix — admin session on widened agent endpoints ───────────
+//
+// /next, /:id/start, /:id/done, and /:id/ask were widened from
+// requireAgentToken to requireAgentTokenOrAdminSession: agent token, loopback
+// bypass, or admin session (first match wins). This suite drives an admin
+// session through claim → start → ask/done and asserts 200 at every step —
+// the newly-allowed path. Regression coverage for the agent-token happy path
+// on these same endpoints already lives in the 'GET /api/tickets/next',
+// 'POST /api/tickets/:id/done', 'POST /api/tickets/:id/ask', and
+// 'POST /api/tickets/:id/start' suites below; the wrong-token → 401 case is
+// covered just above (and again in the ':id/start' suite), so neither is
+// duplicated here.
+//
+// Note: this test environment also sets AGENT_AUTH_ALLOW_LOOPBACK=1, so a
+// plain localhost request without any session would already succeed via the
+// loopback bypass (see 'Auth matrix — agent endpoints' above). These
+// assertions therefore confirm the admin-session path is reachable end to
+// end (200, not 401/403) — the observable contract change — rather than
+// proving in isolation which branch of the OR granted access.
+test.describe('Auth matrix — admin session on widened agent endpoints', () => {
+  let admin: APIRequestContext;
+
+  test.beforeEach(async () => {
+    admin = await loginCtx('admin', 'admin123');
+    await resetTickets(admin);
+  });
+
+  test.afterEach(async () => {
+    await admin.dispose();
+  });
+
+  test('POST /:id/start with admin session → 200, drives TODO+AI ticket to IN_PROGRESS', async () => {
+    // Ticket 6 is TODO+AI after reset.
+    const resp = await admin.post('/api/tickets/6/start', { data: {} });
+
+    await test.step('status 200', () => { expect(resp.status()).toBe(200); });
+
+    const body = await resp.json() as Ticket;
+    await test.step('status is IN_PROGRESS', () => { expect(body.status).toBe('IN_PROGRESS'); });
+    await test.step('owner remains AI', () => { expect(body.owner).toBe('AI'); });
+  });
+
+  test('POST /:id/done with admin session → 200 on an IN_PROGRESS ticket', async () => {
+    // Drive ticket 6 to IN_PROGRESS via the admin session first.
+    const startResp = await admin.post('/api/tickets/6/start', { data: {} });
+    expect(startResp.status()).toBe(200);
+    const started = await startResp.json() as Ticket;
+    expect(started.status).toBe('IN_PROGRESS');
+
+    const resp = await admin.post('/api/tickets/6/done', { data: {} });
+
+    await test.step('status 200', () => { expect(resp.status()).toBe(200); });
+
+    const body = await resp.json() as Ticket;
+    await test.step('status is DONE', () => { expect(body.status).toBe('DONE'); });
+    await test.step('solution is DONE', () => { expect(body.solution).toBe('DONE'); });
+  });
+
+  test('POST /:id/ask with admin session → 200 on an IN_PROGRESS ticket', async () => {
+    // Drive ticket 6 to IN_PROGRESS via the admin session first.
+    const startResp = await admin.post('/api/tickets/6/start', { data: {} });
+    expect(startResp.status()).toBe(200);
+
+    const resp = await admin.post('/api/tickets/6/ask', {
+      data: { question: 'Admin-session question — is this reachable now?' },
+    });
+
+    await test.step('status 200', () => { expect(resp.status()).toBe(200); });
+
+    const body = await resp.json() as Ticket;
+    await test.step('status is ON_HOLD', () => { expect(body.status).toBe('ON_HOLD'); });
+    await test.step('owner is HUMAN', () => { expect(body.owner).toBe('HUMAN'); });
   });
 });
 

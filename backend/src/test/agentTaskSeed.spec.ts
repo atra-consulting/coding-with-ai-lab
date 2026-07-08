@@ -10,6 +10,14 @@
  *      (INSERT OR IGNORE leaves existing rows untouched).
  *   4. (Optional) Seeds correct per-source counts: 7 rows for EMAIL, 4 for GITHUB_ISSUE, 6 for APP_LOG, 6 for ERROR_REPORT.
  *
+ * Also verifies the AGENT_TASK_SEED source data directly (not via the live
+ * DB) for row id 23 — see the 'AGENT_TASK_SEED source data' suite below. On a
+ * shared dev DB that was already seeded before row 23 was reworded,
+ * INSERT OR IGNORE means the live row will keep its old values forever, so a
+ * live-DB assertion on the new title/subject would be flaky. Asserting
+ * against the exported constant instead is deterministic regardless of what
+ * is currently in any given SQLite file.
+ *
  * Test isolation notes
  * --------------------
  * - This suite runs with `workers: 1` (playwright.config.ts), so all spec
@@ -20,10 +28,13 @@
  *   other suites that rely on 23 OPEN tasks (e.g. agentTasks.spec.ts) find
  *   the DB in the expected shape.  Those suites call resetDatabase() in their
  *   own beforeAll, so this is belt-and-suspenders.
+ * - The 'AGENT_TASK_SEED source data' suite below reads only the exported
+ *   in-memory constant (no DB access), so it does not need to be part of the
+ *   serial DB suite and carries no ordering dependency on it.
  */
 import { test, expect } from '@playwright/test';
 import { client } from '../config/db.js';
-import { seedAgentTasks } from '../seed/agentTaskSeed.js';
+import { seedAgentTasks, AGENT_TASK_SEED } from '../seed/agentTaskSeed.js';
 
 // ---------------------------------------------------------------------------
 // Helper: count rows in a table via the async libsql client.execute API
@@ -167,5 +178,34 @@ test.describe.serial('seedAgentTasks — idempotent seeder', () => {
   test.afterAll(async () => {
     await client.execute('DELETE FROM agent_task');
     await seedAgentTasks();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Suite: AGENT_TASK_SEED source data — row id 23 (reworded Chancen-Notiz task)
+//
+// Reads only the exported AGENT_TASK_SEED constant, never the DB. INSERT OR
+// IGNORE means an already-seeded shared dev DB keeps row 23's OLD values
+// forever, so a live-DB assertion on the new title/subject would be flaky.
+// This suite is deliberately independent of the serial DB suite above (no
+// shared state, no ordering dependency) and does not need `workers: 1`.
+// ---------------------------------------------------------------------------
+test.describe('AGENT_TASK_SEED source data — row id 23', () => {
+  test('id 23 has the reworded title, subject, and German Chancen-Notiz body', () => {
+    const row23 = AGENT_TASK_SEED.find((row) => row.id === 23);
+
+    if (!row23) {
+      throw new Error('AGENT_TASK_SEED has no row with id 23');
+    }
+
+    expect(row23.title).toBe('Improve chances');
+
+    expect(typeof row23.metadata).toBe('string');
+    const metadata = JSON.parse(row23.metadata as string) as { subject?: string };
+    expect(metadata.subject).toBe('Verbesserungen für Chancen');
+
+    // Sanity check: body is the new German Chancen-Notiz text (mentions the
+    // free-text note request), not the old wording.
+    expect(row23.body).toContain('Notiz');
   });
 });

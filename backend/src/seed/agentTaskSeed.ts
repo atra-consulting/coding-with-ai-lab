@@ -15,7 +15,7 @@ interface AgentTaskSeedRow {
   updatedAt: string;
 }
 
-const AGENT_TASK_SEED: AgentTaskSeedRow[] = [
+export const AGENT_TASK_SEED: AgentTaskSeedRow[] = [
   {
     id: 1,
     source: 'EMAIL',
