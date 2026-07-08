@@ -18,15 +18,21 @@
  *   POST /api/tickets/reset           — deletes and reseeds 12 tickets
  *
  * Authorization matrix:
- *   - Agent-token-or-admin endpoints (/next, /:id/start, /:id/done, /:id/ask,
- *     create, /:id, /:id/owner, /:id/comments, /board, /:id/status): agent
- *     token, loopback bypass, or admin session (first match wins). A wrong
- *     token is still rejected (401) regardless of loopback/session. /next,
- *     /:id/start, /:id/done, and /:id/ask were widened from agent-token-only
- *     to this matrix so an admin session (not just a headless skill or the
- *     agent token) can also drive a ticket through claim → start → ask/done.
- *     /board and /:id/status were widened from admin-only to this matrix so
- *     a skill can read the board / move a ticket without an admin login.
+ *   - Agent-token-or-admin endpoints (/:id/start, /:id/done, /:id/ask, create,
+ *     /:id, /:id/owner, /:id/comments, /board, /:id/status): agent token,
+ *     loopback bypass, or admin session (first match wins). A wrong token is
+ *     still rejected (401) regardless of loopback/session. /:id/start,
+ *     /:id/done, and /:id/ask were widened from agent-token-only to this
+ *     matrix so an admin session (not just a headless skill or the agent
+ *     token) can also start/finish/ask on a ticket already claimed via
+ *     /next. /board and /:id/status were widened from admin-only to this
+ *     matrix so a skill can read the board / move a ticket without an admin
+ *     login.
+ *   - Agent-token-only endpoint: /next. It was briefly widened the same way
+ *     as /:id/start, /:id/done, and /:id/ask, then REVERTED back to
+ *     requireAgentToken after a review flagged it as a GET-based CSRF
+ *     surface — an admin session alone (no CSRF protection on a simple GET)
+ *     must not be able to claim a ticket.
  *   - Admin-only endpoints (summary, list, /:id/wont-do, /:id/hand-to-ai,
  *     reset): require ADMIN role (user=USER gets 403)
  *
@@ -206,24 +212,28 @@ test.describe('Auth matrix — agent endpoints', () => {
 
 // ─── Suite: Auth matrix — admin session on widened agent endpoints ───────────
 //
-// /next, /:id/start, /:id/done, and /:id/ask were widened from
-// requireAgentToken to requireAgentTokenOrAdminSession: agent token, loopback
-// bypass, or admin session (first match wins).
+// /:id/start, /:id/done, and /:id/ask were widened from requireAgentToken to
+// requireAgentTokenOrAdminSession: agent token, loopback bypass, or admin
+// session (first match wins).
+//
+// GET /next was widened the same way but has since been REVERTED back to
+// requireAgentToken (agent-token-only) after a review flagged it as a
+// GET-based CSRF surface — a bare admin session (no CSRF protection on a
+// simple GET) must not be able to claim a ticket. The /next tests below
+// assert that reverted, agent-token-only behavior, not a widening.
 //
 // IMPORTANT: this test environment sets AGENT_AUTH_ALLOW_LOOPBACK=1, and the
 // loopback bypass fires FIRST — purely on remoteAddress plus the absence of
 // an auth/forwarding header — before the middleware ever reaches the
-// admin-session check. A plain admin-context call from localhost would
-// therefore return 200 even if these four routes were reverted to plain
-// requireAgentToken, proving nothing about the widening. Every test below
-// sends 'X-Forwarded-For' to disable the loopback bypass (same pattern as
-// src/test/agentTasks.spec.ts:220-234 and :295-301), so the 200s here
-// genuinely exercise the admin-session branch, and each has a same-header,
-// no-session negative control that asserts 401 — the case that would fail if
-// the widening were reverted.
+// agent-token/admin-session check. A plain admin-context call from localhost
+// would therefore return 200 regardless of which auth branch is configured,
+// proving nothing. Every test below sends 'X-Forwarded-For' to disable the
+// loopback bypass (same pattern as src/test/agentTasks.spec.ts:220-234 and
+// :295-301), so the results here genuinely exercise the auth branch under
+// test rather than the loopback bypass.
 //
-// Regression coverage for the agent-token happy path on these same endpoints
-// already lives in the 'GET /api/tickets/next', 'POST /api/tickets/:id/done',
+// Regression coverage for the agent-token happy path lives in the
+// 'GET /api/tickets/next', 'POST /api/tickets/:id/done',
 // 'POST /api/tickets/:id/ask', and 'POST /api/tickets/:id/start' suites
 // below; the wrong-token → 401 case is covered in 'Auth matrix — agent
 // endpoints' above (and again in the ':id/start' suite), so neither is
@@ -245,16 +255,11 @@ test.describe('Auth matrix — admin session on widened agent endpoints', () => 
     await anon.dispose();
   });
 
-  // ── GET /next ──────────────────────────────────────────────────────────────
+  // ── GET /next (reverted to agent-token-only — GET-based CSRF surface) ───────
 
-  test('GET /next with admin session + X-Forwarded-For (loopback bypass disabled) → 200, claims a TODO+AI ticket', async () => {
+  test('GET /next with admin session + X-Forwarded-For (loopback bypass disabled) → 401 (admin session no longer accepted, reverted to agent-token-only)', async () => {
     const resp = await admin.get('/api/tickets/next', { headers: NO_LOOPBACK_HEADERS });
-
-    await test.step('status 200', () => { expect(resp.status()).toBe(200); });
-
-    const body = await resp.json() as Ticket;
-    await test.step('status is IN_PROGRESS', () => { expect(body.status).toBe('IN_PROGRESS'); });
-    await test.step('owner is AI', () => { expect(body.owner).toBe('AI'); });
+    expect(resp.status()).toBe(401);
   });
 
   test('GET /next without session + X-Forwarded-For (loopback bypass disabled) → 401 (negative control)', async () => {
