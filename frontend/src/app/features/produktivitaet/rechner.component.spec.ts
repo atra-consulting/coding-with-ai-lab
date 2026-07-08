@@ -12,6 +12,7 @@ import {
   DEFAULT_DURATIONS,
   PROZESS_ANNAHMEN,
   PROZESS_CAPTION,
+  PROZESS_STEP_LABELS,
   PROZESSE,
   ProzessKey,
 } from '../../core/models/prozess-defaults';
@@ -748,14 +749,45 @@ describe('RechnerComponent', () => {
 
       expect(freshComponent.barLimit()).toBe(0);
     });
+
+    it('does not throw and defaults barLimit() to 0 when sessionStorage.getItem() throws', () => {
+      // barLimit is hydrated via a field initializer (readBarLimit()), so the spy
+      // must be in place BEFORE the component is constructed.
+      spyOn(sessionStorage, 'getItem').and.throwError('Storage disabled');
+
+      let freshComponent!: RechnerComponent;
+      expect(() => {
+        freshComponent = TestBed.createComponent(RechnerComponent).componentInstance;
+      }).not.toThrow();
+
+      expect(freshComponent.barLimit()).toBe(0);
+    });
+
+    it('does not throw when sessionStorage.setItem() throws', () => {
+      spyOn(sessionStorage, 'setItem').and.throwError('Storage disabled');
+
+      expect(() => {
+        component.cycleBarLimit();
+        fixture.detectChanges(); // flushes the field effect() that persists barLimit
+      }).not.toThrow();
+      // The in-memory update still happens even though persistence failed silently.
+      expect(component.barLimit()).toBe(1);
+    });
   });
 
   // ─── DEFAULT_DURATIONS: KI-step duration guard (RECHNER-PROZESS-VERBESSERUNGEN) ─
 
   describe('DEFAULT_DURATIONS KI-step duration guard', () => {
-    it('the KI-labelled steps of halbautomatisch (indices 1,3,6,8,10) sum to 60 minutes', () => {
+    it('the KI-labelled steps of halbautomatisch sum to 60 minutes', () => {
+      // Derive the KI-step indices from the labels themselves, rather than
+      // hardcoding them, so the guard tracks the domain rule (which steps are
+      // "done by the AI") even if the step order or count changes.
       const works = DEFAULT_DURATIONS.halbautomatisch.works;
-      const kiSum = [1, 3, 6, 8, 10].reduce((sum, i) => sum + works[i], 0);
+      const labels = PROZESS_STEP_LABELS.halbautomatisch;
+      const kiSum = labels.reduce(
+        (sum, label, i) => (label.startsWith('KI') ? sum + works[i] : sum),
+        0,
+      );
 
       expect(kiSum).toBe(60);
     });
