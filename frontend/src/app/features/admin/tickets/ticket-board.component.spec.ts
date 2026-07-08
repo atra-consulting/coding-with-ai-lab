@@ -441,6 +441,9 @@ describe('TicketBoardComponent — onDrop() error rollback', () => {
   let mockNotification: jasmine.SpyObj<NotificationService>;
 
   beforeEach(async () => {
+    // Start from a known-clean slate — see afterEach below for why this matters.
+    sessionStorage.removeItem('ticketBoard.recentOnly');
+
     mockService = makeMockTicketService();
     mockNotification = makeMockNotification();
     mockService.getBoard.and.callFake(() => of(makeMockBoard()));
@@ -456,6 +459,12 @@ describe('TicketBoardComponent — onDrop() error rollback', () => {
         { provide: NgbModal, useValue: makeModalStub() },
       ],
     }).compileComponents();
+  });
+
+  afterEach(() => {
+    // One test below calls toggleRecent(), which now persists to sessionStorage.
+    // Clear it so it can't leak recentOnly=true into a sibling spec.
+    sessionStorage.removeItem('ticketBoard.recentOnly');
   });
 
   it('rolls back the card to the source column when setStatus() fails', fakeAsync(() => {
@@ -772,6 +781,11 @@ describe('TicketBoardComponent — recent-only toggle', () => {
   let component: TicketBoardComponent;
 
   beforeEach(async () => {
+    // toggleRecent() persists to sessionStorage — start from a known-clean slate
+    // regardless of what a sibling spec (possibly run before this one under
+    // Jasmine's random spec order) may have left behind.
+    sessionStorage.removeItem('ticketBoard.recentOnly');
+
     const mockService = makeMockTicketService();
     mockService.getBoard.and.returnValue(of(makeMockBoard()));
     mockService.getSummary.and.returnValue(of(MOCK_SUMMARY));
@@ -780,6 +794,12 @@ describe('TicketBoardComponent — recent-only toggle', () => {
     fixture = TestBed.createComponent(TicketBoardComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+  });
+
+  afterEach(() => {
+    // Several tests below call toggleRecent(), writing to real sessionStorage —
+    // clear it so it can't leak recentOnly=true into a sibling spec.
+    sessionStorage.removeItem('ticketBoard.recentOnly');
   });
 
   it('defaults recentOnly to false', () => {
@@ -880,5 +900,111 @@ describe('TicketBoardComponent — recent-only toggle', () => {
     emptyMessages.forEach((el) => {
       expect(el.textContent).toContain('Keine kürzlich geänderten Tickets');
     });
+  });
+});
+
+// ─── recentOnly sessionStorage persistence ────────────────────────────────────
+
+describe('TicketBoardComponent — recentOnly sessionStorage persistence', () => {
+  const STORAGE_KEY = 'ticketBoard.recentOnly';
+
+  // Create (but do not initialize) a component so the caller can seed sessionStorage
+  // BEFORE the first detectChanges()/ngOnInit() call.
+  async function createUninitializedComponent(): Promise<{
+    fixture: ComponentFixture<TicketBoardComponent>;
+    component: TicketBoardComponent;
+  }> {
+    const mockService = makeMockTicketService();
+    mockService.getBoard.and.returnValue(of(makeMockBoard()));
+    mockService.getSummary.and.returnValue(of(MOCK_SUMMARY));
+    await setupTestBed(mockService);
+
+    const fixture = TestBed.createComponent(TicketBoardComponent);
+    return { fixture, component: fixture.componentInstance };
+  }
+
+  afterEach(() => {
+    sessionStorage.removeItem(STORAGE_KEY);
+  });
+
+  it('initializes recentOnly to true when sessionStorage holds "true"', async () => {
+    sessionStorage.setItem(STORAGE_KEY, 'true');
+
+    const { fixture, component } = await createUninitializedComponent();
+    fixture.detectChanges();
+
+    expect(component.recentOnly).toBeTrue();
+  });
+
+  it('filters the view arrays to match the restored recentOnly value on init', async () => {
+    sessionStorage.setItem(STORAGE_KEY, 'true');
+
+    const { fixture, component } = await createUninitializedComponent();
+    fixture.detectChanges();
+
+    // Mock board tickets are dated 2024-06-01 — none fall inside the 60-minute
+    // "recent" window, so a restored recentOnly=true empties every view array.
+    expect(component.viewDefinition.length).toBe(0);
+    expect(component.viewTodo.length).toBe(0);
+    expect(component.viewInProgress.length).toBe(0);
+    expect(component.viewOnHold.length).toBe(0);
+    expect(component.viewDone.length).toBe(0);
+  });
+
+  it('initializes recentOnly to false when nothing is stored in sessionStorage', async () => {
+    const { fixture, component } = await createUninitializedComponent();
+    fixture.detectChanges();
+
+    expect(component.recentOnly).toBeFalse();
+  });
+
+  it('initializes recentOnly to false when sessionStorage holds a value other than "true"', async () => {
+    sessionStorage.setItem(STORAGE_KEY, 'false');
+
+    const { fixture, component } = await createUninitializedComponent();
+    fixture.detectChanges();
+
+    expect(component.recentOnly).toBeFalse();
+  });
+
+  it('toggleRecent() writes "true" to sessionStorage when switching filtering on', async () => {
+    const { fixture, component } = await createUninitializedComponent();
+    fixture.detectChanges();
+    expect(component.recentOnly).toBeFalse();
+
+    component.toggleRecent();
+
+    expect(sessionStorage.getItem(STORAGE_KEY)).toBe('true');
+  });
+
+  it('toggleRecent() writes "false" to sessionStorage when switching filtering off', async () => {
+    sessionStorage.setItem(STORAGE_KEY, 'true');
+    const { fixture, component } = await createUninitializedComponent();
+    fixture.detectChanges();
+    expect(component.recentOnly).toBeTrue();
+
+    component.toggleRecent();
+
+    expect(sessionStorage.getItem(STORAGE_KEY)).toBe('false');
+  });
+
+  it('does not throw on init and defaults recentOnly to false when sessionStorage.getItem() throws', async () => {
+    spyOn(sessionStorage, 'getItem').and.throwError('Storage disabled');
+
+    const { fixture, component } = await createUninitializedComponent();
+
+    expect(() => fixture.detectChanges()).not.toThrow();
+    expect(component.recentOnly).toBeFalse();
+  });
+
+  it('toggleRecent() does not throw when sessionStorage.setItem() throws', async () => {
+    const { fixture, component } = await createUninitializedComponent();
+    fixture.detectChanges();
+
+    spyOn(sessionStorage, 'setItem').and.throwError('Storage disabled');
+
+    expect(() => component.toggleRecent()).not.toThrow();
+    // The in-memory toggle still happens even though persistence failed silently.
+    expect(component.recentOnly).toBeTrue();
   });
 });
