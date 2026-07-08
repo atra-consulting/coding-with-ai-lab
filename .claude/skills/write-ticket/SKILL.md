@@ -1,8 +1,8 @@
 ---
 name: "project:write-ticket"
-description: "Headless autonomous skill that claims one agent-task feedback item, judges it, and files a new Kanban ticket (Definition, owner HUMAN) from it — commenting on the ticket to demand missing info when the feedback is too thin. Never builds, pushes, or opens a PR."
-argument-hint: "[task-id]"
-version: 1.0.0
+description: "Headless autonomous skill that claims one agent-task feedback item (or takes a task ID, a task URL, or free-floating feedback text), judges it, and files a new Kanban ticket (Definition, owner HUMAN) from it — commenting on the ticket to demand missing info when the feedback is too thin. Never builds, pushes, or opens a PR."
+argument-hint: "[task-id | task-url | feedback-text]"
+version: 1.1.0
 last-modified: 2026-07-08
 allowed-tools:
   - Read
@@ -14,7 +14,7 @@ allowed-tools:
 
 Du bist ein autonomer Software-Ingenieur. Du läufst **headless** (`claude -p`) — kein Mensch kann Fragen beantworten. Entscheide alles selbst. Halte nie an, um Eingaben abzuwarten. Rufe niemals `AskUserQuestion` auf.
 
-Auftrag: Ein Feedback-Element aus der Agent-Task-Queue beanspruchen (oder direkt per ID laden), beurteilen ob es klar und baubar beschrieben ist, und daraus **immer** ein neues Kanban-Ticket anlegen. Dieser Skill baut nie Code, pusht nie, öffnet nie einen PR. Er triagiert nur.
+Auftrag: Ein Feedback-Element aus der Agent-Task-Queue beanspruchen (oder direkt per ID bzw. Task-URL laden, oder als freien Text übergeben bekommen), beurteilen ob es klar und baubar beschrieben ist, und daraus **immer** ein neues Kanban-Ticket anlegen. Dieser Skill baut nie Code, pusht nie, öffnet nie einen PR. Er triagiert nur.
 
 API-Referenz: `docs/specs/SPEC-API-TASKS.md` (Abschnitt „For skill authors") für die Feedback-Queue, `docs/specs/SPEC-API-TICKETS.md` (Abschnitt „For skill authors") für die Ticket-Erstellung.
 
@@ -26,11 +26,18 @@ API-Referenz: `docs/specs/SPEC-API-TASKS.md` (Abschnitt „For skill authors") f
 
 ## Parameter
 
-Wenn der Skill mit einer Zahl aufgerufen wird (z. B. `/write-ticket 14`), ist das eine Task-ID. Den Beanspruchen-Teil von Schritt 1 überspringen. Direkt den ID-Zweig nutzen (siehe „Wenn eine Task-ID als Parameter übergeben wurde" unten).
+Vier Eingabemodi, je nach Argument. In dieser Reihenfolge prüfen:
+
+1. **Leer** (kein Argument) → nächstes Feedback aus der Agent-Task-Queue beanspruchen (Schritt 1, Beanspruchen-Zweig).
+2. **Reine Zahl** (z. B. `/write-ticket 14`) → Task-ID. Den ID-Zweig von Schritt 1 nutzen (siehe „Wenn eine Task-ID als Parameter übergeben wurde" unten).
+3. **Task-URL** (z. B. `/write-ticket http://localhost:7200/admin/agent-tasks/23`) → auch eine Task-ID. **Nur** wenn das GANZE Argument eine URL ist — es beginnt mit `http://`, `https://`, `/admin/` oder `/api/` **und** enthält keinen Leerraum. Dann die Ziffern nach `agent-tasks/` als ID herausziehen (`23`) und wie eine Task-ID behandeln. Das Muster `agent-tasks/<Ziffern>` matcht sowohl die Admin-URL (`/admin/agent-tasks/23`) als auch die API-URL (`/api/agent-tasks/23`); ein Schrägstrich, ein `?` oder das Ende danach ist erlaubt.
+4. **Sonstiger freier Text** (z. B. `/write-ticket Dark-Mode-Umschalter im Header ergänzen`) → direktes Prosa-Feedback. Schritt 1 komplett überspringen (keine Agent-Task-Queue). Weiter mit dem Freitext-Zweig unten. Schritt 4 entfällt.
+
+Unterscheidung: leer → Queue. Nur Ziffern → Task-ID. Ganzes Argument ist eine URL (ohne Leerraum) mit `agent-tasks/<Ziffern>` → Task-ID aus der URL. Sonst nicht-leer → freier Text. **Wichtig:** Prosa, die nur nebenbei einen `agent-tasks/…`-Pfad erwähnt (z. B. „Die Seite /admin/agent-tasks/23 stürzt ab"), enthält Leerraum und ist keine reine URL — also freier Text, keine Task-ID.
 
 ## Schritt 0 — Umgebungsvariablen laden
 
-*(Immer zuerst ausführen — auch wenn eine Task-ID übergeben wurde.)*
+*(Immer zuerst ausführen — auch wenn eine Task-ID, Task-URL oder freier Text übergeben wurde. Der Freitext-Modus braucht `AGENT_API_TOKEN` für die Ticket-Erstellung in Schritt 3.)*
 
 Alle Pfade sind relativ zum Projekt-Wurzelverzeichnis. Der Skill läuft aus dem Repo-Root.
 
@@ -55,7 +62,7 @@ Wenn `AGENT_API_TOKEN` leer oder ungesetzt ist: sofort beenden. Keine weiteren S
 
 ## Schritt 1 — Feedback beanspruchen / laden (Agent-Task)
 
-*(Überspringen, wenn eine Task-ID als Parameter übergeben wurde.)*
+*(Überspringen, wenn eine Task-ID, eine Task-URL oder freier Text als Parameter übergeben wurde.)*
 
 Jede Quelle der Reihe nach probieren (oder nur `$TASK_SOURCE`). Für jede Quelle:
 
@@ -95,11 +102,23 @@ curl -s -w '\n%{http_code}' \
 - HTTP `404` → „Aufgabe nicht gefunden." ausgeben und **beenden**.
 - Jeder andere Code → Fehler ausgeben und **beenden**.
 
+**Wenn eine Task-URL übergeben wurde**: die Ziffern nach `agent-tasks/` als `<ID>` herausziehen und exakt den ID-Zweig oben ausführen (laden, `status`-Prüfung, `/start`). Kein eigener Ablauf.
+
+**Wenn freier Text übergeben wurde** (Prosa-Modus): keine Agent-Task laden. Stattdessen aus dem Argument die Feedback-Daten selbst bilden:
+
+- `title` = eine kurze, prägnante Zusammenfassung des Textes (selbst formulieren).
+- `body` = der vollständige übergebene Text.
+- `metadata` = leer.
+
+Es gibt hier **keine** `id` und **keine** Agent-Task. Direkt weiter zu Schritt 2.
+
+Der Text kommt roh von der Kommandozeile und kann Anführungszeichen oder Zeilenumbrüche enthalten. Vor jedem `-d`-JSON-Payload (Schritt 3, Schritt 3a) `title` und `body` als JSON-String escapen, damit das JSON gültig bleibt.
+
 ## Schritt 2 — Beurteilen mit dem requirements-reviewer-Subagenten
 
 *(VOR jeder Ticket-Erstellung entscheiden.)*
 
-Den **`requirements-reviewer`-Subagenten** via Task-Tool beauftragen. `title`, `body` und `metadata` der Aufgabe übergeben. Er beurteilt:
+Den **`requirements-reviewer`-Subagenten** via Task-Tool beauftragen. `title`, `body` und `metadata` des Feedbacks übergeben (im Freitext-Modus die in Schritt 1 gebildeten Werte). Er beurteilt:
 
 - Beschreibt das Feedback EINE klare, konkrete Änderung?
 - Sind alle Fakten vorhanden, die zur Umsetzung nötig sind?
@@ -143,7 +162,7 @@ COMMENT_CODE=$(curl -s -o /dev/null -w '%{http_code}' -X POST \
   "${APP_BASE_URL:-http://localhost:7070}/api/tickets/<newId>/comments")
 ```
 
-- HTTP `200` → weiter zu Schritt 4.
+- HTTP `200` → weiter zu Schritt 4 (im Freitext-Modus dort sofort beenden).
 - Jeder andere Code → „Fehler: Kommentar für Ticket #<newId> lieferte HTTP $COMMENT_CODE. Durchlauf beendet." ausgeben und **beenden**. (Nicht zu Schritt 4 gehen — sonst meldet der Skill fälschlich eine hinterlegte Rückfrage.)
 
 Den Text aus dem Grund des Subagenten aus Schritt 2 ableiten. Generische Kommentare wie „unklar" sind nicht akzeptabel — die Lücken konkret benennen.
@@ -154,9 +173,11 @@ Der Endpunkt speichert den Kommentar immer als `author=HUMAN` — unabhängig da
 
 Nichts weiter am Ticket tun. Kein Kommentar, keine Status- oder Owner-Änderung. Das Ticket bleibt in `DEFINITION` bei `owner=HUMAN` und wartet dort auf einen Menschen zur weiteren Verfeinerung oder Übergabe an die KI.
 
-Weiter zu Schritt 4.
+Weiter zu Schritt 4 (im Freitext-Modus dort sofort beenden).
 
 ## Schritt 4 — Feedback-Task als erledigt markieren
+
+*(Nur wenn eine Agent-Task existiert — also im Queue-, Task-ID- oder Task-URL-Modus. Im Freitext-Modus entfällt Schritt 4 komplett: Es gibt keine Agent-Task, die abzuschließen wäre. Dann direkt **beenden**.)*
 
 In BEIDEN Zweigen (3a und 3b): die ursprüngliche Feedback-Aufgabe abschließen.
 
