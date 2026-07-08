@@ -182,17 +182,22 @@ Weiter zu Schritt 4 (im Freitext-Modus dort sofort beenden).
 In BEIDEN Zweigen (3a und 3b): die ursprüngliche Feedback-Aufgabe abschließen.
 
 ```bash
-curl -s -X POST \
+DONE_CODE=$(curl -s -o /dev/null -w '%{http_code}' -X POST \
   -H "Authorization: Bearer $AGENT_API_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"comment": "Triagiert in Ticket #<newId> (Definition, Mensch). <Zusatz je nach Zweig>"}' \
-  "${APP_BASE_URL:-http://localhost:7070}/api/agent-tasks/<id>/done"
+  "${APP_BASE_URL:-http://localhost:7070}/api/agent-tasks/<id>/done")
 ```
 
 Für `<Zusatz je nach Zweig>`:
 
 - Nach Schritt 3a: „Rückfrage im Ticket hinterlegt."
 - Nach Schritt 3b: „bereit zur Verfeinerung."
+
+HTTP-Code prüfen:
+
+- HTTP `200` → erfolgreich abgeschlossen.
+- Jeder andere Code → „Fehler: /done für Aufgabe <id> lieferte HTTP $DONE_CODE. Ticket #<newId> ist bereits angelegt, aber die Agent-Task bleibt offen." ausgeben. (Das Ticket steht schon — also klar sagen, dass nur das Abschließen der Quelle fehlgeschlagen ist, nicht der ganze Durchlauf.)
 
 Dann **beenden**. Ein Feedback-Element pro Durchlauf.
 
