@@ -1,0 +1,212 @@
+# Converted CI Workflow — `do-semi-automatic.yml`
+
+This is the repurposed GitHub Actions workflow from the `remove-do-factory-automatic-skill` branch. The old `do-factory-automatic.yml` (which ran the deleted `/do-factory-automatic` agent-task skill) was renamed and converted to run `/project:do-semi-automatic`, which works one Kanban ticket per run.
+
+Target path in the repo: `.github/workflows/do-semi-automatic.yml`
+
+```yaml
+# Do Semi Automatic — runs the /do-semi-automatic SKILL headless in CI.
+#
+# Based on agent-task-runner.yml. Key differences:
+#   - Invokes the SKILL (claude -p "/project:do-semi-automatic"), not the prompt files.
+#   - Works ONE Kanban ticket per run: the skill claims one Ready+AI ticket, judges
+#     build-or-send-back, and builds it via plan-and-do. Under-specified tickets go
+#     back to Definition (owner HUMAN); blockers move the ticket to ON_HOLD.
+#   - The skill does NOT push or open a PR by design. So THIS workflow pushes the
+#     branch plan-and-do created and opens a PR against the base branch, to preserve
+#     the built work. Nothing is ever merged automatically.
+#   - App is the DEPLOYED app, reached via APP_BASE_URL (same as the template).
+#
+# IT DOES NOT RUN meaningfully until the secrets below are configured.
+#
+# Required repository secrets:
+#   AGENT_API_TOKEN         - shared secret for /api/tickets/* AND /api/cron/runs/*/complete
+#   APP_BASE_URL            - base URL of the DEPLOYED app (e.g. https://your-app.vercel.app)
+#   CLAUDE_CODE_OAUTH_TOKEN - subscription OAuth token Claude Code uses to authenticate.
+#                             Create it locally with `claude setup-token`. Use this INSTEAD
+#                             of ANTHROPIC_API_KEY; do not set both.
+# GITHUB_TOKEN (provided automatically) is used to push the branch and open the PR.
+
+name: Do Semi Automatic
+
+on:
+  repository_dispatch:
+    # Dormant until a ticket-solving cron card fires this type. No backend cron job
+    # dispatches `solve-tickets` yet; add one in backend/src/config/cronJobs.ts to wire it.
+    types: [solve-tickets]
+  workflow_dispatch:
+    inputs:
+      ticket_id:
+        description: Optional ticket id to work (blank = claim the next Ready+AI ticket)
+        required: false
+        default: ''
+  schedule:
+    # Daily at 02:00 UTC. Remove or change as needed. Will fail without secrets.
+    - cron: '0 2 * * *'
+
+# Single-flight: queue overlapping runs rather than running them concurrently.
+concurrency:
+  group: do-semi-automatic
+  cancel-in-progress: false
+
+# Needed to push a branch and open a PR with GITHUB_TOKEN.
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  run-skill:
+    name: Run do-semi-automatic skill
+    runs-on: ubuntu-latest
+
+    # Exposed to step `if:` conditions. Empty unless this run came from the
+    # Vercel cron (repository_dispatch), which carries client_payload.cronRunId.
+    env:
+      CRON_RUN_ID: ${{ github.event.client_payload.cronRunId }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Full history so plan-and-do can branch and we can diff against base.
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Backend — install dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Configure git identity
+        run: |
+          git config user.name "do-semi-bot"
+          git config user.email "do-semi-bot@users.noreply.github.com"
+
+      - name: Run the skill (one ticket)
+        id: run
+        env:
+          AGENT_API_TOKEN: ${{ secrets.AGENT_API_TOKEN }}
+          APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
+          # Claude Code authenticates via the subscription OAuth token (created with
+          # `claude setup-token`), NOT a pay-as-you-go API key. Do NOT also set
+          # ANTHROPIC_API_KEY here — if present it takes precedence and an invalid
+          # value yields "Invalid API key · Fix external API key".
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # Pass the user-supplied input through env (never interpolate it directly
+          # into the shell) to avoid command injection. Validated as numeric below.
+          TICKET_ID_INPUT: ${{ github.event.inputs.ticket_id }}
+        run: |
+          set -uo pipefail
+
+          BASE_BRANCH="${GITHUB_REF_NAME}"
+          BASE_SHA="$(git rev-parse HEAD)"
+          echo "base_branch=${BASE_BRANCH}" >> "$GITHUB_OUTPUT"
+
+          # An optional ticket id makes the skill work that exact ticket.
+          # Reject anything that is not a plain positive integer.
+          TICKET_ID="${TICKET_ID_INPUT:-}"
+          if [ -n "$TICKET_ID" ] && ! printf '%s' "$TICKET_ID" | grep -qE '^[0-9]+$'; then
+            echo "Invalid ticket_id '$TICKET_ID' — must be a positive integer." >&2
+            exit 1
+          fi
+          if [ -n "$TICKET_ID" ]; then
+            PROMPT="/project:do-semi-automatic ${TICKET_ID}"
+          else
+            PROMPT="/project:do-semi-automatic"
+          fi
+
+          echo "=================================================================="
+          echo " Running: claude -p \"$PROMPT\""
+          echo "=================================================================="
+          claude -p "$PROMPT" --dangerously-skip-permissions 2>&1 | tee skill-output.txt
+          CLAUDE_RC=${PIPESTATUS[0]}
+
+          RUN_STATUS="SUCCESS"
+          if [ "$CLAUDE_RC" -ne 0 ]; then
+            echo "claude exited with code ${CLAUDE_RC}." >&2
+            RUN_STATUS="FAILED"
+          fi
+
+          # Capture anything plan-and-do left uncommitted on the working tree.
+          if [ -n "$(git status --porcelain)" ]; then
+            git add -A
+            git commit -m "chore: do-semi-automatic build artifacts" || true
+          fi
+
+          # Did we actually build something? -> commits ahead of the base SHA.
+          # The semi-automatic skill never "rejects": its non-build outcomes are
+          # send-back-to-Definition or ON_HOLD, neither of which adds commits.
+          SOLVED=0
+          REJECTED=0
+          BUILT=false
+          AHEAD="$(git rev-list "${BASE_SHA}..HEAD" --count)"
+          if [ "$AHEAD" -gt 0 ]; then
+            BUILT=true
+            SOLVED=1
+            CUR_BRANCH="$(git branch --show-current)"
+            # plan-and-do normally creates its own branch. If for any reason we are
+            # still on the base branch (or detached), move the commits onto a fresh
+            # branch so we can push and open a PR without touching base.
+            if [ -z "$CUR_BRANCH" ] || [ "$CUR_BRANCH" = "$BASE_BRANCH" ]; then
+              CUR_BRANCH="do-semi/run-${GITHUB_RUN_ID}"
+              git switch -c "$CUR_BRANCH"
+            fi
+            echo "cur_branch=${CUR_BRANCH}" >> "$GITHUB_OUTPUT"
+          fi
+
+          echo "Summary: built=${BUILT} solved=${SOLVED} rejected=${REJECTED} status=${RUN_STATUS}"
+          {
+            echo "built=${BUILT}"
+            echo "solved=${SOLVED}"
+            echo "rejected=${REJECTED}"
+            echo "run_status=${RUN_STATUS}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Push branch and open PR
+        if: ${{ steps.run.outputs.built == 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          CUR_BRANCH="${{ steps.run.outputs.cur_branch }}"
+          BASE_BRANCH="${{ steps.run.outputs.base_branch }}"
+          RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+
+          git push -u origin "$CUR_BRANCH"
+
+          TITLE="$(git log -1 --pretty=%s)"
+          gh pr create \
+            --base "$BASE_BRANCH" \
+            --head "$CUR_BRANCH" \
+            --title "do-semi: ${TITLE}" \
+            --body "Automatisch erstellt von \`/project:do-semi-automatic\`. Lauf: ${RUN_URL}" \
+            || echo "PR konnte nicht erstellt werden (existiert evtl. schon für ${CUR_BRANCH})."
+
+      - name: Report result back to the cron run
+        if: ${{ always() && env.CRON_RUN_ID != '' }}
+        env:
+          AGENT_API_TOKEN: ${{ secrets.AGENT_API_TOKEN }}
+          APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
+        run: |
+          GITHUB_RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          STATUS="${{ steps.run.outputs.run_status }}"
+          SOLVED="${{ steps.run.outputs.solved }}"
+          REJECTED="${{ steps.run.outputs.rejected }}"
+          STATUS="${STATUS:-FAILED}"
+          SOLVED="${SOLVED:-0}"
+          REJECTED="${REJECTED:-0}"
+          echo "Closing cron_run ${CRON_RUN_ID}: status=${STATUS} solved=${SOLVED} rejected=${REJECTED}"
+          curl -s -o /dev/null -w 'callback HTTP %{http_code}\n' -X POST \
+            -H "Authorization: Bearer ${AGENT_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{\"status\":\"${STATUS}\",\"tasksSolved\":${SOLVED},\"tasksRejected\":${REJECTED},\"githubRunUrl\":\"${GITHUB_RUN_URL}\"}" \
+            "${APP_BASE_URL%/}/api/cron/runs/${CRON_RUN_ID}/complete"
+```
