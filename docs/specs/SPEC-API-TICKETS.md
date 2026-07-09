@@ -25,7 +25,7 @@ New tickets start in **`DEFINITION`** — the intake/refinement column (leftmost
 - **"An KI übergeben"** — assign the ticket to the AI, but keep it in `DEFINITION` (`PATCH /:id/owner` with `owner=AI`). The AI now owns the refinement; the ticket is not yet ready to build.
 - **"Nach Bereit"** — assign to the AI **and** move it to `TODO` (`POST /:id/hand-to-ai` → `owner=AI`, `status=TODO`). The ticket is now ready and claimable.
 
-Agents only ever claim `TODO`+`AI` tickets, so a `DEFINITION` ticket is never auto-claimed. The `TODO` column is labelled **"Zu bereit"** in the UI.
+Agents only ever claim `TODO`+`AI` tickets, so a `DEFINITION` ticket is never auto-claimed. The `TODO` column is labelled **"Bereit"** in the UI.
 
 ### Owner model and ask→answer→re-claim flow
 
@@ -375,7 +375,7 @@ Sets `status=DONE`, `solution=WONT_DO`, `resolvedAt`. Guard: `owner` must be `HU
 ### POST `/api/tickets/:id/hand-to-ai` — move a Definition ticket to the ready queue (admin)
 **Auth:** admin session. No body.
 
-Sets `owner=AI`, `status=TODO`. Guard: ticket must be in `DEFINITION`. This is the **"Nach Bereit"** action on a Definition ticket — it assigns the ticket to the AI **and** moves it to `TODO` ("Zu bereit"), making it claimable by the agent. To instead assign the ticket to the AI while keeping it in `DEFINITION` ("An KI übergeben"), use `PATCH /:id/owner` with `owner=AI`.
+Sets `owner=AI`, `status=TODO`. Guard: ticket must be in `DEFINITION`. This is the **"Nach Bereit"** action on a Definition ticket — it assigns the ticket to the AI **and** moves it to `TODO` ("Bereit"), making it claimable by the agent. To instead assign the ticket to the AI while keeping it in `DEFINITION` ("An KI übergeben"), use `PATCH /:id/owner` with `owner=AI`.
 
 | Result | Meaning |
 |--------|---------|
@@ -513,7 +513,7 @@ All errors use the app-wide handler:
 
 Starting board, by intent:
 - **`DEFINITION`** (5, all `HUMAN`): tickets 1–5 — too vague to build. Each carries a seeded `AGENT` comment (`authorName: "Claude Code"`) asking the human to add detail.
-- **`TODO`** / "Zu bereit" (5, all `AI`): tickets 6, 8, 10, 11, 12 — well-specified and ready. No comments. (Ticket 11 had an open question about the note character limit; the answer — 1000 characters — is baked into its body.)
+- **`TODO`** / "Bereit" (5, all `AI`): tickets 6, 8, 10, 11, 12 — well-specified and ready. No comments. (Ticket 11 had an open question about the note character limit; the answer — 1000 characters — is baked into its body.)
 - **`ON_HOLD`** / "Wartet" (2, `HUMAN`): tickets 7 and 9 — the AI asked a specific question and is waiting for an answer. Each carries the `AGENT` question as a comment.
 
 Seven tickets carry a seeded `AGENT` comment: the five `DEFINITION` tickets (1–5) and the two `ON_HOLD` tickets (7, 9). `POST /reset` deletes all comments and tickets then re-inserts all 12 tickets plus these 7 comments.

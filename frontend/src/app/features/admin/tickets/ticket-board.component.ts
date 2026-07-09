@@ -84,7 +84,7 @@ import { TicketCreateComponent } from './ticket-create.component';
                 <span class="kpi-icon"><fa-icon [icon]="faClipboardList" /></span>
                 <div>
                   <div class="kpi-value">{{ summary.byStatus.TODO }}</div>
-                  <div class="kpi-label">Zu bereit</div>
+                  <div class="kpi-label">Bereit</div>
                 </div>
               </div>
             </div>
@@ -244,7 +244,7 @@ import { TicketCreateComponent } from './ticket-create.component';
         <!-- To Do -->
         <div class="board-column">
           <div class="column-header column-todo">
-            <span class="column-title">Zu bereit</span>
+            <span class="column-title">Bereit</span>
             <span class="badge bg-secondary">{{ viewTodo.length }}</span>
           </div>
           <div

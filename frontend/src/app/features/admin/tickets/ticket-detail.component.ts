@@ -182,7 +182,7 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
                     class="btn btn-outline-secondary w-100"
                     (click)="moveToReady()"
                     [disabled]="savingAssignAi || savingMoveToReady"
-                    title="Eigentümer auf KI setzen und nach &quot;Zu bereit&quot; verschieben"
+                    title="Eigentümer auf KI setzen und nach &quot;Bereit&quot; verschieben"
                   >
                     @if (savingMoveToReady) {
                       <span class="spinner-border spinner-border-sm me-1" role="status"></span>
@@ -549,7 +549,7 @@ export class TicketDetailComponent implements OnInit {
       });
   }
 
-  // "Nach Bereit": assign owner to AI and move to TODO ("Zu bereit").
+  // "Nach Bereit": assign owner to AI and move to TODO ("Bereit").
   moveToReady(): void {
     if (!this.ticket) return;
     const ticketId = this.ticket.id;
@@ -562,7 +562,7 @@ export class TicketDetailComponent implements OnInit {
         next: (updated) => {
           this.ticket = updated;
           this.savingMoveToReady = false;
-          this.notification.success('Ticket der KI zugewiesen und nach "Zu bereit" verschoben.');
+          this.notification.success('Ticket der KI zugewiesen und nach "Bereit" verschoben.');
         },
         error: () => {
           this.savingMoveToReady = false;
@@ -593,7 +593,7 @@ export class TicketDetailComponent implements OnInit {
         this.savingOwner = false;
         const message =
           willResetStatus
-            ? 'Eigentümer auf "KI" gesetzt und Status auf "Zu bereit" zurückgesetzt.'
+            ? 'Eigentümer auf "KI" gesetzt und Status auf "Bereit" zurückgesetzt.'
             : `Eigentümer auf "${newOwner === 'AI' ? 'KI' : 'Mensch'}" gesetzt.`;
         this.notification.success(message);
       },
@@ -612,7 +612,7 @@ export class TicketDetailComponent implements OnInit {
   get toggleOwnerTitle(): string {
     if (!this.ticket) return '';
     if (this.ticket.owner === 'HUMAN' && this.ticket.status !== 'DONE' && this.ticket.status !== 'TODO') {
-      return 'Eigentümer auf KI setzen und Status auf "Zu bereit" zurücksetzen';
+      return 'Eigentümer auf KI setzen und Status auf "Bereit" zurücksetzen';
     }
     if (this.ticket.owner === 'HUMAN') {
       return 'Eigentümer auf KI setzen';
@@ -698,7 +698,7 @@ export class TicketDetailComponent implements OnInit {
       case 'DEFINITION':
         return 'Definition';
       case 'TODO':
-        return 'Zu bereit';
+        return 'Bereit';
       case 'IN_PROGRESS':
         return 'In Arbeit';
       case 'ON_HOLD':

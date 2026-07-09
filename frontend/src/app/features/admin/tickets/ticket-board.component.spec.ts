@@ -186,10 +186,10 @@ describe('TicketBoardComponent — template rendering', () => {
     expect(definitionColumn.textContent).toContain('Ticket 0');
   });
 
-  it('renders the "Zu bereit" column header for the TODO column (renamed from "Zu erledigen")', () => {
+  it('renders the "Bereit" column header for the TODO column', () => {
     const header: HTMLElement = fixture.nativeElement.querySelector('.column-todo .column-title');
     expect(header).toBeTruthy();
-    expect(header.textContent).toContain('Zu bereit');
+    expect(header.textContent).toContain('Bereit');
   });
 
   it('renders exactly 5 board columns', () => {

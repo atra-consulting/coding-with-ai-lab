@@ -55,7 +55,7 @@ Details zur API: [docs/specs/SPEC-API-TASKS.md](specs/SPEC-API-TASKS.md).
 
 Ein Kanban-Board. Ein einfaches Ticketsystem für das Software-Factory-Training.
 
-- **Fünf Spalten:** `DEFINITION` („Definition"), `TODO` („Zu bereit"), `IN_PROGRESS` („In Arbeit"), `ON_HOLD` („Wartet"), `DONE` („Erledigt").
+- **Fünf Spalten:** `DEFINITION` („Definition"), `TODO` („Bereit"), `IN_PROGRESS` („In Arbeit"), `ON_HOLD` („Wartet"), `DONE` („Erledigt").
 - **Owner:** Jedes Ticket gehört `AI` oder `HUMAN`.
 - **Seed:** 12 Workshop-Tickets. Läuft bei jedem Start (`INSERT OR IGNORE`, ids 1–12). `POST /reset` löscht alles und baut die 12 neu auf.
 - Neue Tickets starten bei `HUMAN` und `DEFINITION`. Ein Mensch verfeinert das Ticket. Dann gibt er es an die KI ab.
