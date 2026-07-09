@@ -29,21 +29,7 @@ let backendProcess: ChildProcess;
 
 export default async function globalSetup(): Promise<() => Promise<void>> {
   // -------------------------------------------------------------------------
-  // 0. Start from a fresh test database (never touches the dev DB crmdb.sqlite).
-  //    db.ts uses crmdb.test.sqlite when NODE_ENV=test and no Turso URL is set.
-  //    Deleting it (plus WAL/SHM sidecars) makes each run deterministic: startup
-  //    re-creates the schema and re-seeds agent-tasks, fixture CRM data, tickets.
-  //    Skipped when running against a remote DB (Turso/CI).
-  // -------------------------------------------------------------------------
-  if (!process.env['TURSO_DATABASE_URL']) {
-    const testDbPath = join(BACKEND_ROOT, 'backend', 'data', 'crmdb.test.sqlite');
-    for (const suffix of ['', '-wal', '-shm']) {
-      rmSync(`${testDbPath}${suffix}`, { force: true });
-    }
-  }
-
-  // -------------------------------------------------------------------------
-  // 1. Kill any existing process on port 7070 and spawn the backend
+  // 1. Kill any existing process on port 7070
   // -------------------------------------------------------------------------
   try {
     const check = await fetch('http://localhost:7070/api/health');
@@ -61,6 +47,26 @@ export default async function globalSetup(): Promise<() => Promise<void>> {
     // Port was not in use — nothing to kill
   }
 
+  // -------------------------------------------------------------------------
+  // 2. Start from a fresh test database (never touches the dev DB crmdb.sqlite).
+  //    db.ts uses crmdb.test.sqlite when NODE_ENV=test and no Turso URL is set.
+  //    Deleting the file plus its journal sidecars makes each run deterministic:
+  //    startup re-creates the schema and re-seeds agent-tasks, fixture CRM data,
+  //    tickets. Runs AFTER the port-kill above so no live backend still holds it.
+  //    `-journal` is the sidecar for the default rollback-journal mode @libsql/client
+  //    uses on local files; `-wal`/`-shm` are cleaned too in case WAL is ever enabled.
+  //    Skipped when running against a remote DB (Turso/CI).
+  // -------------------------------------------------------------------------
+  if (!process.env['TURSO_DATABASE_URL']) {
+    const testDbPath = join(BACKEND_ROOT, 'backend', 'data', 'crmdb.test.sqlite');
+    for (const suffix of ['', '-journal', '-wal', '-shm']) {
+      rmSync(`${testDbPath}${suffix}`, { force: true });
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // 3. Spawn the backend
+  // -------------------------------------------------------------------------
   const env: Record<string, string> = {
     ...Object.fromEntries(
       Object.entries(process.env).filter(([, v]) => v !== undefined) as [string, string][]
