@@ -1,23 +1,21 @@
 {
   "version": 1,
   "branch": "solution-jfs-2026",
-  "main_branch": "f02b2c598f9a52f3d73f3d6bb4cb949ce29bd405",
+  "main_branch": "main",
   "docs_folder": "docs",
-  "special_instructions": null,
+  "special_instructions": "Make sure the \"Zu bereit\" -> \"Bereit\" TODO-column label rename did not break anything",
   "review_agents_available": true,
   "fix_agents_available": true,
   "all_reviewers": ["ba-reviewer", "requirements-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer"],
   "all_coders": ["be-coder", "db-coder", "fe-coder"],
   "all_designers": ["ui-designer"],
   "changed_files": [
-    "backend/src/seed/szenarioSeed.ts",
-    "backend/src/test/szenario.spec.ts",
-    "frontend/src/app/core/models/prozess-defaults.ts",
-    "frontend/src/app/core/models/prozess-defaults.spec.ts",
-    "frontend/src/app/features/produktivitaet/rechner.component.ts",
-    "frontend/src/app/features/produktivitaet/rechner.component.spec.ts",
-    "docs/plans/PLAN-RECHNER-PROZESS-VERBESSERUNGEN.md",
-    "docs/state/STATE-RECHNER-PROZESS-VERBESSERUNGEN.json"
+    "frontend/src/app/features/admin/tickets/ticket-board.component.ts",
+    "frontend/src/app/features/admin/tickets/ticket-board.component.spec.ts",
+    "frontend/src/app/features/admin/tickets/ticket-detail.component.ts",
+    "CLAUDE.md",
+    "docs/TOOLS.md",
+    "docs/specs/SPEC-API-TICKETS.md"
   ],
   "dry_run_mode": false,
   "started": "2026-07-09T00:00:00Z"
