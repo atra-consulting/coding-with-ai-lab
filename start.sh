@@ -72,6 +72,27 @@ check_port_free() {
 check_port_free "${BACKEND_PORT}"  "Backend"
 check_port_free "${FRONTEND_PORT}" "Frontend"
 
+# Install dependencies when node_modules is missing, incomplete, or stale
+# relative to the lockfile. Partial installs miss binaries like tsx/ng and
+# fail with MODULE_NOT_FOUND. Staleness matters too: npm rewrites
+# node_modules/.package-lock.json on every install, so a package-lock.json
+# that is newer means a dependency was added to the manifest but never
+# installed (e.g. after a branch switch or pull) — the old "does node_modules
+# exist" check missed this and let ng serve fail on the missing import.
+ensure_deps() {
+  local dir="$1"
+  local bin="$2"
+  local label="$3"
+  cd "$dir"
+  if [ ! -d "node_modules" ] || [ ! -f "node_modules/.bin/${bin}" ]; then
+    echo "${label} node modules missing or incomplete. Running npm install..."
+    npm install
+  elif [ "package-lock.json" -nt "node_modules/.package-lock.json" ]; then
+    echo "${label} dependencies out of date with package-lock.json. Running npm install..."
+    npm install
+  fi
+}
+
 # Optionally reset database
 if [ "$RESET_DB" = true ]; then
   if [ -d "$CRM_DB_DIR" ]; then
@@ -153,15 +174,7 @@ trap cleanup SIGINT SIGTERM EXIT
 # --- Backend ---
 
 echo "Starting backend..."
-cd "${ROOT_DIR}/backend"
-
-# Install node modules if not present or incomplete (partial installs miss
-# binaries like tsx and make start fail with MODULE_NOT_FOUND).
-if [ ! -d "node_modules" ] || [ ! -f "node_modules/.bin/tsx" ]; then
-  echo "Backend node modules missing or incomplete. Running npm install..."
-  npm install
-fi
-
+ensure_deps "${ROOT_DIR}/backend" "tsx" "Backend"
 
 npx tsx --watch src/index.ts &
 BACKEND_PID=$!
@@ -184,13 +197,8 @@ done
 # --- Frontend ---
 
 echo "Starting frontend..."
+ensure_deps "${ROOT_DIR}/frontend" "ng" "Frontend"
 cd "${ROOT_DIR}/frontend"
-
-# Install node modules if not present or incomplete
-if [ ! -d "node_modules" ] || [ ! -f "node_modules/.bin/ng" ]; then
-  echo "Frontend node modules missing or incomplete. Running npm install..."
-  npm install
-fi
 
 # Optional sanity check: can ng run?
 if ! npx ng version > /dev/null 2>&1; then
