@@ -23,7 +23,7 @@
 
 Dieses Repo dient zwei Zielgruppen:
 
-- **Konferenz-Zuhörer** wollen die Skills und Subagents in ihr eigenes Projekt holen. Start: [Skills & Subagents übernehmen](#für-konferenz-zuhörer-skills--subagents-übernehmen).
+- **Konferenz-Zuhörer** wollen die Skills und Subagents in ihr eigenes Projekt holen. Hier sind die Folien: []Start: [Skills & Subagents übernehmen](#für-konferenz-zuhörer-skills--subagents-übernehmen).
 - **Workshop-Teilnehmer** wollen Aufgaben in dieser App lösen. Start: [Aufgaben bearbeiten](#für-workshop-teilnehmer-aufgaben-bearbeiten).
 
 Der gemeinsame Teil (Schnellstart, Login, Tools) gilt für beide.
