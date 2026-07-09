@@ -153,7 +153,7 @@ Du willst die Skills und Subagents in dein eigenes Projekt holen? Zwei Schritte.
 
 | Dokument | Inhalt |
 |----------|--------|
-| **[docs/TRANSFER.md](docs/TRANSFER.md)** | **Die Anleitung. Übernahme in 8 Schritten. Hier starten.** |
+| **[docs/TRANSFER.md](docs/TRANSFER.md)** | **Die Anleitung. Übernahme in 8 Schritten.** |
 | [docs/SKILLS.md](docs/SKILLS.md) | Alle 6 Skills. Zweck, Argumente, Beispiele. |
 | [docs/SUBAGENTS.md](docs/SUBAGENTS.md) | Alle 24 Subagents. Zweck, Modell, Gruppen. |
 | [docs/TOOLS.md](docs/TOOLS.md) | Die drei Demo-Tools: Rechner, Agent-Tasks, Ticket-Board. |
