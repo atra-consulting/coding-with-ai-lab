@@ -40,7 +40,7 @@ Das Dashboard zeigt die `agent_task`-Tabelle. Ein autonomer Claude-Agent in CI a
 - **Seed:** 23 Tasks, feste ids 1–23. Frischer Start oder `POST /reset` → **alle** stehen auf `OPEN`.
 - Der Agent zieht die nächste Task. Er entscheidet: lösen oder ablehnen. Er setzt sie um und merged.
 
-**Hinweis für Demos.** Filter nach einer Quelle, z. B. <http://localhost:7200/admin/agent-tasks?source=EMAIL>. Dann sind meist nur die **obersten zwei, drei** Einträge wirklich noch offen. Die älteren stehen zwar auch auf „Open", wurden aber in früheren automatischen Läufen (GitHub Actions) der Skills schon abgearbeitet. Für eine Demo nimmst du einen der obersten. (Auf einer frisch gestarteten lokalen App stehen dagegen alle 23 echt auf `OPEN` — dort ist noch nichts gelaufen.)
+**Hinweis für Demos.** Filter nach einer Quelle, z. B. <http://localhost:7200/admin/agent-tasks?source=EMAIL>. Meist sind nur die **obersten zwei, drei** Einträge wirklich noch offen. Die älteren stehen zwar auch auf „Open", doch frühere automatische GitHub-Actions-Läufe haben sie schon abgearbeitet. Wie passt das zusammen? `POST /reset` setzt den Status aller Tasks zurück auf `OPEN` — die Ergebnisse (Tickets, PRs) aus diesen Läufen bleiben aber. Für eine Demo nimmst du einen der obersten. (Frisch lokal gestartet stehen dagegen alle 23 echt auf `OPEN` — dort ist noch nichts gelaufen.)
 
 Den Skill, der eine Task zu einem Kanban-Ticket triagiert, findest du unter [`/write-ticket`](SKILLS.md#write-ticket--feedback-in-ein-neues-ticket-triagieren).
 
