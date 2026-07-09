@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "task_key": "CHANCE-NOTIZ-UND-PHASE-BADGE",
+  "status": "in_progress",
+  "current_step": "3.3",
+  "started": "2026-07-09T00:00:00.000Z",
+  "updated": "2026-07-09T00:00:00.000Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Ticket 13: Improve chances. Zwei Aenderungen an Chance: (1) neues nullable TEXT-Feld 'notiz' (Backend schema/migrate/service/route + Frontend model/form/detail), (2) Phase-Label in der Chancen-Liste als farbiges Badge via gemeinsame Farb-Map wie getPhaseBadgeClass() im Detail.",
+    "special_instructions": "Vollstaendig autonom, kein AskUserQuestion. PRD ueberspringen. Plan-Freigabe: implement-review (kein PR). Alle Review-Fixes genehmigen. Backend-Tests: cd backend && npm test; Frontend-Tests: cd frontend && npm run test:ci. Kein push, kein PR. Planungsdateien behalten.",
+    "ticket_mode": false,
+    "ticket_id": null,
+    "ticket_url": null,
+    "ticket_api_base": null,
+    "ticket_claimed": false,
+    "branch_name": "solution-jfs-2026",
+    "original_branch": "solution-jfs-2026",
+    "original_head": "5ea7049763c3023d7673393ed6c046dcfe590ae2",
+    "docs_folder": "docs",
+    "is_git_repo": true,
+    "workflow_scope": null,
+    "pr_prefix": null,
+    "pr_exists": false,
+    "pr_url": null
+  },
+  "discovery": {
+    "agents_available": false,
+    "writer_agents": [],
+    "coding_agents": [],
+    "review_agents": [],
+    "test_coding_agents": [],
+    "test_review_agents": [],
+    "test_runner_agents": [],
+    "tooling_coding_agents": [],
+    "tooling_review_agents": [],
+    "test_command": null
+  },
+  "artifacts": {
+    "prd_skipped": null,
+    "prd_file": null,
+    "plan_file": null
+  },
+  "completed_steps": []
+}
