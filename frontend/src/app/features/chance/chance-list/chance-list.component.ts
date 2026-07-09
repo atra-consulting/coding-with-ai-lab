@@ -9,7 +9,7 @@ import {
   SizeColumnsToContentStrategy,
   themeQuartz,
 } from 'ag-grid-community';
-import { Chance } from '../../../core/models/chance.model';
+import { Chance, getPhaseBadgeClass } from '../../../core/models/chance.model';
 import { ChanceService } from '../../../core/services/chance.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { EurCurrencyPipe } from '../../../shared/pipes/currency.pipe';
@@ -43,6 +43,10 @@ export class ChanceListComponent implements OnInit {
       field: 'phase',
       headerName: 'Phase',
       filter: 'agTextColumnFilter',
+      cellRenderer: (params: { value: string | null }) => {
+        const val = params.value ?? '';
+        return `<span class="badge ${getPhaseBadgeClass(params.value)}">${val}</span>`;
+      },
     },
     {
       field: 'wert',

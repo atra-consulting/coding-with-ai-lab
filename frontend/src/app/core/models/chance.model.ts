@@ -10,6 +10,7 @@ export interface Chance {
   id: number;
   titel: string;
   beschreibung: string;
+  notiz?: string | null;
   wert: number;
   currency: string;
   phase: ChancePhase;
@@ -26,6 +27,7 @@ export interface Chance {
 export interface ChanceCreate {
   titel: string;
   beschreibung?: string;
+  notiz?: string | null;
   wert?: number;
   currency?: string;
   phase: ChancePhase;
@@ -33,5 +35,17 @@ export interface ChanceCreate {
   erwartetesDatum?: string;
   firmaId: number;
   kontaktPersonId?: number | null;
+}
+
+export function getPhaseBadgeClass(phase: ChancePhase | string | null | undefined): string {
+  const map: Record<string, string> = {
+    NEU: 'bg-primary',
+    QUALIFIZIERT: 'bg-info',
+    ANGEBOT: 'bg-warning text-dark',
+    VERHANDLUNG: 'bg-secondary',
+    GEWONNEN: 'bg-success',
+    VERLOREN: 'bg-danger',
+  };
+  return (phase && map[phase]) || 'bg-secondary';
 }
 
