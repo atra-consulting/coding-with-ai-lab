@@ -34,6 +34,10 @@ Dieses Repo dient zwei Zielgruppen:
 
 Der gemeinsame Teil (Schnellstart, Login, Tools) gilt für beide.
 
+## Training
+
+atra.consulting [bietet KI-Training an](https://atra.consulting/ki-loesungen/), inklusive zweier Hands-on-Training-Workshops für Agenten-basierte Entwicklung.
+
 ## Inhalt
 
 **Gemeinsam**
