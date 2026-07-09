@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "task_key": "UPDATE-README-TOOLS-SPECS",
+  "status": "completed",
+  "current_step": "13",
+  "started": "2026-07-09T00:00:00Z",
+  "updated": "2026-07-09T00:00:00Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Update README.MD: make the conference-audience ('Vortrag'/Konferenz-Zuhörer) section more prominent, link to docs/SKILLS.md, docs/SUBAGENTS.md, docs/TOOLS.md and especially docs/TRANSFER.md; shorten and structure it better. Update docs/TOOLS.md to explain that typically only the two tasks shown at the top are still to do. Update docs/TOOLS.md, docs/specs/SPEC-API-TASKS.md and docs/specs/SPEC-API-TICKETS.md with the most recent changes to ticketing and tasks.",
+    "special_instructions": null,
+    "ticket_mode": false,
+    "ticket_id": null,
+    "ticket_url": null,
+    "ticket_api_base": null,
+    "ticket_claimed": false,
+    "branch_name": "solution-jfs-2026",
+    "original_branch": "solution-jfs-2026",
+    "original_head": "5ea7049763c3023d7673393ed6c046dcfe590ae2",
+    "docs_folder": "docs",
+    "is_git_repo": true,
+    "workflow_scope": "implement-review",
+    "pr_prefix": null,
+    "pr_exists": false,
+    "pr_url": null
+  },
+  "discovery": {
+    "agents_available": true,
+    "writer_agents": ["ba-writer"],
+    "coding_agents": ["be-coder", "fe-coder", "db-coder", "ui-designer"],
+    "review_agents": ["be-reviewer", "fe-reviewer", "db-reviewer", "ui-reviewer", "ba-reviewer", "requirements-reviewer"],
+    "test_coding_agents": ["be-test-coder", "fe-test-coder"],
+    "test_review_agents": ["be-test-reviewer", "fe-test-reviewer"],
+    "test_runner_agents": ["be-test-runner", "fe-test-runner"],
+    "tooling_coding_agents": ["python-coder", "shell-coder", "skill-coder"],
+    "tooling_review_agents": ["python-reviewer", "shell-reviewer", "skill-reviewer"],
+    "test_command": "(none — docs-only; verify Markdown links resolve)"
+  },
+  "artifacts": {
+    "prd_skipped": true,
+    "prd_file": null,
+    "plan_file": "docs/plans/PLAN-UPDATE-README-TOOLS-SPECS.md"
+  },
+  "completed_steps": []
+}

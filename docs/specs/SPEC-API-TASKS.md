@@ -152,7 +152,7 @@ curl -s -X POST -H "Authorization: Bearer $AGENT_API_TOKEN" \
 Sets every task back to `OPEN` and clears `comment`, `pickedUpAt`, `resolvedAt`. Used to re-run the workshop without `--reset-db`.
 
 ```json
-{ "reset": 16 }
+{ "reset": 23 }
 ```
 
 | Result | Meaning |
@@ -167,12 +167,14 @@ Sets every task back to `OPEN` and clears `comment`, `pickedUpAt`, `resolvedAt`.
 
 ```json
 [
-  { "source": "APP_LOG",      "openCount": 3, "inProgressCount": 0, "doneCount": 1, "rejectedCount": 0 },
-  { "source": "EMAIL",        "openCount": 4, "inProgressCount": 0, "doneCount": 0, "rejectedCount": 0 },
-  { "source": "ERROR_REPORT", "openCount": 4, "inProgressCount": 0, "doneCount": 0, "rejectedCount": 0 },
+  { "source": "APP_LOG",      "openCount": 6, "inProgressCount": 0, "doneCount": 0, "rejectedCount": 0 },
+  { "source": "EMAIL",        "openCount": 7, "inProgressCount": 0, "doneCount": 0, "rejectedCount": 0 },
+  { "source": "ERROR_REPORT", "openCount": 6, "inProgressCount": 0, "doneCount": 0, "rejectedCount": 0 },
   { "source": "GITHUB_ISSUE", "openCount": 4, "inProgressCount": 0, "doneCount": 0, "rejectedCount": 0 }
 ]
 ```
+
+Counts above are the fresh-seed state: all 23 seeded tasks start `OPEN`.
 
 | Result | Meaning |
 |--------|---------|
@@ -225,8 +227,8 @@ Response is the Spring-Data-style page shape:
 ```json
 {
   "content": [ /* task objects */ ],
-  "totalElements": 16,
-  "totalPages": 2,
+  "totalElements": 23,
+  "totalPages": 3,
   "size": 10,
   "number": 0,
   "first": true,
@@ -261,7 +263,7 @@ All errors use the app-wide handler:
 
 ## Cron Runner API
 
-Turns the agent-task queue into a scheduled, self-driving loop. A Vercel cron hits the dispatcher every 10 min; it fires a GitHub `repository_dispatch` that runs `.github/workflows/agent-task-runner.yml`, which drains every source and calls back to close the audit row. Base path: **`/api/cron`**.
+Turns the agent-task queue into a scheduled, self-driving loop. A Vercel cron hits the dispatcher on its configured schedule (once daily by default — see [Environment Variables](#environment-variables) for why, and how to speed it up); it fires a GitHub `repository_dispatch` that runs `.github/workflows/agent-task-runner.yml`, which drains every source and calls back to close the audit row. Base path: **`/api/cron`**.
 
 Source of truth: `backend/src/routes/cron.ts`, `backend/src/services/cronService.ts`, `backend/src/config/cronJobs.ts`.
 

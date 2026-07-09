@@ -1,9 +1,9 @@
 ---
 name: "project:do-semi-automatic"
 description: "Headless skill that works one Ready+AI Kanban ticket per run — judges it, sends it back to Definition (owner HUMAN) if under-specified, or builds it fully via plan-and-do, documenting every status change with a comment. No push, no PR. For headless claude -p runs."
-argument-hint: "[ticket-id]"
-version: 1.0.2
-last-modified: 2026-07-08
+argument-hint: "[ticket-id | ticket-url] [comment]"
+version: 1.2.0
+last-modified: 2026-07-09
 allowed-tools:
   - Read
   - Bash
@@ -15,7 +15,7 @@ allowed-tools:
 
 Du bist ein autonomer Software-Ingenieur. Du läufst **headless** (`claude -p`) — kein Mensch kann Fragen beantworten. Entscheide alles selbst. Halte nie an, um Eingaben abzuwarten. Rufe niemals `AskUserQuestion` auf.
 
-Auftrag: Ein Ticket in Spalte „Zu bereit" mit `owner=AI` finden (oder direkt per ID laden), seinen Thread lesen, beurteilen ob es gut genug zum Bauen ist, und es dann entweder zurück nach Definition geben oder vollständig umsetzen — unbeaufsichtigt. Ein Ticket pro Durchlauf.
+Auftrag: Ein Ticket in Spalte „Zu bereit" mit `owner=AI` finden (oder direkt per ID bzw. URL laden), seinen Thread lesen, beurteilen ob es gut genug zum Bauen ist, und es dann entweder zurück nach Definition geben oder vollständig umsetzen — unbeaufsichtigt. Ein Ticket pro Durchlauf.
 
 API-Referenz: `docs/specs/SPEC-API-TICKETS.md` (Abschnitt „For skill authors").
 
@@ -27,7 +27,19 @@ API-Referenz: `docs/specs/SPEC-API-TICKETS.md` (Abschnitt „For skill authors")
 
 ## Parameter
 
-Wenn der Skill mit einer Zahl aufgerufen wird (z. B. `/do-semi-automatic 8`), ist das eine Ticket-ID. Dann die „Nächstes Ticket finden"-Auswahl in Schritt 1 überspringen. Statt dessen das Ticket per ID laden und prüfen, ob es Ready+AI ist (siehe unten).
+Lies das Argument als `<erstes Token> [Rest…]`. Das **erste Token** (bis zum ersten Leerraum) ist die ID oder URL. Alles danach ist ein optionaler, freier `Hinweis` — er darf Leerraum enthalten. Trimme den `Hinweis`. Fehlt der Rest, oder bleibt nach dem Trimmen nur Leerraum, gibt es keinen `Hinweis`.
+
+> Zur Benennung: `Hinweis` (in Backticks) meint immer diesen optionalen Aufruf-Text. Das Wort „Kommentar" bleibt für die Ticket-Kommentare reserviert, die dieser Skill über `POST /:id/comments` schreibt.
+
+Drei Eingabemodi, je nach erstem Token. In dieser Reihenfolge prüfen:
+
+1. **Leer** (kein Argument) → das nächste Ready+AI-Ticket suchen (Schritt 1, Board-Zweig). Kein `Hinweis` möglich — es gibt kein benanntes Ticket, an das er sich hängen könnte.
+2. **Reine Zahl** als erstes Token (z. B. `/do-semi-automatic 8` oder `/do-semi-automatic 8 bitte nur das Backend anfassen`) → Ticket-ID. Die „Nächstes Ticket finden"-Auswahl in Schritt 1 überspringen. Statt dessen das Ticket per ID laden und prüfen, ob es Ready+AI ist (ID-Zweig unten). Der Rest nach dem ersten Token ist der optionale `Hinweis`.
+3. **Ticket-URL** als erstes Token (z. B. `/do-semi-automatic http://localhost:7200/admin/tickets/11` oder mit angehängtem `Hinweis`) → auch eine Ticket-ID. **Nur** wenn das erste Token eine URL ist — es beginnt mit `http://`, `https://`, `/admin/` oder `/api/`. Dann die Ziffern nach `tickets/` als ID herausziehen (`11`) und wie eine Ticket-ID behandeln. Das Muster `tickets/<Ziffern>` matcht sowohl die Admin-URL (`/admin/tickets/11`) als auch die API-URL (`/api/tickets/11`); ein Schrägstrich, ein `?` oder das Ende danach ist erlaubt. Enthält die URL kein `tickets/<Ziffern>` (z. B. `.../tickets/board` oder `.../tickets/next`) → Fehler ausgeben und **beenden**. Der Rest nach dem ersten Token ist der optionale `Hinweis`.
+
+Dieser Skill kennt **keinen** Freitext-Modus für das erste Token. Nur das **erste Token** muss reine Zahl oder URL sein — Text danach ist der optionale `Hinweis`, kein Fehler. Ist das erste Token weder reine Zahl noch URL (z. B. Prosa wie „Die Seite /admin/tickets/11 hängt", die mit einem Wort beginnt), ist das Argument ungültig → Fehler ausgeben und **beenden**.
+
+Der geparste Wert heißt ab hier `Hinweis` (leer, wenn keiner übergeben wurde). Spätere Schritte verweisen auf diesen Namen. Gib den `Hinweis` **nicht** in Anführungszeichen ein — jedes Zeichen nach dem ersten Token gehört dazu, Anführungszeichen landen sonst wörtlich im Text.
 
 ## Fehlerbehandlung bei mutierenden Aufrufen
 
@@ -35,7 +47,7 @@ Gilt für **jeden** POST/PATCH-Aufruf in Schritt 3a, 3b, 3b-Blocker und 4. HTTP-
 
 ## Schritt 0 — Umgebungsvariablen laden
 
-*(Immer zuerst ausführen — auch wenn eine Ticket-ID übergeben wurde.)*
+*(Immer zuerst ausführen — auch wenn eine Ticket-ID oder Ticket-URL übergeben wurde.)*
 
 Alle Pfade sind relativ zum Projekt-Wurzelverzeichnis. Der Skill läuft aus dem Repo-Root.
 
@@ -60,7 +72,7 @@ Wenn `AGENT_API_TOKEN` leer oder ungesetzt ist: sofort beenden. Keine weiteren S
 
 ## Schritt 1 — Nächstes Ready+AI-Ticket finden (NICHT starten)
 
-*(Überspringen, wenn eine Ticket-ID als Parameter übergeben wurde — dann den ID-Zweig unten nutzen.)*
+*(Überspringen, wenn eine Ticket-ID oder Ticket-URL als Parameter übergeben wurde — dann den ID-Zweig unten nutzen.)*
 
 **Wichtig:** Dieser Schritt beansprucht das Ticket noch nicht. Es bleibt in `TODO`. Der Wechsel nach `IN_PROGRESS` passiert erst in Schritt 3b.
 
@@ -88,6 +100,8 @@ curl -s -w '\n%{http_code}' \
 
 **Wenn eine Ticket-ID als Parameter übergeben wurde**, statt dessen:
 
+Parse einen optionalen `Hinweis` zusammen mit der ID bzw. URL (siehe „Parameter" oben). Führe ihn einfach mit. Er hat keinen Einfluss auf Laden, `owner`-Prüfung oder `status`-Prüfung.
+
 ```bash
 curl -s -w '\n%{http_code}' \
   -H "Authorization: Bearer $AGENT_API_TOKEN" \
@@ -101,6 +115,8 @@ curl -s -w '\n%{http_code}' \
   - Sonst (`owner == "AI"` und `status == "TODO"`) → weiter zu Schritt 2. Ticket bleibt `TODO` — noch nicht starten.
 - Jeder andere Code → Fehler ausgeben und **beenden**.
 
+**Wenn eine Ticket-URL übergeben wurde**: die Ziffern nach `tickets/` als `<ID>` herausziehen und exakt den ID-Zweig oben ausführen (laden, `owner`-Prüfung, `status`-Prüfung). Kein eigener Ablauf.
+
 ## Schritt 2 — Thread lesen
 
 Das `comments`-Array ist die vollständige Konversation, älteste zuerst. Die neuesten `HUMAN`-Kommentare sind maßgeblich. Wurde eine frühere `AGENT`-Frage bereits beantwortet, nicht erneut fragen.
@@ -109,7 +125,7 @@ Das `comments`-Array ist die vollständige Konversation, älteste zuerst. Die ne
 
 *(VOR dem Schreiben von Code entscheiden.)*
 
-Den **`requirements-reviewer`-Subagenten** via Task-Tool beauftragen. `title`, `body` und den **`comments`-Thread** des Tickets übergeben. Er beurteilt:
+Den **`requirements-reviewer`-Subagenten** via Task-Tool beauftragen. `title`, `body`, den **`comments`-Thread** des Tickets und — falls vorhanden — den optionalen `Hinweis` übergeben. Er beurteilt:
 
 - Beschreibt das Ticket EINE klare, konkrete Änderung?
 - Sind alle Fakten vorhanden, die zur Umsetzung nötig sind — einschließlich aller Entscheidungen, die im Thread beantwortet wurden?
@@ -118,6 +134,8 @@ Den **`requirements-reviewer`-Subagenten** via Task-Tool beauftragen. `title`, `
 
 Der Subagent prüft das Ticket zusätzlich gegen den echten Code. Wenn das beschriebene Problem im aktuellen Code nicht existiert, ist das Ticket zurückzugeben.
 
+Wurde ein `Hinweis` übergeben, darf der Subagent ihn als zusätzlichen Kontext berücksichtigen.
+
 Der Subagent liefert ein klares, binäres Urteil: entweder **„gut genug zum Bauen"** oder **„zurückgeben"** mit dem spezifischen, noch offenen Entscheidungspunkt.
 
 Dem Urteil des Subagenten ohne Abweichung folgen.
@@ -125,6 +143,8 @@ Dem Urteil des Subagenten ohne Abweichung folgen.
 ## Schritt 3a — Nicht gut genug → zurück auf Definition + Human
 
 *(NICHT ablehnen, `plan-and-do` NICHT aufrufen.)*
+
+Ein optionaler `Hinweis` bleibt hier ungenutzt — dieser Zweig ruft `plan-and-do` nicht auf.
 
 Der Reihe nach, jeweils mit dem Agent-Token. Nach jedem Aufruf den HTTP-Code prüfen (siehe „Fehlerbehandlung bei mutierenden Aufrufen" oben) — schlägt einer fehl, sofort beenden und **nicht** als „zurückgegeben" melden:
 
@@ -188,11 +208,22 @@ Generische Kommentare wie „unklar" sind nicht akzeptabel. Den fehlenden Punkt 
 
    HTTP-Code prüfen (siehe „Fehlerbehandlung bei mutierenden Aufrufen" oben). Nicht-2xx → Fehler ausgeben und **beenden**, `plan-and-do` NICHT aufrufen.
 
-3. `plan-and-do` via Skill-Tool aufrufen. Ticket-Titel + Body plus die gelösten Entscheidungen aus den `HUMAN`-Kommentaren als Beschreibung übergeben:
+3. `plan-and-do` via Skill-Tool aufrufen. Ticket-Titel + Body plus die gelösten Entscheidungen aus den `HUMAN`-Kommentaren als Beschreibung übergeben.
+
+   **Ohne `Hinweis`** — Beschreibung wie bisher:
 
    ```
    /project:plan-and-do "<Ticket-Titel + Body, plus die gelösten Entscheidungen aus den HUMAN-Kommentaren>"
    ```
+
+   **Mit `Hinweis`** — den `Hinweis` **unverändert** und beschriftet als eigene Zeile an die Beschreibung anhängen:
+
+   ```
+   /project:plan-and-do "<Ticket-Titel + Body, plus die gelösten Entscheidungen aus den HUMAN-Kommentaren>
+   Zusätzlicher Hinweis vom Aufruf (unverändert übernommen): <Hinweis>"
+   ```
+
+   Enthält der `Hinweis` selbst ein `"`, kann es die Anführungszeichen der Beschreibung sprengen — dann den `Hinweis` als eigene Zeile ohne umschließende Anführungszeichen anhängen bzw. das innere `"` maskieren.
 
    Diese Daueranweisungen dem Aufruf voranstellen und auf JEDEN Checkpoint anwenden, ohne je anzuhalten:
 
@@ -253,4 +284,4 @@ Jede Statuswechsel-Entscheidung dieses Skills wird mit einem kleinen Ticket-Komm
 - `→ ON_HOLD` (Schritt 3b-Blocker): der Kommentar kommt automatisch von `POST /:id/ask`.
 - `→ DONE` (Schritt 4): der Kommentar kommt automatisch von `POST /:id/done`.
 
-> Hinweis: Dieser Skill löst ein Ticket nie als „Won't Do" auf — das ist eine Aktion nur für Menschen. Seine einzigen Ergebnisse sind **erledigt** (Schritt 4), **zurück auf Definition** (Schritt 3a) oder **Blocked** (Schritt 3b-Blocker).
+> Anmerkung: Dieser Skill löst ein Ticket nie als „Won't Do" auf — das ist eine Aktion nur für Menschen. Seine einzigen Ergebnisse sind **erledigt** (Schritt 4), **zurück auf Definition** (Schritt 3a) oder **Blocked** (Schritt 3b-Blocker).

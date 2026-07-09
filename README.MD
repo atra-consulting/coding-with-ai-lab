@@ -23,6 +23,8 @@
 
 > **English?** See **[docs/welcome_EN.MD](docs/welcome_EN.MD)** for an English introduction.
 
+> **🎤 Vom Vortrag hier?** Hol dir die Skills & Subagents in dein eigenes Projekt. Kern-Anleitung: **[docs/TRANSFER.md](docs/TRANSFER.md)**. Erst überfliegen: [SKILLS](docs/SKILLS.md) · [SUBAGENTS](docs/SUBAGENTS.md) · [TOOLS](docs/TOOLS.md). Details: [Skills & Subagents übernehmen](#für-konferenz-zuhörer-skills--subagents-übernehmen).
+
 ---
 
 ## Zwei Wege durch dieses Repo
@@ -144,16 +146,17 @@ Details zu jedem Tool: **[docs/TOOLS.md](docs/TOOLS.md)**
 
 ## Für Konferenz-Zuhörer: Skills & Subagents übernehmen
 
-Du willst die Skills und Subagents aus diesem Repo in dein eigenes Projekt holen? So geht es.
+Du willst die Skills und Subagents in dein eigenes Projekt holen? Zwei Schritte.
 
-1. Lies, was es gibt: **[docs/SUBAGENTS.md](docs/SUBAGENTS.md)** (24 Subagents) und **[docs/SKILLS.md](docs/SKILLS.md)** (6 Skills).
-2. Folge der Anleitung: **[docs/TRANSFER.md](docs/TRANSFER.md)**. Kopieren, anpassen lassen, prüfen — Schritt für Schritt.
+1. **Überfliegen, was es gibt.** [SKILLS.md](docs/SKILLS.md) (6 Skills), [SUBAGENTS.md](docs/SUBAGENTS.md) (24 Subagents), [TOOLS.md](docs/TOOLS.md) (die drei Demo-Tools).
+2. **Der Anleitung folgen.** **[TRANSFER.md](docs/TRANSFER.md)** führt dich Schritt für Schritt: kopieren, anpassen lassen, prüfen. Das ist der Kern — hier startest du.
 
 | Dokument | Inhalt |
 |----------|--------|
-| [docs/SUBAGENTS.md](docs/SUBAGENTS.md) | Alle 24 Subagents. Zweck, Modell, Gruppen. |
+| **[docs/TRANSFER.md](docs/TRANSFER.md)** | **Die Anleitung. Übernahme in 8 Schritten. Hier starten.** |
 | [docs/SKILLS.md](docs/SKILLS.md) | Alle 6 Skills. Zweck, Argumente, Beispiele. |
-| [docs/TRANSFER.md](docs/TRANSFER.md) | Übernahme in dein Projekt. 8 Schritte. |
+| [docs/SUBAGENTS.md](docs/SUBAGENTS.md) | Alle 24 Subagents. Zweck, Modell, Gruppen. |
+| [docs/TOOLS.md](docs/TOOLS.md) | Die drei Demo-Tools: Rechner, Agent-Tasks, Ticket-Board. |
 
 ---
 

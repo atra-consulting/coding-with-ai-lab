@@ -145,7 +145,7 @@ curl -s -H "Authorization: Bearer $AGENT_API_TOKEN" \
 ### POST `/api/tickets/:id/done` — mark complete (agent token · loopback · admin)
 **Auth:** agent token · loopback bypass · admin session (first match wins). **Body:** `{ "comment": "<optional string>" }`.
 
-Sets `status=DONE`, `solution=DONE`, `resolvedAt`. Guard: ticket must be `IN_PROGRESS`.
+Sets `status=DONE`, `solution=DONE`, `resolvedAt`. Guard: ticket must be `IN_PROGRESS`. A non-empty `comment` is stored as an **AGENT** comment on the ticket.
 
 | Result | Meaning |
 |--------|---------|
@@ -338,7 +338,7 @@ A skill can move a ticket to any column — including back to `DEFINITION` — w
 ### PATCH `/api/tickets/:id/owner` — change owner (agent token · loopback · admin)
 **Auth:** agent token, loopback bypass, or admin session (first match wins). **Body:** `{ "owner": "AI"|"HUMAN" }`.
 
-Changes owner only; status is not touched. A skill can assign a `DEFINITION` ticket to the AI ("An KI übergeben") with the agent token.
+Changes owner only; status is not touched. Works on a ticket in **any** status — there is no status guard. The common case: a skill assigns a `DEFINITION` ticket to the AI ("An KI übergeben") with the agent token.
 
 | Result | Meaning |
 |--------|---------|
@@ -360,7 +360,7 @@ curl -s -X PATCH -H "Authorization: Bearer $AGENT_API_TOKEN" \
 ### POST `/api/tickets/:id/wont-do` — resolve as Won't Do (admin)
 **Auth:** admin session. **Body:** `{ "comment": "<optional string>" }`.
 
-Sets `status=DONE`, `solution=WONT_DO`, `resolvedAt`. Guard: `owner` must be `HUMAN` and `status` must not already be `DONE`.
+Sets `status=DONE`, `solution=WONT_DO`, `resolvedAt`. Guard: `owner` must be `HUMAN` and `status` must not already be `DONE`. A non-empty `comment` is stored as a **HUMAN** comment on the ticket.
 
 | Result | Meaning |
 |--------|---------|
@@ -494,7 +494,7 @@ All errors use the app-wide handler:
 
 ## Seed data
 
-12 workshop tickets seeded via `backend/src/seed/ticketSeed.ts`. Seed runs inside `POST /reset` (full wipe + re-seed). Unlike `agent_task`, ticket seed does **not** run on every startup — only when the DB is empty at first boot or after a manual reset.
+12 workshop tickets seeded via `backend/src/seed/ticketSeed.ts`. Like `agent_task`, the ticket seed runs on **every** startup: `runMigrations()` calls `seedTickets()` unconditionally, and it uses `INSERT OR IGNORE` — so existing rows stay untouched and only missing ids (1–12) get re-inserted. `POST /reset` is different: it fully wipes `ticket_comment` + `ticket` and re-seeds from scratch.
 
 | # | Title | Type | Status | Owner |
 |---|-------|------|--------|-------|
