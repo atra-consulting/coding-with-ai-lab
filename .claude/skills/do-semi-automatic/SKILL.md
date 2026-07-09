@@ -27,17 +27,19 @@ API-Referenz: `docs/specs/SPEC-API-TICKETS.md` (Abschnitt „For skill authors")
 
 ## Parameter
 
-Das Argument wird als `<erstes Token> [Rest…]` gelesen. Das **erste Token** (bis zum ersten Leerraum) ist die ID oder URL. Alles danach ist ein optionaler, freier **Kommentar** — er darf Leerraum enthalten. Kommentar trimmen. Ist kein Rest vorhanden, ist der Kommentar leer.
+Lies das Argument als `<erstes Token> [Rest…]`. Das **erste Token** (bis zum ersten Leerraum) ist die ID oder URL. Alles danach ist ein optionaler, freier `Hinweis` — er darf Leerraum enthalten. Trimme den `Hinweis`. Fehlt der Rest, oder bleibt nach dem Trimmen nur Leerraum, gibt es keinen `Hinweis`.
+
+> Zur Benennung: `Hinweis` (in Backticks) meint immer diesen optionalen Aufruf-Text. Das Wort „Kommentar" bleibt für die Ticket-Kommentare reserviert, die dieser Skill über `POST /:id/comments` schreibt.
 
 Drei Eingabemodi, je nach erstem Token. In dieser Reihenfolge prüfen:
 
-1. **Leer** (kein Argument) → das nächste Ready+AI-Ticket suchen (Schritt 1, Board-Zweig). Kein Kommentar möglich — es gibt kein benanntes Ticket, an das er sich hängen könnte.
-2. **Reine Zahl** als erstes Token (z. B. `/do-semi-automatic 8` oder `/do-semi-automatic 8 bitte nur das Backend anfassen`) → Ticket-ID. Die „Nächstes Ticket finden"-Auswahl in Schritt 1 überspringen. Statt dessen das Ticket per ID laden und prüfen, ob es Ready+AI ist (ID-Zweig unten). Der Rest nach dem ersten Token ist der optionale Kommentar.
-3. **Ticket-URL** als erstes Token (z. B. `/do-semi-automatic http://localhost:7200/admin/tickets/11` oder mit angehängtem Kommentar) → auch eine Ticket-ID. **Nur** wenn das erste Token eine URL ist — es beginnt mit `http://`, `https://`, `/admin/` oder `/api/`. Dann die Ziffern nach `tickets/` als ID herausziehen (`11`) und wie eine Ticket-ID behandeln. Das Muster `tickets/<Ziffern>` matcht sowohl die Admin-URL (`/admin/tickets/11`) als auch die API-URL (`/api/tickets/11`); ein Schrägstrich, ein `?` oder das Ende danach ist erlaubt. Enthält die URL kein `tickets/<Ziffern>` (z. B. `.../tickets/board` oder `.../tickets/next`) → Fehler ausgeben und **beenden**. Der Rest nach dem ersten Token ist der optionale Kommentar.
+1. **Leer** (kein Argument) → das nächste Ready+AI-Ticket suchen (Schritt 1, Board-Zweig). Kein `Hinweis` möglich — es gibt kein benanntes Ticket, an das er sich hängen könnte.
+2. **Reine Zahl** als erstes Token (z. B. `/do-semi-automatic 8` oder `/do-semi-automatic 8 bitte nur das Backend anfassen`) → Ticket-ID. Die „Nächstes Ticket finden"-Auswahl in Schritt 1 überspringen. Statt dessen das Ticket per ID laden und prüfen, ob es Ready+AI ist (ID-Zweig unten). Der Rest nach dem ersten Token ist der optionale `Hinweis`.
+3. **Ticket-URL** als erstes Token (z. B. `/do-semi-automatic http://localhost:7200/admin/tickets/11` oder mit angehängtem `Hinweis`) → auch eine Ticket-ID. **Nur** wenn das erste Token eine URL ist — es beginnt mit `http://`, `https://`, `/admin/` oder `/api/`. Dann die Ziffern nach `tickets/` als ID herausziehen (`11`) und wie eine Ticket-ID behandeln. Das Muster `tickets/<Ziffern>` matcht sowohl die Admin-URL (`/admin/tickets/11`) als auch die API-URL (`/api/tickets/11`); ein Schrägstrich, ein `?` oder das Ende danach ist erlaubt. Enthält die URL kein `tickets/<Ziffern>` (z. B. `.../tickets/board` oder `.../tickets/next`) → Fehler ausgeben und **beenden**. Der Rest nach dem ersten Token ist der optionale `Hinweis`.
 
-Dieser Skill kennt **keinen** Freitext-Modus für das erste Token. Nur das **erste Token** muss reine Zahl oder URL sein — Text danach ist der optionale Kommentar, kein Fehler. Ist das erste Token weder reine Zahl noch URL (z. B. Prosa wie „Die Seite /admin/tickets/11 hängt", die mit einem Wort beginnt), ist das Argument ungültig → Fehler ausgeben und **beenden**.
+Dieser Skill kennt **keinen** Freitext-Modus für das erste Token. Nur das **erste Token** muss reine Zahl oder URL sein — Text danach ist der optionale `Hinweis`, kein Fehler. Ist das erste Token weder reine Zahl noch URL (z. B. Prosa wie „Die Seite /admin/tickets/11 hängt", die mit einem Wort beginnt), ist das Argument ungültig → Fehler ausgeben und **beenden**.
 
-Der geparste Kommentar heißt ab hier **Kommentar** (leer, wenn keiner übergeben wurde). Spätere Schritte verweisen auf diesen Namen.
+Der geparste Wert heißt ab hier `Hinweis` (leer, wenn keiner übergeben wurde). Spätere Schritte verweisen auf diesen Namen. Gib den `Hinweis` **nicht** in Anführungszeichen ein — jedes Zeichen nach dem ersten Token gehört dazu, Anführungszeichen landen sonst wörtlich im Text.
 
 ## Fehlerbehandlung bei mutierenden Aufrufen
 
@@ -74,8 +76,6 @@ Wenn `AGENT_API_TOKEN` leer oder ungesetzt ist: sofort beenden. Keine weiteren S
 
 **Wichtig:** Dieser Schritt beansprucht das Ticket noch nicht. Es bleibt in `TODO`. Der Wechsel nach `IN_PROGRESS` passiert erst in Schritt 3b.
 
-Ein optionaler Kommentar wird zusammen mit der ID bzw. URL geparst (siehe „Parameter" oben) und einfach mitgeführt. Er hat keinen Einfluss auf Laden, `owner`-Prüfung oder `status`-Prüfung.
-
 ```bash
 curl -s -w '\n%{http_code}' \
   -H "Authorization: Bearer $AGENT_API_TOKEN" \
@@ -100,6 +100,8 @@ curl -s -w '\n%{http_code}' \
 
 **Wenn eine Ticket-ID als Parameter übergeben wurde**, statt dessen:
 
+Parse einen optionalen `Hinweis` zusammen mit der ID bzw. URL (siehe „Parameter" oben). Führe ihn einfach mit. Er hat keinen Einfluss auf Laden, `owner`-Prüfung oder `status`-Prüfung.
+
 ```bash
 curl -s -w '\n%{http_code}' \
   -H "Authorization: Bearer $AGENT_API_TOKEN" \
@@ -123,7 +125,7 @@ Das `comments`-Array ist die vollständige Konversation, älteste zuerst. Die ne
 
 *(VOR dem Schreiben von Code entscheiden.)*
 
-Den **`requirements-reviewer`-Subagenten** via Task-Tool beauftragen. `title`, `body` und den **`comments`-Thread** des Tickets übergeben. Er beurteilt:
+Den **`requirements-reviewer`-Subagenten** via Task-Tool beauftragen. `title`, `body`, den **`comments`-Thread** des Tickets und — falls vorhanden — den optionalen `Hinweis` übergeben. Er beurteilt:
 
 - Beschreibt das Ticket EINE klare, konkrete Änderung?
 - Sind alle Fakten vorhanden, die zur Umsetzung nötig sind — einschließlich aller Entscheidungen, die im Thread beantwortet wurden?
@@ -132,7 +134,7 @@ Den **`requirements-reviewer`-Subagenten** via Task-Tool beauftragen. `title`, `
 
 Der Subagent prüft das Ticket zusätzlich gegen den echten Code. Wenn das beschriebene Problem im aktuellen Code nicht existiert, ist das Ticket zurückzugeben.
 
-Wurde ein Kommentar übergeben, darf der Subagent ihn zusätzlich als zusätzlichen Kontext vom Aufruf beim Urteil bauen-oder-zurückgeben berücksichtigen.
+Wurde ein `Hinweis` übergeben, darf der Subagent ihn als zusätzlichen Kontext berücksichtigen.
 
 Der Subagent liefert ein klares, binäres Urteil: entweder **„gut genug zum Bauen"** oder **„zurückgeben"** mit dem spezifischen, noch offenen Entscheidungspunkt.
 
@@ -141,6 +143,8 @@ Dem Urteil des Subagenten ohne Abweichung folgen.
 ## Schritt 3a — Nicht gut genug → zurück auf Definition + Human
 
 *(NICHT ablehnen, `plan-and-do` NICHT aufrufen.)*
+
+Ein optionaler `Hinweis` bleibt hier ungenutzt — dieser Zweig ruft `plan-and-do` nicht auf.
 
 Der Reihe nach, jeweils mit dem Agent-Token. Nach jedem Aufruf den HTTP-Code prüfen (siehe „Fehlerbehandlung bei mutierenden Aufrufen" oben) — schlägt einer fehl, sofort beenden und **nicht** als „zurückgegeben" melden:
 
@@ -204,12 +208,22 @@ Generische Kommentare wie „unklar" sind nicht akzeptabel. Den fehlenden Punkt 
 
    HTTP-Code prüfen (siehe „Fehlerbehandlung bei mutierenden Aufrufen" oben). Nicht-2xx → Fehler ausgeben und **beenden**, `plan-and-do` NICHT aufrufen.
 
-3. `plan-and-do` via Skill-Tool aufrufen. Ticket-Titel + Body plus die gelösten Entscheidungen aus den `HUMAN`-Kommentaren als Beschreibung übergeben. Wurde beim Aufruf ein Kommentar übergeben, ihn **unverändert** und deutlich beschriftet als eigene Zeile an die Beschreibung anhängen. Ohne Kommentar bleibt die Beschreibung wie bisher:
+3. `plan-and-do` via Skill-Tool aufrufen. Ticket-Titel + Body plus die gelösten Entscheidungen aus den `HUMAN`-Kommentaren als Beschreibung übergeben.
+
+   **Ohne `Hinweis`** — Beschreibung wie bisher:
+
+   ```
+   /project:plan-and-do "<Ticket-Titel + Body, plus die gelösten Entscheidungen aus den HUMAN-Kommentaren>"
+   ```
+
+   **Mit `Hinweis`** — den `Hinweis` **unverändert** und beschriftet als eigene Zeile an die Beschreibung anhängen:
 
    ```
    /project:plan-and-do "<Ticket-Titel + Body, plus die gelösten Entscheidungen aus den HUMAN-Kommentaren>
-   Zusätzlicher Hinweis vom Aufruf (unverändert übernommen): <Kommentar>"
+   Zusätzlicher Hinweis vom Aufruf (unverändert übernommen): <Hinweis>"
    ```
+
+   Enthält der `Hinweis` selbst ein `"`, kann es die Anführungszeichen der Beschreibung sprengen — dann den `Hinweis` als eigene Zeile ohne umschließende Anführungszeichen anhängen bzw. das innere `"` maskieren.
 
    Diese Daueranweisungen dem Aufruf voranstellen und auf JEDEN Checkpoint anwenden, ohne je anzuhalten:
 
