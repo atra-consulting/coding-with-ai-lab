@@ -133,6 +133,7 @@ Dev dependencies:
 
 - Engine: SQLite/libSQL via `@libsql/client`
 - Local file path: `backend/data/crmdb.sqlite` (created automatically on first startup)
+- Test file path: `backend/data/crmdb.test.sqlite` — used when `NODE_ENV=test` (backend Playwright suite), so tests never touch the dev DB. Both files are git-ignored.
 - Remote: Turso cloud database when `TURSO_DATABASE_URL` is set (used on Vercel)
 
 Schema file paths, migration approach, table definitions, column specs, and enums: see [SPECS-database.md](SPECS-database.md).
