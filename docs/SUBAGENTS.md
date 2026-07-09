@@ -89,6 +89,33 @@ Diese sechs Agents kennen die CRM-Specs nicht. Sie lesen nur die Root-`CLAUDE.md
 - **18 Agents sind an die CRM-Domäne gebunden.** Sie lesen die Specs in `docs/specs/`. Sie kennen Firma, Person, Chance und die Regeln. Willst du sie übernehmen, passt du die Specs an dein Projekt an. Siehe [TRANSFER.md](TRANSFER.md).
 - **6 Tooling-Agents sind allgemein** (`python-*`, `shell-*`, `skill-*`). Sie passen fast überall.
 
+## CI-Workflow: `do-semi-automatic.yml`
+
+Die Subagents laufen nicht nur lokal. Ein GitHub-Actions-Workflow startet die ganze Kette unbeaufsichtigt in CI. Datei: `.github/workflows/do-semi-automatic.yml`.
+
+Der Workflow ruft den Skill `/do-semi-automatic` headless auf (`claude -p`). Der Skill treibt dann die Subagents: erst `requirements-reviewer` (bauen oder zurückgeben?), dann — beim Bauen — die volle `plan-and-do`-Kette aus Coder-, Test- und Reviewer-Agents. Ein Ticket pro Lauf.
+
+**Wann läuft er?**
+
+- **Manuell** (`workflow_dispatch`) — mit optionaler Eingabe `ticket_id`. Leer → der Skill nimmt das nächste Ready+AI-Ticket.
+- **Täglich** (`schedule`) — 02:00 UTC.
+- **Auf Zuruf** (`repository_dispatch`, Typ `solve-tickets`) — schlummert noch. Kein Backend-Cron feuert diesen Typ bisher.
+
+Nur eine Instanz zur Zeit (`concurrency`). Überlappende Läufe warten in der Schlange.
+
+**Was macht er?**
+
+1. Repo auschecken (volle History, damit `plan-and-do` branchen kann), Node einrichten, `npm ci`, Claude Code installieren, Git-Identität setzen.
+2. `claude -p "/project:do-semi-automatic [id]"` laufen lassen. Die Eingabe `ticket_id` muss eine **positive ganze Zahl** sein — der Workflow lehnt alles andere ab (`exit 1`). Ticket-URLs sind nur für den lokalen/interaktiven Aufruf; CI nutzt die reine ID.
+3. Nach dem Lauf: uncommittete Änderungen sichern. Gibt es Commits über dem Basis-Stand? → gebaut. Der Skill selbst pusht nie und öffnet keinen PR. Also pusht **der Workflow** den Branch und öffnet einen PR gegen den Basis-Branch. Nichts wird je automatisch gemergt.
+4. Kam der Lauf aus dem Vercel-Cron (`client_payload.cronRunId`), meldet der Workflow das Ergebnis an den Cron-Run zurück.
+
+Nicht-Bau-Ausgänge des Skills (zurück nach Definition, oder `ON_HOLD` bei einem Blocker) erzeugen keine Commits — also keinen PR.
+
+**Nötige Secrets:** `AGENT_API_TOKEN`, `APP_BASE_URL` (die DEPLOYTE App), `CLAUDE_CODE_OAUTH_TOKEN` (per `claude setup-token` erstellt — **nicht** zusätzlich `ANTHROPIC_API_KEY` setzen). `GITHUB_TOKEN` kommt automatisch und pusht den Branch bzw. öffnet den PR. Ohne diese Secrets läuft der Workflow nicht sinnvoll.
+
+Skill-Details: [SKILLS.md](SKILLS.md) · API-Hintergrund: [docs/specs/SPEC-API-TICKETS.md](specs/SPEC-API-TICKETS.md).
+
 ## Mehr Details
 
 - Agent-Dateien: `.claude/agents/`
