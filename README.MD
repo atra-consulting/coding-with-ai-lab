@@ -19,8 +19,6 @@
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-Drizzle%20ORM-003b57.svg">
 </p>
 
----
-
 ## Zwei Wege durch dieses Repo
 
 Dieses Repo dient zwei Zielgruppen:
