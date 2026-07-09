@@ -289,7 +289,7 @@ For components using `inject()` that cannot be overridden by a provider, use `Te
 | `features/admin/tickets/ticket-board.component.spec.ts` | `TicketBoardComponent` — board loading, drag-and-drop status transitions with rollback, badge helpers, recentOnly ("Kürzlich geändert") filter toggle with sessionStorage persistence |
 | `features/admin/tickets/ticket-detail.component.spec.ts` | `TicketDetailComponent` — detail view, comment/hand-back-to-AI flow, "Won't Do" and owner-toggle actions |
 | `features/produktivitaet/einheit.spec.ts` | Zeiteinheit helpers — `einheitZuFaktor`, `feldWertZuMinuten`, `maxWertFuerEinheit`, `durationValidatorsFor`, round-trip conversion |
-| `features/produktivitaet/rechner.component.spec.ts` | `RechnerComponent` — productivity calculator: unit conversion, scenario load/save, role/pie/flowchart derivations |
+| `features/produktivitaet/rechner.component.spec.ts` | `RechnerComponent` — productivity calculator: unit conversion, scenario load/save, role/pie/flowchart derivations, Prozessvergleich bar filter (barLimit) with sessionStorage persistence (explicit-toggle-only, not incidental widening) |
 | `features/produktivitaet/svg-util.spec.ts` | SVG utility functions — `computeSegments`, `computeComparisonBars`, `computePieSlices` |
 
 ### Code standards (both stacks)
