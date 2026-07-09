@@ -18,6 +18,20 @@ Tippe den Namen mit Schrägstrich in Claude Code:
 
 Manche Skills nehmen Argumente. Manche laufen ohne. Details stehen unten.
 
+## Voraussetzung: `backend/.env` für die headless Skills
+
+Drei Skills laufen headless (`claude -p`) und sprechen die lokale API an: `/do-factory-automatic`, `/do-semi-automatic` und `/write-ticket`. Damit sie funktionieren, muss `backend/.env` **genau so** aussehen:
+
+```
+AGENT_API_TOKEN=test-secret-123
+AGENT_AUTH_ALLOW_LOOPBACK=1
+```
+
+- `AGENT_API_TOKEN` — geteiltes Geheimnis für die API-Aufrufe. Fehlt es, bricht der Skill in Schritt 0 sofort ab.
+- `AGENT_AUTH_ALLOW_LOOPBACK=1` — erlaubt lokalen Aufrufen den Zugriff ohne Admin-Login.
+
+Fehlt die Datei oder eine der Variablen, meldet der Skill den Fehler und beendet sich. Ohne laufendes Backend (`./start.sh`) schlagen die API-Aufrufe fehl.
+
 ## Die Skills
 
 ### `/plan-and-do` — von der Idee zum Review
@@ -90,11 +104,13 @@ Läuft headless (`claude -p`). Kein Mensch antwortet. Arbeitet genau ein Kanban-
 
 - **Wann nutzen:** In CI. Für unbeaufsichtigte Läufe. Wenn ein Ticket „Bereit" ist und der KI gehört.
 - **Was passiert:** Der Skill nimmt ein Ticket (oder eines per ID). Er beurteilt es. Zu dünn beschrieben? Zurück nach „Definition", Owner Mensch. Gut genug? Er baut es voll über `plan-and-do`. Jede Status-Änderung dokumentiert er mit einem kleinen Kommentar. Kein Push, kein PR.
-- **Argumente (optional):** `[ticket-id]`. Mit ID überspringt der Skill die Suche.
-- **Wichtig:** Der Skill ruft nie `AskUserQuestion`. Er hält nie an. Er braucht `AGENT_API_TOKEN` in der Umgebung.
+- **Argumente (optional):** `[ticket-id | ticket-url] [comment]`. Ohne Argument nimmt der Skill das nächste Ready+AI-Ticket. Reine Zahl → Ticket-ID. Ticket-URL (z. B. `http://localhost:7200/admin/tickets/11`) → Ticket-ID aus der URL. Mit ID oder URL überspringt der Skill die Suche. Nach ID oder URL darf ein freier Kommentar folgen — er geht beim Bauen unverändert an `plan-and-do`.
+- **Wichtig:** Der Skill ruft nie `AskUserQuestion`. Er hält nie an. Er braucht `AGENT_API_TOKEN` in der Umgebung (siehe [Voraussetzung](#voraussetzung-backendenv-für-die-headless-skills)).
 - **Beispiel:**
   ```
   /do-semi-automatic 7
+  /do-semi-automatic http://localhost:7200/admin/tickets/11
+  /do-semi-automatic 7 "nur das Backend anfassen"
   ```
 - Datei: `.claude/skills/do-semi-automatic/SKILL.md`
 - Hintergrund: [docs/specs/SPEC-API-TICKETS.md](specs/SPEC-API-TICKETS.md)
