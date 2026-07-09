@@ -284,4 +284,4 @@ Jede Statuswechsel-Entscheidung dieses Skills wird mit einem kleinen Ticket-Komm
 - `→ ON_HOLD` (Schritt 3b-Blocker): der Kommentar kommt automatisch von `POST /:id/ask`.
 - `→ DONE` (Schritt 4): der Kommentar kommt automatisch von `POST /:id/done`.
 
-> Hinweis: Dieser Skill löst ein Ticket nie als „Won't Do" auf — das ist eine Aktion nur für Menschen. Seine einzigen Ergebnisse sind **erledigt** (Schritt 4), **zurück auf Definition** (Schritt 3a) oder **Blocked** (Schritt 3b-Blocker).
+> Anmerkung: Dieser Skill löst ein Ticket nie als „Won't Do" auf — das ist eine Aktion nur für Menschen. Seine einzigen Ergebnisse sind **erledigt** (Schritt 4), **zurück auf Definition** (Schritt 3a) oder **Blocked** (Schritt 3b-Blocker).
