@@ -19,12 +19,6 @@
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-Drizzle%20ORM-003b57.svg">
 </p>
 
-> **Erstmal hier starten:** Für die vollständige Installationsanleitung (Node.js, Claude Code, IDE) bitte **[docs/SETUP.md](docs/SETUP.md)** lesen.
-
-> **English?** See **[docs/welcome_EN.MD](docs/welcome_EN.MD)** for an English introduction.
-
-> **🎤 Vom Vortrag hier?** Hol dir die Skills & Subagents in dein eigenes Projekt. Kern-Anleitung: **[docs/TRANSFER.md](docs/TRANSFER.md)**. Erst überfliegen: [SKILLS](docs/SKILLS.md) · [SUBAGENTS](docs/SUBAGENTS.md) · [TOOLS](docs/TOOLS.md). Details: [Skills & Subagents übernehmen](#für-konferenz-zuhörer-skills--subagents-übernehmen).
-
 ---
 
 ## Zwei Wege durch dieses Repo
