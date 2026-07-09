@@ -8,6 +8,7 @@
  * 3. Return a teardown function.
  */
 import { spawnSync, spawn, ChildProcess } from 'node:child_process';
+import { rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 
@@ -27,6 +28,20 @@ let backendProcess: ChildProcess;
 // ---------------------------------------------------------------------------
 
 export default async function globalSetup(): Promise<() => Promise<void>> {
+  // -------------------------------------------------------------------------
+  // 0. Start from a fresh test database (never touches the dev DB crmdb.sqlite).
+  //    db.ts uses crmdb.test.sqlite when NODE_ENV=test and no Turso URL is set.
+  //    Deleting it (plus WAL/SHM sidecars) makes each run deterministic: startup
+  //    re-creates the schema and re-seeds agent-tasks, fixture CRM data, tickets.
+  //    Skipped when running against a remote DB (Turso/CI).
+  // -------------------------------------------------------------------------
+  if (!process.env['TURSO_DATABASE_URL']) {
+    const testDbPath = join(BACKEND_ROOT, 'backend', 'data', 'crmdb.test.sqlite');
+    for (const suffix of ['', '-wal', '-shm']) {
+      rmSync(`${testDbPath}${suffix}`, { force: true });
+    }
+  }
+
   // -------------------------------------------------------------------------
   // 1. Kill any existing process on port 7070 and spawn the backend
   // -------------------------------------------------------------------------
