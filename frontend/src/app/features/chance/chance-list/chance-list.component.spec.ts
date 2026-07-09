@@ -178,4 +178,32 @@ describe('ChanceListComponent', () => {
       expect(el).toBeNull();
     });
   });
+
+  describe('phase column cellRenderer', () => {
+    function getPhaseCellRenderer(): (params: { value: string | null }) => string {
+      fixture.detectChanges();
+      const phaseColumn = component.columnDefs.find((col) => col.field === 'phase');
+      const renderer = phaseColumn?.cellRenderer as (params: { value: string | null }) => string;
+      expect(renderer).toBeDefined();
+      return renderer;
+    }
+
+    it('defines a cellRenderer on the phase column', () => {
+      const phaseColumn = getPhaseCellRenderer();
+      expect(typeof phaseColumn).toBe('function');
+    });
+
+    it('renders the bg-primary badge class and the phase text for NEU', () => {
+      const renderer = getPhaseCellRenderer();
+      const html = renderer({ value: 'NEU' });
+      expect(html).toContain('class="badge bg-primary"');
+      expect(html).toContain('NEU');
+    });
+
+    it('renders the bg-secondary badge class for a null value', () => {
+      const renderer = getPhaseCellRenderer();
+      const html = renderer({ value: null });
+      expect(html).toContain('bg-secondary');
+    });
+  });
 });
