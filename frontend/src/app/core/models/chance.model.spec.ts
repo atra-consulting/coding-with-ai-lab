@@ -5,8 +5,8 @@ describe('getPhaseBadgeClass', () => {
     expect(getPhaseBadgeClass('NEU')).toBe('bg-primary');
   });
 
-  it('returns bg-info for QUALIFIZIERT', () => {
-    expect(getPhaseBadgeClass('QUALIFIZIERT')).toBe('bg-info');
+  it('returns bg-info text-dark for QUALIFIZIERT', () => {
+    expect(getPhaseBadgeClass('QUALIFIZIERT')).toBe('bg-info text-dark');
   });
 
   it('returns bg-warning text-dark for ANGEBOT', () => {

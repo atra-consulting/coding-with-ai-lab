@@ -38,14 +38,14 @@ export interface ChanceCreate {
 }
 
 export function getPhaseBadgeClass(phase: ChancePhase | string | null | undefined): string {
-  const map: Record<string, string> = {
+  const map: Record<ChancePhase, string> = {
     NEU: 'bg-primary',
-    QUALIFIZIERT: 'bg-info',
+    QUALIFIZIERT: 'bg-info text-dark',
     ANGEBOT: 'bg-warning text-dark',
     VERHANDLUNG: 'bg-secondary',
     GEWONNEN: 'bg-success',
     VERLOREN: 'bg-danger',
   };
-  return (phase && map[phase]) || 'bg-secondary';
+  return (phase && map[phase as ChancePhase]) || 'bg-secondary';
 }
 
