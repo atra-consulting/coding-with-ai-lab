@@ -103,7 +103,7 @@ export default async function globalSetup(): Promise<() => Promise<void>> {
   });
 
   // -------------------------------------------------------------------------
-  // 2. Poll /api/health until the backend is ready (max 30s)
+  // 4. Poll /api/health until the backend is ready (max 30s)
   // -------------------------------------------------------------------------
   const backendUrl = `http://localhost:7070`;
   const deadline = Date.now() + 30_000;
@@ -124,7 +124,7 @@ export default async function globalSetup(): Promise<() => Promise<void>> {
   }
 
   // -------------------------------------------------------------------------
-  // 3. Return teardown
+  // 5. Return teardown
   // -------------------------------------------------------------------------
   return async () => {
     backendProcess.kill('SIGTERM');
