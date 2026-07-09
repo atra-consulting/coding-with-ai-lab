@@ -19,6 +19,16 @@
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-Drizzle%20ORM-003b57.svg">
 </p>
 
+---
+
+> **Nicht im Workshop?** Wenn du wegen eines Vortrags hier bist oder einfach lernen willst, wechsle auf den Branch **`solution-jfs-2026`** — siehe **[README.MD auf `solution-jfs-2026`](https://github.com/atra-consulting/coding-with-ai-lab/blob/solution-jfs-2026/README.MD)**.
+
+## Training
+
+atra.consulting [bietet KI-Training an](https://atra.consulting/ki-loesungen/), inklusive zweier Hands-on-Training-Workshops für Agenten-basierte Entwicklung.
+
+---
+
 > **Erstmal hier starten:** Für die vollständige Installationsanleitung (Node.js, Claude Code, IDE) bitte **[docs/SETUP.md](docs/SETUP.md)** lesen.
 
 > **English?** See **[docs/welcome_EN.MD](docs/welcome_EN.MD)** for an English introduction.
