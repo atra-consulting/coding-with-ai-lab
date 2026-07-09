@@ -67,6 +67,7 @@ export type AktivitaetCreateDTO = z.infer<typeof AktivitaetCreateSchema>;
 export const ChanceCreateSchema = z.object({
   titel: z.string().min(1, 'Titel ist erforderlich').max(255),
   beschreibung: z.string().optional().nullable(),
+  notiz: z.string().optional().nullable(),
   wert: z.number().optional().nullable(),
   currency: z.string().max(10).optional(),
   phase: z.enum(CHANCE_PHASE, { errorMap: () => ({ message: 'Ungültige Phase' }) }).optional(),

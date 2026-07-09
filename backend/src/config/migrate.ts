@@ -49,6 +49,28 @@ async function ensureSzenarioAgileKiColumn(): Promise<void> {
   }
 }
 
+// Idempotent guarded ALTER for existing databases created before chance.notiz
+// existed. `CREATE TABLE IF NOT EXISTS` never touches an already-existing
+// table, so upgraded DBs need this column added explicitly. Same
+// duplicate-column swallow as ensureSzenarioAgileKiColumn() above (guards
+// against concurrent cold starts racing the same ALTER).
+async function ensureChanceNotizColumn(): Promise<void> {
+  const info = await client.execute('PRAGMA table_info(chance)');
+  const hasColumn = info.rows.some((row) => row.name === 'notiz');
+  if (hasColumn) {
+    return;
+  }
+
+  try {
+    await client.execute('ALTER TABLE chance ADD COLUMN notiz TEXT');
+  } catch (err) {
+    if (err instanceof Error && err.message.includes('duplicate column')) {
+      return;
+    }
+    throw err;
+  }
+}
+
 export async function runMigrations(): Promise<void> {
   console.log('Running database migrations...');
 
@@ -131,6 +153,7 @@ export async function runMigrations(): Promise<void> {
       id                INTEGER PRIMARY KEY AUTOINCREMENT,
       titel             TEXT NOT NULL,
       beschreibung      TEXT,
+      notiz             TEXT,
       wert              REAL,
       currency          TEXT NOT NULL DEFAULT 'EUR',
       phase             TEXT NOT NULL DEFAULT 'NEU',
@@ -244,6 +267,7 @@ export async function runMigrations(): Promise<void> {
   await seedAgentTasks();
   await seedTickets();
   await ensureSzenarioAgileKiColumn();
+  await ensureChanceNotizColumn();
   await seedSzenario();
 
   console.log('Database migrations complete.');

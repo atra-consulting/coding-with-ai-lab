@@ -9,6 +9,7 @@ export interface ChanceDTO {
   id: number;
   titel: string;
   beschreibung: string | null;
+  notiz: string | null;
   wert: number | null;
   currency: string;
   phase: string;
@@ -26,6 +27,7 @@ interface ChanceRow {
   id: number;
   titel: string;
   beschreibung: string | null;
+  notiz: string | null;
   wert: number | null;
   currency: string;
   phase: string;
@@ -50,6 +52,7 @@ function toDTO(row: ChanceRow): ChanceDTO {
     id: row.id,
     titel: row.titel,
     beschreibung: row.beschreibung,
+    notiz: row.notiz,
     wert: row.wert,
     currency: row.currency,
     phase: row.phase,
@@ -65,7 +68,7 @@ function toDTO(row: ChanceRow): ChanceDTO {
 }
 
 const BASE_QUERY = `
-  SELECT c.id, c.titel, c.beschreibung, c.wert, c.currency, c.phase, c.wahrscheinlichkeit, c.erwartetesDatum,
+  SELECT c.id, c.titel, c.beschreibung, c.notiz, c.wert, c.currency, c.phase, c.wahrscheinlichkeit, c.erwartetesDatum,
          c.firmaId, f.name AS firmaName,
          c.kontaktPersonId, p.firstName AS kontaktPersonFirstName, p.lastName AS kontaktPersonLastName,
          c.createdAt, c.updatedAt
@@ -130,11 +133,12 @@ export const chanceService = {
   async create(dto: ChanceCreateDTO): Promise<ChanceDTO> {
     const now = new Date().toISOString();
     const result = await client.execute({
-      sql: `INSERT INTO chance (titel, beschreibung, wert, currency, phase, wahrscheinlichkeit, erwartetesDatum, firmaId, kontaktPersonId, createdAt, updatedAt)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      sql: `INSERT INTO chance (titel, beschreibung, notiz, wert, currency, phase, wahrscheinlichkeit, erwartetesDatum, firmaId, kontaktPersonId, createdAt, updatedAt)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         dto.titel,
         dto.beschreibung ?? null,
+        dto.notiz ?? null,
         dto.wert ?? null,
         dto.currency ?? 'EUR',
         (dto.phase as ChancePhase) ?? 'NEU',
@@ -156,10 +160,11 @@ export const chanceService = {
     await this.findById(id);
     const now = new Date().toISOString();
     await client.execute({
-      sql: `UPDATE chance SET titel=?, beschreibung=?, wert=?, currency=?, phase=?, wahrscheinlichkeit=?, erwartetesDatum=?, firmaId=?, kontaktPersonId=?, updatedAt=? WHERE id=?`,
+      sql: `UPDATE chance SET titel=?, beschreibung=?, notiz=?, wert=?, currency=?, phase=?, wahrscheinlichkeit=?, erwartetesDatum=?, firmaId=?, kontaktPersonId=?, updatedAt=? WHERE id=?`,
       args: [
         dto.titel,
         dto.beschreibung ?? null,
+        dto.notiz ?? null,
         dto.wert ?? null,
         dto.currency ?? 'EUR',
         (dto.phase as ChancePhase) ?? 'NEU',
