@@ -122,7 +122,7 @@ Drei vorkonfigurierte Benutzer stehen zur Verfügung:
 | **Datenbank** | SQLite (file-based, via `better-sqlite3`) |
 | **Auth** | Session-basiert (bcrypt + `express-session`) |
 
-Konventionen, Patterns und Beispiele für AI-gestützte Entwicklung: **[CLAUDE.md](CLAUDE.md)**
+Konventionen, Patterns und Beispiele für AI-gestützte Entwicklung: **[AGENTS.md](AGENTS.md)**
 
 ---
 
@@ -145,7 +145,8 @@ Die Anwendung bildet ein deutschsprachiges CRM ab:
 | [docs/adr/](docs/adr/) | Architecture Decision Records |
 | [docs/prds/](docs/prds/) | Product Requirement Documents |
 | [docs/uxdr/](docs/uxdr/) | UX Design Records |
-| [CLAUDE.md](CLAUDE.md) | Anweisungen und Konventionen für AI-Coding-Assistenten |
+| [AGENTS.md](AGENTS.md) | Anweisungen und Konventionen für AI-Coding-Assistenten (tool-neutral) |
+| [CLAUDE.md](CLAUDE.md) / [GEMINI.md](GEMINI.md) | Tool-spezifische Ergänzungen (Subagents, Skills) — importieren `AGENTS.md` |
 
 ### Projektstruktur
 
@@ -158,7 +159,9 @@ Die Anwendung bildet ein deutschsprachiges CRM ab:
 ├── start.sh          Startskript (macOS/Linux)
 ├── start.bat         Startskript (Windows)
 ├── SETUP.md          Installationsanleitung
-└── CLAUDE.md         Anweisungen für AI-Coding-Assistenten
+├── AGENTS.md         Anweisungen für AI-Coding-Assistenten (tool-neutral)
+├── CLAUDE.md         Claude-Code-Spezifika (importiert AGENTS.md)
+└── GEMINI.md         Gemini-CLI-Spezifika (importiert AGENTS.md)
 ```
 
 ---

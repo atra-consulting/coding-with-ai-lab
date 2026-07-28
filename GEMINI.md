@@ -1,20 +1,12 @@
 # GEMINI.md
 
-## System Overview
+Project knowledge (build, conventions, entity recipe, commit rules) lives in
+[`AGENTS.md`](AGENTS.md) and is imported here. Only Gemini-CLI-specific
+configuration belongs in this file.
 
-Full-stack CRM application. Node.js / TypeScript backend, Angular 21 frontend. Detailed specifications for every layer (Backend, Frontend, Infrastructure) are in `docs/specs/`.
+@AGENTS.md
 
-## Architectural Mandates
-
-All development must follow the rules in the specification documents:
-
-- **Backend Rules**: See `docs/specs/SPECS-backend.md` (Express routes → services pattern, Drizzle ORM, session auth, Zod validation).
-- **Frontend Rules**: See `docs/specs/SPECS-frontend.md` (standalone components, `inject()`, modern control flow, reactive forms).
-- **Infrastructure**: See `docs/specs/SPECS-infrastructure.md` for ports, database, and startup commands.
-
-## Gemini-Specific Instructions
-
-### Subagents
+## Subagents
 
 The following specialized subagents are available. Call the corresponding tool when a task falls within their expertise. Note: the `experimental.enableAgents` flag in `settings.json` must be set to `true`.
 
@@ -41,14 +33,16 @@ The following specialized subagents are available. Call the corresponding tool w
 
 Agent files: `.gemini/agents/`
 
-### Skills
+## Skills
 
 Activate specialized skills with `activate_skill` for expert procedural guidance:
 
 - `plan-and-do`: Use for complex, multi-step tasks that need a structured implementation plan.
 - `review`: Use for comprehensive code or specification reviews.
 
-### System Configuration
+Skill files: `.gemini/skills/`
+
+## System Configuration
 
 Ensure `settings.json` contains:
 
@@ -59,8 +53,3 @@ Ensure `settings.json` contains:
   }
 }
 ```
-
-## Verification
-
-- Confirm `GEMINI.md` exists in the project root.
-- Ensure all architectural mandates from `CLAUDE.md` and the specification documents are preserved.

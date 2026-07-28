@@ -52,7 +52,9 @@ coding-with-ai-lab/
 │   ├── agents/                 # Claude agents
 │   └── skills/                 # Claude skills
 ├── start.sh                    # Full-stack launcher
-├── CLAUDE.md                   # AI coding instructions
+├── AGENTS.md                   # AI coding instructions (tool-neutral)
+├── CLAUDE.md                   # Claude Code specifics (imports AGENTS.md)
+├── GEMINI.md                   # Gemini CLI specifics (imports AGENTS.md)
 └── README.MD                   # Project overview
 ```
 
