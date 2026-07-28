@@ -1,7 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { ComponentFixture } from '@angular/core/testing';
 import { signal } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { By } from '@angular/platform-browser';
+import { provideRouter, RouterLink } from '@angular/router';
 import { SidebarComponent } from './sidebar.component';
 import { AuthService } from '../../core/services/auth.service';
 import { LayoutService } from '../../core/services/layout.service';
@@ -74,14 +75,14 @@ describe('SidebarComponent', () => {
     mockAuthService.currentUser.set(adminUser);
     fixture.detectChanges();
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Adressen geokodieren');
+    expect(text).toContain('App-Feedback');
   });
 
   it('hides item with requiredRole ADMIN when user only has USER role', () => {
     mockAuthService.currentUser.set(regularUser);
     fixture.detectChanges();
     const text = fixture.nativeElement.textContent as string;
-    expect(text).not.toContain('Adressen geokodieren');
+    expect(text).not.toContain('App-Feedback');
   });
 
   it('does not render the Administration section header when all its items are hidden', () => {
@@ -96,5 +97,30 @@ describe('SidebarComponent', () => {
     fixture.detectChanges();
     const text = fixture.nativeElement.textContent as string;
     expect(text).toContain('Administration');
+  });
+
+  it('renders a Feedback link pointing to /feedback in the bottom nav', () => {
+    mockAuthService.currentUser.set(regularUser);
+    fixture.detectChanges();
+    const bottomUl = fixture.debugElement.query(By.css('ul.nav.mt-auto'));
+    expect(bottomUl).toBeTruthy();
+    const linkDebugEl = bottomUl.query(By.directive(RouterLink));
+    expect(linkDebugEl).toBeTruthy();
+    const anchor = linkDebugEl.nativeElement as HTMLAnchorElement;
+    expect(anchor.getAttribute('href')).toBe('/feedback');
+    expect((anchor.textContent as string)).toContain('Trainings-Feedback');
+  });
+
+  it('hides the Feedback label but keeps the link clickable when collapsed', () => {
+    mockAuthService.currentUser.set(regularUser);
+    mockLayoutService.collapsed.set(true);
+    fixture.detectChanges();
+    const bottomUl = fixture.debugElement.query(By.css('ul.nav.mt-auto'));
+    expect(bottomUl).toBeTruthy();
+    const linkDebugEl = bottomUl.query(By.directive(RouterLink));
+    expect(linkDebugEl).toBeTruthy();
+    const anchor = linkDebugEl.nativeElement as HTMLAnchorElement;
+    expect(anchor.getAttribute('href')).toBe('/feedback');
+    expect((anchor.textContent as string).trim()).not.toContain('Feedback');
   });
 });

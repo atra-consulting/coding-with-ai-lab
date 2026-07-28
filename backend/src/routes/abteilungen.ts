@@ -1,8 +1,9 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router, Request, Response } from 'express';
 import { requireAuth } from '../middleware/auth.js';
 import { abteilungService } from '../services/abteilungService.js';
 import { parsePaginationParams, parseSort } from '../utils/pagination.js';
 import { validate, AbteilungCreateSchema } from '../utils/validation.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
 
 const router = Router();
 
@@ -10,13 +11,9 @@ const router = Router();
 router.get(
   '/all',
   requireAuth,
-  (_req: Request, res: Response, next: NextFunction): void => {
-    try {
-      res.json(abteilungService.listAll());
-    } catch (err) {
-      next(err);
-    }
-  }
+  asyncHandler(async (_req: Request, res: Response) => {
+    res.json(await abteilungService.listAll());
+  }),
 );
 
 // GET /api/abteilungen/firma/:firmaId — non-paginated list for a firma
@@ -24,107 +21,79 @@ router.get(
 router.get(
   '/firma/:firmaId',
   requireAuth,
-  (req: Request, res: Response, next: NextFunction): void => {
-    try {
-      const firmaId = parseInt(req.params['firmaId'], 10);
-      res.json(abteilungService.findByFirmaIdAll(firmaId));
-    } catch (err) {
-      next(err);
-    }
-  }
+  asyncHandler(async (req: Request, res: Response) => {
+    const firmaId = parseInt(req.params['firmaId'] as string, 10);
+    res.json(await abteilungService.findByFirmaIdAll(firmaId));
+  }),
 );
 
 // GET /api/abteilungen — paginated
 router.get(
   '/',
   requireAuth,
-  (req: Request, res: Response, next: NextFunction): void => {
-    try {
-      const { page, size } = parsePaginationParams(req.query as Record<string, unknown>);
-      const sort = parseSort(
-        req.query['sort'] as string | string[] | undefined,
-        'name',
-        'ASC',
-        'abteilung'
-      );
-      res.json(abteilungService.findAll(page, size, sort));
-    } catch (err) {
-      next(err);
-    }
-  }
+  asyncHandler(async (req: Request, res: Response) => {
+    const { page, size } = parsePaginationParams(req.query as Record<string, unknown>);
+    const sort = parseSort(
+      req.query['sort'] as string | string[] | undefined,
+      'name',
+      'ASC',
+      'abteilung',
+    );
+    res.json(await abteilungService.findAll(page, size, sort));
+  }),
 );
 
 // GET /api/abteilungen/:id/personen — paginated personen for an abteilung
 router.get(
   '/:id/personen',
   requireAuth,
-  (req: Request, res: Response, next: NextFunction): void => {
-    try {
-      const id = parseInt(req.params['id'], 10);
-      const { page, size } = parsePaginationParams(req.query as Record<string, unknown>);
-      res.json(abteilungService.findPersonenByAbteilungId(id, page, size));
-    } catch (err) {
-      next(err);
-    }
-  }
+  asyncHandler(async (req: Request, res: Response) => {
+    const id = parseInt(req.params['id'] as string, 10);
+    const { page, size } = parsePaginationParams(req.query as Record<string, unknown>);
+    res.json(await abteilungService.findPersonenByAbteilungId(id, page, size));
+  }),
 );
 
 // GET /api/abteilungen/:id
 router.get(
   '/:id',
   requireAuth,
-  (req: Request, res: Response, next: NextFunction): void => {
-    try {
-      const id = parseInt(req.params['id'], 10);
-      res.json(abteilungService.findById(id));
-    } catch (err) {
-      next(err);
-    }
-  }
+  asyncHandler(async (req: Request, res: Response) => {
+    const id = parseInt(req.params['id'] as string, 10);
+    res.json(await abteilungService.findById(id));
+  }),
 );
 
 // POST /api/abteilungen
 router.post(
   '/',
   requireAuth,
-  (req: Request, res: Response, next: NextFunction): void => {
-    try {
-      const dto = validate(AbteilungCreateSchema, req.body);
-      res.status(201).json(abteilungService.create(dto));
-    } catch (err) {
-      next(err);
-    }
-  }
+  asyncHandler(async (req: Request, res: Response) => {
+    const dto = validate(AbteilungCreateSchema, req.body);
+    res.status(201).json(await abteilungService.create(dto));
+  }),
 );
 
 // PUT /api/abteilungen/:id
 router.put(
   '/:id',
   requireAuth,
-  (req: Request, res: Response, next: NextFunction): void => {
-    try {
-      const id = parseInt(req.params['id'], 10);
-      const dto = validate(AbteilungCreateSchema, req.body);
-      res.json(abteilungService.update(id, dto));
-    } catch (err) {
-      next(err);
-    }
-  }
+  asyncHandler(async (req: Request, res: Response) => {
+    const id = parseInt(req.params['id'] as string, 10);
+    const dto = validate(AbteilungCreateSchema, req.body);
+    res.json(await abteilungService.update(id, dto));
+  }),
 );
 
 // DELETE /api/abteilungen/:id
 router.delete(
   '/:id',
   requireAuth,
-  (req: Request, res: Response, next: NextFunction): void => {
-    try {
-      const id = parseInt(req.params['id'], 10);
-      abteilungService.delete(id);
-      res.status(204).send();
-    } catch (err) {
-      next(err);
-    }
-  }
+  asyncHandler(async (req: Request, res: Response) => {
+    const id = parseInt(req.params['id'] as string, 10);
+    await abteilungService.delete(id);
+    res.status(204).send();
+  }),
 );
 
 export default router;

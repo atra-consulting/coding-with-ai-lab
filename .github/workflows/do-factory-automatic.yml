@@ -1,0 +1,202 @@
+# Do-Factory Automatic — runs the /do-factory-automatic SKILL headless in CI.
+#
+# Based on agent-task-runner.yml. Key differences:
+#   - Invokes the SKILL (claude -p "/do-factory-automatic"), not the prompt files.
+#   - Processes ONE task per run: the skill claims one task, judges build-or-reject,
+#     and builds it via plan-and-do.
+#   - The skill does NOT push or open a PR by design. So THIS workflow pushes the
+#     branch plan-and-do created and opens a PR against the base branch.
+#     Nothing is ever merged automatically.
+#   - App is the DEPLOYED app, reached via APP_BASE_URL (same as the template).
+#
+# IT DOES NOT RUN meaningfully until the secrets below are configured.
+#
+# Required repository secrets:
+#   AGENT_API_TOKEN         - shared secret for /api/agent-tasks/* AND /api/cron/runs/*/complete
+#   APP_BASE_URL            - base URL of the DEPLOYED app (e.g. https://your-app.vercel.app)
+#   CLAUDE_CODE_OAUTH_TOKEN - subscription OAuth token Claude Code uses to authenticate.
+#                             Create it locally with `claude setup-token`. Use this INSTEAD
+#                             of ANTHROPIC_API_KEY; do not set both.
+# GITHUB_TOKEN (provided automatically) is used to push the branch and open the PR.
+
+name: Do-Factory Automatic
+
+on:
+  repository_dispatch:
+    types: [solve-agent-tasks]
+  workflow_dispatch:
+    inputs:
+      task_id:
+        description: Optional task id to work (blank = claim the next open task)
+        required: false
+        default: ''
+      task_source:
+        description: Optional single source (EMAIL, GITHUB_ISSUE, ERROR_REPORT, APP_LOG)
+        required: false
+        default: ''
+  schedule:
+    # Daily at 02:00 UTC. Remove or change as needed. Will fail without secrets.
+    - cron: '0 2 * * *'
+
+# Single-flight: queue overlapping runs rather than running them concurrently.
+concurrency:
+  group: do-factory-automatic
+  cancel-in-progress: false
+
+# Needed to push a branch and open a PR with GITHUB_TOKEN.
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  run-skill:
+    name: Run do-factory-automatic skill
+    runs-on: ubuntu-latest
+
+    # Exposed to step `if:` conditions. Empty unless this run came from the
+    # Vercel cron (repository_dispatch), which carries client_payload.cronRunId.
+    env:
+      CRON_RUN_ID: ${{ github.event.client_payload.cronRunId }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Full history so plan-and-do can branch and we can diff against base.
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Backend — install dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Configure git identity
+        run: |
+          git config user.name "do-factory-bot"
+          git config user.email "do-factory-bot@users.noreply.github.com"
+
+      - name: Run the skill (one task)
+        id: run
+        env:
+          AGENT_API_TOKEN: ${{ secrets.AGENT_API_TOKEN }}
+          APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
+          # Claude Code authenticates via the subscription OAuth token (created with
+          # `claude setup-token`), NOT a pay-as-you-go API key. Do NOT also set
+          # ANTHROPIC_API_KEY here — if present it takes precedence and an invalid
+          # value yields "Invalid API key · Fix external API key".
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # Optional single-source override consumed by the skill (Schritt 1).
+          TASK_SOURCE: ${{ github.event.inputs.task_source }}
+        run: |
+          set -uo pipefail
+
+          BASE_BRANCH="${GITHUB_REF_NAME}"
+          BASE_SHA="$(git rev-parse HEAD)"
+          echo "base_branch=${BASE_BRANCH}" >> "$GITHUB_OUTPUT"
+
+          # An optional task id makes the skill work that exact task.
+          TASK_ID="${{ github.event.inputs.task_id }}"
+          if [ -n "$TASK_ID" ]; then
+            PROMPT="/do-factory-automatic ${TASK_ID}"
+          else
+            PROMPT="/do-factory-automatic"
+          fi
+
+          echo "=================================================================="
+          echo " Running: claude -p \"$PROMPT\""
+          echo "=================================================================="
+          claude -p "$PROMPT" --dangerously-skip-permissions 2>&1 | tee skill-output.txt
+          CLAUDE_RC=${PIPESTATUS[0]}
+
+          RUN_STATUS="SUCCESS"
+          if [ "$CLAUDE_RC" -ne 0 ]; then
+            echo "claude exited with code ${CLAUDE_RC}." >&2
+            RUN_STATUS="FAILED"
+          fi
+
+          # Capture anything plan-and-do left uncommitted on the working tree.
+          if [ -n "$(git status --porcelain)" ]; then
+            git add -A
+            git commit -m "chore: do-factory-automatic build artifacts" || true
+          fi
+
+          # Did we actually build something? -> commits ahead of the base SHA.
+          SOLVED=0
+          REJECTED=0
+          BUILT=false
+          AHEAD="$(git rev-list "${BASE_SHA}..HEAD" --count)"
+          if [ "$AHEAD" -gt 0 ]; then
+            BUILT=true
+            SOLVED=1
+            CUR_BRANCH="$(git branch --show-current)"
+            # plan-and-do normally creates its own branch. If for any reason we are
+            # still on the base branch (or detached), move the commits onto a fresh
+            # branch so we can push and open a PR without touching base.
+            if [ -z "$CUR_BRANCH" ] || [ "$CUR_BRANCH" = "$BASE_BRANCH" ]; then
+              CUR_BRANCH="do-factory/run-${GITHUB_RUN_ID}"
+              git switch -c "$CUR_BRANCH"
+            fi
+            echo "cur_branch=${CUR_BRANCH}" >> "$GITHUB_OUTPUT"
+          else
+            # No commits: the skill either rejected the task or found an empty queue.
+            if grep -qE '"status" *: *"REJECTED"' skill-output.txt; then
+              REJECTED=1
+            fi
+          fi
+
+          echo "Summary: built=${BUILT} solved=${SOLVED} rejected=${REJECTED} status=${RUN_STATUS}"
+          {
+            echo "built=${BUILT}"
+            echo "solved=${SOLVED}"
+            echo "rejected=${REJECTED}"
+            echo "run_status=${RUN_STATUS}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Push branch and open PR
+        if: ${{ steps.run.outputs.built == 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          CUR_BRANCH="${{ steps.run.outputs.cur_branch }}"
+          BASE_BRANCH="${{ steps.run.outputs.base_branch }}"
+          RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+
+          git push -u origin "$CUR_BRANCH"
+
+          TITLE="$(git log -1 --pretty=%s)"
+          gh pr create \
+            --base "$BASE_BRANCH" \
+            --head "$CUR_BRANCH" \
+            --title "do-factory: ${TITLE}" \
+            --body "Automatisch erstellt von \`/do-factory-automatic\`. Lauf: ${RUN_URL}" \
+            || echo "PR konnte nicht erstellt werden (existiert evtl. schon für ${CUR_BRANCH})."
+
+      - name: Report result back to the cron run
+        if: ${{ always() && env.CRON_RUN_ID != '' }}
+        env:
+          AGENT_API_TOKEN: ${{ secrets.AGENT_API_TOKEN }}
+          APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
+        run: |
+          GITHUB_RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          STATUS="${{ steps.run.outputs.run_status }}"
+          SOLVED="${{ steps.run.outputs.solved }}"
+          REJECTED="${{ steps.run.outputs.rejected }}"
+          STATUS="${STATUS:-FAILED}"
+          SOLVED="${SOLVED:-0}"
+          REJECTED="${REJECTED:-0}"
+          echo "Closing cron_run ${CRON_RUN_ID}: status=${STATUS} solved=${SOLVED} rejected=${REJECTED}"
+          curl -s -o /dev/null -w 'callback HTTP %{http_code}\n' -X POST \
+            -H "Authorization: Bearer ${AGENT_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{\"status\":\"${STATUS}\",\"tasksSolved\":${SOLVED},\"tasksRejected\":${REJECTED},\"githubRunUrl\":\"${GITHUB_RUN_URL}\"}" \
+            "${APP_BASE_URL%/}/api/cron/runs/${CRON_RUN_ID}/complete"

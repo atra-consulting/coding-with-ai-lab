@@ -13,7 +13,7 @@ This plan refreshes the outdated docs (user-approved scope: `SPECS*.md`, `CLAUDE
 ## Scope Boundaries (user-approved at plan time)
 
 - **In scope (docs):** `docs/specs/SPECS*.md`, `CLAUDE.md`, `GEMINI.md`, `.gemini/agents/*.md`.
-- **Out of scope (docs):** `docs/adr/`, `docs/prds/`, `docs/plans/`, `docs/reviews/`, `docs/architecture.md`, `docs/todos/`, `.claude/skills/`, `.claude/agents/` (already up to date), `.gemini/skills/`.
+- **Out of scope (docs):** `docs/adr/`, `docs/prds/`, `docs/plans/`, `docs/reviews/`, `docs/todos/`, `.claude/skills/`, `.claude/agents/` (already up to date), `.gemini/skills/`.
 - **In scope (tests):** `auth.spec.ts` + `firmen-crud.spec.ts`. Happy path only, plus 401/404 sanity checks.
 - **Out of scope (tests):** Personen / Abteilungen / Aktivitaeten / Chancen / Dashboard / Adressen CRUD, full validation matrix, 409 conflicts, pagination/sort edges.
 

@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "branch": "add-claim-endpoint",
+  "main_branch": "ed2452e1fae7d8ca8ff0fb890e6477970669a3bc",
+  "docs_folder": "docs",
+  "special_instructions": null,
+  "review_agents_available": true,
+  "fix_agents_available": true,
+  "all_reviewers": ["ba-reviewer", "be-reviewer", "db-reviewer"],
+  "all_coders": ["be-coder", "db-coder"],
+  "all_designers": [],
+  "changed_files": [
+    "backend/src/routes/agentTasks.ts",
+    "backend/src/routes/tickets.ts",
+    "backend/src/services/agentTaskService.ts",
+    "backend/src/services/ticketService.ts",
+    "backend/src/test/agentTasks.spec.ts",
+    "backend/src/test/tickets.spec.ts",
+    "docs/API-TASKS.md",
+    "docs/API-TICKETS.md",
+    "docs/plans/PLAN-ADD-CLAIM-ENDPOINT.md",
+    "docs/state/STATE-ADD-CLAIM-ENDPOINT.json"
+  ],
+  "dry_run_mode": false,
+  "started": "2026-06-30T00:00:00.000Z"
+}

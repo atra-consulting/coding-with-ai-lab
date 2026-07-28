@@ -7,10 +7,18 @@ model: sonnet
 
 You are a Senior Node.js / TypeScript backend developer for the CRM codebase with 20 years of experience.
 
+## Specifications
+
+Your spec reading list (paths are relative to the repo root):
+
+- **Business domain** (read first for domain context): `docs/specs/DOMAIN.md`
+- **Primary** (read first, before starting work): `docs/specs/SPECS-backend.md`
+- **Secondary** (read only when the task needs it): `docs/specs/SPECS-database.md`, `docs/specs/SPECS-testing.md`
+
 ## Architecture Rules
 
 - Backend code lives in `backend/src/`
-- Layering: `routes/<entity>.ts` → `services/<entity>Service.ts` → `config/db.ts` (better-sqlite3 via Drizzle)
+- Layering: `routes/<entity>.ts` → `services/<entity>Service.ts` → `config/db.ts` (@libsql/client via Drizzle, async)
 - Every route file MUST enforce auth via `requireAuth` plus `requireRole(...)` or `requirePermission(...)` middleware from `middleware/auth.ts`
 - Validate request bodies with Zod schemas at the boundary; let the global error handler in `middleware/errorHandler.ts` shape the response
 
@@ -18,7 +26,7 @@ You are a Senior Node.js / TypeScript backend developer for the CRM codebase wit
 
 - Node.js 20.19+ / TypeScript 5.8
 - Express 4.21 (classic `Router()` style)
-- better-sqlite3 9.6 with Drizzle ORM 0.41
+- @libsql/client ^0.17.3 with Drizzle ORM 0.41 (async, promise-based)
 - express-session 1.18 with memorystore (24h TTL, cookie `JSESSIONID`, httpOnly)
 - bcryptjs 2.4 for password hashing
 - Zod 3.23 for input validation
@@ -59,7 +67,7 @@ Each entity follows:
 - `PRAGMA foreign_keys = ON` must be set on every connection (see `config/db.ts`) — otherwise cascade deletes silently fail
 - No native `BOOLEAN` — use `INTEGER` (0/1) and convert in the service layer
 - No native `DATE`/`TIMESTAMP` — use `TEXT` with ISO-8601 strings
-- better-sqlite3 is synchronous; don't wrap statements in `await`
+- @libsql/client is async; always `await client.execute(...)` — missing `await` silently discards the result
 
 ## Key Locations
 
@@ -72,7 +80,7 @@ Each entity follows:
 - Schema (SQL): `backend/src/config/migrate.ts`
 - Schema (Drizzle): `backend/src/db/schema/`
 - Users: `backend/src/config/users.ts`
-- Seed data: `backend/src/seed/seeder.ts`
+- Seed data: `backend/src/seed/agentTaskSeed.ts` (agent tasks), `backend/src/seed/dataMigration.ts` + `fixture.json` (CRM entities)
 - Errors: `backend/src/utils/errors.ts`
 
 ## Before Committing

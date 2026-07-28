@@ -40,20 +40,22 @@ Examples:
   /plan-and-do "Fix login button" resume:10
 
 Prerequisites:
-  - git command available (required)
-  - Working in a git repository (required)
+  - git command available (optional — non-git mode skips branches, commits, and PRs)
+  - Working in a git repository (optional — skill runs in non-git mode when not detected)
   - Test execution capability (required)
 
 Features:
   - Freeform mode: accepts any task description
   - Agent discovery: uses project agents if defined in CLAUDE.md
-  - Optionally generates specifications (PRD)
+  - Pulls latest before branching; keep-or-create when on a feature branch
+  - Optionally generates specifications (PRD); can pivot to "Create PRD first" at plan approval
   - Creates detailed plan with test cases
   - Implements code changes with tests
   - Runs automated tests (with auto-fix capability)
   - Performs local code review using /review
   - Checkpoint persistence (quit/resume at any checkpoint)
-  - PR creation and merge workflow
+  - Detects an existing PR early; auto-derives PR prefix (feat/fix/chore) from commits
+  - PR creation/update and merge workflow
 
 Agent Support:
   If the project CLAUDE.md defines an ## Agents section:
@@ -187,6 +189,8 @@ Set paths:
 - `plan_dir` = `[docs_folder]/plans`
 - `state_dir` = `[docs_folder]/state`
 - `review_dir` = `[docs_folder]/reviews`
+
+**Restore variables from state.** Now that `state_dir` is set, read `[state_dir]/STATE-[task_key].json` and load these in-memory values before routing: `branch_name`, `original_branch`, `workflow_scope`, `pr_prefix`, `pr_exists`, `pr_url`. Trust the state file over conversation memory.
 
 **Prerequisites Validation:**
 
@@ -322,9 +326,23 @@ Wait for response — do not push or create a PR without user confirmation.
 
   **CRITICAL:** The PR MUST target `original_branch` — the branch active when the skill started (stored in state file `config.original_branch`). Never default to main/master. Re-read the state file if `original_branch` is unknown.
 
-  Create PR using gh CLI. Do NOT add a test plan section — only include the summary.
+  **PR title:** Use `[pr_prefix] [brief title]. [task_key]` when `config.pr_prefix` is set (derived in Step 7.5). When `config.pr_prefix` is null/empty, drop it entirely — use `[brief title]. [task_key]` with no leading space and no literal "null". This applies to both the `gh pr edit` and `gh pr create` commands below.
+
+  **Existing PR?** If `config.pr_exists = true` (an open PR was found in Step 4.4b), update it instead of creating a new one:
   ```bash
-  gh pr create --base [original_branch] --title "[brief title from task_key]" --body "$(cat <<'EOF'
+  gh pr edit [pr_url] --title "[pr_prefix] [brief title]. [task_key]" --body "$(cat <<'EOF'
+  ## Summary
+  [Brief summary of changes made]
+
+  🤖 Generated with [Claude Code](https://claude.com/claude-code)
+  EOF
+  )"
+  ```
+  Display the existing PR URL. Continue to PC.4.
+
+  **No existing PR** (`config.pr_exists = false` or null): create one with gh CLI. Do NOT add a test plan section — only include the summary.
+  ```bash
+  gh pr create --base [original_branch] --title "[pr_prefix] [brief title]. [task_key]" --body "$(cat <<'EOF'
   ## Summary
   [Brief summary of changes made]
 
@@ -336,8 +354,9 @@ Wait for response — do not push or create a PR without user confirmation.
 
 - **Push only:**
   ```bash
-  git push 2>/dev/null || echo "Push failed - commits are local only"
+  git push -u origin [branch_name] || echo "Push failed - commits are local only"
   ```
+  (Use the full `-u origin [branch_name]` form — a bare `git push` fails on a branch with no upstream, and suppressing stderr would hide why.)
   Continue to PC.5.
 
 - **Skip:** Display "Commits stay local on `[branch_name]`." Continue to PC.5.

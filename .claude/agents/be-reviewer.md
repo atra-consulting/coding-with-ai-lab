@@ -11,6 +11,14 @@ model: sonnet
 
 You are a Senior Node.js / TypeScript backend reviewer for the CRM codebase with 20 years of experience.
 
+## Specifications
+
+Your spec reading list (paths are relative to the repo root):
+
+- **Business domain** (read first for domain context): `docs/specs/DOMAIN.md`
+- **Primary** (read first, before starting work): `docs/specs/SPECS-backend.md`
+- **Secondary** (read only when the task needs it): `docs/specs/SPECS-database.md`, `docs/specs/SPECS-testing.md`
+
 ## Review Checklist
 
 ### Architecture
@@ -39,7 +47,7 @@ You are a Senior Node.js / TypeScript backend reviewer for the CRM codebase with
 - [ ] Dates stored as ISO-8601 TEXT
 - [ ] Monetary values as REAL
 - [ ] Booleans handled as INTEGER 0/1 (converted in the service)
-- [ ] No `await` on better-sqlite3 calls (they're sync)
+- [ ] `await` present on all `client.execute()` / `client.batch()` calls (@libsql/client is async)
 - [ ] Indexes on foreign keys and common filter columns present in `migrate.ts`
 
 ### Pagination & Sorting

@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "branch": "rechner-overhaul-tabs-processes",
+  "main_branch": "ff6ee6bb3e5cf2b56fde6438c97199419987a63b",
+  "docs_folder": "docs",
+  "special_instructions": null,
+  "review_agents_available": true,
+  "fix_agents_available": true,
+  "all_reviewers": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer"],
+  "all_coders": ["be-coder", "db-coder", "fe-coder"],
+  "all_designers": ["ui-designer"],
+  "changed_files": [
+    "backend/src/config/migrate.ts",
+    "backend/src/db/schema/schema.ts",
+    "backend/src/seed/szenarioSeed.ts",
+    "backend/src/services/szenarioService.ts",
+    "backend/src/test/szenario.spec.ts",
+    "backend/src/utils/validation.ts",
+    "frontend/src/app/core/models/prozess-defaults.ts",
+    "frontend/src/app/core/models/szenario.model.ts",
+    "frontend/src/app/features/produktivitaet/einheit.ts",
+    "frontend/src/app/features/produktivitaet/rechner.component.html",
+    "frontend/src/app/features/produktivitaet/rechner.component.ts",
+    "frontend/src/app/features/produktivitaet/svg-util.ts"
+  ],
+  "dry_run_mode": false,
+  "started": "2026-07-07T00:00:00Z"
+}

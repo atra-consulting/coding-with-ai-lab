@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "task_key": "PRODUCTIVITY-CALCULATOR",
+  "status": "completed",
+  "current_step": "13.3",
+  "started": "2026-06-28T00:00:00Z",
+  "updated": "2026-06-28T00:00:00Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Add a 'Productivity - Calculator' section that compares three ways of building software (human, fully-automatic, semi-automatic), visualizes the process (possibly with on-the-fly SVG), and lets users calculate cycle time from 'something happens' to 'deployed in production'.",
+    "special_instructions": "ASK ME IF YOU'RE NOT SURE!",
+    "branch_name": "productivity-calculator-cycle-time",
+    "original_branch": "main",
+    "original_head": "154d947b99ffade6a3bb75f4f85e82318c137611",
+    "docs_folder": "docs",
+    "is_git_repo": true,
+    "workflow_scope": "full",
+    "pr_prefix": "feat:",
+    "pr_exists": true,
+    "pr_url": "https://github.com/atra-consulting/coding-with-ai-lab/pull/96"
+  },
+  "discovery": {
+    "agents_available": false,
+    "writer_agents": [],
+    "coding_agents": [],
+    "review_agents": [],
+    "test_coding_agents": [],
+    "test_review_agents": [],
+    "test_runner_agents": [],
+    "tooling_coding_agents": [],
+    "tooling_review_agents": [],
+    "test_command": "backend: cd backend && npx playwright test | frontend: cd frontend && npx ng test"
+  },
+  "artifacts": {
+    "prd_skipped": false,
+    "prd_file": "docs/prds/PRD-PRODUCTIVITY-CALCULATOR.md",
+    "plan_file": "docs/plans/PLAN-PRODUCTIVITY-CALCULATOR.md"
+  },
+  "discovery_extra": {
+    "decisions": {
+      "time_model": "per-step durations (work + wait per step, all three processes)",
+      "language": "German UI",
+      "persistence": "save named scenarios to backend (table + API)"
+    }
+  },
+  "completed_steps": []
+}

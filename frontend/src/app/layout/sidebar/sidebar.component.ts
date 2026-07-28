@@ -3,16 +3,20 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import {
+  faAngleDoubleLeft,
+  faAngleDoubleRight,
   faBuilding,
+  faCalculator,
   faCalendarCheck,
   faChartLine,
+  faClipboardList,
+  faClock,
+  faCommentDots,
+  faListCheck,
   faMapMarkerAlt,
   faSitemap,
   faTachometerAlt,
   faUsers,
-  faAngleDoubleLeft,
-  faAngleDoubleRight,
-  faUserShield,
 } from '@fortawesome/free-solid-svg-icons';
 import { LayoutService } from '../../core/services/layout.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -40,6 +44,12 @@ export class SidebarComponent {
 
   faAngleDoubleLeft = faAngleDoubleLeft;
   faAngleDoubleRight = faAngleDoubleRight;
+  faClock = faClock;
+  faListCheck = faListCheck;
+
+  bottomItems: NavItem[] = [
+    { label: 'Trainings-Feedback', route: '/feedback', icon: faCommentDots },
+  ];
 
   sections: NavSection[] = [
     {
@@ -64,12 +74,30 @@ export class SidebarComponent {
       ],
     },
     {
+      title: 'Produktivität',
+      items: [
+        { label: 'Rechner', route: '/produktivitaet/rechner', icon: faCalculator },
+      ],
+    },
+    {
       title: 'Administration',
       items: [
         {
-          label: 'Adressen geokodieren',
-          route: '/admin/geocoding',
-          icon: faUserShield,
+          label: 'App-Feedback',
+          route: '/admin/agent-tasks',
+          icon: faListCheck,
+          requiredRole: 'ROLE_ADMIN',
+        },
+        {
+          label: 'Tickets',
+          route: '/admin/tickets',
+          icon: faClipboardList,
+          requiredRole: 'ROLE_ADMIN',
+        },
+        {
+          label: 'Cron-Jobs',
+          route: '/admin/cron',
+          icon: faClock,
           requiredRole: 'ROLE_ADMIN',
         },
       ],

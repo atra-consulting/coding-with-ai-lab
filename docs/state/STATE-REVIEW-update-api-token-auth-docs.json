@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "branch": "update-api-token-auth-docs",
+  "main_branch": "03ae6c83d9243cda3ad657fa14d9860057bce65b",
+  "docs_folder": "docs",
+  "special_instructions": null,
+  "review_agents_available": true,
+  "fix_agents_available": true,
+  "all_reviewers": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer"],
+  "all_coders": ["be-coder", "db-coder", "fe-coder"],
+  "all_designers": ["ui-designer"],
+  "changed_files": [
+    "backend/.env.example",
+    "docs/API-TASKS.md",
+    "docs/API-TICKETS.md",
+    "docs/plans/PLAN-UPDATE-API-TOKEN-AUTH.md",
+    "docs/state/STATE-UPDATE-API-TOKEN-AUTH.json"
+  ],
+  "dry_run_mode": false,
+  "started": "2026-06-29T22:15:00.000Z"
+}

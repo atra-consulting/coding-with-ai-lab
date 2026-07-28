@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "branch": "kanban-ticket-system-api",
+  "main_branch": "210608671b8f81b06948734f9584bed09d9096e8",
+  "docs_folder": "docs",
+  "special_instructions": null,
+  "review_agents_available": true,
+  "fix_agents_available": true,
+  "all_reviewers": ["be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer", "ba-reviewer"],
+  "all_coders": ["be-coder", "db-coder", "fe-coder"],
+  "all_designers": ["ui-designer"],
+  "changed_files": [
+    "backend/src/app.ts",
+    "backend/src/config/migrate.ts",
+    "backend/src/db/schema/enums.ts",
+    "backend/src/db/schema/schema.ts",
+    "backend/src/routes/tickets.ts",
+    "backend/src/seed/ticketSeed.ts",
+    "backend/src/services/ticketService.ts",
+    "backend/src/test/tickets.spec.ts",
+    "backend/src/utils/pagination.ts",
+    "frontend/src/app/core/models/ticket.model.ts",
+    "frontend/src/app/core/services/ticket.service.ts",
+    "frontend/src/app/features/admin/admin.routes.ts",
+    "frontend/src/app/features/admin/tickets/ticket-board.component.ts",
+    "frontend/src/app/features/admin/tickets/ticket-create.component.ts",
+    "frontend/src/app/features/admin/tickets/ticket-detail.component.ts",
+    "frontend/src/app/layout/sidebar/sidebar.component.ts"
+  ],
+  "dry_run_mode": false,
+  "started": "2026-06-27T00:00:00Z"
+}

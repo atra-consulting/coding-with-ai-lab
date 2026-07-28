@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "task_key": "ADRESSEN-CITY-SEARCH",
+  "status": "completed",
+  "current_step": "13.2",
+  "started": "2026-06-30T12:50:00.000Z",
+  "updated": "2026-06-30T12:50:00.000Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Add optional search query param to GET /api/adressen that filters by city via LOWER(a.city) LIKE LOWER('%' || ? || '%') in adresseService.findAll, mirroring firmaService.findAll. Route handler reads req.query['search'] and passes it as first arg. Update existing callers/tests. agent-task 22, ERROR_REPORT.",
+    "special_instructions": "Fully autonomous headless run. No AskUserQuestion. Skip PRD. Approve+implement+review (no PR). Approve all review fixes. Keep planning files. No push, no PR.",
+    "branch_name": "factory-automatic-skill",
+    "original_branch": "factory-automatic-skill",
+    "original_head": "11850bfecc74b454ef4ff2d44d3e048dab972c9a",
+    "docs_folder": "docs",
+    "is_git_repo": true,
+    "workflow_scope": "implement-review",
+    "pr_prefix": null,
+    "pr_exists": false,
+    "pr_url": null
+  },
+  "discovery": {
+    "agents_available": true,
+    "writer_agents": ["ba-writer"],
+    "coding_agents": ["be-coder", "db-coder", "fe-coder", "ui-designer"],
+    "review_agents": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer"],
+    "test_coding_agents": ["be-test-coder", "fe-test-coder"],
+    "test_review_agents": ["be-test-reviewer", "fe-test-reviewer"],
+    "test_runner_agents": ["be-test-runner", "fe-test-runner"],
+    "tooling_coding_agents": ["python-coder", "shell-coder", "skill-coder"],
+    "tooling_review_agents": ["python-reviewer", "shell-reviewer", "skill-reviewer"],
+    "test_command": "cd backend && npx playwright test"
+  },
+  "artifacts": {
+    "prd_skipped": true,
+    "prd_file": null,
+    "plan_file": null
+  },
+  "completed_steps": []
+}

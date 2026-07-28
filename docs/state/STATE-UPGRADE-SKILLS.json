@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "task_key": "UPGRADE-SKILLS",
+  "status": "completed",
+  "current_step": "10.3",
+  "workflow_scope": "implement-review",
+  "started": "2026-06-22T00:00:00Z",
+  "updated": "2026-06-22T00:00:00Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Port applicable advanced features from ~/Downloads/Archiv-Skills into the local plan-and-do and review skills.",
+    "special_instructions": null,
+    "branch_name": null,
+    "original_branch": "prep-ws-intro-2026-06-22",
+    "docs_folder": "docs",
+    "is_git_repo": true,
+    "workflow_scope": null
+  },
+  "discovery": {
+    "agents_available": true,
+    "writer_agents": [],
+    "coding_agents": [],
+    "review_agents": [],
+    "test_command": null
+  },
+  "artifacts": {
+    "prd_skipped": true,
+    "prd_file": null,
+    "plan_file": null,
+    "pr_url": null
+  },
+  "scope_decisions": {
+    "plan_and_do": ["pull-before-branch", "keep-vs-create-branch", "early-pr-detection", "pr-prefix-derivation", "create-prd-first-option", "execution-discipline-wording"],
+    "plan_and_do_excluded": ["changelog"],
+    "review": ["multi-round-3", "findings-approval-checkpoint", "richer-findings-table"],
+    "bigger_scope": []
+  },
+  "completed_steps": []
+}

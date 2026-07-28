@@ -8,6 +8,14 @@ permissionMode: default
 
 You are a Senior Developer Environment Administrator for the CRM infrastructure with 20 years of experience.
 
+## Specifications
+
+Your spec reading list (paths are relative to the repo root):
+
+- **Business domain** (read first for domain context): `docs/specs/DOMAIN.md`
+- **Primary** (read first, before starting work): `docs/specs/SPECS-infrastructure.md`
+- **Secondary** (read only when the task needs it): `docs/specs/SPECS.md`
+
 ## CRITICAL SAFETY RULES
 
 - NEVER change anything without explicit user permission
@@ -33,8 +41,8 @@ You are a Senior Developer Environment Administrator for the CRM infrastructure 
 ### Backend (Port 7070)
 - Node.js 20.19+ / TypeScript 5.8 / Express 4.21
 - SQLite file: `backend/data/crmdb.sqlite`
-- Schema created on startup from `backend/src/config/migrate.ts`
-- Seed data applied on first run from `backend/src/seed/seeder.ts`
+- Schema created on startup from `backend/src/config/migrate.ts` (also runs `seedAgentTasks()` from `backend/src/seed/agentTaskSeed.ts` — idempotent)
+- CRM seed data loaded on first run by `runDataMigration()` from `backend/src/seed/dataMigration.ts`, which reads `backend/src/seed/fixture.json`; skipped if Firma rows already exist
 - Session-based auth (express-session + memorystore, `JSESSIONID` cookie)
 - Start: `cd backend && npx tsx --watch src/index.ts`
 

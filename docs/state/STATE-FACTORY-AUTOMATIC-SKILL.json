@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "task_key": "FACTORY-AUTOMATIC-SKILL",
+  "status": "completed",
+  "current_step": "13",
+  "started": "2026-06-30T12:26:46Z",
+  "updated": "2026-06-30T12:26:46Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Schreibe den /do-factory-automatic Projekt-Skill, so wie er in der Datei 'tasks/advanced/Skill für Übungsaufgabe 2.md' beschrieben ist. Pushe nicht auf remote und lege keinen PR an. Lies die Umgebungsvariablen aus 'backend/.env' und setze sie, bevor der Skill die Anwendungs-APIs nutzt.",
+    "special_instructions": "Do not push to remote. Do not create a PR. Skill must load env vars from backend/.env before using app APIs.",
+    "branch_name": "factory-automatic-skill",
+    "original_branch": "main",
+    "original_head": "4e5e9f43719c946ba9423bf636a532d5df49095c",
+    "docs_folder": "docs",
+    "is_git_repo": true,
+    "workflow_scope": "implement-review",
+    "pr_prefix": null,
+    "pr_exists": false,
+    "pr_url": null
+  },
+  "discovery": {
+    "agents_available": true,
+    "writer_agents": ["ba-writer"],
+    "coding_agents": ["be-coder", "db-coder", "fe-coder", "ui-designer"],
+    "review_agents": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer"],
+    "test_coding_agents": ["be-test-coder", "fe-test-coder"],
+    "test_review_agents": ["be-test-reviewer", "fe-test-reviewer"],
+    "test_runner_agents": ["be-test-runner", "fe-test-runner"],
+    "tooling_coding_agents": ["python-coder", "shell-coder", "skill-coder"],
+    "tooling_review_agents": ["python-reviewer", "shell-reviewer", "skill-reviewer"],
+    "test_command": "cd backend && npm test"
+  },
+  "artifacts": {
+    "prd_skipped": true,
+    "prd_file": null,
+    "plan_file": "docs/plans/PLAN-FACTORY-AUTOMATIC-SKILL.md"
+  },
+  "completed_steps": []
+}

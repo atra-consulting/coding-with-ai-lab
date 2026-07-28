@@ -19,15 +19,46 @@
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-Drizzle%20ORM-003b57.svg">
 </p>
 
-> **Erstmal hier starten:** Vor dem ersten Start bitte **[SETUP.md](SETUP.md)** lesen — dort steht die komplette Installationsanleitung (Node.js, Claude Code, IDE, Markdown-Viewer).
+> **Erstmal hier starten:** Für die vollständige Installationsanleitung (Node.js, Claude Code, IDE) bitte **[docs/SETUP.md](docs/SETUP.md)** lesen.
+
+> **English?** See **[docs/welcome_EN.MD](docs/welcome_EN.MD)** for an English introduction.
 
 ---
 
+## Zwei Wege durch dieses Repo
+
+Dieses Repo dient zwei Zielgruppen:
+
+- **Konferenz-Zuhörer** wollen die Skills und Subagents in ihr eigenes Projekt holen. Start: [Auf die `solution-jfs-2026`-Branch wechseln](https://github.com/atra-consulting/coding-with-ai-lab/blob/solution-jfs-2026/README.MD).
+- **Workshop-Teilnehmer** wollen Aufgaben in dieser App lösen. Start: [Aufgaben bearbeiten](#für-workshop-teilnehmer-aufgaben-bearbeiten).
+
+Der gemeinsame Teil (Schnellstart, Login, Tools) gilt für beide.
+
+## Training
+
+atra.consulting [bietet KI-Training an](https://atra.consulting/ki-loesungen/), inklusive zweier Hands-on-Training-Workshops für Agenten-basierte Entwicklung.
+
 ## Inhalt
 
-- [Architektur](#architektur)
+**Gemeinsam**
+
+- [Voraussetzungen](#voraussetzungen)
 - [Schnellstart](#schnellstart)
 - [Demo-Login](#demo-login)
+- [Tools](#tools)
+
+**Für Konferenz-Zuhörer**
+
+- [Skills & Subagents übernehmen](#für-konferenz-zuhörer-skills--subagents-übernehmen)
+
+**Für Workshop-Teilnehmer**
+
+- [Aufgaben bearbeiten](#für-workshop-teilnehmer-aufgaben-bearbeiten)
+- [Nützliche Befehle](#nützliche-befehle)
+
+**Referenz**
+
+- [Playwright-MCP: Browser-Automation](#playwright-mcp-browser-automation)
 - [Features](#features)
 - [Tech-Stack](#tech-stack)
 - [Weiterführende Dokumentation](#weiterführende-dokumentation)
@@ -35,40 +66,35 @@
 
 ---
 
-## Architektur
+## Voraussetzungen
 
-```mermaid
-graph TB
-    subgraph Browser
-        FE["Frontend<br/><i>Angular 21</i><br/>:7200"]
-    end
+| Tool | Version | Zweck |
+|------|---------|-------|
+| **Node.js** | 20.19+ | Backend + Frontend bauen und starten |
+| **Git CLI** | beliebig | Versionskontrolle und Branches |
+| **Claude Code** | aktuell | AI-gestütztes Programmieren im Terminal |
 
-    subgraph "Backend"
-        API["Express API<br/><i>Node.js / TypeScript</i><br/>:7070"]
-    end
-
-    subgraph "Datenbank"
-        DB[("SQLite<br/><i>Drizzle ORM</i><br/>Firmen, Personen, ...")]
-    end
-
-    FE -- "/api/*" --> API
-    API --> DB
-```
-
-Detaillierte Architektur-Dokumentation: **[docs/architecture.md](docs/architecture.md)**
+Vollständige Installationsanleitung: **[docs/SETUP.md](docs/SETUP.md)**
 
 ---
 
 ## Schnellstart
 
-> **Voraussetzungen:** Node.js 20.19+ — vollständige Anleitung in **[SETUP.md](SETUP.md)**
+Repository klonen:
+
+```bash
+git clone https://github.com/atra-consulting/coding-with-ai-lab.git
+cd coding-with-ai-lab
+```
+
+Stack starten:
 
 ```bash
 ./start.sh           # macOS / Linux
 start.bat            # Windows
 ```
 
-Das Skript installiert bei Bedarf die npm-Abhängigkeiten, startet Backend und Frontend und wartet, bis beide bereit sind.
+Das Skript installiert npm-Abhängigkeiten, startet Backend und Frontend und wartet, bis beide bereit sind.
 
 | URL | Beschreibung |
 |-----|-------------|
@@ -84,21 +110,104 @@ Das Skript installiert bei Bedarf die npm-Abhängigkeiten, startet Backend und F
 ### Einzeln starten
 
 ```bash
-cd backend  && npx tsx --watch src/index.ts                         # Port 7070, Hot Reload
-cd frontend && npx ng serve --port 7200 --proxy-config proxy.conf.json
+cd backend  && npx tsx --watch src/index.ts                                      # Port 7070, Hot Reload
+cd frontend && npx ng serve --port 7200 --proxy-config proxy.conf.json           # Port 7200, Hot Reload
 ```
 
 ---
 
 ## Demo-Login
 
-Drei vorkonfigurierte Benutzer stehen zur Verfügung:
+Drei vorkonfigurierte Benutzer:
 
 | Benutzername | Passwort | Rolle | Zweck |
 |--------------|----------|-------|-------|
 | `admin` | `admin123` | ADMIN | Voller Zugriff inkl. Admin-Bereich |
 | `user` | `test123` | USER | Standard-CRM-Nutzer |
 | `demo` | `demo1234` | ADMIN | Schnellstart-Login für Demos |
+
+---
+
+## Tools
+
+Die App hat drei Tools für Training und Demo. Starte die App, dann öffne die URL.
+
+| Tool | URL | Zugang |
+|------|-----|--------|
+| **Produktivitäts-Rechner** | <http://localhost:7200/produktivitaet/rechner> | Jeder Login |
+| **Agent-Task-Dashboard** | <http://localhost:7200/admin/agent-tasks> | Nur Admin |
+| **Ticket-Board** | <http://localhost:7200/admin/tickets> | Nur Admin |
+
+Details zu jedem Tool: **[docs/TOOLS.md](docs/TOOLS.md)**
+
+---
+
+## Für Konferenz-Zuhörer: Skills & Subagents übernehmen
+
+Du willst die Skills und Subagents aus diesem Repo in dein eigenes Projekt holen? So geht es.
+
+1. Lies, was es gibt: **[docs/SUBAGENTS.md](docs/SUBAGENTS.md)** (24 Subagents) und **[docs/SKILLS.md](docs/SKILLS.md)** (4 Skills).
+2. Folge der Anleitung: **[docs/TRANSFER.md](docs/TRANSFER.md)**. Kopieren, anpassen lassen, prüfen — Schritt für Schritt.
+
+| Dokument | Inhalt |
+|----------|--------|
+| [docs/SUBAGENTS.md](docs/SUBAGENTS.md) | Alle 24 Subagents. Zweck, Modell, Gruppen. |
+| [docs/SKILLS.md](docs/SKILLS.md) | Alle 4 Skills. Zweck, Argumente, Beispiele. |
+| [docs/TRANSFER.md](docs/TRANSFER.md) | Übernahme in dein Projekt. 8 Schritte. |
+
+---
+
+## Für Workshop-Teilnehmer: Aufgaben bearbeiten
+
+### Eigenen Branch anlegen
+
+Erstelle deinen eigenen Branch mit diesem Format:
+
+```
+training-<MMJJ>/<vornamenachname>
+```
+
+Beispiel: `training-0626/max-mustermann` (Juni 2026, Max Mustermann)
+
+```bash
+git checkout -b training-0626/max-mustermann
+```
+
+### Aufgabe starten
+
+1. Aufgaben findest du im Ordner **`/tasks/`**
+2. Starte eine Aufgabe mit dem **`/plan-and-do`**-Skill in Claude Code:
+
+```
+/plan-and-do <Aufgabenbeschreibung>
+```
+
+Der Skill übernimmt Planung, Implementierung, Testing und Code Review automatisch.
+
+---
+
+## Nützliche Befehle
+
+| Befehl | Zweck |
+|--------|-------|
+| `/plan-and-do <Aufgabe>` | End-to-End-Implementierung (Planung → Coding → Testing → Review) |
+| `/review` | Code-Änderungen mit iterativem Feedback prüfen |
+| `/simplify` | Code auf Qualität, Wiederverwendung und Effizienz prüfen |
+| `/help` | Hilfe zu Claude Code |
+| `/clear` | Konversationshistorie löschen |
+| `/compact` | Kontext komprimieren |
+
+---
+
+## Playwright-MCP: Browser-Automation
+
+Playwright-MCP ermöglicht der AI, direkt mit der laufenden Anwendung im Browser zu interagieren:
+
+- **Screenshots** der UI machen und Änderungen visuell validieren
+- **Formulare ausfüllen und Buttons klicken** um Features zu testen
+- Durch die Anwendung **navigieren** und Workflows verifizieren
+- **Grenzfälle** und Benutzerinteraktionen automatisch testen
+- **UI-Probleme debuggen** durch visuelle Kontrolle der Anwendung
 
 ---
 
@@ -117,21 +226,14 @@ Drei vorkonfigurierte Benutzer stehen zur Verfügung:
 
 | Schicht | Technologie |
 |---------|-------------|
-| **Backend** | Node.js · TypeScript · Express · Drizzle ORM |
+| **Backend** | Node.js · TypeScript · Express · Drizzle ORM · `@libsql/client` |
 | **Frontend** | Angular 21 · Bootstrap 5 · AG Grid · Chart.js |
-| **Datenbank** | SQLite (file-based, via `better-sqlite3`) |
+| **Datenbank** | SQLite (via `@libsql/client`, Turso-kompatibel) |
 | **Auth** | Session-basiert (bcrypt + `express-session`) |
 
-Konventionen, Patterns und Beispiele für AI-gestützte Entwicklung: **[AGENTS.md](AGENTS.md)**
+Architektur-Details: **[docs/specs/SPECS.md](docs/specs/SPECS.md)**
 
----
-
-## Domänenmodell
-
-Die Anwendung bildet ein deutschsprachiges CRM ab:
-
-**Stammdaten** — Firma, Person, Abteilung, Adresse
-**Vertrieb** — Aktivitaet, Chance
+Konventionen und Patterns für AI-gestützte Entwicklung: **[AGENTS.md](AGENTS.md)**
 
 ---
 
@@ -139,14 +241,19 @@ Die Anwendung bildet ein deutschsprachiges CRM ab:
 
 | Dokument | Inhalt |
 |----------|--------|
-| [SETUP.md](SETUP.md) | Vollständige Installationsanleitung (Node.js, Claude Code, IDE) |
-| [docs/architecture.md](docs/architecture.md) | Systemarchitektur mit Mermaid-Diagrammen |
+| [docs/SETUP.md](docs/SETUP.md) | Vollständige Installationsanleitung (Node.js, Claude Code, IDE) |
+| [docs/CHEATSHEET-CLAUDE-CODE.md](docs/CHEATSHEET-CLAUDE-CODE.md) | Claude Code Spickzettel für Einsteiger |
+| [docs/welcome_DE.MD](docs/welcome_DE.MD) | Deutsche Workshop-Einführung |
+| [docs/welcome_EN.MD](docs/welcome_EN.MD) | English workshop introduction |
+| [docs/SUBAGENTS.md](docs/SUBAGENTS.md) | Alle 24 Subagents erklärt |
+| [docs/SKILLS.md](docs/SKILLS.md) | Alle 4 Custom-Skills erklärt |
+| [docs/TRANSFER.md](docs/TRANSFER.md) | Skills & Subagents ins eigene Projekt übernehmen |
+| [docs/TOOLS.md](docs/TOOLS.md) | Produktivitäts-Rechner, Agent-Tasks, Ticket-Board |
+| [AGENTS.md](AGENTS.md) | Anweisungen und Konventionen für AI-Coding-Assistenten (tool-neutral) |
+| [CLAUDE.md](CLAUDE.md) | Claude-Code-Spezifika (Subagents, Spec-Leselisten) — importiert `AGENTS.md` |
 | [docs/specs/SPECS.md](docs/specs/SPECS.md) | Detaillierte Spezifikationen pro Bereich |
 | [docs/adr/](docs/adr/) | Architecture Decision Records |
 | [docs/prds/](docs/prds/) | Product Requirement Documents |
-| [docs/uxdr/](docs/uxdr/) | UX Design Records |
-| [AGENTS.md](AGENTS.md) | Anweisungen und Konventionen für AI-Coding-Assistenten (tool-neutral) |
-| [CLAUDE.md](CLAUDE.md) / [GEMINI.md](GEMINI.md) | Tool-spezifische Ergänzungen (Subagents, Skills) — importieren `AGENTS.md` |
 
 ### Projektstruktur
 
@@ -155,13 +262,11 @@ Die Anwendung bildet ein deutschsprachiges CRM ab:
 │   ├── src/          config · db · middleware · routes · seed · services
 │   └── data/         SQLite-Datenbankdatei (gitignored)
 ├── frontend/         Angular 21 SPA (core · features · layout · shared)
-├── docs/             Architektur, Specs, ADRs, PRDs, UXDRs
+├── docs/             Installationsanleitung, Architektur, Specs, ADRs, PRDs, Tasks
 ├── start.sh          Startskript (macOS/Linux)
 ├── start.bat         Startskript (Windows)
-├── SETUP.md          Installationsanleitung
 ├── AGENTS.md         Anweisungen für AI-Coding-Assistenten (tool-neutral)
-├── CLAUDE.md         Claude-Code-Spezifika (importiert AGENTS.md)
-└── GEMINI.md         Gemini-CLI-Spezifika (importiert AGENTS.md)
+└── CLAUDE.md         Claude-Code-Spezifika (importiert AGENTS.md)
 ```
 
 ---

@@ -157,4 +157,4 @@ graph TB
     FILTER -- "Rollen + Permissions" --> CTRL
 ```
 
-Detaillierte Diagramme (JWT-Flow, Permission-Modell, Startup-Reihenfolge): [docs/architecture.md](../architecture.md)
+Detaillierte Diagramme (JWT-Flow, Permission-Modell, Startup-Reihenfolge): [docs/specs/SPECS.md](../specs/SPECS.md)

@@ -42,6 +42,7 @@ export class AktivitaetListComponent implements OnInit {
       field: 'datum',
       headerName: 'Datum',
       filter: 'agDateColumnFilter',
+      initialSort: 'desc',
       valueFormatter: (params) => {
         if (!params.value) return '-';
         return new Date(params.value).toLocaleDateString('de-DE', {

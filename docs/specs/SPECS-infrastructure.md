@@ -4,33 +4,43 @@
 
 ```
 coding-with-ai-lab/
+├── api/
+│   └── index.ts                # Vercel serverless entry — wraps Express app; runs migrations on cold start
+├── vercel.json                 # Vercel build config, rewrites, and daily cron schedule
 ├── backend/                    # CRM Backend (Node.js, TypeScript, Express)
 │   ├── package.json
-│   ├── data/                   # SQLite database file (gitignored)
+│   ├── data/                   # SQLite database file (gitignored; local dev only)
 │   │   └── crmdb.sqlite
 │   └── src/
-│       ├── index.ts            # Entry point — runs migrations, seeds, starts server
+│       ├── index.ts            # Entry point — loads env, runs migrations, seeds, starts server
 │       ├── app.ts              # Express app setup
 │       ├── config/
-│       │   ├── db.ts           # SQLite connection + Drizzle ORM instance
+│       │   ├── db.ts           # libSQL/Turso client + Drizzle ORM instance; local file or Turso URL
+│       │   ├── loadEnv.ts      # Zero-dependency .env loader (must import first in index.ts)
 │       │   ├── migrate.ts      # CREATE TABLE statements (run on startup)
+│       │   ├── cronJobs.ts     # CRON_JOBS registry (name, schedule, dispatchEventType)
 │       │   └── users.ts        # In-memory users + permissions
 │       ├── db/schema/
-│       │   ├── schema.ts       # Drizzle table definitions
+│       │   ├── schema.ts       # Drizzle table definitions (6 CRM entities + agent_task, cron_run, sessions)
 │       │   └── enums.ts        # TypeScript enums
 │       ├── routes/             # Express route handlers (one per entity)
-│       ├── services/           # Business logic (one per entity)
+│       ├── services/           # Business logic (one per entity + cronService.ts)
 │       ├── middleware/
-│       │   ├── auth.ts         # requireRole / requirePermission guards
+│       │   ├── auth.ts         # requireAuth / requireRole guards
+│       │   ├── agentAuth.ts    # requireAgentToken (SHA-256 + timingSafeEqual)
 │       │   ├── cors.ts         # CORS setup
 │       │   ├── errorHandler.ts # Global error handler
-│       │   └── session.ts      # express-session configuration
+│       │   ├── libsqlSessionStore.ts  # Custom express-session Store backed by the sessions table
+│       │   └── session.ts      # express-session configuration (uses LibsqlSessionStore)
 │       ├── seed/
-│       │   ├── dataMigration.ts # Loads fixture.json into the DB when empty
-│       │   ├── fixture.json     # Fixed seed data (390 rows total)
-│       │   └── build-fixture.ts # Dev tool: regenerates fixture.json after schema changes
+│       │   ├── dataMigration.ts  # Loads fixture.json into the DB when empty (CRM entities)
+│       │   ├── fixture.json      # Fixed seed data (390 rows total, CRM entities only)
+│       │   ├── agentTaskSeed.ts  # Idempotent agent_task seeding (INSERT OR IGNORE, ids 1–16)
+│       │   └── build-fixture.ts  # Dev tool: regenerates fixture.json after schema changes
 │       └── utils/
+│           ├── asyncHandler.ts # Wraps async route handlers; forwards errors to Express error handler
 │           ├── errors.ts       # Error types
+│           ├── githubDispatch.ts  # Fires GitHub repository_dispatch events (for cron/agent workflows)
 │           ├── pagination.ts   # Spring-Data-style page format helper (naming only; backend is Node)
 │           └── validation.ts   # Zod validation helpers
 ├── frontend/                   # Angular 21 SPA
@@ -40,9 +50,14 @@ coding-with-ai-lab/
 │   └── src/app/
 │       ├── core/               # Services, models, guards, interceptors
 │       ├── features/           # Feature components (one per entity)
+│       ├── shared/             # Shared components (loading-spinner, notification, confirm-dialog) and pipes
 │       └── layout/             # Navbar, sidebar
+├── .github/
+│   └── workflows/
+│       ├── deploy.yml              # Test + deploy to Vercel on push to main
+│       ├── agent-task-runner.yml   # Autonomous agent for OPEN agent_task rows
+│       └── github-issue-agent.yml  # GitHub-issue refinement agent
 ├── docs/
-│   ├── architecture.md
 │   ├── adr/                    # Architecture Decision Records
 │   ├── prds/                   # Product Requirement Documents
 │   ├── uxdr/                   # UX Design Records
@@ -54,7 +69,6 @@ coding-with-ai-lab/
 ├── start.sh                    # Full-stack launcher
 ├── AGENTS.md                   # AI coding instructions (tool-neutral)
 ├── CLAUDE.md                   # Claude Code specifics (imports AGENTS.md)
-├── GEMINI.md                   # Gemini CLI specifics (imports AGENTS.md)
 └── README.MD                   # Project overview
 ```
 
@@ -68,9 +82,8 @@ Runtime: Node.js 20.19+. Language: TypeScript. Executed via `tsx`.
 |-----------|---------|---------|
 | express | ^4.21.2 | HTTP server and routing |
 | express-session | ^1.18.1 | Session-based authentication |
-| memorystore | ^1.6.7 | In-memory session store |
-| better-sqlite3 | ^9.6.0 | SQLite driver |
-| drizzle-orm | ^0.41.0 | Type-safe ORM for SQLite |
+| @libsql/client | ^0.17.3 | libSQL/Turso database driver (local file or remote Turso) |
+| drizzle-orm | ^0.41.0 | Type-safe ORM for libSQL/SQLite |
 | bcryptjs | ^2.4.3 | Password hashing |
 | cors | ^2.8.5 | CORS middleware |
 | zod | ^3.23.8 | Runtime input validation |
@@ -117,13 +130,11 @@ Dev dependencies:
 
 ### CRM Database
 
-- Engine: SQLite (via `better-sqlite3`)
-- File path: `backend/data/crmdb.sqlite`
-- Created automatically on first startup
-- Schema: Drizzle ORM definitions in `backend/src/db/schema/schema.ts`
-- Migrations: Plain `CREATE TABLE IF NOT EXISTS` statements in `backend/src/config/migrate.ts`. Run on every startup.
-- `PRAGMA foreign_keys = ON` — set on every connection. Required for cascade deletes.
-- Tables: firma, person, abteilung, adresse, gehalt, aktivitaet, vertrag, chance
+- Engine: SQLite/libSQL via `@libsql/client`
+- Local file path: `backend/data/crmdb.sqlite` (created automatically on first startup)
+- Remote: Turso cloud database when `TURSO_DATABASE_URL` is set (used on Vercel)
+
+Schema file paths, migration approach, table definitions, column specs, and enums: see [SPECS-database.md](SPECS-database.md).
 
 ### Authentication
 
@@ -131,7 +142,7 @@ No separate auth database. Users are hardcoded in `backend/src/config/users.ts`.
 
 Three users: `admin`, `user`, `demo`.
 
-Sessions stored in memory via `memorystore`. No JWT. No RSA keys.
+Sessions stored in the `sessions` table via `LibsqlSessionStore` (`backend/src/middleware/libsqlSessionStore.ts`). Uses the same libSQL/Turso connection as the rest of the app. No JWT. No RSA keys.
 
 ## Startup
 
@@ -161,8 +172,8 @@ cd frontend && npx ng build
 
 ### Startup Sequence (index.ts)
 
-1. `runMigrations()` — creates tables if they do not exist
-2. `runDataMigration()` — inserts fixture data from `backend/src/seed/fixture.json` if database is empty
+1. `runMigrations()` — creates tables if they do not exist; also calls `seedAgentTasks()` (INSERT OR IGNORE, ids 1–16) so `agent_task` rows exist on every startup including Vercel cold-starts
+2. `runDataMigration()` — inserts CRM fixture data from `backend/src/seed/fixture.json` if database is empty; skipped if rows exist
 3. `app.listen(7070)` — starts the HTTP server
 
 ## Configuration
@@ -192,25 +203,46 @@ No split routing. All API traffic goes to a single backend.
 
 ### Environment Variables
 
-One optional variable:
+Loaded from `backend/.env` (local dev) or set as real env vars (CI/Vercel). Real env vars always win over `.env`.
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| PORT | 7070 | Backend HTTP port |
+| Variable | Default | Required | Description |
+|----------|---------|----------|-------------|
+| PORT | 7070 | No | Backend HTTP port |
+| SESSION_SECRET | `crm-dev-secret-key` | No | express-session signing secret |
+| CORS_ORIGINS | `http://localhost:7200` | No | Allowed CORS origins (comma-separated) |
+| NODE_ENV | (unset) | No | `production` disables the `/api/auth/test-login` helper |
+| TURSO_DATABASE_URL | (unset) | Yes (Vercel) | libSQL/Turso remote URL. When set, uses Turso instead of the local SQLite file. Required on Vercel (read-only filesystem). |
+| TURSO_AUTH_TOKEN | (unset) | Yes (Vercel) | Auth token for Turso. Required when `TURSO_DATABASE_URL` is set. |
+| AGENT_API_TOKEN | (unset) | Yes (Vercel + GitHub Actions) | Shared secret for the `/api/agent-tasks` endpoints. Verified via SHA-256 + `timingSafeEqual`. |
+| CRON_SECRET | (unset) | Yes (Vercel) | Bearer token Vercel sends in the `Authorization` header when calling `/api/cron/agent-tasks`. When unset, the cron bearer path is disabled; admin session still works. |
 
-No JWT secrets. No RSA key paths. No CORS origin variables. No cookie flags.
+No JWT secrets. No RSA key paths. No cookie-flag overrides.
 
 ## Documentation
 
 | Directory | Contents |
 |-----------|---------|
-| docs/architecture.md | System overview |
 | docs/adr/ | Architecture Decision Records |
 | docs/prds/ | Product Requirement Documents |
 | docs/uxdr/ | UX Design Records |
 | docs/reviews/ | Code review reports |
 | docs/specs/ | System specifications (this) |
 
-## No CI/CD
+## CI/CD
 
-No Docker, GitHub Actions, GitLab CI, or other pipeline configurations. Local development only.
+Three GitHub Actions workflows in `.github/workflows/`:
+
+| Workflow | Trigger | Purpose |
+|----------|---------|---------|
+| `deploy.yml` | Push to `main` (after tests pass) | Runs backend type-check + Playwright tests, frontend unit tests + build, then deploys to Vercel (production) |
+| `agent-task-runner.yml` | `repository_dispatch` event `solve-agent-tasks` | Runs the autonomous agent against OPEN `agent_task` rows |
+| `github-issue-agent.yml` | `repository_dispatch` event `solve-github-issues` | Runs the GitHub-issue refinement agent against one labelled issue |
+
+### Vercel Deployment
+
+- Entry point: `api/index.ts` — serverless function that wraps the Express app
+- Config: root `vercel.json` — build command, output directory, rewrites, and Vercel cron schedule
+- Build: `cd frontend && npm ci && npx ng build`; backend sources bundled by Vercel's esbuild via `api/index.ts`
+- Rewrites: `/api/*` → `api/index`; everything else → `index.html` (Angular SPA)
+- Vercel cron: `GET /api/cron/agent-tasks` at `0 2 * * *` (daily 02:00 UTC)
+- Cloud database: Turso (libSQL) when `TURSO_DATABASE_URL` is set — required on Vercel (read-only filesystem)

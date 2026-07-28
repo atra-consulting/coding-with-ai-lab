@@ -16,10 +16,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401) {
-        const publicRoutes = ['/login', '/welcome', '/feedback', '/feedback-qr', '/danke'];
+        const publicRoutes = ['/login', '/feedback', '/feedback-qr', '/danke'];
         const currentUrl = router.url === '/' ? window.location.pathname : router.url;
         if (!publicRoutes.some((r) => currentUrl.startsWith(r))) {
-          router.navigate(['/welcome']);
+          router.navigate(['/login']);
         }
         return EMPTY;
       }

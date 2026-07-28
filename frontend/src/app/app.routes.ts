@@ -3,11 +3,6 @@ import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
-    path: 'welcome',
-    loadComponent: () =>
-      import('./features/welcome/welcome.component').then((m) => m.WelcomeComponent),
-  },
-  {
     path: 'login',
     loadComponent: () =>
       import('./features/login/login.component').then((m) => m.LoginComponent),
@@ -65,11 +60,18 @@ export const routes: Routes = [
         loadChildren: () => import('./features/chance/chance.routes').then((m) => m.CHANCE_ROUTES),
       },
       {
+        path: 'produktivitaet',
+        loadChildren: () =>
+          import('./features/produktivitaet/produktivitaet.routes').then(
+            (m) => m.PRODUKTIVITAET_ROUTES,
+          ),
+      },
+      {
         path: 'admin',
         loadChildren: () =>
           import('./features/admin/admin.routes').then((m) => m.ADMIN_ROUTES),
       },
     ],
   },
-  { path: '**', redirectTo: 'welcome' },
+  { path: '**', redirectTo: 'login' },
 ];

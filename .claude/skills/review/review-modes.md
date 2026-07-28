@@ -65,7 +65,7 @@ Integrations:
   - git (required): Diff analysis
   - Task tool (optional): Agent delegation
 
-Version: 1.4.0
+Version: 1.8.0
 ```
 
 Then STOP.

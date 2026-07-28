@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "task_key": "CLAUDE-CODE-CHEAT-SHEET",
+  "status": "completed",
+  "current_step": "13.2",
+  "started": "2026-06-23T00:00:00Z",
+  "updated": "2026-06-23T08:30:00Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Das ist ein Repo für Einsteiger-Schulung in Claude Code. Erstelle ein Claude-Code-Sheet für Einsteiger.",
+    "special_instructions": null,
+    "branch_name": "prep-ws-intro-2026-06-22",
+    "original_branch": "prep-ws-intro-2026-06-22",
+    "original_head": "3602f1370cdbd25edca11c802c86d39ba1b176c0",
+    "docs_folder": "docs",
+    "is_git_repo": true,
+    "workflow_scope": "implement-review",
+    "pr_prefix": null,
+    "pr_exists": false,
+    "pr_url": null
+  },
+  "discovery": {
+    "agents_available": true,
+    "writer_agents": ["ba-writer"],
+    "coding_agents": ["be-coder", "db-coder", "fe-coder", "ui-designer"],
+    "review_agents": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer"],
+    "test_coding_agents": ["be-test-coder", "fe-test-coder"],
+    "test_review_agents": ["be-test-reviewer", "fe-test-reviewer"],
+    "test_runner_agents": ["be-test-runner", "fe-test-runner"],
+    "tooling_coding_agents": ["python-coder", "shell-coder", "skill-coder"],
+    "tooling_review_agents": ["python-reviewer", "shell-reviewer", "skill-reviewer"],
+    "test_command": null
+  },
+  "artifacts": {
+    "prd_skipped": true,
+    "prd_file": null,
+    "plan_file": "docs/plans/PLAN-CLAUDE-CODE-CHEAT-SHEET.md"
+  },
+  "completed_steps": ["3.3", "4.4", "4.5", "5.1", "7.5", "7.6", "8.1", "9.3", "10.3", "13.2"]
+}

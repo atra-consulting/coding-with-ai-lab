@@ -1,4 +1,4 @@
-import { sqlite } from '../config/db.js';
+import { client } from '../config/db.js';
 import { NotFoundError } from '../utils/errors.js';
 import { buildPage, type PageResult, type SortParams } from '../utils/pagination.js';
 import type { PersonDTO } from './personService.js';
@@ -48,64 +48,74 @@ const BASE_QUERY = `
 `;
 
 export const abteilungService = {
-  findAll(page: number, size: number, sort: SortParams): PageResult<AbteilungDTO> {
-    const countRow = sqlite
-      .prepare('SELECT COUNT(*) AS cnt FROM abteilung')
-      .get() as { cnt: number };
+  async findAll(page: number, size: number, sort: SortParams): Promise<PageResult<AbteilungDTO>> {
+    const countResult = await client.execute({
+      sql: 'SELECT COUNT(*) AS cnt FROM abteilung',
+      args: [],
+    });
+    const countRow = countResult.rows[0] as unknown as { cnt: number };
     const total = Number(countRow.cnt);
 
-    const rows = sqlite
-      .prepare(
-        `${BASE_QUERY} ORDER BY a.${sort.field} ${sort.direction} LIMIT ? OFFSET ?`
-      )
-      .all(size, page * size) as AbteilungRow[];
+    const rowsResult = await client.execute({
+      sql: `${BASE_QUERY} ORDER BY a.${sort.field} ${sort.direction} LIMIT ? OFFSET ?`,
+      args: [size, page * size],
+    });
+    const rows = rowsResult.rows as unknown as AbteilungRow[];
 
     return buildPage(rows.map(toDTO), total, page, size);
   },
 
-  listAll(): AbteilungDTO[] {
-    const rows = sqlite
-      .prepare(`${BASE_QUERY} ORDER BY a.name ASC`)
-      .all() as AbteilungRow[];
+  async listAll(): Promise<AbteilungDTO[]> {
+    const result = await client.execute({
+      sql: `${BASE_QUERY} ORDER BY a.name ASC`,
+      args: [],
+    });
+    const rows = result.rows as unknown as AbteilungRow[];
     return rows.map(toDTO);
   },
 
-  findById(id: number): AbteilungDTO {
-    const row = sqlite
-      .prepare(`${BASE_QUERY} WHERE a.id = ?`)
-      .get(id) as AbteilungRow | undefined;
+  async findById(id: number): Promise<AbteilungDTO> {
+    const result = await client.execute({
+      sql: `${BASE_QUERY} WHERE a.id = ?`,
+      args: [id],
+    });
+    const row = result.rows[0] as unknown as AbteilungRow | undefined;
     if (!row) throw new NotFoundError(`Abteilung mit ID ${id} nicht gefunden`);
     return toDTO(row);
   },
 
-  findByFirmaId(firmaId: number, page: number, size: number): PageResult<AbteilungDTO> {
-    const countRow = sqlite
-      .prepare('SELECT COUNT(*) AS cnt FROM abteilung WHERE firmaId = ?')
-      .get(firmaId) as { cnt: number };
+  async findByFirmaId(firmaId: number, page: number, size: number): Promise<PageResult<AbteilungDTO>> {
+    const countResult = await client.execute({
+      sql: 'SELECT COUNT(*) AS cnt FROM abteilung WHERE firmaId = ?',
+      args: [firmaId],
+    });
+    const countRow = countResult.rows[0] as unknown as { cnt: number };
     const total = Number(countRow.cnt);
 
-    const rows = sqlite
-      .prepare(
-        `${BASE_QUERY} WHERE a.firmaId = ? ORDER BY a.name ASC LIMIT ? OFFSET ?`
-      )
-      .all(firmaId, size, page * size) as AbteilungRow[];
+    const rowsResult = await client.execute({
+      sql: `${BASE_QUERY} WHERE a.firmaId = ? ORDER BY a.name ASC LIMIT ? OFFSET ?`,
+      args: [firmaId, size, page * size],
+    });
+    const rows = rowsResult.rows as unknown as AbteilungRow[];
 
     return buildPage(rows.map(toDTO), total, page, size);
   },
 
-  findByFirmaIdAll(firmaId: number): AbteilungDTO[] {
-    const rows = sqlite
-      .prepare(`${BASE_QUERY} WHERE a.firmaId = ? ORDER BY a.name ASC`)
-      .all(firmaId) as AbteilungRow[];
+  async findByFirmaIdAll(firmaId: number): Promise<AbteilungDTO[]> {
+    const result = await client.execute({
+      sql: `${BASE_QUERY} WHERE a.firmaId = ? ORDER BY a.name ASC`,
+      args: [firmaId],
+    });
+    const rows = result.rows as unknown as AbteilungRow[];
     return rows.map(toDTO);
   },
 
-  findPersonenByAbteilungId(
+  async findPersonenByAbteilungId(
     abteilungId: number,
     page: number,
     size: number
-  ): PageResult<PersonDTO> {
-    this.findById(abteilungId); // throws 404 if not found
+  ): Promise<PageResult<PersonDTO>> {
+    await this.findById(abteilungId); // throws 404 if not found
 
     const BASE_PERSON_QUERY = `
       SELECT p.id, p.firstName, p.lastName, p.email, p.phone, p.position, p.notes,
@@ -117,42 +127,49 @@ export const abteilungService = {
       LEFT JOIN abteilung a ON p.abteilungId = a.id
     `;
 
-    const countRow = sqlite
-      .prepare('SELECT COUNT(*) AS cnt FROM person WHERE abteilungId = ?')
-      .get(abteilungId) as { cnt: number };
+    const countResult = await client.execute({
+      sql: 'SELECT COUNT(*) AS cnt FROM person WHERE abteilungId = ?',
+      args: [abteilungId],
+    });
+    const countRow = countResult.rows[0] as unknown as { cnt: number };
     const total = Number(countRow.cnt);
 
-    const rows = sqlite
-      .prepare(
-        `${BASE_PERSON_QUERY} WHERE p.abteilungId = ? ORDER BY p.lastName ASC, p.firstName ASC LIMIT ? OFFSET ?`
-      )
-      .all(abteilungId, size, page * size) as PersonDTO[];
+    const rowsResult = await client.execute({
+      sql: `${BASE_PERSON_QUERY} WHERE p.abteilungId = ? ORDER BY p.lastName ASC, p.firstName ASC LIMIT ? OFFSET ?`,
+      args: [abteilungId, size, page * size],
+    });
+    const rows = rowsResult.rows as unknown as PersonDTO[];
 
     return buildPage(rows, total, page, size);
   },
 
-  create(dto: AbteilungCreateDTO): AbteilungDTO {
+  async create(dto: AbteilungCreateDTO): Promise<AbteilungDTO> {
     const now = new Date().toISOString();
-    const result = sqlite
-      .prepare(
-        `INSERT INTO abteilung (name, description, firmaId, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?)`
-      )
-      .run(dto.name, dto.description ?? null, dto.firmaId, now, now);
+    const result = await client.execute({
+      sql: `INSERT INTO abteilung (name, description, firmaId, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?)`,
+      args: [dto.name, dto.description ?? null, dto.firmaId, now, now],
+    });
+    if (result.lastInsertRowid === undefined) {
+      throw new Error('INSERT abteilung returned no rowid');
+    }
     return this.findById(Number(result.lastInsertRowid));
   },
 
-  update(id: number, dto: AbteilungCreateDTO): AbteilungDTO {
-    this.findById(id);
+  async update(id: number, dto: AbteilungCreateDTO): Promise<AbteilungDTO> {
+    await this.findById(id);
     const now = new Date().toISOString();
-    sqlite
-      .prepare(`UPDATE abteilung SET name=?, description=?, firmaId=?, updatedAt=? WHERE id=?`)
-      .run(dto.name, dto.description ?? null, dto.firmaId, now, id);
+    await client.execute({
+      sql: `UPDATE abteilung SET name=?, description=?, firmaId=?, updatedAt=? WHERE id=?`,
+      args: [dto.name, dto.description ?? null, dto.firmaId, now, id],
+    });
     return this.findById(id);
   },
 
-  delete(id: number): void {
-    this.findById(id);
-    sqlite.prepare('DELETE FROM abteilung WHERE id = ?').run(id);
+  async delete(id: number): Promise<void> {
+    await this.findById(id);
+    await client.execute({
+      sql: 'DELETE FROM abteilung WHERE id = ?',
+      args: [id],
+    });
   },
 };
-
