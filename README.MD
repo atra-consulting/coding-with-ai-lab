@@ -233,6 +233,8 @@ Playwright-MCP ermöglicht der AI, direkt mit der laufenden Anwendung im Browser
 
 Architektur-Details: **[docs/specs/SPECS.md](docs/specs/SPECS.md)**
 
+Konventionen und Patterns für AI-gestützte Entwicklung: **[AGENTS.md](AGENTS.md)**
+
 ---
 
 ## Weiterführende Dokumentation
@@ -247,7 +249,8 @@ Architektur-Details: **[docs/specs/SPECS.md](docs/specs/SPECS.md)**
 | [docs/SKILLS.md](docs/SKILLS.md) | Alle 4 Custom-Skills erklärt |
 | [docs/TRANSFER.md](docs/TRANSFER.md) | Skills & Subagents ins eigene Projekt übernehmen |
 | [docs/TOOLS.md](docs/TOOLS.md) | Produktivitäts-Rechner, Agent-Tasks, Ticket-Board |
-| [CLAUDE.md](CLAUDE.md) | Anweisungen und Konventionen für AI-Coding-Assistenten |
+| [AGENTS.md](AGENTS.md) | Anweisungen und Konventionen für AI-Coding-Assistenten (tool-neutral) |
+| [CLAUDE.md](CLAUDE.md) | Claude-Code-Spezifika (Subagents, Spec-Leselisten) — importiert `AGENTS.md` |
 | [docs/specs/SPECS.md](docs/specs/SPECS.md) | Detaillierte Spezifikationen pro Bereich |
 | [docs/adr/](docs/adr/) | Architecture Decision Records |
 | [docs/prds/](docs/prds/) | Product Requirement Documents |
@@ -262,7 +265,8 @@ Architektur-Details: **[docs/specs/SPECS.md](docs/specs/SPECS.md)**
 ├── docs/             Installationsanleitung, Architektur, Specs, ADRs, PRDs, Tasks
 ├── start.sh          Startskript (macOS/Linux)
 ├── start.bat         Startskript (Windows)
-└── CLAUDE.md         Anweisungen für AI-Coding-Assistenten
+├── AGENTS.md         Anweisungen für AI-Coding-Assistenten (tool-neutral)
+└── CLAUDE.md         Claude-Code-Spezifika (importiert AGENTS.md)
 ```
 
 ---
