@@ -1,10 +1,10 @@
 {
   "version": 1,
   "task_key": "RENAME-BEREIT-LABEL",
-  "status": "in_progress",
-  "current_step": "4.5",
+  "status": "completed",
+  "current_step": "12.3",
   "started": "2026-08-17T06:56:09Z",
-  "updated": "2026-08-17T06:56:09Z",
+  "updated": "2026-08-17T07:05:00Z",
   "config": {
     "input_mode": "freeform",
     "user_description": "Change the \"ZU BEREIT\" string in the highlighted two places to just \"BEREIT\" (ticket-board KPI tile label and column header)",
@@ -14,9 +14,9 @@
     "branch_name": "rename-bereit-label-ticket-board",
     "original_branch": "main",
     "docs_folder": "docs",
-    "workflow_scope": null,
+    "workflow_scope": "create-pr",
     "keep_settings": { "prd": "ask", "plan": "ask", "review": "always", "state": "ask" },
-    "keep_files": null,
+    "keep_files": { "plan": false, "review": true, "state": false },
     "open_md_setting": "never",
     "auto_open_md": false,
     "unattended": false
@@ -28,7 +28,7 @@
     "coding_agents": ["be-coder", "db-coder", "fe-coder", "ui-designer", "be-test-coder", "fe-test-coder", "python-coder", "shell-coder", "skill-coder"],
     "review_agents": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer", "be-test-reviewer", "fe-test-reviewer", "python-reviewer", "shell-reviewer", "skill-reviewer"],
     "test_runner_agents": [],
-    "test_command": null,
+    "test_command": "cd frontend && npx ng test --configuration=ci",
     "test_scopes": [],
     "youtrack_available": false,
     "youtrack_mcp": null,
@@ -36,17 +36,24 @@
     "youtrack_on_resolve": null
   },
   "artifacts": {
-    "prd_skipped": null,
+    "prd_skipped": true,
     "prd_file": null,
-    "plan_file": null,
+    "plan_file": "docs/plans/PLAN-RENAME-BEREIT-LABEL.md",
     "pr_url": null,
-    "last_test_run": null,
+    "last_test_run": { "ran_full": true, "scopes_run": [] },
     "branch_sync": null,
     "ci": null,
     "blocker": null
   },
   "delegation": {
-    "assignments": [],
+    "assignments": [
+      { "step": "Plan draft", "agent": "fe-coder", "model": "sonnet", "verification": "n/a (draft)" },
+      { "step": "Plan review: fe-reviewer", "agent": "fe-reviewer", "model": "haiku", "verification": "orchestrator read report" },
+      { "step": "Implementation: Rename label in ticket-board.component.ts", "agent": "fe-coder", "model": "haiku", "verification": "diff read" },
+      { "step": "Implementation: Update ticket-board.component.spec.ts", "agent": "fe-coder", "model": "haiku", "verification": "diff read" },
+      { "step": "Test run: full", "agent": "general-purpose", "model": "haiku", "verification": "orchestrator read report" },
+      { "step": "Post-review testing: fe-reviewer", "agent": "fe-reviewer", "model": "sonnet", "verification": "orchestrator read report" }
+    ],
     "escalations": []
   },
   "unattended_log": [],
