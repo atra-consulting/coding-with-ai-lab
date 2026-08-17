@@ -1,10 +1,10 @@
 {
   "version": 1,
   "task_key": "TICKET-DETAIL-BEREIT-LABEL",
-  "status": "in_progress",
-  "current_step": "4.5",
+  "status": "completed",
+  "current_step": "12.3",
   "started": "2026-08-17T08:56:11Z",
-  "updated": "2026-08-17T08:56:11Z",
+  "updated": "2026-08-17T09:05:00Z",
   "config": {
     "input_mode": "freeform",
     "user_description": "Follow up on the \"Zu bereit\" label rename: update the remaining occurrences in frontend/src/app/features/admin/tickets/ticket-detail.component.ts (statusLabel() for TODO status, tooltip, notification message, toggle message, button title) to say \"Bereit\" instead, so the ticket detail page matches the ticket board's rename from PR #130.",
@@ -14,9 +14,9 @@
     "branch_name": "ticket-detail-bereit-label-rename",
     "original_branch": "main",
     "docs_folder": "docs",
-    "workflow_scope": null,
+    "workflow_scope": "full",
     "keep_settings": { "prd": "ask", "plan": "ask", "review": "always", "state": "ask" },
-    "keep_files": null,
+    "keep_files": { "plan": false, "review": true, "state": false },
     "open_md_setting": "never",
     "auto_open_md": false,
     "unattended": false
@@ -28,7 +28,7 @@
     "coding_agents": ["be-coder", "db-coder", "fe-coder", "ui-designer", "be-test-coder", "fe-test-coder", "python-coder", "shell-coder", "skill-coder"],
     "review_agents": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer", "be-test-reviewer", "fe-test-reviewer", "python-reviewer", "shell-reviewer", "skill-reviewer"],
     "test_runner_agents": [],
-    "test_command": null,
+    "test_command": "cd frontend && npx ng test --configuration=ci",
     "test_scopes": [],
     "youtrack_available": false,
     "youtrack_mcp": null,
@@ -36,17 +36,28 @@
     "youtrack_on_resolve": null
   },
   "artifacts": {
-    "prd_skipped": null,
+    "prd_skipped": true,
     "prd_file": null,
-    "plan_file": null,
+    "plan_file": "docs/plans/PLAN-TICKET-DETAIL-BEREIT-LABEL.md",
     "pr_url": null,
     "last_test_run": null,
-    "branch_sync": null,
+    "branch_sync": { "ran": true, "merged": true, "conflicts": [], "resolved_by": null },
     "ci": null,
     "blocker": null
   },
   "delegation": {
-    "assignments": [],
+    "assignments": [
+      { "step": "Plan draft", "agent": "fe-coder", "model": "sonnet", "verification": "n/a (draft)" },
+      { "step": "Plan review: fe-reviewer", "agent": "fe-reviewer", "model": "haiku", "verification": "orchestrator read report" },
+      { "step": "Implementation: Rename labels in ticket-detail.component.ts", "agent": "fe-coder", "model": "haiku", "verification": "diff read" },
+      { "step": "Implementation: Add statusLabel TODO test", "agent": "fe-coder", "model": "haiku", "verification": "diff read" },
+      { "step": "Test run: full", "agent": "general-purpose", "model": "haiku", "verification": "orchestrator read report" },
+      { "step": "Branch sync merge", "agent": "direct", "model": "n/a", "verification": "clean merge, re-tested" },
+      { "step": "Test run: full (post-merge)", "agent": "general-purpose", "model": "haiku", "verification": "orchestrator read report" },
+      { "step": "Review fix: PR #130 merge sequencing", "agent": "direct", "model": "n/a", "verification": "reviewer re-check" },
+      { "step": "Review fix: Playwright scenario 3", "agent": "direct", "model": "n/a", "verification": "reviewer re-check + live run" },
+      { "step": "Post-review testing: fe-reviewer", "agent": "fe-reviewer", "model": "sonnet", "verification": "orchestrator read report" }
+    ],
     "escalations": []
   },
   "unattended_log": [],
