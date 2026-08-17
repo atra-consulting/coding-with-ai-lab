@@ -19,3 +19,9 @@
 - Action: hover the "Nach Bereit" button, then click it
 - Verify: use browser_snapshot to inspect the button's tooltip text before clicking, and the success toast text after clicking
 - Expected: tooltip reads `...und nach "Bereit" verschieben`; toast reads `...und nach "Bereit" verschoben.`; "Zu bereit" does not appear
+
+### 3. Owner-toggle reset tooltip and toast use the new label
+- Navigate to: `/admin/tickets`, open a ticket with `owner=HUMAN` and status other than `DONE`/`TODO` (e.g. an `ON_HOLD` ticket)
+- Action: hover the owner-toggle button, then click it to set owner to `AI` (this resets status back to `TODO`)
+- Verify: use browser_snapshot to inspect the button's tooltip text before clicking, and the success toast text after clicking
+- Expected: tooltip reads `...Status auf "Bereit" zurücksetzen`; toast reads `...Status auf "Bereit" zurückgesetzt.`; "Zu bereit" does not appear
