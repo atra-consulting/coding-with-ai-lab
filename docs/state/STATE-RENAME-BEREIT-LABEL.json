@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "task_key": "RENAME-BEREIT-LABEL",
+  "status": "in_progress",
+  "current_step": "4.5",
+  "started": "2026-08-17T06:56:09Z",
+  "updated": "2026-08-17T06:56:09Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Change the \"ZU BEREIT\" string in the highlighted two places to just \"BEREIT\" (ticket-board KPI tile label and column header)",
+    "special_instructions": null,
+    "ticket_id": null,
+    "ticket_url": null,
+    "branch_name": "rename-bereit-label-ticket-board",
+    "original_branch": "main",
+    "docs_folder": "docs",
+    "workflow_scope": null,
+    "keep_settings": { "prd": "ask", "plan": "ask", "review": "always", "state": "ask" },
+    "keep_files": null,
+    "open_md_setting": "never",
+    "auto_open_md": false,
+    "unattended": false
+  },
+  "discovery": {
+    "agents_available": true,
+    "planner_agents": [],
+    "writer_agents": ["ba-writer"],
+    "coding_agents": ["be-coder", "db-coder", "fe-coder", "ui-designer", "be-test-coder", "fe-test-coder", "python-coder", "shell-coder", "skill-coder"],
+    "review_agents": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer", "be-test-reviewer", "fe-test-reviewer", "python-reviewer", "shell-reviewer", "skill-reviewer"],
+    "test_runner_agents": [],
+    "test_command": null,
+    "test_scopes": [],
+    "youtrack_available": false,
+    "youtrack_mcp": null,
+    "youtrack_on_start": null,
+    "youtrack_on_resolve": null
+  },
+  "artifacts": {
+    "prd_skipped": null,
+    "prd_file": null,
+    "plan_file": null,
+    "pr_url": null,
+    "last_test_run": null,
+    "branch_sync": null,
+    "ci": null,
+    "blocker": null
+  },
+  "delegation": {
+    "assignments": [],
+    "escalations": []
+  },
+  "unattended_log": [],
+  "completed_steps": []
+}
