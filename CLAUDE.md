@@ -13,7 +13,6 @@ configuration belongs in this file.
 | admin | Local dev environment, SQLite database, process management | ops |
 | ba-reviewer | Review PRDs, specs, plans for gaps and issues | review |
 | ba-writer | Create business specs, requirements, plans | writing |
-| requirements-reviewer | Review requirements, user stories, PRDs for gaps and missing edge cases | review |
 | be-coder | Node.js / TypeScript backend code | coding |
 | be-reviewer | Review backend code, security, patterns | review |
 | db-coder | Drizzle ORM queries, entity schemas, data access | coding |
@@ -45,7 +44,7 @@ Each subagent in `.claude/agents/` has a `## Specifications` reading list naming
 
 | Spec | Scope | Primary for |
 |------|-------|-------------|
-| [`DOMAIN.md`](docs/specs/DOMAIN.md) | Business domain: entity meaning, relationships, delete behavior, sales pipeline, roles (no schema) | All 18 domain-bound agents (every agent except the `python-*`, `shell-*`, `skill-*` tooling agents) |
+| [`DOMAIN.md`](docs/specs/DOMAIN.md) | Business domain: entity meaning, relationships, delete behavior, sales pipeline, roles (no schema) | All 17 domain-bound agents (every agent except the `python-*`, `shell-*`, `skill-*` tooling agents) |
 | [`SPECS.md`](docs/specs/SPECS.md) | Root index, architecture, tech stack, domain model, seed data | ba-writer, ba-reviewer |
 | [`SPECS-backend.md`](docs/specs/SPECS-backend.md) | Backend API: routes, services, auth, errors, pagination, code patterns | be-coder, be-reviewer |
 | [`SPECS-database.md`](docs/specs/SPECS-database.md) | Entities, schema, columns, enums, foreign keys, migrations | db-coder, db-reviewer |

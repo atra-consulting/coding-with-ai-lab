@@ -1,6 +1,6 @@
 # Subagents
 
-Dieses Projekt hat 24 Subagents. Sie liegen in `.claude/agents/`. Jeder Agent ist eine Markdown-Datei.
+Dieses Projekt hat 23 Subagents. Sie liegen in `.claude/agents/`. Jeder Agent ist eine Markdown-Datei.
 
 ## Was ist ein Subagent?
 
@@ -46,7 +46,6 @@ Jede Zeile: Name, Zweck, Modell. Das Modell steht in der Agent-Datei (`model:`).
 | `db-reviewer` | Prüft Queries und Schema. Performance, Schema-Drift. | sonnet |
 | `ui-reviewer` | Prüft die UI. Usability, WCAG, UX-Probleme. | sonnet |
 | `ba-reviewer` | Prüft PRDs, Specs, Pläne. Findet Lücken. | sonnet |
-| `requirements-reviewer` | Prüft Anforderungen und User Stories. Findet fehlende Akzeptanzkriterien. | opus |
 
 ### Writing — Anforderungen schreiben
 
