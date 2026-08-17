@@ -1,2 +1,0 @@
-- [Agent-task reject patterns](project_agent_task_reject_patterns.md) — when to ABLEHNEN vague agent-tasks; checklist of facts a buildable task must name
-- [Semi-auto ticket build patterns](project_semi_auto_ticket_build_patterns.md) — when an AI ticket is BAUEN vs FRAGEN; thread resolves open decisions, verify code claims
