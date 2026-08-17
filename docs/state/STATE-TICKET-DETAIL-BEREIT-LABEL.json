@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "task_key": "TICKET-DETAIL-BEREIT-LABEL",
+  "status": "in_progress",
+  "current_step": "4.5",
+  "started": "2026-08-17T08:56:11Z",
+  "updated": "2026-08-17T08:56:11Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "Follow up on the \"Zu bereit\" label rename: update the remaining occurrences in frontend/src/app/features/admin/tickets/ticket-detail.component.ts (statusLabel() for TODO status, tooltip, notification message, toggle message, button title) to say \"Bereit\" instead, so the ticket detail page matches the ticket board's rename from PR #130.",
+    "special_instructions": null,
+    "ticket_id": null,
+    "ticket_url": null,
+    "branch_name": "ticket-detail-bereit-label-rename",
+    "original_branch": "main",
+    "docs_folder": "docs",
+    "workflow_scope": null,
+    "keep_settings": { "prd": "ask", "plan": "ask", "review": "always", "state": "ask" },
+    "keep_files": null,
+    "open_md_setting": "never",
+    "auto_open_md": false,
+    "unattended": false
+  },
+  "discovery": {
+    "agents_available": true,
+    "planner_agents": [],
+    "writer_agents": ["ba-writer"],
+    "coding_agents": ["be-coder", "db-coder", "fe-coder", "ui-designer", "be-test-coder", "fe-test-coder", "python-coder", "shell-coder", "skill-coder"],
+    "review_agents": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer", "be-test-reviewer", "fe-test-reviewer", "python-reviewer", "shell-reviewer", "skill-reviewer"],
+    "test_runner_agents": [],
+    "test_command": null,
+    "test_scopes": [],
+    "youtrack_available": false,
+    "youtrack_mcp": null,
+    "youtrack_on_start": null,
+    "youtrack_on_resolve": null
+  },
+  "artifacts": {
+    "prd_skipped": null,
+    "prd_file": null,
+    "plan_file": null,
+    "pr_url": null,
+    "last_test_run": null,
+    "branch_sync": null,
+    "ci": null,
+    "blocker": null
+  },
+  "delegation": {
+    "assignments": [],
+    "escalations": []
+  },
+  "unattended_log": [],
+  "completed_steps": []
+}
