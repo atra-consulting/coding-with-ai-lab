@@ -473,7 +473,7 @@ function baueInitialeProzessDaten(): Record<ProzessKey, ProzessSnapshot> {
         color: #fff;
       }
       .flow-chip-wait {
-        background: #cf944f;
+        background: #f98752;
         color: #212529;
       }
       .flow-connector {
@@ -1029,7 +1029,7 @@ export class RechnerComponent implements OnInit {
     return computePieSlices(
       [
         { key: 'work', value: work, color: '#264892', label: arbeitsLabel },
-        { key: 'wait', value: wait, color: '#cf944f', label: 'Wartezeit' },
+        { key: 'wait', value: wait, color: '#f98752', label: 'Wartezeit' },
       ],
       50,
       50,

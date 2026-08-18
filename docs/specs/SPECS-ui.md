@@ -40,17 +40,17 @@ Global header overrides in `frontend/src/styles.scss` (applied via CSS class sel
 | Selector | Property | Value | `!important` |
 |----------|----------|-------|:---:|
 | `.ag-header` | `background-color` | `#f0f4ff` | yes |
-| `.ag-header` | `border-bottom` | `3px solid #0044cc` | yes |
-| `.ag-header-cell-label` | `color` | `#0044cc` | yes |
+| `.ag-header` | `border-bottom` | `3px solid #264892` | yes |
+| `.ag-header-cell-label` | `color` | `#264892` | yes |
 | `.ag-header-cell-label` | `font-weight` | `800` | yes |
 | `.ag-header-cell-label` | `text-transform` | `uppercase` | no |
 | `.ag-header-cell-label` | `font-size` | `0.85rem` | no |
 | `.ag-header-cell-label` | `letter-spacing` | `0.05em` | no |
-| `.ag-header-icon` | `color` | `#0044cc` | yes |
+| `.ag-header-icon` | `color` | `#264892` | yes |
 
 > **Note:** The five rows marked `yes` in the `!important` column carry that flag in the source. These overrides require `!important` to penetrate AG Grid's own theme cascade (themeQuartz applies its styles via high-specificity scoped selectors). Rows without `!important` target properties that AG Grid's theme does not set directly, so the flag is not needed there.
 
-Note: `#0044cc` is a grid-only blue distinct from `$primary` (`#264892`). It is used nowhere else.
+Note: the grid header reuses `$primary` (`#264892`); there is no separate grid blue.
 
 ---
 
@@ -210,12 +210,12 @@ Canonical home. Cross-referenced from the Produktivität → Rechner section in 
 | Chart | Slice / segment | Color |
 |-------|-----------------|-------|
 | Pie A (Arbeit vs. Warten) — all 4 tabs | Arbeit / KI-Arbeit | `#264892` |
-| Pie A (Arbeit vs. Warten) — all 4 tabs | Warten | `#cf944f` |
+| Pie A (Arbeit vs. Warten) — all 4 tabs | Warten | `#f98752` |
 | Pie B (Rollen-Split) — agile tabs only | BA | `#6f42c1` |
 | Pie B (Rollen-Split) — agile tabs only | Dev | `#0f766e` |
 | Pie B (Rollen-Split) — agile tabs only | Tester | `#9a6700` |
 
-`#264892` and `#cf944f` also color the work/wait segments of the Balken bar and the Flussdiagramm boxes. The 3 role colors are fixed, identical across both agile tabs, and distinct from Bootstrap's `success`/`danger` semantic colors. Each slice's percent label is white (`#fff`), on both Pie A and Pie B.
+`#264892` and `#f98752` also color the work/wait segments of the Balken bar and the Flussdiagramm boxes. The 3 role colors are fixed, identical across both agile tabs, and distinct from Bootstrap's `success`/`danger` semantic colors. Each slice's percent label is white (`#fff`), on both Pie A and Pie B.
 
 ---
 

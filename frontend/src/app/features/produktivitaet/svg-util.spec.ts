@@ -145,7 +145,7 @@ describe('computePieSlices', () => {
     const result = computePieSlices(
       [
         { key: 'work', value: 70, color: '#264892', label: 'Arbeit' },
-        { key: 'wait', value: 30, color: '#cf944f', label: 'Wartezeit' },
+        { key: 'wait', value: 30, color: '#f98752', label: 'Wartezeit' },
       ],
       CX,
       CY,
@@ -201,7 +201,7 @@ describe('computePieSlices', () => {
     const result = computePieSlices(
       [
         { key: 'work', value: 0, color: '#264892', label: 'Arbeit' },
-        { key: 'wait', value: 0, color: '#cf944f', label: 'Wartezeit' },
+        { key: 'wait', value: 0, color: '#f98752', label: 'Wartezeit' },
       ],
       CX,
       CY,
@@ -225,7 +225,7 @@ describe('computePieSlices', () => {
     const result = computePieSlices(
       [
         { key: 'work', value: 90, color: '#264892', label: 'Arbeit' },
-        { key: 'wait', value: 0, color: '#cf944f', label: 'Wartezeit' },
+        { key: 'wait', value: 0, color: '#f98752', label: 'Wartezeit' },
       ],
       CX,
       CY,
@@ -254,7 +254,7 @@ describe('computePieSlices', () => {
       const result = computePieSlices(
         [
           { key: 'work', value: 90, color: '#264892', label: 'Arbeit' },
-          { key: 'wait', value: 2880, color: '#cf944f', label: 'Wartezeit' },
+          { key: 'wait', value: 2880, color: '#f98752', label: 'Wartezeit' },
         ],
         CX,
         CY,
