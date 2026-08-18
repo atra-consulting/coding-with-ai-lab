@@ -4,10 +4,6 @@ Project knowledge for any AI coding assistant. Claude-Code-specific configuratio
 (subagents, spec reading lists) lives in [`CLAUDE.md`](CLAUDE.md), which imports
 this file.
 
-**Marke:** Farben, Schrift, Logos und Bildsprache stehen in
-[`atra-brand`](https://github.com/atra-consulting/atra-brand) — dort nachschlagen,
-nicht aus einem anderen Projekt abschreiben.
-
 ## Project
 
 Full-stack CRM application. Node.js/TypeScript (Express + Drizzle ORM + libSQL/SQLite via `@libsql/client`) backend, Angular 21 frontend. German domain model: Firma, Person, Abteilung, Adresse, Aktivitaet, Chance. Local SQLite file at `backend/data/crmdb.sqlite`; production runs on Turso cloud when `TURSO_DATABASE_URL` is set. Authentication via hardcoded users (`backend/src/config/users.ts`, bcrypt-hashed passwords), session-based and persisted to the `sessions` table (`LibsqlSessionStore`). 3 users: admin/admin123 (ADMIN), user/test123 (USER), demo/demo1234 (ADMIN). Enforcement is role-based via `requireRole('ADMIN')`; users also carry a `permissions` array, but no `requirePermission` middleware is wired up.
