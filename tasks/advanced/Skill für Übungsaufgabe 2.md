@@ -115,7 +115,7 @@ Generische Kommentare („unklar") sind nicht akzeptabel.
 Den Slash-Befehl aufrufen:
 
 ```
-/project:plan-and-do "<der Aufgaben-Body, plus konkrete Details aus Titel/Metadata>"
+/plan-and-do "<der Aufgaben-Body, plus konkrete Details aus Titel/Metadata>"
 ```
 
 Der Skill hat interaktive Checkpoints (`AskUserQuestion`), die NICHT beantwortet werden können. **Jeden vorab autorisieren. Diese Daueranweisungen dem Aufruf voranstellen und auf JEDEN Checkpoint anwenden, ohne je anzuhalten:**

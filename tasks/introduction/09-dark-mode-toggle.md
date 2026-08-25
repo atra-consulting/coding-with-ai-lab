@@ -1,37 +1,31 @@
-# Bonusaufgabe 1
+# 09 — Dunkelmodus-Umschalter
 
-# Dunkelmodus-Umschalter
+**Dauer:** 20 min
+**Sozialform:** einzeln
+**Werkzeug:** Claude Code
+**Voraussetzung:** Lab läuft unter `localhost:7200`
+**Ziel:** Ein Icon-Button im Header schaltet die App zwischen hell und dunkel, und die Wahl überlebt das Neuladen.
+**Ergebnis:** Ein Umschalter, dessen Zustand in `localStorage` steht und beim nächsten Öffnen wiederhergestellt wird.
 
-**Umfang:** klein · **Bereiche:** Frontend · **Dauer:** ~20 Min
+Bootstrap 5.3 kann das nativ über `data-bs-theme="dark"` am `<html>`-Element —
+eigenes CSS braucht es dafür nicht.
 
-## Ziel
+## Schritte
 
-Rechts oben in der Kopfzeile erscheint ein kleiner Mond-/Sonne-Icon-Button.
-Klick schaltet zwischen Hell- und Dunkelmodus. Die Wahl wird in
-`localStorage` gespeichert und beim nächsten Seitenladen wiederhergestellt.
-
-Bootstrap 5.3 unterstützt das nativ über `data-bs-theme="dark"` am
-`<html>`-Element — kein eigenes CSS nötig.
+1. Claude Code im Projekt-Root starten: `claude --dangerously-skip-permissions`.
+2. Den Prompt einfügen und an den Checkpoints PRD, Plan und Review lesen,
+   dann `Continue`.
+3. App neu starten (`./start.sh`) und den Button rechts oben klicken.
+4. Neu laden und prüfen, ob der Modus geblieben ist.
+5. Diff ansehen: `git diff main --stat`.
 
 ## Prompt
 
-Claude starten und mit "Tab" in den Auto-Modus schalten. Mit `/model` Sonnet
-auswählen und dann folgenden Prompt ausführen, der den
-`/project:plan-and-do` Skill aufruft. 
-
 ```
-/plan-and-do Dunkelmodus-Umschalter im Header. 
-Erstellen keinen PR und pushe nicht - du hast bei diesem Repo nicht
-die Rechte dazu. Schreibe keine Tests, die den Browser automatisieren,
-und mache nur eine statt drei Review-Runden. Aktualisiere am Schluss
-auch nicht die Specs und Subagents.
-
-Kleiner Icon-Button rechts oben: Klick schaltet die gesamte App
-zwischen hell und dunkel um. Die Wahl wird gespeichert und beim
-nächsten Öffnen wiederhergestellt.
+/plan-and-do "Dunkelmodus-Umschalter im Header. Kleiner Icon-Button rechts oben: Mond im Hellmodus, Sonne im Dunkelmodus. Klick schaltet die gesamte App zwischen hell und dunkel um. Die Wahl wird gespeichert und beim nächsten Öffnen wiederhergestellt."
 ```
 
-## Erwartetes Ergebnis
+## Abnahme
 
 - Button im Header (`layout/header` oder Sidebar-Nähe).
 - Nach Klick wechselt die komplette App-Farbpalette.
@@ -47,7 +41,7 @@ nächsten Öffnen wiederhergestellt.
 | Flackern beim Laden (FOUC) | Theme aus `localStorage` bereits in `index.html` via Inline-Script setzen, bevor Angular bootstrapped. |
 | ag-Grid bleibt hell | Separates Theme — CSS-Klasse `ag-theme-alpine-dark` dynamisch setzen, wenn Dark Mode aktiv. |
 
-## Diskussionspunkte
+## Diskussion
 
 - System-Präferenz respektieren: `window.matchMedia('(prefers-color-scheme: dark)')`?
 - Warum `localStorage` und nicht Backend-Profil?
