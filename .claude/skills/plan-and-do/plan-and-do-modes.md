@@ -56,13 +56,32 @@ Features:
   - Checkpoint persistence (quit/resume at any checkpoint)
   - Detects an existing PR early; auto-derives PR prefix (feat/fix/chore) from commits
   - PR creation/update and merge workflow
+  - Model-tier delegation: dispatches work to haiku/sonnet/opus by difficulty, with verification and escalation
 
 Agent Support:
   If the project CLAUDE.md defines an ## Agents section:
   - Coding agents (be-coder, fe-coder, db-coder, ui-designer) implement tasks
   - Reviewer agents (be-reviewer, fe-reviewer, db-reviewer, ui-reviewer) review code
   - Independent agents launch in parallel for speed
+  - Planner agents (name ends -planner, or is exactly planner) draft the PRD and the plan. Optional.
   If no agents defined: skill does all work directly (original behavior)
+
+Delegation:
+  Three worker tiers. Every agent dispatch names one:
+  - haiku: mechanical work. Renames, boilerplate, spelled-out diffs, repetitive edits.
+  - sonnet: standard, well-specified coding. One endpoint, a bug fix with a known cause.
+  - opus: hard slices. Cross-cutting changes, unknown-cause debugging, security- or architecture-sensitive work.
+  Rule: pick the lowest tier that can plausibly succeed.
+  Implementation slices default to sonnet — opus needs a named trigger, never a hunch.
+  Agent picks the domain. Model picks the difficulty. The model parameter beats the agent's frontmatter model.
+  Verification: every coding slice gets checked — diff read or delegated review.
+  Tests never run per slice. They run once after a parallel group, and at Step 9.
+  Escalation: two attempts per tier, then one tier up.
+  Full rules: plan-and-do-delegation.md
+
+  Planner agent (optional): name ends -planner, or is exactly planner.
+  When present, it drafts the PRD (Step 6.2) and the whole plan (Step 7.3).
+  Step-by-step creation guide with a copy-paste agent file: plan-and-do-delegation.md
 
 File Locations:
   - Specifications (PRD) files: [docs]/prds/PRD-[task_key].md
@@ -148,7 +167,7 @@ Execute when `$ARGUMENTS` contains "doctor". Perform health checks and STOP:
    Checking agent availability...
    ```
    - Read project CLAUDE.md for ## Agents section
-     - If found: List discovered agents
+     - If found: List discovered agents by category — `writer_agents`, `coding_agents`, `review_agents`, `test_coding_agents`, `test_review_agents`, `test_runner_agents`, `tooling_coding_agents`, `tooling_review_agents`, `planner_agents`
      - If not found: Report "No agents in project CLAUDE.md (skill runs in direct mode)"
 
 4. Test Command Check:
