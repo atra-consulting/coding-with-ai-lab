@@ -34,6 +34,8 @@ configuration belongs in this file.
 | shell-reviewer | Review shell scripts for portability, hangs, and safety | review |
 | skill-coder | Create and update Claude Code skills and subagents | coding |
 | skill-reviewer | Review Claude Code skills and subagents | review |
+| data-reader | Gather facts from files or the web, read-only | research |
+| data-writer | Write already-finished content to a file at a known path, write-only | writing |
 
 Agent files: `.claude/agents/`
 
