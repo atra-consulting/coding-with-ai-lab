@@ -14,22 +14,24 @@ const __dirname = dirname(__filename);
 const dataDir = join(__dirname, '..', '..', 'data');
 
 const tursoUrl = process.env['TURSO_DATABASE_URL'];
+const isTest = process.env['NODE_ENV'] === 'test';
 
 // Route the Playwright suite (NODE_ENV=test) to its own SQLite file so
-// `npm test` never touches the developer's working database. Turso always
-// wins when configured, so cloud/CI runs are unaffected.
-const dbFileName =
-  !tursoUrl && process.env['NODE_ENV'] === 'test' ? 'crmdb.test.sqlite' : 'crmdb.sqlite';
+// `npm test` never touches the developer's working database — this wins
+// even when TURSO_DATABASE_URL is set, so a stray Turso env var left over
+// in a developer's shell can't send the suite's destructive resets
+// (ticket/agent_task wipes) against a real cloud database.
+const dbFileName = isTest ? 'crmdb.test.sqlite' : 'crmdb.sqlite';
 const dbPath = join(dataDir, dbFileName);
 
-// Only create the local data dir when actually using the file: default —
-// on Vercel (TURSO_DATABASE_URL set) the filesystem is read-only and
-// mkdirSync at import time crashes the whole function.
-if (!tursoUrl) {
+// Only create the local data dir when actually using a local file — on
+// Vercel (TURSO_DATABASE_URL set, not testing) the filesystem is
+// read-only and mkdirSync at import time crashes the whole function.
+if (!tursoUrl || isTest) {
   mkdirSync(dataDir, { recursive: true });
 }
 
-const url = tursoUrl ?? `file:${dbPath}`;
+const url = isTest ? `file:${dbPath}` : (tursoUrl ?? `file:${dbPath}`);
 const authToken = process.env['TURSO_AUTH_TOKEN'];
 
 // Do NOT set intMode — the default "number" is required by the DTO interfaces.

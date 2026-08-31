@@ -55,13 +55,12 @@ export default async function globalSetup(): Promise<() => Promise<void>> {
   // -------------------------------------------------------------------------
   // 1b. Delete the test DB file and its SQLite sidecar files so each run
   //     starts from a clean, freshly-migrated/seeded schema. Never touches
-  //     the dev DB (crmdb.sqlite) — only the `.test.` file. Skipped entirely
-  //     when running against Turso, where there is nothing local to delete.
+  //     the dev DB (crmdb.sqlite) — only the `.test.` file. Unconditional:
+  //     db.ts always uses this local file under NODE_ENV=test, even if
+  //     TURSO_DATABASE_URL happens to be set in the environment.
   // -------------------------------------------------------------------------
-  if (!process.env['TURSO_DATABASE_URL']) {
-    for (const suffix of ['', '-journal', '-wal', '-shm']) {
-      rmSync(`${TEST_DB_PATH}${suffix}`, { force: true });
-    }
+  for (const suffix of ['', '-journal', '-wal', '-shm']) {
+    rmSync(`${TEST_DB_PATH}${suffix}`, { force: true });
   }
 
   const env: Record<string, string> = {
@@ -73,15 +72,6 @@ export default async function globalSetup(): Promise<() => Promise<void>> {
     AGENT_API_TOKEN: TEST_AGENT_TOKEN,
     AGENT_AUTH_ALLOW_LOOPBACK: '1',
   };
-
-  // Pass Turso credentials through when running against a remote DB (e.g. CI).
-  // Local/CI default: TURSO_DATABASE_URL unset → db.ts uses the file: fallback.
-  if (process.env['TURSO_DATABASE_URL']) {
-    env['TURSO_DATABASE_URL'] = process.env['TURSO_DATABASE_URL'];
-  }
-  if (process.env['TURSO_AUTH_TOKEN']) {
-    env['TURSO_AUTH_TOKEN'] = process.env['TURSO_AUTH_TOKEN'];
-  }
 
   const tsxBin = join(BACKEND_ROOT, 'backend', 'node_modules', '.bin', 'tsx');
   const indexTs = join(BACKEND_ROOT, 'backend', 'src', 'index.ts');

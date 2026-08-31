@@ -34,11 +34,11 @@ cd backend && npx playwright test -g "<test title>"          # targeted by title
 
 ### Global setup
 
-The Playwright suite runs against its own database file, `backend/data/crmdb.test.sqlite` — never the shared development database (`backend/data/crmdb.sqlite`). Selection happens via `NODE_ENV=test`, set at the top of `backend/playwright.config.ts`, above `defineConfig`, so both the spawned backend process and the test-runner process (which also opens the DB directly, e.g. for `resetDatabase()`) agree on the same file.
+The Playwright suite runs against its own database file, `backend/data/crmdb.test.sqlite` — never the shared development database (`backend/data/crmdb.sqlite`), and never a configured Turso database. Selection happens via `NODE_ENV=test`, set at the top of `backend/playwright.config.ts`, above `defineConfig`, so both the spawned backend process and the test-runner process (which also opens the DB directly, e.g. for `resetDatabase()`) agree on the same file. `backend/src/config/db.ts` checks `NODE_ENV=test` *before* `TURSO_DATABASE_URL`, so a stray Turso credential left in a developer's shell can never route the suite's destructive resets (`resetDatabase()`, `ticketService.resetAll()`) at a real cloud database.
 
 `backend/src/test/globalSetup.ts` runs before the suite:
 1. Kills any existing process on port 7070.
-2. Deletes the test DB file plus its `-journal`, `-wal`, and `-shm` sidecar files, so every run starts from a fresh, empty database. Skipped when `TURSO_DATABASE_URL` is set — the remote database is never deleted.
+2. Deletes the test DB file plus its `-journal`, `-wal`, and `-shm` sidecar files, so every run starts from a fresh, empty database. Unconditional — this always runs, since `db.ts` always resolves to the local test file under `NODE_ENV=test`.
 3. Spawns the backend child process (`tsx src/index.ts`) with `NODE_ENV=test`, a fixed `AGENT_API_TOKEN` (exported as `TEST_AGENT_TOKEN`), and `AGENT_AUTH_ALLOW_LOOPBACK=1` — this bypasses the agent-token check for requests from localhost during the test run, so tests hitting agent-token-gated routes without a token from a loopback context may see a different status (e.g. 404 instead of 401) than a real deployment would return.
 4. Polls `GET /api/health` until the backend responds (30 s deadline).
 5. Returns a teardown function that SIGTERM-kills the backend.
