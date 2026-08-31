@@ -8,7 +8,7 @@ Today the app collects user feedback in one place and tracks work in a Kanban ti
 
 ### Technical Summary
 
-Port of an already-shipped feature from the sibling repo `coding-with-ai-demo`. Adds two new `ticket` fields — a `fullyReady` flag and a nullable `agentTaskId` link — both set once at creation, with a safe upgrade path for existing databases. A feedback item's ticket reference is a derived field, computed cheaply via a paginated query, never stored. Coupled in scope: the backend test suite moves to its own database file, so tests stop wiping the shared dev database. Also in scope, at the user's request: the Rechner color update and one missing spec sentence, both described under REQ-012 above.
+Port of an already-shipped feature from the sibling repo `coding-with-ai-demo`. Adds two new `ticket` fields — a `fullyReady` flag and a nullable `agentTaskId` link — both set once at creation, with a safe upgrade path for existing databases. A feedback item's ticket reference is a derived field, computed cheaply via a paginated query, never stored. Coupled in scope: the backend test suite moves to its own database file, so tests stop wiping the shared dev database. Also in scope, at the user's request: the Rechner color update and one missing spec sentence, both described under REQ-012 below.
 
 ---
 
@@ -303,5 +303,8 @@ Commits (base `0531385`):
 - `1254fa4` test: Add backend tests for feedback-ticket link and migration functions
 - `2cdf2ea` test: Add frontend tests for feedback-ticket cross-links and Rechner color
 - `9fea5a2` fix: Require positive agentTaskId in ticket create schema
+- `76a1d62` docs: Trim PRD to WHAT/WHY and add Implementierung section
+- `f443c50` docs: Remove dangling references to deleted PRD Technical Notes section
+- `d80c8f8` fix: Strengthen ticketId list assertion and add agentTaskId boundary tests
 
 PR: not opened yet. Link goes here once available.

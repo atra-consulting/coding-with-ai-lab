@@ -71,12 +71,22 @@ Frontend: `cd frontend && npm test`
 
 ### 3. Backend agent-task derived `ticketId`
 **Agent:** be-coder
-**Model:** sonnet — three call sites, exact SQL given below
+**Model:** sonnet — three call sites, SQL shape given below
 **Depends on:** Group 1 (`ticket.agentTaskId` and its index must exist)
 
 - [ ] `backend/src/services/agentTaskService.ts` — `AgentTaskDTO` and `AgentTaskRow` gain `ticketId: number | null`. `toDTO()` maps `ticketId: row.ticketId ?? null`.
 - [ ] `findById()` — add the correlated subquery to the projection: newest matching ticket, `WHERE t.agentTaskId = <row id>`, `ORDER BY t.createdAt DESC, t.id DESC LIMIT 1`. The `id` tie-break matters — seed and test rows share ISO timestamps to the millisecond. Single-row lookup, no wrapper needed.
-- [ ] `findAll()` — **must paginate before it looks up.** Replace `SELECT * FROM agent_task ${where} ORDER BY ... LIMIT ? OFFSET ?` with a wrapper form: the existing filtered/sorted/limited query becomes an inner derived table `p`, and the correlated subquery sits in the outer projection against `p.id`. Argument order stays `[...args, size, page * size]` because the placeholders remain inside the inner query. Do not bolt the subquery onto the outer `SELECT` — SQLite evaluates a projected correlated subquery once per row scanned for the sort, not once per row returned.
+- [ ] `findAll()` — **must paginate before it looks up.** Replace `SELECT * FROM agent_task ${where} ORDER BY ... LIMIT ? OFFSET ?` with a wrapper form: the existing filtered/sorted/limited query becomes an inner derived table `p`, and the correlated subquery sits in the outer projection against `p.id`. Argument order stays `[...args, size, page * size]` because the placeholders remain inside the inner query. Do not bolt the subquery onto the outer `SELECT` — SQLite evaluates a projected correlated subquery once per row scanned for the sort, not once per row returned. Final shape:
+  ```sql
+  SELECT p.*,
+         (SELECT t.id FROM ticket t WHERE t.agentTaskId = p.id
+          ORDER BY t.createdAt DESC, t.id DESC LIMIT 1) AS ticketId
+  FROM (
+    SELECT * FROM agent_task ${where}
+    ORDER BY ${sort.field} ${sort.direction}
+    LIMIT ? OFFSET ?
+  ) p
+  ```
 - [ ] `findNext()` — `RETURNING *` cannot carry a derived column. After the claim, re-fetch through `this.findById(row.id)` and return that. Keep the `null` return when no row was claimed.
 - [ ] No change to `start()`, `reject()`, `done()` — all three already end in `this.findById(id)`.
 - [ ] No route change in `backend/src/routes/agentTasks.ts`. No change to `parseSort`'s `agentTask` whitelist.
