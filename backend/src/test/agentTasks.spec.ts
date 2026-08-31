@@ -24,10 +24,21 @@
  *   GITHUB_ISSUE → ids 5-8
  *   APP_LOG      → ids 9-12, 19-20
  *   ERROR_REPORT → ids 13-16, 21-22
+ *
+ * PORT-FEEDBACK-TICKETS-APIS additions (bottom of this file): the derived,
+ * never-stored `ticketId` field on GET /:id, the paginated list, and
+ * GET /next — linked ticket wins, unlinked reports null (using a freshly
+ * INSERTed throwaway agent_task row, never a seeded id, so the assertion
+ * holds regardless of what earlier tests in this file already linked),
+ * newest-ticket-wins when two tickets point at the same feedback item,
+ * deleting the linked ticket clears the derived field again, and a direct
+ * SQL DELETE of the linked feedback row leaves the ticket intact with its
+ * agentTaskId cleared by ON DELETE SET NULL.
  */
 import { test, expect, request as playwrightRequest, type APIRequestContext } from '@playwright/test';
 import { resetDatabase, loginCtx } from './helpers.js';
 import { TEST_AGENT_TOKEN } from './globalSetup.js';
+import { client } from '../config/db.js';
 
 const BASE_URL = 'http://localhost:7070';
 
@@ -47,6 +58,7 @@ interface AgentTaskDTO {
   resolvedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  ticketId: number | null;
 }
 
 interface PageResult<T> {
@@ -939,5 +951,225 @@ test.describe('POST /api/agent-tasks/:id/start', () => {
     } finally {
       await proxyCtx.dispose();
     }
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PORT-FEEDBACK-TICKETS-APIS — derived ticketId field
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// AgentTaskDTO.ticketId is derived on every read via a correlated subquery
+// against ticket.agentTaskId — never stored on agent_task itself. Covered
+// here: GET /:id (linked, unlinked, ticket-deleted, feedback-row-deleted),
+// the newest-wins tie-break when two tickets link the same feedback item,
+// the paginated list, and GET /next.
+
+// ─── Suite: Derived ticketId — GET /:id and GET / (list) ─────────────────────
+
+test.describe('Derived ticketId — GET /:id and GET / (list)', () => {
+  let admin: APIRequestContext;
+
+  test.beforeAll(async () => {
+    await resetDatabase();
+    admin = await loginCtx('admin', 'admin123');
+  });
+
+  test.afterAll(async () => {
+    await admin.dispose();
+  });
+
+  test('feedback item with a linked ticket reports that ticket', async () => {
+    const createResp = await admin.post('/api/tickets', {
+      data: { type: 'FEATURE', title: 'Linked to feedback 1', body: 'Body text.', agentTaskId: 1 },
+    });
+    expect(createResp.status()).toBe(201);
+    const ticket = await createResp.json() as { id: number };
+
+    const resp = await admin.get('/api/agent-tasks/1');
+    expect(resp.status()).toBe(200);
+    const body = await resp.json() as AgentTaskDTO;
+    expect(body.ticketId).toBe(ticket.id);
+  });
+
+  test('feedback item with no linked ticket reports ticketId === null (fresh, unlinked row)', async () => {
+    // Mint a throwaway agent_task row directly, scoped to this one test.
+    // resetDatabase() never touches ticket/ticket_comment (see helpers.ts), so
+    // tickets created by earlier tests in this file persist for the rest of
+    // the run. Reusing a seeded id (e.g. 4 or 9) here would risk a false
+    // pass/fail depending on execution order — a freshly INSERTed row is
+    // provably unlinked regardless of what ran before it.
+    const now = new Date().toISOString();
+    const insertResult = await client.execute({
+      sql: `INSERT INTO agent_task (source, title, body, status, createdAt, updatedAt)
+            VALUES ('EMAIL', 'Throwaway unlinked task', 'Body text.', 'OPEN', ?, ?)
+            RETURNING id`,
+      args: [now, now],
+    });
+    const row = insertResult.rows[0] as unknown as { id: number };
+    const freshId = row.id;
+
+    const resp = await admin.get(`/api/agent-tasks/${freshId}`);
+    expect(resp.status()).toBe(200);
+    const body = await resp.json() as AgentTaskDTO;
+    expect(body.ticketId).toBeNull();
+  });
+
+  test('two tickets pointing at one feedback item → the newest wins', async () => {
+    // Seeded id 2 — self-healing via the id DESC tie-break regardless of
+    // execution order, so reusing a seeded id here is safe.
+    const olderResp = await admin.post('/api/tickets', {
+      data: { type: 'FEATURE', title: 'Older link', body: 'Body text.', agentTaskId: 2 },
+    });
+    expect(olderResp.status()).toBe(201);
+    const olderTicket = await olderResp.json() as { id: number };
+
+    const newerResp = await admin.post('/api/tickets', {
+      data: { type: 'FEATURE', title: 'Newer link', body: 'Body text.', agentTaskId: 2 },
+    });
+    expect(newerResp.status()).toBe(201);
+    const newerTicket = await newerResp.json() as { id: number };
+
+    const resp = await admin.get('/api/agent-tasks/2');
+    expect(resp.status()).toBe(200);
+    const body = await resp.json() as AgentTaskDTO;
+
+    await test.step('newest ticket wins', () => { expect(body.ticketId).toBe(newerTicket.id); });
+    await test.step('not the older ticket', () => { expect(body.ticketId).not.toBe(olderTicket.id); });
+  });
+
+  test('deleting the linked ticket via direct SQL → feedback item reports null again', async () => {
+    const createResp = await admin.post('/api/tickets', {
+      data: { type: 'BUG', title: 'To be deleted', body: 'Body text.', agentTaskId: 3 },
+    });
+    expect(createResp.status()).toBe(201);
+    const ticket = await createResp.json() as { id: number };
+
+    const before = await admin.get('/api/agent-tasks/3');
+    const beforeBody = await before.json() as AgentTaskDTO;
+    expect(beforeBody.ticketId).toBe(ticket.id);
+
+    await client.execute({ sql: 'DELETE FROM ticket WHERE id = ?', args: [ticket.id] });
+
+    const after = await admin.get('/api/agent-tasks/3');
+    expect(after.status()).toBe(200);
+    const afterBody = await after.json() as AgentTaskDTO;
+    expect(afterBody.ticketId).toBeNull();
+  });
+
+  test('ticketId appears on every item of the paginated list', async () => {
+    const resp = await admin.get('/api/agent-tasks');
+    expect(resp.status()).toBe(200);
+    const body = await resp.json() as PageResult<AgentTaskDTO>;
+    expect(body.content.length).toBeGreaterThan(0);
+    for (const item of body.content) {
+      expect('ticketId' in item).toBe(true);
+    }
+  });
+});
+
+// ─── Suite: Derived ticketId — GET /next ─────────────────────────────────────
+
+test.describe('Derived ticketId — GET /next', () => {
+  let agent: APIRequestContext;
+  let admin: APIRequestContext;
+
+  test.beforeAll(async () => {
+    await resetDatabase();
+    agent = await agentCtx();
+    admin = await loginCtx('admin', 'admin123');
+  });
+
+  test.afterAll(async () => {
+    await agent.dispose();
+    await admin.dispose();
+  });
+
+  test('ticketId appears on the claimed task and matches the linked ticket', async () => {
+    // Drain all 4 seeded GITHUB_ISSUE tasks (OPEN after resetDatabase()) so
+    // the freshly inserted, freshly linked row below is the only claimable
+    // GITHUB_ISSUE task left — /next claims oldest-first by createdAt, and
+    // our fresh row would otherwise sort last.
+    for (let i = 0; i < 4; i++) {
+      const resp = await agent.get('/api/agent-tasks/next?source=GITHUB_ISSUE');
+      expect(resp.status()).toBe(200);
+    }
+
+    const now = new Date().toISOString();
+    const insertResult = await client.execute({
+      sql: `INSERT INTO agent_task (source, title, body, status, createdAt, updatedAt)
+            VALUES ('GITHUB_ISSUE', 'Claimable and linked', 'Body text.', 'OPEN', ?, ?)
+            RETURNING id`,
+      args: [now, now],
+    });
+    const row = insertResult.rows[0] as unknown as { id: number };
+    const feedbackId = row.id;
+
+    const createResp = await admin.post('/api/tickets', {
+      data: { type: 'FEATURE', title: 'Linked to claimable feedback', body: 'Body.', agentTaskId: feedbackId },
+    });
+    expect(createResp.status()).toBe(201);
+    const ticket = await createResp.json() as { id: number };
+
+    const claimResp = await agent.get('/api/agent-tasks/next?source=GITHUB_ISSUE');
+    expect(claimResp.status()).toBe(200);
+    const claimed = await claimResp.json() as AgentTaskDTO;
+
+    await test.step('claimed the freshly linked task', () => { expect(claimed.id).toBe(feedbackId); });
+    await test.step('ticketId matches the linked ticket', () => { expect(claimed.ticketId).toBe(ticket.id); });
+  });
+});
+
+// ─── Suite: direct SQL DELETE of the linked feedback row ─────────────────────
+
+test.describe('Direct SQL DELETE of the linked feedback row (ON DELETE SET NULL)', () => {
+  let admin: APIRequestContext;
+
+  test.beforeAll(async () => {
+    await resetDatabase();
+    admin = await loginCtx('admin', 'admin123');
+  });
+
+  test.afterAll(async () => {
+    await admin.dispose();
+  });
+
+  test('deleting the linked feedback row: ticket survives, agentTaskId becomes null, ticket is not deleted', async () => {
+    // The test runner's `client` connection is separate from the backend's
+    // own connection and never runs runMigrations(), so PRAGMA foreign_keys
+    // is not guaranteed ON here. ON DELETE SET NULL will not fire without
+    // this explicit pragma on this connection.
+    await client.execute('PRAGMA foreign_keys = ON');
+
+    // Mint a throwaway agent_task row so this destructive test does not
+    // disturb a seeded id relied on by other tests in this file.
+    const now = new Date().toISOString();
+    const insertResult = await client.execute({
+      sql: `INSERT INTO agent_task (source, title, body, status, createdAt, updatedAt)
+            VALUES ('APP_LOG', 'To be deleted directly', 'Body text.', 'OPEN', ?, ?)
+            RETURNING id`,
+      args: [now, now],
+    });
+    const row = insertResult.rows[0] as unknown as { id: number };
+    const feedbackId = row.id;
+
+    const createResp = await admin.post('/api/tickets', {
+      data: { type: 'CHORE', title: 'Linked to a doomed feedback row', body: 'Body.', agentTaskId: feedbackId },
+    });
+    expect(createResp.status()).toBe(201);
+    const ticket = await createResp.json() as { id: number; agentTaskId: number | null };
+    expect(ticket.agentTaskId).toBe(feedbackId);
+
+    await client.execute({ sql: 'DELETE FROM agent_task WHERE id = ?', args: [feedbackId] });
+
+    const ticketResp = await admin.get(`/api/tickets/${ticket.id}`);
+    expect(ticketResp.status()).toBe(200);
+    const persisted = await ticketResp.json() as { id: number; agentTaskId: number | null };
+
+    await test.step('ticket still exists (not cascade-deleted)', () => {
+      expect(persisted.id).toBe(ticket.id);
+    });
+    await test.step('agentTaskId is now null', () => {
+      expect(persisted.agentTaskId).toBeNull();
+    });
   });
 });
