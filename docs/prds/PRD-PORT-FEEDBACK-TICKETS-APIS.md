@@ -8,7 +8,7 @@ Today the app collects user feedback in one place and tracks work in a Kanban ti
 
 ### Technical Summary
 
-Port of an already-implemented feature from the sibling repo `coding-with-ai-demo`. Two new `ticket` columns: `fullyReady` (INTEGER NOT NULL DEFAULT 0, exposed as boolean, backend/agent-only) and `agentTaskId` (nullable INTEGER, `REFERENCES agent_task(id) ON DELETE SET NULL`, write-once at create), plus index `idx_ticket_agentTaskId`. Both need guarded, idempotent `ALTER TABLE ADD COLUMN` upgrade functions in `migrate.ts`, following the existing `ensureSzenarioAgileKiColumn()` template; the index must be created inside the `agentTaskId` ensure-function, not in the shared index batch. `POST /api/tickets` accepts both new fields, with the FK existence check inside `ticketService.create()`; `POST /api/tickets/:id/comments` accepts `clearFullyReady`, written atomically with the existing `handBackToAi` batch. `AgentTaskDTO` gains a derived `ticketId` from a correlated subquery — in `findAll()` it must sit outside a pagination-first inner derived table, so cost stays bounded to the page size. Coupled in scope: route the Playwright suite at `backend/data/crmdb.test.sqlite` via `NODE_ENV=test` so `npm test` stops wiping the shared dev database. Also in scope, at the user's request: a narrow, one-color Rechner (calculator) update — the "Wartezeit" pie-chart color changes from `#f98752` to `#cf944f` across 3 render sites, plus one missing spec sentence about already-existing bar-filter persistence.
+Port of an already-shipped feature from the sibling repo `coding-with-ai-demo`. Adds two new `ticket` fields — a `fullyReady` flag and a nullable `agentTaskId` link — both set once at creation, with a safe upgrade path for existing databases. A feedback item's ticket reference is a derived field, computed cheaply via a paginated query, never stored. Coupled in scope: the backend test suite moves to its own database file, so tests stop wiping the shared dev database. Also in scope, at the user's request: the Rechner color update and one missing spec sentence, both described under REQ-012 above.
 
 ---
 
@@ -254,7 +254,7 @@ The full existing backend and frontend suites must still pass. The frontend buil
 
 **Backward compatibility.** Every existing API request that works today keeps working unchanged. Both new request fields are optional. Every existing ticket reads back with the marker off and no link.
 
-**Performance.** No measurable slowdown on the feedback list page — but only if the lookup runs **after** paging, not before. The list query must page first in an inner subquery, then attach the derived ticket reference to that already-shortened result. Done that way, the lookup runs once per row shown (page size), not once per row the database scans to sort. A naive projected lookup on the outer query costs one evaluation per scanned row and degrades as the table grows. The new index on the link field keeps each individual lookup cheap. Details in Technical Notes.
+**Performance.** No measurable slowdown on the feedback list page as the table grows. The ticket-reference lookup must scale with the page size shown, not with the number of rows the database scans. See the plan for the specific query structure.
 
 **Test isolation.** After this change, running the backend test suite must not modify the development database in any way.
 
@@ -284,68 +284,24 @@ The full existing backend and frontend suites must still pass. The frontend buil
 
 ---
 
-## Technical Notes
+## Implementierung
 
-*Technical readers only.*
+Branch: `port-feedback-tickets-apis-compare-demo`.
 
-**Files touched — backend**
-- `backend/src/db/schema/schema.ts` — `ticket` table gains `fullyReady` and `agentTaskId`.
-- `backend/src/config/migrate.ts` — `CREATE TABLE ticket` gains both columns; two new ensure-functions called from `runMigrations()`.
-- `backend/src/services/ticketService.ts` — `TicketDTO`/`TicketListItemDTO`/`TicketRow`, `create()`, `addComment()`. **The FK existence check lives here**, at the top of `create()`: `SELECT id FROM agent_task WHERE id = ?` when `agentTaskId` is non-null, throwing `ValidationError` with `fieldErrors.agentTaskId` on a miss. This matches the sibling repo's shipped code and this repo's convention — route files hold no SQL and import no DB client.
-- `backend/src/routes/tickets.ts` — Zod schemas only. `CreateBodySchema` gains `agentTaskId: z.number().int().nullable().optional()` and `fullyReady: z.boolean().optional()`; `CommentBodySchema` gains `clearFullyReady: z.boolean().optional()`. Pass both through to the service. No DB access in this file.
-- `backend/src/services/agentTaskService.ts` — `AgentTaskDTO`/`AgentTaskRow` gain `ticketId`; correlated subquery added to `findById()` and `findAll()`; `findNext()` re-fetches through `findById()` because `RETURNING *` cannot carry the derived column.
+Commits (base `0531385`):
 
-**`findAll()` must paginate before it looks up.** Do **not** bolt the correlated subquery onto the existing outer `SELECT * FROM agent_task ${where} ORDER BY ... LIMIT ? OFFSET ?`. SQLite evaluates a projected correlated subquery once per row **scanned to satisfy the sort**, not once per row returned. There is no plain `idx_agent_task_createdAt`, so the default view (`sort=createdAt DESC`, no filter) sorts the whole table: measured with `.scanstats` on 50,000 rows, that is 50,000 subquery evaluations for a 20-row page. Wrap instead — page in an inner derived table, then join the lookup against that:
+- `5ed61fe` docs: Initialize state tracking
+- `d45d314` docs: Add specifications (PRD)
+- `3b20ffb` docs: Add detailed plan
+- `97cd6c2` feat: Update Rechner wait-time color to match sibling app
+- `0bef25b` fix: Isolate backend Playwright suite onto a separate test database
+- `8d2e0a5` feat: Add ticket.fullyReady and ticket.agentTaskId columns with migration
+- `e3491cc` docs: Update specs for feedback-ticket link and Rechner color change
+- `9ef0d02` feat: Accept fullyReady and agentTaskId on ticket create and comment endpoints
+- `31da20a` feat: Add derived ticketId to agent-task reads
+- `0dbef12` feat: Add feedback-ticket cross-links and ticket number badge to admin UI
+- `1254fa4` test: Add backend tests for feedback-ticket link and migration functions
+- `2cdf2ea` test: Add frontend tests for feedback-ticket cross-links and Rechner color
+- `9fea5a2` fix: Require positive agentTaskId in ticket create schema
 
-```sql
-SELECT p.*,
-       (SELECT t.id FROM ticket t WHERE t.agentTaskId = p.id
-        ORDER BY t.createdAt DESC, t.id DESC LIMIT 1) AS ticketId
-FROM (
-  SELECT * FROM agent_task ${where}
-  ORDER BY ${sort.field} ${sort.direction}
-  LIMIT ? OFFSET ?
-) p
-```
-
-Measured: exactly 20 evaluations (page size), independent of filters, sort field, or table size. `findById()` and `findNext()`'s re-fetch need no such treatment — both are single-row lookups already.
-
-**Migration template.** `ensureSzenarioAgileKiColumn()` in `migrate.ts` is the exact pattern to copy: standalone `PRAGMA table_info(...)` check (never batched — SQLite ignores pragmas inside a transaction), then `ALTER TABLE ... ADD COLUMN`, with a `try/catch` that swallows only `duplicate column` and re-throws everything else. That catch is the concurrent-cold-start guard for Vercel/Turso, where each serverless instance holds its own `initPromise`. It is a structural guarantee — no test exercises real concurrency.
-
-**SQLite constraint on the FK column.** `ALTER TABLE ... ADD COLUMN` rejects a column that has both a `REFERENCES` clause and a non-NULL default. So `agentTaskId` gets no default — nullable only. `ON DELETE SET NULL` requires `PRAGMA foreign_keys = ON`, which `runMigrations()` already sets at startup. Nothing in the app deletes an `agent_task` row today; the cascade rule is future-proofing, reachable only by direct SQL.
-
-**Index ordering.** `idx_ticket_agentTaskId` must be created inside the `agentTaskId` ensure-function, after the `ADD COLUMN` succeeds. The shared `executeMultiple` index block in `runMigrations()` runs before the ensure-functions; on an upgraded database the column does not exist yet at that point and the statement would fail. This is the specific regression the migration spec guards.
-
-**Boolean mapping.** `fullyReady` is stored as INTEGER 0/1 and exposed to API clients as a JSON boolean. Convert in the DTO mapper, both directions.
-
-**Atomicity in `addComment()`.** The existing `ON_HOLD` + `owner=HUMAN` guard for `handBackToAi` throws before any statement is queued. The `clearFullyReady` update joins the same `client.batch(stmts, 'write')` as the comment insert and the optional hand-back update. Do not issue it as a separate `execute()`.
-
-**Derived `ticketId` subquery.** Correlated on `ticket.agentTaskId = agent_task.id`, `ORDER BY t.createdAt DESC, t.id DESC LIMIT 1`. The `id` tie-break matters because seed and test rows share ISO timestamps to the millisecond. Same subquery text in all three call sites; only `findAll()` needs the pagination-first wrapper above.
-
-**Files touched — frontend**
-- `frontend/src/app/core/models/ticket.model.ts` — `agentTaskId: number | null` on `Ticket`. No `fullyReady`.
-- `frontend/src/app/core/models/agent-task.model.ts` — `ticketId: number | null` on `AgentTask`.
-- `frontend/src/app/features/admin/tickets/ticket-detail.component.ts` — new `<dt>/<dd>` pair in the existing `<dl class="row">` metadata block, guarded by `@if`.
-- `frontend/src/app/features/admin/agent-tasks/agent-task-detail.component.ts` — same treatment in its `<dl class="row">`.
-- `frontend/src/app/features/admin/tickets/ticket-board.component.ts` — `.ticket-number` span inside `.ticket-card` in all five column blocks, plus the style rule in the component's inline `styles` array. Templates and styles are inline in these components.
-
-**Test-DB isolation — three edits**
-- `backend/src/config/db.ts` — pick `crmdb.test.sqlite` when `process.env['NODE_ENV'] === 'test'`. `TURSO_DATABASE_URL` still wins, so CI/cloud is unaffected.
-- `backend/src/test/globalSetup.ts` — after the port-kill step and before spawning the backend, `rmSync` the test DB plus its `-journal`, `-wal`, `-shm` sidecars, `{ force: true }`. Skip when `TURSO_DATABASE_URL` is set. `NODE_ENV: 'test'` is already in the spawned child's env.
-- `backend/playwright.config.ts` — set `process.env['NODE_ENV'] = 'test'` at module top, above `defineConfig`. **Essential:** spec files import `client` from `config/db.ts` into the *runner* process, which `globalSetup` does not cover. Without this line the runner queries the dev DB while the backend queries the test DB. It is also what makes the direct-SQL delete test in the feedback suite hit the right file.
-
-**New test files** (names taken from the source repo)
-- `backend/src/test/ticketFullyReadyMigration.spec.ts`
-- `backend/src/test/ticketAgentTaskIdMigration.spec.ts`
-
-Extended: `backend/src/test/tickets.spec.ts`, `backend/src/test/agentTasks.spec.ts`, and the three frontend spec files alongside their components.
-
-**Spec doc bug, confirmed.** `SPEC-API-TICKETS.md` states the ticket seed "does not run on every startup — only when the DB is empty". Wrong. `runMigrations()` calls `seedTickets()` unconditionally, and `ticketSeed.ts` uses `INSERT OR IGNORE` with fixed ids. Same mechanism as `seedAgentTasks()`. Correct the sentence while editing this file.
-
-**Files touched — Rechner color update (REQ-012)**
-- `frontend/src/app/features/produktivitaet/rechner.component.ts` — the `.flow-chip-wait` background rule and the pie-slice color for the `wait` key. Both `#f98752` → `#cf944f`.
-- `frontend/src/app/features/produktivitaet/rechner.component.html` — the SVG hatch-pattern stroke for the same data series. Same color change.
-- `frontend/src/app/features/produktivitaet/svg-util.spec.ts` — 4 color-literal test assertions for the wait series — update to `#cf944f`.
-- `docs/specs/SPECS-ui.md` — two lines: the Rechner pie-chart "Warten" row value, and the shared work/wait color-usage sentence.
-- `docs/specs/SPECS-frontend.md` — add the one missing sentence describing the bar-filter sessionStorage behavior. **No code change accompanies this line** — the `barLimit` signal, `readBarLimit()`/`writeBarLimit()`, the `rechner.barLimit` sessionStorage key, and their dedicated test block are already byte-identical between this repo and the sibling repo. This is a documentation-only fix; do not touch the bar-filter code.
-- **Do not touch** the shared `.widget-card.warning` border color in `styles.scss`, which happens to reuse the old hex value for an unrelated purpose — verified elsewhere in the stylesheet, outside the Rechner component. And do not touch AG Grid header colors in the same file — that stays out of scope per Special Instructions.
+PR: not opened yet. Link goes here once available.
