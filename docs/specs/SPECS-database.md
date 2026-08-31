@@ -46,10 +46,12 @@ Kanban work items with an owner and status lifecycle. Created by admins or seede
 | solution | text | nullable — `TICKET_SOLUTION` enum; set on `status=DONE` |
 | pickedUpAt | text | nullable — ISO-8601, set when status → `IN_PROGRESS` |
 | resolvedAt | text | nullable — ISO-8601, set when status → `DONE` |
+| fullyReady | integer | NOT NULL, default `0` — boolean (0/1), set only at creation, never shown in the admin UI |
+| agentTaskId | integer | nullable, FK → agent_task(id) SET NULL — write-once at creation, links to the app-feedback item that spawned the ticket |
 | createdAt | text | NOT NULL, default `datetime('now')` |
 | updatedAt | text | NOT NULL, default `datetime('now')` |
 
-No FKs. Indexes: `idx_ticket_status_owner_createdAt (status, owner, createdAt)`, `idx_ticket_type_status (type, status)`.
+FK: `agentTaskId → agent_task(id) ON DELETE SET NULL`. Indexes: `idx_ticket_status_owner_createdAt (status, owner, createdAt)`, `idx_ticket_type_status (type, status)`, `idx_ticket_agentTaskId (agentTaskId)`.
 
 ### TicketComment (`ticket_comment`)
 
@@ -279,5 +281,6 @@ All indexes are created in `backend/src/config/migrate.ts` via `CREATE INDEX IF 
 | idx_cron_run_job_startedAt | cron_run | job, startedAt DESC |
 | idx_ticket_status_owner_createdAt | ticket | status, owner, createdAt |
 | idx_ticket_type_status | ticket | type, status |
+| idx_ticket_agentTaskId | ticket | agentTaskId |
 | idx_ticket_comment_ticketId | ticket_comment | ticketId |
 | idx_szenario_createdAt | szenario | createdAt DESC |

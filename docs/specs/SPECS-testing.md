@@ -34,10 +34,16 @@ cd backend && npx playwright test -g "<test title>"          # targeted by title
 
 ### Global setup
 
+The Playwright suite runs against its own database file, `backend/data/crmdb.test.sqlite` — never the shared development database (`backend/data/crmdb.sqlite`). Selection happens via `NODE_ENV=test`, set at the top of `backend/playwright.config.ts`, above `defineConfig`, so both the spawned backend process and the test-runner process (which also opens the DB directly, e.g. for `resetDatabase()`) agree on the same file.
+
 `backend/src/test/globalSetup.ts` runs before the suite:
-1. Kills any existing process on port 7070, then spawns the backend child process (`tsx src/index.ts`) with `NODE_ENV=test`, a fixed `AGENT_API_TOKEN` (exported as `TEST_AGENT_TOKEN`), and `AGENT_AUTH_ALLOW_LOOPBACK=1` — this bypasses the agent-token check for requests from localhost during the test run, so tests hitting agent-token-gated routes without a token from a loopback context may see a different status (e.g. 404 instead of 401) than a real deployment would return.
-2. Polls `GET /api/health` until the backend responds (30 s deadline).
-3. Returns a teardown function that SIGTERM-kills the backend.
+1. Kills any existing process on port 7070.
+2. Deletes the test DB file plus its `-journal`, `-wal`, and `-shm` sidecar files, so every run starts from a fresh, empty database. Skipped when `TURSO_DATABASE_URL` is set — the remote database is never deleted.
+3. Spawns the backend child process (`tsx src/index.ts`) with `NODE_ENV=test`, a fixed `AGENT_API_TOKEN` (exported as `TEST_AGENT_TOKEN`), and `AGENT_AUTH_ALLOW_LOOPBACK=1` — this bypasses the agent-token check for requests from localhost during the test run, so tests hitting agent-token-gated routes without a token from a loopback context may see a different status (e.g. 404 instead of 401) than a real deployment would return.
+4. Polls `GET /api/health` until the backend responds (30 s deadline).
+5. Returns a teardown function that SIGTERM-kills the backend.
+
+Because the suite never opens `crmdb.sqlite`, running `npm test` no longer wipes tickets or other data a human or agent left in the shared development database.
 
 ### Authentication
 
@@ -168,7 +174,7 @@ All error responses follow:
 | `adressen-typ.spec.ts` | GET/POST/PUT `/api/adressen` — `typ` field (WORK, HOME, null) |
 | `adressen-search.spec.ts` | GET `/api/adressen?search=<term>` — city substring match, case-insensitive, empty-result handling, anon 401 |
 | `aktivitaeten-crud.spec.ts` | GET `/api/aktivitaeten` (paginated) and `/all`, POST/PUT/DELETE `/api/aktivitaeten/:id` — full CRUD, `datum` DESC sort, 404 on unknown id, anon 401 |
-| `agentTasks.spec.ts` | GET `/api/agent-tasks/next`, POST `/:id/reject`, POST `/:id/done`, GET `/api/agent-tasks`, GET `/api/agent-tasks/summary`, POST `/api/agent-tasks/reset` |
+| `agentTasks.spec.ts` | GET `/api/agent-tasks/next`, POST `/:id/reject`, POST `/:id/done`, GET `/api/agent-tasks`, GET `/api/agent-tasks/summary`, POST `/api/agent-tasks/reset` — plus the derived `ticketId` field on the single read, the paginated list, and `/next`: newest-linked-ticket-wins, `null` when unlinked, `null` after the linked ticket is deleted |
 | `agentTaskSeed.spec.ts` | `seedAgentTasks()` idempotency — 23 fixed-ID rows survive repeated seeding; per-source counts (7 EMAIL / 4 GITHUB_ISSUE / 6 APP_LOG / 6 ERROR_REPORT); `AGENT_TASK_SEED` row 23 reworded title/subject/body (Chancen-Notiz), asserted against the exported constant, not the live DB |
 | `chancen-phase-filter.spec.ts` | GET `/api/chancen?phase=<value>` — per-phase filtering and invalid-phase 400 |
 | `chancen-search.spec.ts` | GET `/api/chancen?search=<term>` — case-insensitive title search, combined search+phase filter |
@@ -177,7 +183,9 @@ All error responses follow:
 | `personen-filter.spec.ts` | GET `/api/personen?abteilungId=<id>` — department filter, combined abteilungId+search |
 | `sessions-persistence.spec.ts` | Session row creation on login, cross-request persistence, DB row deletion on logout |
 | `szenario.spec.ts` | GET/POST/PUT/DELETE `/api/szenarien` and `/:id` — CRUD, works/waits JSON round-trip, array-length and duration-bound validation, duplicate-name 409, seeded Standard-Szenario (id=1) |
-| `tickets.spec.ts` | Kanban lifecycle across `/api/tickets` — `/next`, `/:id/start`, `/:id/done`, `/:id/ask`, `/:id/comments`, `/:id/wont-do`, PATCH `/:id/status` and `/:id/owner`, POST `/api/tickets`, `/:id/hand-to-ai`, `/board`, `/summary`, `/reset` — auth matrix: agent-token-or-admin-session on start/done/ask/board/status/owner/comments/create/GET :id; `/next` stays agent-token-only (GET-based CSRF surface) |
+| `tickets.spec.ts` | Kanban lifecycle across `/api/tickets` — `/next`, `/:id/start`, `/:id/done`, `/:id/ask`, `/:id/comments`, `/:id/wont-do`, PATCH `/:id/status` and `/:id/owner`, POST `/api/tickets`, `/:id/hand-to-ai`, `/board`, `/summary`, `/reset` — auth matrix: agent-token-or-admin-session on start/done/ask/board/status/owner/comments/create/GET :id; `/next` stays agent-token-only (GET-based CSRF surface) — plus `fullyReady` (create default/on/off, comment-reset, unrelated updates leave it untouched) and `agentTaskId` (create with/without a link, unknown-id 400 naming `fieldErrors.agentTaskId`, non-integer 400, value unchanged across all read/update endpoints) |
+| `ticketFullyReadyMigration.spec.ts` | `ensureTicketFullyReadyColumn()` — safe to call twice; re-adds the column after a simulated pre-existing DB (`DROP COLUMN`), existing rows read back the default `0` |
+| `ticketAgentTaskIdMigration.spec.ts` | `ensureTicketAgentTaskIdColumn()` — safe to call twice, with both the column and `idx_ticket_agentTaskId` present after each call; restores both the column and the index, in that order, after a simulated pre-existing DB (`DROP INDEX` then `DROP COLUMN`) |
 
 ---
 
