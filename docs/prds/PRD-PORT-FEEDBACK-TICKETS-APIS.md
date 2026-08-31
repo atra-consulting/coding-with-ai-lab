@@ -343,9 +343,9 @@ Extended: `backend/src/test/tickets.spec.ts`, `backend/src/test/agentTasks.spec.
 **Spec doc bug, confirmed.** `SPEC-API-TICKETS.md` states the ticket seed "does not run on every startup — only when the DB is empty". Wrong. `runMigrations()` calls `seedTickets()` unconditionally, and `ticketSeed.ts` uses `INSERT OR IGNORE` with fixed ids. Same mechanism as `seedAgentTasks()`. Correct the sentence while editing this file.
 
 **Files touched — Rechner color update (REQ-012)**
-- `frontend/src/app/features/rechner/rechner.component.ts` — the `.flow-chip-wait` background rule and the pie-slice color for the `wait` key. Both `#f98752` → `#cf944f`.
-- `frontend/src/app/features/rechner/rechner.component.html` — the SVG hatch-pattern stroke for the same data series. Same color change.
-- The color-literal test assertions colocated with the SVG/pie-chart rendering logic (wherever they currently assert `#f98752` for the wait series) — update to `#cf944f`.
+- `frontend/src/app/features/produktivitaet/rechner.component.ts` — the `.flow-chip-wait` background rule and the pie-slice color for the `wait` key. Both `#f98752` → `#cf944f`.
+- `frontend/src/app/features/produktivitaet/rechner.component.html` — the SVG hatch-pattern stroke for the same data series. Same color change.
+- `frontend/src/app/features/produktivitaet/svg-util.spec.ts` — 4 color-literal test assertions for the wait series — update to `#cf944f`.
 - `docs/specs/SPECS-ui.md` — two lines: the Rechner pie-chart "Warten" row value, and the shared work/wait color-usage sentence.
 - `docs/specs/SPECS-frontend.md` — add the one missing sentence describing the bar-filter sessionStorage behavior. **No code change accompanies this line** — the `barLimit` signal, `readBarLimit()`/`writeBarLimit()`, the `rechner.barLimit` sessionStorage key, and their dedicated test block are already byte-identical between this repo and the sibling repo. This is a documentation-only fix; do not touch the bar-filter code.
 - **Do not touch** the shared `.widget-card.warning` border color in `styles.scss`, which happens to reuse the old hex value for an unrelated purpose — verified elsewhere in the stylesheet, outside the Rechner component. And do not touch AG Grid header colors in the same file — that stays out of scope per Special Instructions.

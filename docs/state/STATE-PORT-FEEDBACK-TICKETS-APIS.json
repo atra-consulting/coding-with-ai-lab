@@ -2,7 +2,7 @@
   "version": 1,
   "task_key": "PORT-FEEDBACK-TICKETS-APIS",
   "status": "in_progress",
-  "current_step": "3.3",
+  "current_step": "7.5",
   "started": "2026-08-31T07:01:17Z",
   "updated": "2026-08-31T07:01:17Z",
   "config": {
@@ -19,31 +19,44 @@
     "original_head": "05313857ae54736c1b8e5041e0bb2707b777ae00",
     "docs_folder": "docs",
     "is_git_repo": true,
-    "workflow_scope": null,
-    "pr_prefix": null,
+    "workflow_scope": "full",
+    "pr_prefix": "feat:",
     "pr_exists": false,
     "pr_url": null
   },
   "discovery": {
-    "agents_available": false,
-    "planner_agents": [],
-    "writer_agents": [],
-    "coding_agents": [],
-    "review_agents": [],
-    "test_coding_agents": [],
-    "test_review_agents": [],
-    "test_runner_agents": [],
-    "tooling_coding_agents": [],
-    "tooling_review_agents": [],
-    "test_command": null
+    "agents_available": true,
+    "planner_agents": ["planner"],
+    "writer_agents": ["ba-writer", "data-writer"],
+    "coding_agents": ["be-coder", "db-coder", "fe-coder", "ui-designer"],
+    "review_agents": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer"],
+    "test_coding_agents": ["be-test-coder", "fe-test-coder"],
+    "test_review_agents": ["be-test-reviewer", "fe-test-reviewer"],
+    "test_runner_agents": ["be-test-runner", "fe-test-runner"],
+    "tooling_coding_agents": ["python-coder", "shell-coder", "skill-coder"],
+    "tooling_review_agents": ["python-reviewer", "shell-reviewer", "skill-reviewer"],
+    "test_command": "backend: cd backend && npm test (Playwright); frontend: cd frontend && npm test (Karma/Jasmine)"
   },
   "artifacts": {
-    "prd_skipped": null,
-    "prd_file": null,
-    "plan_file": null
+    "prd_skipped": false,
+    "prd_file": "docs/prds/PRD-PORT-FEEDBACK-TICKETS-APIS.md",
+    "plan_file": "docs/plans/PLAN-PORT-FEEDBACK-TICKETS-APIS.md"
   },
   "delegation": {
-    "assignments": [],
+    "assignments": [
+      {"step": "PRD draft", "agent": "planner", "model": "opus", "verification": "reviewed by ba/be/db/fe-reviewer"},
+      {"step": "PRD review: ba-reviewer", "agent": "ba-reviewer", "model": "sonnet", "verification": "read PRD + AGENTS.md/CLAUDE.md"},
+      {"step": "PRD review: be-reviewer", "agent": "be-reviewer", "model": "sonnet", "verification": "read PRD + backend source + sibling repo ground truth"},
+      {"step": "PRD review: db-reviewer", "agent": "db-reviewer", "model": "sonnet", "verification": "read PRD + schema/migrate.ts + empirical sqlite3/libsql test"},
+      {"step": "PRD review: fe-reviewer", "agent": "fe-reviewer", "model": "sonnet", "verification": "read PRD + frontend source + routes"},
+      {"step": "PRD fix", "agent": "planner", "model": "opus", "verification": "orchestrator wrote reviewed+fixed PRD to file"},
+      {"step": "Plan draft", "agent": "planner", "model": "opus", "verification": "reviewed by db/be/fe/ba-reviewer"},
+      {"step": "Plan review: db-reviewer", "agent": "db-reviewer", "model": "sonnet", "verification": "read plan+PRD, empirically tested SQLite behavior against installed libsql"},
+      {"step": "Plan review: be-reviewer", "agent": "be-reviewer", "model": "sonnet", "verification": "read plan+PRD+backend source, verified against installed Playwright runner"},
+      {"step": "Plan review: fe-reviewer", "agent": "fe-reviewer", "model": "sonnet", "verification": "read plan+PRD+frontend source incl. pre-existing spec files"},
+      {"step": "Plan review: ba-reviewer", "agent": "ba-reviewer", "model": "sonnet", "verification": "read plan+PRD+specs, checked REQ coverage and doc line refs"},
+      {"step": "Plan fix", "agent": "planner", "model": "opus", "verification": "orchestrator wrote reviewed+fixed plan to file"}
+    ],
     "escalations": []
   },
   "completed_steps": []
