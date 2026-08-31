@@ -31,6 +31,7 @@ function makeTicket(overrides: Partial<Ticket> = {}): Ticket {
     body: 'Bitte CSV-Export implementieren.',
     status: 'ON_HOLD',
     solution: null,
+    agentTaskId: null,
     commentCount: 2,
     comments: [makeComment(1, 'AGENT'), makeComment(2, 'HUMAN')],
     pickedUpAt: null,
@@ -217,6 +218,67 @@ describe('TicketDetailComponent — template rendering', () => {
   it('renders "Claude Code" as author name for AGENT comment', () => {
     const text: string = fixture.nativeElement.textContent;
     expect(text).toContain('Claude Code');
+  });
+});
+
+// ─── App-Feedback cross-link ──────────────────────────────────────────────────
+
+describe('TicketDetailComponent — App-Feedback link', () => {
+  it('renders the "App-Feedback #<id>" link with the correct routerLink target when agentTaskId is set', async () => {
+    const ticketWithLink = makeTicket({ agentTaskId: 7 });
+    const mockService = makeMockTicketService();
+    mockService.getById.and.returnValue(of(ticketWithLink));
+
+    await TestBed.configureTestingModule({
+      imports: [TicketDetailComponent],
+      providers: [
+        provideRouter([]),
+        { provide: TicketService, useValue: mockService },
+        { provide: NotificationService, useValue: makeMockNotification() },
+        { provide: NgbModal, useValue: makeModalStub() },
+        { provide: ActivatedRoute, useValue: makeRoute('10') },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(TicketDetailComponent);
+    fixture.detectChanges();
+
+    const dts: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('dt'));
+    const feedbackDt = dts.find((dt) => dt.textContent?.trim() === 'App-Feedback');
+    expect(feedbackDt).toBeTruthy();
+
+    const link: HTMLAnchorElement | null = fixture.nativeElement.querySelector(
+      'dd a[href="/admin/agent-tasks/7"]',
+    );
+    expect(link).toBeTruthy();
+    expect(link!.textContent?.trim()).toBe('App-Feedback #7');
+  });
+
+  it('renders neither the App-Feedback dt nor dd when agentTaskId is null', async () => {
+    const ticketNoLink = makeTicket({ agentTaskId: null });
+    const mockService = makeMockTicketService();
+    mockService.getById.and.returnValue(of(ticketNoLink));
+
+    await TestBed.configureTestingModule({
+      imports: [TicketDetailComponent],
+      providers: [
+        provideRouter([]),
+        { provide: TicketService, useValue: mockService },
+        { provide: NotificationService, useValue: makeMockNotification() },
+        { provide: NgbModal, useValue: makeModalStub() },
+        { provide: ActivatedRoute, useValue: makeRoute('10') },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(TicketDetailComponent);
+    fixture.detectChanges();
+
+    const dts: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('dt'));
+    const feedbackDt = dts.find((dt) => dt.textContent?.trim() === 'App-Feedback');
+    expect(feedbackDt).toBeUndefined();
+
+    const link = fixture.nativeElement.querySelector('a[href*="/admin/agent-tasks/"]');
+    expect(link).toBeNull();
   });
 });
 

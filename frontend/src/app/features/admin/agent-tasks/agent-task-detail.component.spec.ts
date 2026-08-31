@@ -137,6 +137,61 @@ describe('AgentTaskDetailComponent', () => {
   });
 });
 
+describe('AgentTaskDetailComponent — Ticket link', () => {
+  it('renders the "Ticket #<id>" link with the correct routerLink target when ticketId is set', async () => {
+    const taskWithLink: AgentTask = { ...MOCK_TASK, ticketId: 12 };
+    const mockService = jasmine.createSpyObj<AgentTaskService>('AgentTaskService', ['getById']);
+    mockService.getById.and.returnValue(of(taskWithLink));
+
+    await TestBed.configureTestingModule({
+      imports: [AgentTaskDetailComponent],
+      providers: [
+        provideRouter([]),
+        { provide: AgentTaskService, useValue: mockService },
+        { provide: ActivatedRoute, useValue: makeRoute('7') },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(AgentTaskDetailComponent);
+    fixture.detectChanges();
+
+    const dts: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('dt'));
+    const ticketDt = dts.find((dt) => dt.textContent?.trim() === 'Ticket');
+    expect(ticketDt).toBeTruthy();
+
+    const link: HTMLAnchorElement | null = fixture.nativeElement.querySelector(
+      'dd a[href="/admin/tickets/12"]',
+    );
+    expect(link).toBeTruthy();
+    expect(link!.textContent?.trim()).toBe('Ticket #12');
+  });
+
+  it('renders neither the Ticket dt nor dd when ticketId is null', async () => {
+    const taskNoLink: AgentTask = { ...MOCK_TASK, ticketId: null };
+    const mockService = jasmine.createSpyObj<AgentTaskService>('AgentTaskService', ['getById']);
+    mockService.getById.and.returnValue(of(taskNoLink));
+
+    await TestBed.configureTestingModule({
+      imports: [AgentTaskDetailComponent],
+      providers: [
+        provideRouter([]),
+        { provide: AgentTaskService, useValue: mockService },
+        { provide: ActivatedRoute, useValue: makeRoute('7') },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(AgentTaskDetailComponent);
+    fixture.detectChanges();
+
+    const dts: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('dt'));
+    const ticketDt = dts.find((dt) => dt.textContent?.trim() === 'Ticket');
+    expect(ticketDt).toBeUndefined();
+
+    const link = fixture.nativeElement.querySelector('a[href*="/admin/tickets/"]');
+    expect(link).toBeNull();
+  });
+});
+
 describe('AgentTaskDetailComponent — statusBadgeClass()', () => {
   let component: AgentTaskDetailComponent;
 

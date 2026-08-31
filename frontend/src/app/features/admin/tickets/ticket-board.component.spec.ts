@@ -223,6 +223,29 @@ describe('TicketBoardComponent — template rendering', () => {
     const spinner = fixture.nativeElement.querySelector('app-loading-spinner');
     expect(spinner).toBeNull();
   });
+
+  it('renders a .ticket-number badge with the correct id on every card in all five columns', () => {
+    const columnListIds: Record<string, number[]> = {
+      'list-DEFINITION': [0],
+      'list-TODO': [1, 2],
+      'list-IN_PROGRESS': [3],
+      'list-ON_HOLD': [4],
+      'list-DONE': [5],
+    };
+
+    for (const [listId, expectedIds] of Object.entries(columnListIds)) {
+      const column: HTMLElement = fixture.nativeElement.querySelector(`#${listId}`);
+      expect(column).toBeTruthy();
+
+      const badges: HTMLElement[] = Array.from(column.querySelectorAll('.ticket-number'));
+      expect(badges.length).toBe(expectedIds.length);
+
+      const badgeTexts = badges.map((b) => b.textContent?.trim());
+      expectedIds.forEach((id) => {
+        expect(badgeTexts).toContain(`#${id}`);
+      });
+    }
+  });
 });
 
 // ─── Loading and error states ──────────────────────────────────────────────────
