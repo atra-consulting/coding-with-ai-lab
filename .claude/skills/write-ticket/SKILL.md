@@ -2,12 +2,11 @@
 name: "project:write-ticket"
 description: "Headless autonomous skill that claims one agent-task feedback item (or takes a task ID, a task URL, or free-floating feedback text), judges it, and files a new Kanban ticket (Definition, owner HUMAN) from it — commenting on the ticket to demand missing info when the feedback is too thin. Never builds, pushes, or opens a PR."
 argument-hint: "[task-id | task-url | feedback-text]"
-version: 1.4.0
-last-modified: 2026-07-08
+version: 1.5.0
+last-modified: 2026-08-31
 allowed-tools:
   - Read
   - Bash
-  - Task
 ---
 
 # Write Ticket
@@ -121,31 +120,31 @@ Es gibt hier **keine** `id` und **keine** Agent-Task. Direkt weiter zu Schritt 2
 
 Der Text kommt roh von der Kommandozeile und kann Anführungszeichen oder Zeilenumbrüche enthalten. Vor jedem `-d`-JSON-Payload (Schritt 3, Schritt 3a) `title` und `body` als JSON-String escapen, damit das JSON gültig bleibt.
 
-## Schritt 2 — Beurteilen mit dem requirements-reviewer-Subagenten
+## Schritt 2 — Feedback selbst beurteilen
 
 *(VOR jeder Ticket-Erstellung entscheiden.)*
 
-Den **`requirements-reviewer`-Subagenten** via Task-Tool beauftragen. `title`, `body` und `metadata` des Feedbacks übergeben (im Freitext-Modus die in Schritt 1 gebildeten Werte). Er beurteilt:
+Das Feedback selbst beurteilen — anhand von `title`, `body` und `metadata` (im Freitext-Modus die in Schritt 1 gebildeten Werte). Prüfen:
 
 - Beschreibt das Feedback EINE klare, konkrete Änderung?
 - Sind alle Fakten vorhanden, die zur Umsetzung nötig sind?
 - Passt es zu dieser CRM-Codebasis (Express/Drizzle-Backend oder Angular-Frontend)?
 - Gibt es einen offensichtlich richtigen Ansatz — keine Produktentscheidung, kein Raten?
 
-Der Subagent liefert ein klares, binäres Urteil: entweder **„gut genug zum Bauen"** oder **„muss verfeinert werden"**, plus einen spezifischen, umsetzbaren Grund.
+Ein klares, binäres Urteil bilden: entweder **„gut genug zum Bauen"** oder **„muss verfeinert werden"**, plus einen spezifischen, umsetzbaren Grund.
 
-Zusätzlich bitten, einen Ticket-`type` vorzuschlagen: `FEATURE`, `BUG` oder `CHORE`. Ohne klaren Vorschlag `FEATURE` als Default nehmen.
+Zusätzlich einen Ticket-`type` vorschlagen: `FEATURE`, `BUG` oder `CHORE`. Ohne klaren Vorschlag `FEATURE` als Default nehmen.
 
-Zusätzlich — **auf JEDEM Durchlauf, unabhängig vom Urteil** — folgenden strukturierten Inhalt für die Ticket-Vorlage aus Schritt 3 anfordern:
+Zusätzlich — **auf JEDEM Durchlauf, unabhängig vom Urteil** — folgenden strukturierten Inhalt für die Ticket-Vorlage aus Schritt 3 erarbeiten:
 
 - **Fachlich/Business**: Anforderungen und Plan in einfachem, nicht-technischem Deutsch. Was ändert sich für den Nutzer, warum, und die groben Schritte. Keine Dateipfade, kein Code.
 - **Technisch**: Anforderungen und Plan für Entwickler. Konkrete Schritte, betroffene Dateien/Bereiche/Endpunkte, Lösungsansatz.
 - **Akzeptanzkriterien**: konkrete, testbare Kriterien für die Änderung. Jede Zeile ein prüfbares Kriterium — kein vages „funktioniert gut", sondern klar erkennbar, wann die Änderung fertig ist.
 - **Offene Fragen** — NUR wenn das Urteil „muss verfeinert werden" lautet: eine Liste konkreter Fragen. Jede Zeile eine Frage, die mit „?" endet. Keine Aussagen, keine Befunde — nur Fragen.
 
-Fachlich, Technisch und Akzeptanzkriterien liefert der Subagent **immer** — auch bei „gut genug zum Bauen". Offene Fragen nur beim Urteil „muss verfeinert werden".
+Fachlich, Technisch und Akzeptanzkriterien entstehen **immer** — auch bei „gut genug zum Bauen". Offene Fragen nur beim Urteil „muss verfeinert werden".
 
-Dem Urteil des Subagenten ohne Abweichung folgen. Das Urteil entscheidet **nicht**, ob ein Ticket entsteht — ein Ticket entsteht immer (Schritt 3). Es entscheidet nur, ob danach ein Kommentar mit offenen Fragen folgt (Schritt 3a) oder nicht (Schritt 3b).
+Am eigenen Urteil festhalten, sobald es gebildet ist. Das Urteil entscheidet **nicht**, ob ein Ticket entsteht — ein Ticket entsteht immer (Schritt 3). Es entscheidet nur, ob danach ein Kommentar mit offenen Fragen folgt (Schritt 3a) oder nicht (Schritt 3b).
 
 ## Schritt 3 — Ticket anlegen (IMMER)
 
@@ -181,7 +180,7 @@ Das neue Ticket landet automatisch mit `status=DEFINITION` und `owner=HUMAN` —
 
 ## Schritt 3a — Feedback zu dünn: muss verfeinert werden
 
-Auf dem NEUEN Ticket einen Kommentar hinterlassen. Der Kommentar-Body enthält **NUR Fragen** — jede Zeile eine Frage, die mit „?" endet. Keine Aussagen, keine Fakten, kein Befund. Die Fragen aus den „Offene Fragen" des Subagenten (Schritt 2) übernehmen.
+Auf dem NEUEN Ticket einen Kommentar hinterlassen. Der Kommentar-Body enthält **NUR Fragen** — jede Zeile eine Frage, die mit „?" endet. Keine Aussagen, keine Fakten, kein Befund. Die Fragen aus den „Offene Fragen" von Schritt 2 übernehmen.
 
 **Verboten:** Aussagen über den bestehenden Code oder Zustand voranstellen — z. B. „X existiert bereits im Code", „Y fehlt", „Z ist unklar" — und danach erst fragen. Das ist ein Aussagen-Kommentar, kein Fragen-Kommentar, und ist nicht erlaubt. Nur die Frage selbst gehört in den Kommentar, ohne Vorspann, ohne Befund.
 
