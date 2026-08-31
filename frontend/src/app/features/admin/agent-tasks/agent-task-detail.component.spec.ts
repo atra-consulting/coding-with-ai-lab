@@ -15,6 +15,7 @@ const MOCK_TASK: AgentTask = {
   status: 'DONE',
   comment: 'Implemented pipeline total in Chancen board header.',
   metadata: '{"issueNumber":42,"repo":"crm"}',
+  ticketId: null,
   pickedUpAt: '2024-01-02T08:00:00.000Z',
   resolvedAt: '2024-01-02T12:00:00.000Z',
   createdAt: '2024-01-01T10:00:00.000Z',
@@ -133,6 +134,61 @@ describe('AgentTaskDetailComponent', () => {
     const alert: HTMLElement = fixture3.nativeElement.querySelector('.alert-danger');
     expect(alert).toBeTruthy();
     expect(alert.textContent).toContain('Aufgabe nicht gefunden');
+  });
+});
+
+describe('AgentTaskDetailComponent — Ticket link', () => {
+  it('renders the "Ticket #<id>" link with the correct routerLink target when ticketId is set', async () => {
+    const taskWithLink: AgentTask = { ...MOCK_TASK, ticketId: 12 };
+    const mockService = jasmine.createSpyObj<AgentTaskService>('AgentTaskService', ['getById']);
+    mockService.getById.and.returnValue(of(taskWithLink));
+
+    await TestBed.configureTestingModule({
+      imports: [AgentTaskDetailComponent],
+      providers: [
+        provideRouter([]),
+        { provide: AgentTaskService, useValue: mockService },
+        { provide: ActivatedRoute, useValue: makeRoute('7') },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(AgentTaskDetailComponent);
+    fixture.detectChanges();
+
+    const dts: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('dt'));
+    const ticketDt = dts.find((dt) => dt.textContent?.trim() === 'Ticket');
+    expect(ticketDt).toBeTruthy();
+
+    const link: HTMLAnchorElement | null = fixture.nativeElement.querySelector(
+      'dd a[href="/admin/tickets/12"]',
+    );
+    expect(link).toBeTruthy();
+    expect(link!.textContent?.trim()).toBe('Ticket #12');
+  });
+
+  it('renders neither the Ticket dt nor dd when ticketId is null', async () => {
+    const taskNoLink: AgentTask = { ...MOCK_TASK, ticketId: null };
+    const mockService = jasmine.createSpyObj<AgentTaskService>('AgentTaskService', ['getById']);
+    mockService.getById.and.returnValue(of(taskNoLink));
+
+    await TestBed.configureTestingModule({
+      imports: [AgentTaskDetailComponent],
+      providers: [
+        provideRouter([]),
+        { provide: AgentTaskService, useValue: mockService },
+        { provide: ActivatedRoute, useValue: makeRoute('7') },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(AgentTaskDetailComponent);
+    fixture.detectChanges();
+
+    const dts: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('dt'));
+    const ticketDt = dts.find((dt) => dt.textContent?.trim() === 'Ticket');
+    expect(ticketDt).toBeUndefined();
+
+    const link = fixture.nativeElement.querySelector('a[href*="/admin/tickets/"]');
+    expect(link).toBeNull();
   });
 });
 

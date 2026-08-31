@@ -51,6 +51,13 @@ import { AgentTaskService } from '../../../core/services/agent-task.service';
 
           <dt class="col-sm-3">Aktualisiert am</dt>
           <dd class="col-sm-9">{{ task.updatedAt }}</dd>
+
+          @if (task.ticketId) {
+            <dt class="col-sm-3">Ticket</dt>
+            <dd class="col-sm-9">
+              <a [routerLink]="['/admin/tickets', task.ticketId]">Ticket #{{ task.ticketId }}</a>
+            </dd>
+          }
         </dl>
 
         <h5 class="mt-3">Inhalt</h5>

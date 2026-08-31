@@ -8,11 +8,17 @@
  * 3. Return a teardown function.
  */
 import { spawnSync, spawn, ChildProcess } from 'node:child_process';
+import { rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const BACKEND_ROOT = resolve(__dirname, '..', '..', '..');
+
+// Resolved the same way config/db.ts resolves it (relative to that file's
+// __dirname, i.e. backend/data/), so both the runner process and the
+// spawned backend agree on the exact test DB path.
+const TEST_DB_PATH = join(BACKEND_ROOT, 'backend', 'data', 'crmdb.test.sqlite');
 
 /**
  * Fixed agent token injected into the backend process during tests.
@@ -44,6 +50,18 @@ export default async function globalSetup(): Promise<() => Promise<void>> {
     }
   } catch {
     // Port was not in use — nothing to kill
+  }
+
+  // -------------------------------------------------------------------------
+  // 1b. Delete the test DB file and its SQLite sidecar files so each run
+  //     starts from a clean, freshly-migrated/seeded schema. Never touches
+  //     the dev DB (crmdb.sqlite) — only the `.test.` file. Skipped entirely
+  //     when running against Turso, where there is nothing local to delete.
+  // -------------------------------------------------------------------------
+  if (!process.env['TURSO_DATABASE_URL']) {
+    for (const suffix of ['', '-journal', '-wal', '-shm']) {
+      rmSync(`${TEST_DB_PATH}${suffix}`, { force: true });
+    }
   }
 
   const env: Record<string, string> = {

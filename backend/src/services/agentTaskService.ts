@@ -15,6 +15,7 @@ export interface AgentTaskDTO {
   resolvedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  ticketId: number | null;
 }
 
 interface AgentTaskRow {
@@ -29,6 +30,7 @@ interface AgentTaskRow {
   resolvedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  ticketId?: number | null;
 }
 
 export interface AgentTaskSummaryDTO {
@@ -52,6 +54,7 @@ function toDTO(row: AgentTaskRow): AgentTaskDTO {
     resolvedAt: row.resolvedAt,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
+    ticketId: row.ticketId ?? null,
   };
 }
 
@@ -70,12 +73,17 @@ export const agentTaskService = {
       args: [now, now, source],
     });
     const row = result.rows[0] as unknown as AgentTaskRow | undefined;
-    return row ? toDTO(row) : null;
+    // RETURNING * cannot carry the derived ticketId column, so re-fetch
+    // the claimed row through findById() to get the computed value.
+    return row ? this.findById(row.id) : null;
   },
 
   async findById(id: number): Promise<AgentTaskDTO> {
     const result = await client.execute({
-      sql: 'SELECT * FROM agent_task WHERE id = ?',
+      sql: `SELECT *,
+                   (SELECT t.id FROM ticket t WHERE t.agentTaskId = agent_task.id
+                    ORDER BY t.createdAt DESC, t.id DESC LIMIT 1) AS ticketId
+            FROM agent_task WHERE id = ?`,
       args: [id],
     });
     const row = result.rows[0] as unknown as AgentTaskRow | undefined;
@@ -158,7 +166,14 @@ export const agentTaskService = {
     const total = Number(countRow.cnt);
 
     const rowsResult = await client.execute({
-      sql: `SELECT * FROM agent_task ${where} ORDER BY ${sort.field} ${sort.direction} LIMIT ? OFFSET ?`,
+      sql: `SELECT p.*,
+                   (SELECT t.id FROM ticket t WHERE t.agentTaskId = p.id
+                    ORDER BY t.createdAt DESC, t.id DESC LIMIT 1) AS ticketId
+            FROM (
+              SELECT * FROM agent_task ${where}
+              ORDER BY ${sort.field} ${sort.direction}
+              LIMIT ? OFFSET ?
+            ) p`,
       args: [...args, size, page * size],
     });
     const rows = rowsResult.rows as unknown as AgentTaskRow[];

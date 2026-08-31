@@ -43,7 +43,17 @@
  *   seeded comments.
  *   ON_HOLD + owner=HUMAN: 7,9 (2 tickets, FEATURE), each with 1 seeded AGENT
  *   comment (7 seeded comments total across 1,2,3,4,5,7,9).
- *   All solution=null.
+ *   All solution=null. All seeded tickets have fullyReady=false and
+ *   agentTaskId=null (the seed inserts neither column, so both fall back to
+ *   their column defaults).
+ *
+ * PORT-FEEDBACK-TICKETS-APIS additions (bottom of this file):
+ *   fullyReady field on create + clearFullyReady on POST /:id/comments
+ *   (including combined with handBackToAi, both success and 409-rejects-
+ *   nothing-written), and that unrelated updates never touch it.
+ *   agentTaskId field on create (valid/null/unknown-id 400/non-integer 400)
+ *   and that the stored value survives unchanged across every read endpoint
+ *   (GET :id, GET list, GET board, GET next) and every unrelated write.
  */
 import { test, expect, request as playwrightRequest, type APIRequestContext } from '@playwright/test';
 import { loginCtx } from './helpers.js';
@@ -74,6 +84,8 @@ interface Ticket {
   resolvedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  fullyReady: boolean;
+  agentTaskId: number | null;
   comments: TicketComment[];
 }
 
@@ -84,6 +96,8 @@ interface TicketListItem {
   title: string;
   status: string;
   solution: string | null;
+  fullyReady: boolean;
+  agentTaskId: number | null;
   commentCount: number;
 }
 
@@ -150,6 +164,22 @@ async function resetTickets(admin: APIRequestContext): Promise<void> {
   if (resp.status() !== 200) {
     throw new Error(`POST /api/tickets/reset failed: ${resp.status()} ${await resp.text()}`);
   }
+}
+
+/**
+ * Create a ticket linked to the given agentTaskId (PORT-FEEDBACK-TICKETS-APIS).
+ * Used by the agentTaskId read/write stability suites below. `agentTaskId`
+ * must reference an existing agent_task row — the seeded ids 1-23 are always
+ * present after resetTickets()/resetDatabase() runs at startup.
+ */
+async function createLinkedTicket(admin: APIRequestContext, agentTaskId: number): Promise<Ticket> {
+  const resp = await admin.post('/api/tickets', {
+    data: { type: 'FEATURE', title: 'Linked ticket', body: 'Has an agentTaskId link.', agentTaskId },
+  });
+  if (resp.status() !== 201) {
+    throw new Error(`createLinkedTicket failed: ${resp.status()} ${await resp.text()}`);
+  }
+  return resp.json() as Promise<Ticket>;
 }
 
 // ─── Suite: Auth matrix — agent endpoints ────────────────────────────────────
@@ -2376,5 +2406,474 @@ test.describe('POST /:id/comments — handBackToAi guard (only ON_HOLD+HUMAN all
       data: { body: 'Note on DONE ticket.' },
     });
     await test.step('plain comment on DONE → 200', () => { expect(resp2.status()).toBe(200); });
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PORT-FEEDBACK-TICKETS-APIS — fullyReady marker and agentTaskId link
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// Covers:
+//   - fullyReady: create defaults/overrides, comment-reset (clearFullyReady),
+//     combined with handBackToAi (both-succeed and 409-rejects-nothing-written
+//     paths), and that unrelated status/owner/hand-to-ai/wont-do updates never
+//     touch it.
+//   - agentTaskId: create with/without a link, unknown-id 400 naming
+//     fieldErrors.agentTaskId, non-integer 400, and that the stored value
+//     survives unchanged across every read endpoint (GET :id, GET list,
+//     GET board, GET next) and every unrelated write (status, owner, comment,
+//     done).
+
+// ─── Suite: POST /api/tickets — fullyReady field ─────────────────────────────
+
+test.describe('POST /api/tickets — fullyReady field', () => {
+  let admin: APIRequestContext;
+
+  test.beforeAll(async () => {
+    admin = await loginCtx('admin', 'admin123');
+    await resetTickets(admin);
+  });
+
+  test.afterAll(async () => {
+    await admin.dispose();
+  });
+
+  test('create without fullyReady → defaults to false', async () => {
+    const resp = await admin.post('/api/tickets', {
+      data: { type: 'FEATURE', title: 'No fullyReady given', body: 'B' },
+    });
+    expect(resp.status()).toBe(201);
+    const body = await resp.json() as Ticket;
+    expect(body.fullyReady).toBe(false);
+  });
+
+  test('create with fullyReady:true → true', async () => {
+    const resp = await admin.post('/api/tickets', {
+      data: { type: 'FEATURE', title: 'fullyReady true', body: 'B', fullyReady: true },
+    });
+    expect(resp.status()).toBe(201);
+    const body = await resp.json() as Ticket;
+    expect(body.fullyReady).toBe(true);
+  });
+
+  test('create with fullyReady:false explicitly → false', async () => {
+    const resp = await admin.post('/api/tickets', {
+      data: { type: 'FEATURE', title: 'fullyReady false', body: 'B', fullyReady: false },
+    });
+    expect(resp.status()).toBe(201);
+    const body = await resp.json() as Ticket;
+    expect(body.fullyReady).toBe(false);
+  });
+});
+
+// ─── Suite: POST /:id/comments — clearFullyReady field ───────────────────────
+
+test.describe('POST /:id/comments — clearFullyReady field', () => {
+  let admin: APIRequestContext;
+
+  test.beforeEach(async () => {
+    admin = await loginCtx('admin', 'admin123');
+    await resetTickets(admin);
+  });
+
+  test.afterEach(async () => {
+    await admin.dispose();
+  });
+
+  test('clearFullyReady:true turns the marker off', async () => {
+    const createResp = await admin.post('/api/tickets', {
+      data: { type: 'FEATURE', title: 'Ready but gets checked', body: 'B', fullyReady: true },
+    });
+    expect(createResp.status()).toBe(201);
+    const created = await createResp.json() as Ticket;
+    expect(created.fullyReady).toBe(true);
+
+    const resp = await admin.post(`/api/tickets/${created.id}/comments`, {
+      data: { body: 'Not as ready as claimed.', clearFullyReady: true },
+    });
+
+    await test.step('status 200', () => { expect(resp.status()).toBe(200); });
+
+    const body = await resp.json() as Ticket;
+    await test.step('marker is off in response', () => { expect(body.fullyReady).toBe(false); });
+
+    const persisted = await (await admin.get(`/api/tickets/${created.id}`)).json() as Ticket;
+    await test.step('marker is off after re-fetch', () => { expect(persisted.fullyReady).toBe(false); });
+  });
+
+  test('clearFullyReady:true on an already-off marker → still off, 200, no error', async () => {
+    const createResp = await admin.post('/api/tickets', {
+      data: { type: 'FEATURE', title: 'Already not ready', body: 'B' },
+    });
+    expect(createResp.status()).toBe(201);
+    const created = await createResp.json() as Ticket;
+    expect(created.fullyReady).toBe(false);
+
+    const resp = await admin.post(`/api/tickets/${created.id}/comments`, {
+      data: { body: 'Still not ready.', clearFullyReady: true },
+    });
+    expect(resp.status()).toBe(200);
+    const body = await resp.json() as Ticket;
+    expect(body.fullyReady).toBe(false);
+  });
+
+  test('clearFullyReady:true + handBackToAi:true on a valid ON_HOLD+HUMAN ticket → both applied', async () => {
+    // Build a ticket that starts fullyReady, gets handed to the AI, claimed,
+    // asked (→ ON_HOLD+HUMAN), then answered with both flags set together.
+    const createResp = await admin.post('/api/tickets', {
+      data: { type: 'FEATURE', title: 'Combo flags happy path', body: 'B', fullyReady: true },
+    });
+    expect(createResp.status()).toBe(201);
+    const created = await createResp.json() as Ticket;
+    expect(created.fullyReady).toBe(true);
+
+    const handToAiResp = await admin.post(`/api/tickets/${created.id}/hand-to-ai`);
+    expect(handToAiResp.status()).toBe(200);
+
+    const agent = await agentCtx();
+    const startResp = await agent.post(`/api/tickets/${created.id}/start`, { data: {} });
+    expect(startResp.status()).toBe(200);
+
+    const askResp = await agent.post(`/api/tickets/${created.id}/ask`, {
+      data: { question: 'Which option do you want?' },
+    });
+    expect(askResp.status()).toBe(200);
+    const afterAsk = await askResp.json() as Ticket;
+    expect(afterAsk.status).toBe('ON_HOLD');
+    expect(afterAsk.owner).toBe('HUMAN');
+
+    const resp = await admin.post(`/api/tickets/${created.id}/comments`, {
+      data: {
+        body: 'Option B, and this is not as ready as I claimed.',
+        handBackToAi: true,
+        clearFullyReady: true,
+      },
+    });
+
+    await test.step('status 200', () => { expect(resp.status()).toBe(200); });
+
+    const body = await resp.json() as Ticket;
+    await test.step('handBackToAi applied: status TODO', () => { expect(body.status).toBe('TODO'); });
+    await test.step('handBackToAi applied: owner AI', () => { expect(body.owner).toBe('AI'); });
+    await test.step('clearFullyReady applied: marker off', () => { expect(body.fullyReady).toBe(false); });
+
+    await agent.dispose();
+  });
+
+  test('clearFullyReady:true + handBackToAi:true on an ineligible ticket → 409, comment count and fullyReady unchanged', async () => {
+    // Fresh ticket stays DEFINITION+HUMAN — not ON_HOLD+HUMAN, so handBackToAi
+    // is rejected before anything is written (comment insert included).
+    const createResp = await admin.post('/api/tickets', {
+      data: { type: 'FEATURE', title: 'Ineligible combo', body: 'B', fullyReady: true },
+    });
+    expect(createResp.status()).toBe(201);
+    const created = await createResp.json() as Ticket;
+    expect(created.status).toBe('DEFINITION');
+    expect(created.fullyReady).toBe(true);
+
+    const before = await (await admin.get(`/api/tickets/${created.id}`)).json() as Ticket;
+    const commentCountBefore = before.comments.length;
+
+    const resp = await admin.post(`/api/tickets/${created.id}/comments`, {
+      data: {
+        body: 'Trying to hand back an ineligible ticket.',
+        handBackToAi: true,
+        clearFullyReady: true,
+      },
+    });
+
+    await test.step('status 409', () => { expect(resp.status()).toBe(409); });
+
+    const after = await (await admin.get(`/api/tickets/${created.id}`)).json() as Ticket;
+    await test.step('comment count unchanged', () => {
+      expect(after.comments.length).toBe(commentCountBefore);
+    });
+    await test.step('fullyReady unchanged (still true)', () => {
+      expect(after.fullyReady).toBe(true);
+    });
+  });
+});
+
+// ─── Suite: unrelated ticket updates leave fullyReady untouched ──────────────
+
+test.describe('Unrelated ticket updates leave fullyReady untouched', () => {
+  let admin: APIRequestContext;
+
+  test.beforeEach(async () => {
+    admin = await loginCtx('admin', 'admin123');
+    await resetTickets(admin);
+  });
+
+  test.afterEach(async () => {
+    await admin.dispose();
+  });
+
+  test('PATCH /:id/status leaves fullyReady untouched', async () => {
+    const createResp = await admin.post('/api/tickets', {
+      data: { type: 'FEATURE', title: 'Status change only', body: 'B', fullyReady: true },
+    });
+    const created = await createResp.json() as Ticket;
+
+    const resp = await admin.patch(`/api/tickets/${created.id}/status`, { data: { status: 'TODO' } });
+    expect(resp.status()).toBe(200);
+    const body = await resp.json() as Ticket;
+    expect(body.fullyReady).toBe(true);
+  });
+
+  test('PATCH /:id/owner leaves fullyReady untouched', async () => {
+    const createResp = await admin.post('/api/tickets', {
+      data: { type: 'FEATURE', title: 'Owner change only', body: 'B', fullyReady: true },
+    });
+    const created = await createResp.json() as Ticket;
+
+    const resp = await admin.patch(`/api/tickets/${created.id}/owner`, { data: { owner: 'AI' } });
+    expect(resp.status()).toBe(200);
+    const body = await resp.json() as Ticket;
+    expect(body.fullyReady).toBe(true);
+  });
+
+  test('POST /:id/hand-to-ai leaves fullyReady untouched', async () => {
+    const createResp = await admin.post('/api/tickets', {
+      data: { type: 'FEATURE', title: 'Hand to AI only', body: 'B', fullyReady: true },
+    });
+    const created = await createResp.json() as Ticket;
+
+    const resp = await admin.post(`/api/tickets/${created.id}/hand-to-ai`);
+    expect(resp.status()).toBe(200);
+    const body = await resp.json() as Ticket;
+    expect(body.fullyReady).toBe(true);
+  });
+
+  test('POST /:id/wont-do leaves fullyReady untouched', async () => {
+    const createResp = await admin.post('/api/tickets', {
+      data: { type: 'BUG', title: "Won't Do only", body: 'B', fullyReady: true },
+    });
+    const created = await createResp.json() as Ticket;
+    expect(created.owner).toBe('HUMAN');
+
+    const resp = await admin.post(`/api/tickets/${created.id}/wont-do`, { data: {} });
+    expect(resp.status()).toBe(200);
+    const body = await resp.json() as Ticket;
+    expect(body.fullyReady).toBe(true);
+  });
+});
+
+// ─── Suite: POST /api/tickets — agentTaskId field ────────────────────────────
+
+test.describe('POST /api/tickets — agentTaskId field', () => {
+  let admin: APIRequestContext;
+
+  test.beforeAll(async () => {
+    admin = await loginCtx('admin', 'admin123');
+    await resetTickets(admin);
+  });
+
+  test.afterAll(async () => {
+    await admin.dispose();
+  });
+
+  test('create with no agentTaskId → null', async () => {
+    const resp = await admin.post('/api/tickets', {
+      data: { type: 'FEATURE', title: 'No link given', body: 'B' },
+    });
+    expect(resp.status()).toBe(201);
+    const body = await resp.json() as Ticket;
+    expect(body.agentTaskId).toBeNull();
+  });
+
+  test('create with agentTaskId:null explicitly → null', async () => {
+    const resp = await admin.post('/api/tickets', {
+      data: { type: 'FEATURE', title: 'Explicit null link', body: 'B', agentTaskId: null },
+    });
+    expect(resp.status()).toBe(201);
+    const body = await resp.json() as Ticket;
+    expect(body.agentTaskId).toBeNull();
+  });
+
+  test('create with a valid agentTaskId → stored and echoed back', async () => {
+    const resp = await admin.post('/api/tickets', {
+      data: { type: 'FEATURE', title: 'Valid link', body: 'B', agentTaskId: 1 },
+    });
+    expect(resp.status()).toBe(201);
+    const body = await resp.json() as Ticket;
+    expect(body.agentTaskId).toBe(1);
+  });
+
+  test('create with a non-existent agentTaskId → 400 with fieldErrors.agentTaskId', async () => {
+    const resp = await admin.post('/api/tickets', {
+      data: { type: 'FEATURE', title: 'Bad link', body: 'B', agentTaskId: 999999 },
+    });
+    await test.step('status 400', () => { expect(resp.status()).toBe(400); });
+    const body = await resp.json() as ErrorBody;
+    await test.step('fieldErrors.agentTaskId present', () => {
+      expect(typeof body.fieldErrors?.['agentTaskId']).toBe('string');
+    });
+  });
+
+  test('create with a non-integer agentTaskId (1.5) → 400, field named', async () => {
+    const resp = await admin.post('/api/tickets', {
+      data: { type: 'FEATURE', title: 'Float link', body: 'B', agentTaskId: 1.5 },
+    });
+    await test.step('status 400', () => { expect(resp.status()).toBe(400); });
+    const body = await resp.json() as ErrorBody;
+    await test.step('fieldErrors.agentTaskId present', () => {
+      expect(typeof body.fieldErrors?.['agentTaskId']).toBe('string');
+    });
+  });
+
+  test('create with a non-integer agentTaskId ("abc") → 400, field named', async () => {
+    const resp = await admin.post('/api/tickets', {
+      data: { type: 'FEATURE', title: 'String link', body: 'B', agentTaskId: 'abc' },
+    });
+    await test.step('status 400', () => { expect(resp.status()).toBe(400); });
+    const body = await resp.json() as ErrorBody;
+    await test.step('fieldErrors.agentTaskId present', () => {
+      expect(typeof body.fieldErrors?.['agentTaskId']).toBe('string');
+    });
+  });
+
+  test('create with agentTaskId:0 → 400, field named', async () => {
+    const resp = await admin.post('/api/tickets', {
+      data: { type: 'FEATURE', title: 'Zero link', body: 'B', agentTaskId: 0 },
+    });
+    await test.step('status 400', () => { expect(resp.status()).toBe(400); });
+    const body = await resp.json() as ErrorBody;
+    await test.step('fieldErrors.agentTaskId present', () => {
+      expect(typeof body.fieldErrors?.['agentTaskId']).toBe('string');
+    });
+  });
+
+  test('create with a negative agentTaskId (-1) → 400, field named', async () => {
+    const resp = await admin.post('/api/tickets', {
+      data: { type: 'FEATURE', title: 'Negative link', body: 'B', agentTaskId: -1 },
+    });
+    await test.step('status 400', () => { expect(resp.status()).toBe(400); });
+    const body = await resp.json() as ErrorBody;
+    await test.step('fieldErrors.agentTaskId present', () => {
+      expect(typeof body.fieldErrors?.['agentTaskId']).toBe('string');
+    });
+  });
+});
+
+// ─── Suite: agentTaskId is stable across read endpoints ──────────────────────
+
+test.describe('agentTaskId is unchanged across GET :id, GET list, GET board, GET next', () => {
+  let admin: APIRequestContext;
+
+  test.beforeEach(async () => {
+    admin = await loginCtx('admin', 'admin123');
+    await resetTickets(admin);
+  });
+
+  test.afterEach(async () => {
+    await admin.dispose();
+  });
+
+  test('GET /:id returns the same agentTaskId set at create', async () => {
+    const created = await createLinkedTicket(admin, 1);
+    const resp = await admin.get(`/api/tickets/${created.id}`);
+    expect(resp.status()).toBe(200);
+    const body = await resp.json() as Ticket;
+    expect(body.agentTaskId).toBe(1);
+  });
+
+  test('GET / (list) returns the same agentTaskId set at create', async () => {
+    const created = await createLinkedTicket(admin, 1);
+    const resp = await admin.get('/api/tickets');
+    expect(resp.status()).toBe(200);
+    const body = await resp.json() as PageResult<TicketListItem>;
+    const item = body.content.find((t) => t.id === created.id);
+    expect(item).toBeDefined();
+    expect(item?.agentTaskId).toBe(1);
+  });
+
+  test('GET /board returns the same agentTaskId set at create', async () => {
+    const created = await createLinkedTicket(admin, 1);
+    const resp = await admin.get('/api/tickets/board');
+    expect(resp.status()).toBe(200);
+    const body = await resp.json() as TicketBoard;
+    const item = body.DEFINITION.find((t) => t.id === created.id);
+    expect(item).toBeDefined();
+    expect(item?.agentTaskId).toBe(1);
+  });
+
+  test('GET /next returns the same agentTaskId for the claimed ticket', async () => {
+    const agent = await agentCtx();
+
+    // Drain all 5 seeded TODO+AI tickets (6,8,10,11,12) so the newly created,
+    // freshly-linked ticket is the only claimable one left.
+    for (let i = 0; i < 5; i++) {
+      const resp = await agent.get('/api/tickets/next');
+      expect(resp.status()).toBe(200);
+    }
+
+    const created = await createLinkedTicket(admin, 1);
+    const handToAiResp = await admin.post(`/api/tickets/${created.id}/hand-to-ai`);
+    expect(handToAiResp.status()).toBe(200);
+
+    const resp = await agent.get('/api/tickets/next');
+    expect(resp.status()).toBe(200);
+    const body = await resp.json() as Ticket;
+
+    await test.step('claimed ticket is the one just created', () => { expect(body.id).toBe(created.id); });
+    await test.step('agentTaskId unchanged', () => { expect(body.agentTaskId).toBe(1); });
+
+    await agent.dispose();
+  });
+});
+
+// ─── Suite: agentTaskId is stable across unrelated writes ────────────────────
+
+test.describe('agentTaskId is unchanged across status/owner/comment/done updates', () => {
+  let admin: APIRequestContext;
+
+  test.beforeEach(async () => {
+    admin = await loginCtx('admin', 'admin123');
+    await resetTickets(admin);
+  });
+
+  test.afterEach(async () => {
+    await admin.dispose();
+  });
+
+  test('PATCH /:id/status leaves agentTaskId untouched', async () => {
+    const created = await createLinkedTicket(admin, 1);
+    const resp = await admin.patch(`/api/tickets/${created.id}/status`, { data: { status: 'TODO' } });
+    expect(resp.status()).toBe(200);
+    const body = await resp.json() as Ticket;
+    expect(body.agentTaskId).toBe(1);
+  });
+
+  test('PATCH /:id/owner leaves agentTaskId untouched', async () => {
+    const created = await createLinkedTicket(admin, 1);
+    const resp = await admin.patch(`/api/tickets/${created.id}/owner`, { data: { owner: 'AI' } });
+    expect(resp.status()).toBe(200);
+    const body = await resp.json() as Ticket;
+    expect(body.agentTaskId).toBe(1);
+  });
+
+  test('POST /:id/comments (plain comment) leaves agentTaskId untouched', async () => {
+    const created = await createLinkedTicket(admin, 1);
+    const resp = await admin.post(`/api/tickets/${created.id}/comments`, { data: { body: 'Just a note.' } });
+    expect(resp.status()).toBe(200);
+    const body = await resp.json() as Ticket;
+    expect(body.agentTaskId).toBe(1);
+  });
+
+  test('POST /:id/done leaves agentTaskId untouched', async () => {
+    const created = await createLinkedTicket(admin, 1);
+    const handToAiResp = await admin.post(`/api/tickets/${created.id}/hand-to-ai`);
+    expect(handToAiResp.status()).toBe(200);
+
+    const agent = await agentCtx();
+    const startResp = await agent.post(`/api/tickets/${created.id}/start`, { data: {} });
+    expect(startResp.status()).toBe(200);
+
+    const resp = await agent.post(`/api/tickets/${created.id}/done`, { data: {} });
+    expect(resp.status()).toBe(200);
+    const body = await resp.json() as Ticket;
+    expect(body.agentTaskId).toBe(1);
+
+    await agent.dispose();
   });
 });

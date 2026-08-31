@@ -147,9 +147,13 @@ Manages the autonomous-agent work queue. Lifecycle: `OPEN → IN_PROGRESS → DO
 
 Agent endpoints are authenticated via `requireAgentToken` (see [agentAuth.ts](#agent-token-auth)). Admin endpoints require a valid admin session.
 
+`AgentTaskDTO` also carries a derived, **never stored** `ticketId` field — the newest ticket (if any) whose `agentTaskId` points back at this task. It is computed on every read: the single-item read, the paginated list, and the claim (`/next`) endpoint. The list-endpoint query pages the result first, then computes `ticketId` only for the rows on that page — not for every row scanned to build the sort — so list performance does not degrade as the table grows.
+
 ### Tickets (`/api/tickets`)
 
 Fake Kanban ticket system for the software-factory training. Board mechanics and full contract: see [docs/specs/SPEC-API-TICKETS.md](SPEC-API-TICKETS.md). Status enum: `DEFINITION → TODO → IN_PROGRESS → ON_HOLD → DONE`. Owner: `AI` or `HUMAN`. New tickets start `owner=HUMAN`, `status=DEFINITION`.
+
+The create request (`POST /`) accepts two optional fields beyond `type`/`title`/`body`: `agentTaskId` (nullable integer, links the ticket to the app-feedback item that spawned it) and `fullyReady` (boolean, "ready to build without further human input", defaults to `false`, never shown in the admin UI). The comment request (`POST /:id/comments`) accepts an optional `clearFullyReady` (boolean) that resets the `fullyReady` marker back to `false`, independent of `handBackToAi`. Full contract: [SPEC-API-TICKETS.md](SPEC-API-TICKETS.md).
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|

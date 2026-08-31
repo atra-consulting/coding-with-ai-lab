@@ -73,6 +73,13 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
                 <dt class="col-sm-4">Abgeschlossen</dt>
                 <dd class="col-sm-8">{{ ticket.resolvedAt | date:'dd.MM.yyyy HH:mm' }}</dd>
               }
+
+              @if (ticket.agentTaskId) {
+                <dt class="col-sm-4">App-Feedback</dt>
+                <dd class="col-sm-8">
+                  <a [routerLink]="['/admin/agent-tasks', ticket.agentTaskId]">App-Feedback #{{ ticket.agentTaskId }}</a>
+                </dd>
+              }
             </dl>
           </div>
 

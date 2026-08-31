@@ -9,8 +9,9 @@ coding-with-ai-lab/
 ├── vercel.json                 # Vercel build config, rewrites, and daily cron schedule
 ├── backend/                    # CRM Backend (Node.js, TypeScript, Express)
 │   ├── package.json
-│   ├── data/                   # SQLite database file (gitignored; local dev only)
-│   │   └── crmdb.sqlite
+│   ├── data/                   # SQLite database file(s) (gitignored; local dev only)
+│   │   ├── crmdb.sqlite        # Dev database
+│   │   └── crmdb.test.sqlite   # Playwright test DB (NODE_ENV=test, no TURSO_DATABASE_URL); wiped + recreated each test run
 │   └── src/
 │       ├── index.ts            # Entry point — loads env, runs migrations, seeds, starts server
 │       ├── app.ts              # Express app setup
@@ -133,6 +134,7 @@ Dev dependencies:
 
 - Engine: SQLite/libSQL via `@libsql/client`
 - Local file path: `backend/data/crmdb.sqlite` (created automatically on first startup)
+- Test runs: when `NODE_ENV=test` and `TURSO_DATABASE_URL` is unset, `backend/src/config/db.ts` uses `backend/data/crmdb.test.sqlite` instead, so `npm test` never touches the dev database. `backend/playwright.config.ts` sets `NODE_ENV=test` before any other import; `backend/src/test/globalSetup.ts` deletes the test file (plus `-journal`/`-wal`/`-shm` sidecars) and recreates it fresh at the start of every Playwright run.
 - Remote: Turso cloud database when `TURSO_DATABASE_URL` is set (used on Vercel)
 
 Schema file paths, migration approach, table definitions, column specs, and enums: see [SPECS-database.md](SPECS-database.md).
@@ -211,7 +213,7 @@ Loaded from `backend/.env` (local dev) or set as real env vars (CI/Vercel). Real
 | PORT | 7070 | No | Backend HTTP port |
 | SESSION_SECRET | `crm-dev-secret-key` | No | express-session signing secret |
 | CORS_ORIGINS | `http://localhost:7200` | No | Allowed CORS origins (comma-separated) |
-| NODE_ENV | (unset) | No | `production` disables the `/api/auth/test-login` helper |
+| NODE_ENV | (unset) | No | `production` disables the `/api/auth/test-login` helper. `test` (set by `backend/playwright.config.ts`) routes the local SQLite connection to `backend/data/crmdb.test.sqlite` instead of `crmdb.sqlite` — only when `TURSO_DATABASE_URL` is unset; see Database section |
 | TURSO_DATABASE_URL | (unset) | Yes (Vercel) | libSQL/Turso remote URL. When set, uses Turso instead of the local SQLite file. Required on Vercel (read-only filesystem). |
 | TURSO_AUTH_TOKEN | (unset) | Yes (Vercel) | Auth token for Turso. Required when `TURSO_DATABASE_URL` is set. |
 | AGENT_API_TOKEN | (unset) | Yes (Vercel + GitHub Actions) | Shared secret for the `/api/agent-tasks` endpoints. Verified via SHA-256 + `timingSafeEqual`. |

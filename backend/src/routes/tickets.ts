@@ -32,12 +32,15 @@ const WontDoBodySchema = z.object({
 const CommentBodySchema = z.object({
   body: z.string().min(1, 'Kommentar-Text ist erforderlich'),
   handBackToAi: z.boolean().optional(),
+  clearFullyReady: z.boolean().optional(),
 });
 
 const CreateBodySchema = z.object({
   type: z.enum(TICKET_TYPE, { errorMap: () => ({ message: 'Ungültiger Ticket-Typ' }) }),
   title: z.string().min(1, 'Titel ist erforderlich'),
   body: z.string().min(1, 'Beschreibung ist erforderlich'),
+  agentTaskId: z.number().int().positive().nullable().optional(),
+  fullyReady: z.boolean().optional(),
 });
 
 const StatusBodySchema = z.object({
@@ -271,7 +274,7 @@ router.post(
   asyncHandler(async (req: Request, res: Response) => {
     const id = parseInt(req.params['id'] as string, 10);
     const dto = validate(CommentBodySchema, req.body);
-    res.json(await ticketService.addComment(id, dto.body, dto.handBackToAi));
+    res.json(await ticketService.addComment(id, dto.body, dto.handBackToAi, dto.clearFullyReady));
   }),
 );
 

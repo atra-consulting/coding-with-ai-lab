@@ -130,6 +130,8 @@ export const ticket = sqliteTable('ticket', {
   solution: text('solution'),
   pickedUpAt: text('pickedUpAt'),
   resolvedAt: text('resolvedAt'),
+  fullyReady: integer('fullyReady').notNull().default(0),
+  agentTaskId: integer('agentTaskId').references(() => agentTask.id, { onDelete: 'set null' }),
   createdAt: text('createdAt').notNull().default(sql`(datetime('now'))`),
   updatedAt: text('updatedAt').notNull().default(sql`(datetime('now'))`),
 });

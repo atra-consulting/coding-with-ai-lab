@@ -12,9 +12,15 @@ const __dirname = dirname(__filename);
 // Using __dirname (not cwd) so the path is correct regardless of working directory
 // (e.g. when running from the repo root via api/index.ts on Vercel).
 const dataDir = join(__dirname, '..', '..', 'data');
-const dbPath = join(dataDir, 'crmdb.sqlite');
 
 const tursoUrl = process.env['TURSO_DATABASE_URL'];
+
+// Route the Playwright suite (NODE_ENV=test) to its own SQLite file so
+// `npm test` never touches the developer's working database. Turso always
+// wins when configured, so cloud/CI runs are unaffected.
+const dbFileName =
+  !tursoUrl && process.env['NODE_ENV'] === 'test' ? 'crmdb.test.sqlite' : 'crmdb.sqlite';
+const dbPath = join(dataDir, dbFileName);
 
 // Only create the local data dir when actually using the file: default —
 // on Vercel (TURSO_DATABASE_URL set) the filesystem is read-only and

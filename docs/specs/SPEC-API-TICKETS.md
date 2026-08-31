@@ -42,6 +42,8 @@ Agents only ever claim `TODO`+`AI` tickets, so a `DEFINITION` ticket is never au
   "type": "FEATURE",
   "title": "CSV-Export für die Firmenliste",
   "body": "…full text…",
+  "fullyReady": false,
+  "agentTaskId": null,
   "status": "ON_HOLD",
   "solution": null,
   "pickedUpAt": null,
@@ -63,12 +65,14 @@ Agents only ever claim `TODO`+`AI` tickets, so a `DEFINITION` ticket is never au
 
 - `solution` is `null` until resolved. Set to `DONE` or `WONT_DO` when `status=DONE`.
 - `pickedUpAt` is set when status → `IN_PROGRESS`. `resolvedAt` is set when status → `DONE`.
+- `fullyReady` (boolean, default `false`) marks a ticket as complete enough to build without further human input. Set only at creation. Never shown in the admin UI — it is a signal between automated flows, e.g. an automated, headless ticket-writing flow using the machine API token.
+- `agentTaskId` (nullable integer) links the ticket to the app-feedback item (an `agent_task` row) that spawned it. Write-once: set only at creation, never changed or cleared afterwards.
 - `comments` array is included on single-ticket responses. List and board responses include `commentCount` (integer) instead.
 - All timestamps are ISO-8601 strings.
 
 ### Ticket list item (paginated list and board)
 
-Same fields as ticket, but `comments` is replaced by `commentCount: number`.
+Same fields as ticket, but `comments` is replaced by `commentCount: number`. `fullyReady` and `agentTaskId` are present here too.
 
 ---
 
@@ -297,14 +301,17 @@ curl -s -X POST -H "Authorization: Bearer $AGENT_API_TOKEN" \
 ---
 
 ### POST `/api/tickets` — create (agent token · loopback · admin)
-**Auth:** agent token, loopback bypass, or admin session (first match wins). **Body:** `{ "type": "FEATURE"|"BUG"|"CHORE", "title": "<string>", "body": "<string>" }`.
+**Auth:** agent token, loopback bypass, or admin session (first match wins). **Body:** `{ "type": "FEATURE"|"BUG"|"CHORE", "title": "<string>", "body": "<string>", "agentTaskId"?: <number|null>, "fullyReady"?: <boolean> }`.
 
 Creates a ticket with `owner=HUMAN`, `status=DEFINITION` (lands in the intake column), no comments. A skill can call this with the agent token — no admin login needed.
+
+`agentTaskId` and `fullyReady` are both optional. `agentTaskId` links the new ticket to an existing app-feedback item (`agent_task` row) — omit or send `null` for no link. `fullyReady` defaults to `false`. **No auth change** — both fields ride the same guard as the rest of this endpoint.
 
 | Result | Meaning |
 |--------|---------|
 | `201` + ticket | created |
 | `400` | validation failure |
+| `400` | `agentTaskId` names a feedback item that does not exist — `fieldErrors.agentTaskId` |
 | `401` | bad/missing token and no admin session |
 | `403` | logged in but not admin (production, no token) |
 
@@ -392,9 +399,11 @@ curl -s -X POST -b "JSESSIONID=$SESSION" \
 ---
 
 ### POST `/api/tickets/:id/comments` — add comment (agent token · loopback · admin)
-**Auth:** agent token, loopback bypass, or admin session (first match wins). **Body:** `{ "body": "<non-empty string>", "handBackToAi": <optional boolean> }`.
+**Auth:** agent token, loopback bypass, or admin session (first match wins). **Body:** `{ "body": "<non-empty string>", "handBackToAi": <optional boolean>, "clearFullyReady": <optional boolean> }`.
 
 Inserts a comment. **The comment is always stored with `author=HUMAN`** — regardless of who calls it (there is no author field in the body). A skill posting here still writes a `HUMAN` comment. If `handBackToAi: true`, also sets `status=TODO`, `owner=AI`, clears `solution` and `resolvedAt` — returning the ticket to the AI queue. Guard: `handBackToAi` is only allowed when `status=ON_HOLD` and `owner=HUMAN`.
+
+If `clearFullyReady: true`, also resets the ticket's `fullyReady` marker to `false` — "I looked at this, it is not as complete as claimed." Resetting an already-off marker is harmless and still returns `200`. `clearFullyReady` and `handBackToAi` are independent — either can be sent alone, or both together. If `handBackToAi` is rejected because the ticket is not `ON_HOLD+HUMAN`, **nothing at all is written**: not the comment, not the `clearFullyReady` change.
 
 | Result | Meaning |
 |--------|---------|
@@ -494,7 +503,7 @@ All errors use the app-wide handler:
 
 ## Seed data
 
-12 workshop tickets seeded via `backend/src/seed/ticketSeed.ts`. Seed runs inside `POST /reset` (full wipe + re-seed). Unlike `agent_task`, ticket seed does **not** run on every startup — only when the DB is empty at first boot or after a manual reset.
+12 workshop tickets seeded via `backend/src/seed/ticketSeed.ts`. Seed runs inside `POST /reset` (full wipe + re-seed) **and** on every startup: `runMigrations()` calls it unconditionally, same as `seedAgentTasks()`. It is idempotent — `INSERT OR IGNORE` with fixed ids, so rows that already exist are skipped and nothing is duplicated.
 
 | # | Title | Type | Status | Owner |
 |---|-------|------|--------|-------|
