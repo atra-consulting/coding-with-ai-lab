@@ -969,6 +969,15 @@ test.describe('POST /api/agent-tasks/:id/start', () => {
 test.describe('Derived ticketId — GET /:id and GET / (list)', () => {
   let admin: APIRequestContext;
 
+  // Populated by the earlier tests in this block, consumed by the paginated
+  // list assertion further down. findAll() runs a textually distinct SQL
+  // query from findById() — a pagination-first wrapper query, not the
+  // simpler correlated subquery findById() uses — so a presence-only check
+  // on the list endpoint would not catch an aliasing bug specific to it.
+  let task1LinkedTicketId: number;
+  let unlinkedFreshTaskId: number;
+  let task2NewestTicketId: number;
+
   test.beforeAll(async () => {
     await resetDatabase();
     admin = await loginCtx('admin', 'admin123');
@@ -984,6 +993,7 @@ test.describe('Derived ticketId — GET /:id and GET / (list)', () => {
     });
     expect(createResp.status()).toBe(201);
     const ticket = await createResp.json() as { id: number };
+    task1LinkedTicketId = ticket.id;
 
     const resp = await admin.get('/api/agent-tasks/1');
     expect(resp.status()).toBe(200);
@@ -1007,6 +1017,7 @@ test.describe('Derived ticketId — GET /:id and GET / (list)', () => {
     });
     const row = insertResult.rows[0] as unknown as { id: number };
     const freshId = row.id;
+    unlinkedFreshTaskId = freshId;
 
     const resp = await admin.get(`/api/agent-tasks/${freshId}`);
     expect(resp.status()).toBe(200);
@@ -1028,6 +1039,7 @@ test.describe('Derived ticketId — GET /:id and GET / (list)', () => {
     });
     expect(newerResp.status()).toBe(201);
     const newerTicket = await newerResp.json() as { id: number };
+    task2NewestTicketId = newerTicket.id;
 
     const resp = await admin.get('/api/agent-tasks/2');
     expect(resp.status()).toBe(200);
@@ -1056,14 +1068,35 @@ test.describe('Derived ticketId — GET /:id and GET / (list)', () => {
     expect(afterBody.ticketId).toBeNull();
   });
 
-  test('ticketId appears on every item of the paginated list', async () => {
-    const resp = await admin.get('/api/agent-tasks');
+  test('ticketId appears on every item of the paginated list, with correct values for known links', async () => {
+    // size=200 (the route's cap, see parsePaginationParams) so every row —
+    // the seeded rows plus the one freshly INSERTed earlier in this block —
+    // lands on a single page, regardless of the default createdAt-DESC sort.
+    const resp = await admin.get('/api/agent-tasks?size=200');
     expect(resp.status()).toBe(200);
     const body = await resp.json() as PageResult<AgentTaskDTO>;
     expect(body.content.length).toBeGreaterThan(0);
-    for (const item of body.content) {
-      expect('ticketId' in item).toBe(true);
-    }
+
+    await test.step('every item carries a ticketId of the right type (number or null)', () => {
+      for (const item of body.content) {
+        expect(item.ticketId === null || typeof item.ticketId === 'number').toBe(true);
+      }
+    });
+
+    const byId = new Map(body.content.map((item) => [item.id, item]));
+
+    await test.step('agent_task 1: ticketId matches the ticket linked to it', () => {
+      expect(byId.get(1)?.ticketId).toBe(task1LinkedTicketId);
+    });
+    await test.step('agent_task 2: ticketId matches the newest of the two linked tickets', () => {
+      expect(byId.get(2)?.ticketId).toBe(task2NewestTicketId);
+    });
+    await test.step('agent_task 3: ticketId is null again after its linking ticket was deleted', () => {
+      expect(byId.get(3)?.ticketId).toBeNull();
+    });
+    await test.step('freshly inserted, never-linked agent_task: ticketId is null', () => {
+      expect(byId.get(unlinkedFreshTaskId)?.ticketId).toBeNull();
+    });
   });
 });
 

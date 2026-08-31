@@ -2731,6 +2731,28 @@ test.describe('POST /api/tickets — agentTaskId field', () => {
       expect(typeof body.fieldErrors?.['agentTaskId']).toBe('string');
     });
   });
+
+  test('create with agentTaskId:0 → 400, field named', async () => {
+    const resp = await admin.post('/api/tickets', {
+      data: { type: 'FEATURE', title: 'Zero link', body: 'B', agentTaskId: 0 },
+    });
+    await test.step('status 400', () => { expect(resp.status()).toBe(400); });
+    const body = await resp.json() as ErrorBody;
+    await test.step('fieldErrors.agentTaskId present', () => {
+      expect(typeof body.fieldErrors?.['agentTaskId']).toBe('string');
+    });
+  });
+
+  test('create with a negative agentTaskId (-1) → 400, field named', async () => {
+    const resp = await admin.post('/api/tickets', {
+      data: { type: 'FEATURE', title: 'Negative link', body: 'B', agentTaskId: -1 },
+    });
+    await test.step('status 400', () => { expect(resp.status()).toBe(400); });
+    const body = await resp.json() as ErrorBody;
+    await test.step('fieldErrors.agentTaskId present', () => {
+      expect(typeof body.fieldErrors?.['agentTaskId']).toBe('string');
+    });
+  });
 });
 
 // ─── Suite: agentTaskId is stable across read endpoints ──────────────────────
