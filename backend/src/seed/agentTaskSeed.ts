@@ -241,7 +241,7 @@ export const AGENT_TASK_SEED: AgentTaskSeedRow[] = [
     id: 18,
     source: 'EMAIL',
     title: 'Webseite in der Firmenliste anzeigen',
-    body: 'Wenn ich mir die Firmenliste ansehe, sehe ich Name, Branche, E-Mail und Telefon, aber nicht die Webseite. Ich muss oft schnell mehrere Firmen-Webseiten öffnen und klicke dafür aktuell jede Firma einzeln an. Könnt ihr die Webseite in der Liste ergänzen, damit ich sie auf einen Blick sehe? Danke!',
+    body: 'Wenn ich mir die Firmenliste ansehe, sehe ich Name, Branche, E-Mail und Telefon, aber nicht die Webseite. Ich muss oft schnell mehrere Firmen-Webseiten öffnen und klicke dafür aktuell jede Firma einzeln an. Könnt ihr die Webseite in der Liste ergänzen, damit ich sie auf einen Blick sehe? Danke!\n\nRückfragen beantwortet: Die Website soll ein anklickbarer Link sein, kein reiner Text. Der Klick öffnet einen neuen Tab und navigiert nicht zusätzlich zur Firmendetailseite. Fehlt das Protokoll, ergänzt die Anzeige automatisch https:// — der gespeicherte Wert bleibt unverändert. Die Website soll auch auf der Firmen-Detailseite anklickbar sein.',
     status: 'OPEN',
     comment: null,
     metadata: '{"sender":"t.berger@vertrieb-nord.de","subject":"Company list: please show website URL"}',
@@ -373,6 +373,23 @@ export async function seedAgentTasks(): Promise<void> {
       args: [row.title, row.body, id, oldTitle],
     });
   }
+
+  // Same one-time-correction pattern, for id 18's body once the answers to
+  // the write-ticket clarifying questions (link vs. text, new tab, https
+  // normalization, detail page) were folded in. Guarded on the pre-answer
+  // body so a fresh seed (already the new text) and an edited row are both
+  // left untouched.
+  const row18 = AGENT_TASK_SEED.find((row) => row.id === 18);
+  if (!row18) {
+    throw new Error('seedAgentTasks: AGENT_TASK_SEED has no row with id 18');
+  }
+  await client.execute({
+    sql: 'UPDATE agent_task SET body = ? WHERE id = 18 AND body = ?',
+    args: [
+      row18.body,
+      'Wenn ich mir die Firmenliste ansehe, sehe ich Name, Branche, E-Mail und Telefon, aber nicht die Webseite. Ich muss oft schnell mehrere Firmen-Webseiten öffnen und klicke dafür aktuell jede Firma einzeln an. Könnt ihr die Webseite in der Liste ergänzen, damit ich sie auf einen Blick sehe? Danke!',
+    ],
+  });
 
   console.log(`=== Seeder: agent_task ensured (${AGENT_TASK_SEED.length} rows, INSERT OR IGNORE) ===`);
 }
