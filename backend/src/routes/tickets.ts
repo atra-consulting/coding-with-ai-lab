@@ -39,7 +39,7 @@ const CreateBodySchema = z.object({
   type: z.enum(TICKET_TYPE, { errorMap: () => ({ message: 'Ungültiger Ticket-Typ' }) }),
   title: z.string().min(1, 'Titel ist erforderlich'),
   body: z.string().min(1, 'Beschreibung ist erforderlich'),
-  agentTaskId: z.number().int().nullable().optional(),
+  agentTaskId: z.number().int().positive().nullable().optional(),
   fullyReady: z.boolean().optional(),
 });
 
