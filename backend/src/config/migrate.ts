@@ -49,6 +49,68 @@ async function ensureSzenarioAgileKiColumn(): Promise<void> {
   }
 }
 
+// Idempotent guarded ALTER for existing databases created before fullyReady
+// existed. `CREATE TABLE IF NOT EXISTS` never touches an already-existing
+// table, so upgraded DBs need this column added explicitly. Same shape and
+// same concurrent-cold-start reasoning as ensureSzenarioAgileKiColumn() above
+// — no index to create here, so the early return is correct.
+export async function ensureTicketFullyReadyColumn(): Promise<void> {
+  // Standalone execute (not batched) — PRAGMA statements are ignored inside a
+  // transaction/batch, same reasoning as the PRAGMA foreign_keys call above.
+  const info = await client.execute('PRAGMA table_info(ticket)');
+  const hasColumn = info.rows.some((row) => row.name === 'fullyReady');
+  if (hasColumn) {
+    return;
+  }
+
+  try {
+    await client.execute(
+      'ALTER TABLE ticket ADD COLUMN fullyReady INTEGER NOT NULL DEFAULT 0'
+    );
+  } catch (err) {
+    if (err instanceof Error && err.message.includes('duplicate column')) {
+      return;
+    }
+    throw err;
+  }
+}
+
+// Idempotent guarded ALTER for existing databases created before agentTaskId
+// existed, plus its supporting index. Unlike ensureSzenarioAgileKiColumn()
+// and ensureTicketFullyReadyColumn(), this function must NOT early-return on
+// the has-column path: agentTaskId is also part of the fresh CREATE TABLE
+// above, so "column already exists" is the path hit on every fresh database
+// and on every startup after the first migration. The index creation must
+// run unconditionally on every call so it is never skipped in that common
+// case. Note: no DEFAULT on the ALTER — SQLite rejects ADD COLUMN with both
+// a REFERENCES clause and a non-NULL default.
+export async function ensureTicketAgentTaskIdColumn(): Promise<void> {
+  // Standalone execute (not batched) — PRAGMA statements are ignored inside a
+  // transaction/batch, same reasoning as the PRAGMA foreign_keys call above.
+  const info = await client.execute('PRAGMA table_info(ticket)');
+  const hasColumn = info.rows.some((row) => row.name === 'agentTaskId');
+
+  if (!hasColumn) {
+    try {
+      await client.execute(
+        'ALTER TABLE ticket ADD COLUMN agentTaskId INTEGER REFERENCES agent_task(id) ON DELETE SET NULL'
+      );
+    } catch (err) {
+      if (!(err instanceof Error && err.message.includes('duplicate column'))) {
+        throw err;
+      }
+    }
+  }
+
+  // Unconditional: runs whether the column pre-existed, was just added, or
+  // the ALTER hit the swallowed duplicate-column race. Must never live in
+  // the shared executeMultiple index block — that block runs before this
+  // function, so on an upgraded DB the column would not exist yet there.
+  await client.execute(
+    'CREATE INDEX IF NOT EXISTS idx_ticket_agentTaskId ON ticket(agentTaskId)'
+  );
+}
+
 export async function runMigrations(): Promise<void> {
   console.log('Running database migrations...');
 
@@ -175,6 +237,8 @@ export async function runMigrations(): Promise<void> {
       solution    TEXT,
       pickedUpAt  TEXT,
       resolvedAt  TEXT,
+      fullyReady  INTEGER NOT NULL DEFAULT 0,
+      agentTaskId INTEGER REFERENCES agent_task(id) ON DELETE SET NULL,
       createdAt   TEXT NOT NULL DEFAULT (datetime('now')),
       updatedAt   TEXT NOT NULL DEFAULT (datetime('now'))
     );
@@ -236,6 +300,9 @@ export async function runMigrations(): Promise<void> {
     CREATE INDEX IF NOT EXISTS idx_ticket_comment_ticketId ON ticket_comment(ticketId);
     CREATE INDEX IF NOT EXISTS idx_szenario_createdAt ON szenario(createdAt DESC);
   `);
+
+  await ensureTicketFullyReadyColumn();
+  await ensureTicketAgentTaskIdColumn();
 
   // Idempotent data seed: agent tasks are inserted on every deployment via
   // INSERT OR IGNORE so they are always present (Vercel/Turso included),
