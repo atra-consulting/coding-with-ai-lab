@@ -150,9 +150,10 @@ The wait-time color in the Rechner's process-comparison pie chart changes from a
 The sibling repo differs in several other places. These are **deliberately excluded**:
 
 1. **All skills and agent definitions** (`.claude/agents/**`, `.claude/skills/**`, and anything else under `.claude/`). The sibling repo has more of them. Not wanted here.
-2. **The feedback seed data title fix** — a cosmetic English-to-German wording change on one seeded feedback item. Unrelated content edit.
-3. **The broader Rechner overhaul** (tracked as `PRD-RECHNER-OVERHAUL.md` / `PLAN-RECHNER-OVERHAUL.md` in the sibling repo) beyond the single color change in REQ-012. Everything else in that overhaul is a separate, unrelated feature.
-4. **AG Grid header color changes** — both the UI spec text and the actual grid styling. Pure styling drift, unrelated, even though it sits in the same stylesheet as the REQ-012 color change.
+2. **The broader Rechner overhaul** (tracked as `PRD-RECHNER-OVERHAUL.md` / `PLAN-RECHNER-OVERHAUL.md` in the sibling repo) beyond the single color change in REQ-012. Everything else in that overhaul is a separate, unrelated feature.
+3. **AG Grid header color changes** — both the UI spec text and the actual grid styling. Pure styling drift, unrelated, even though it sits in the same stylesheet as the REQ-012 color change.
+
+The feedback seed data title fix (id 23, "Improve chances" → "Chancen verbessern") was originally scoped out as an unrelated cosmetic edit, then added back in later at explicit user request during PR review. See the corrective `UPDATE` in `seedAgentTasks()`.
 
 ### Wording caution in the API spec
 
@@ -279,7 +280,7 @@ The full existing backend and frontend suites must still pass. The frontend buil
 11. Note a ticket you moved on the board. Run the backend test suite. Re-open the board. Your ticket is exactly where you left it.
 12. All backend and frontend tests pass, including the new ones. The frontend build succeeds.
 13. The four specification documents match the shipped behavior, including the corrected seed-data statement.
-14. None of the four out-of-scope items appear in the change.
+14. None of the three remaining out-of-scope items appear in the change.
 15. Open the Rechner and compare process types. The wait-time color in the pie chart, the flow chip, and the hatch pattern all show the new muted gold (`#cf944f`), not the old orange. Nothing else in the Rechner changed.
 
 ---
@@ -306,5 +307,10 @@ Commits (base `0531385`):
 - `76a1d62` docs: Trim PRD to WHAT/WHY and add Implementierung section
 - `f443c50` docs: Remove dangling references to deleted PRD Technical Notes section
 - `d80c8f8` fix: Strengthen ticketId list assertion and add agentTaskId boundary tests
+- `e16c58c` docs: Fix stale Implementierung commit list and wording issues
+- `d0fe543` docs: Add code review for feedback-ticket link feature
+- `98bb60d` docs: Update project documentation
+- `94ed62c` docs: Mark state complete
+- `4c7c574` fix: Correct id-23 feedback seed title to German "Chancen verbessern"
 
-PR: not opened yet. Link goes here once available.
+PR: https://github.com/atra-consulting/coding-with-ai-lab/pull/136
