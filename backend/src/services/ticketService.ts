@@ -1,5 +1,5 @@
 import { client } from '../config/db.js';
-import { NotFoundError, ConflictError } from '../utils/errors.js';
+import { NotFoundError, ConflictError, ValidationError } from '../utils/errors.js';
 import { buildPage, type PageResult, type SortParams } from '../utils/pagination.js';
 import {
   TICKET_OWNER,
@@ -35,6 +35,8 @@ export interface TicketDTO {
   resolvedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  fullyReady: boolean;
+  agentTaskId: number | null;
   comments: TicketCommentDTO[];
 }
 
@@ -50,6 +52,8 @@ export interface TicketListItemDTO {
   resolvedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  fullyReady: boolean;
+  agentTaskId: number | null;
   commentCount: number;
 }
 
@@ -97,6 +101,8 @@ interface TicketRow {
   resolvedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  fullyReady: number;
+  agentTaskId: number | null;
 }
 
 interface TicketCommentRow {
@@ -138,6 +144,8 @@ function toDTO(row: TicketRow, comments: TicketCommentDTO[]): TicketDTO {
     resolvedAt: row.resolvedAt,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
+    fullyReady: Number(row.fullyReady) === 1,
+    agentTaskId: row.agentTaskId,
     comments,
   };
 }
@@ -155,6 +163,8 @@ function toListItemDTO(row: TicketListRow): TicketListItemDTO {
     resolvedAt: row.resolvedAt,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
+    fullyReady: Number(row.fullyReady) === 1,
+    agentTaskId: row.agentTaskId,
     commentCount: Number(row.commentCount),
   };
 }
@@ -531,13 +541,36 @@ export const ticketService = {
     type: TicketType;
     title: string;
     body: string;
+    agentTaskId?: number | null;
+    fullyReady?: boolean;
   }): Promise<TicketDTO> {
+    if (data.agentTaskId !== null && data.agentTaskId !== undefined) {
+      const agentTaskResult = await client.execute({
+        sql: 'SELECT id FROM agent_task WHERE id = ?',
+        args: [data.agentTaskId],
+      });
+      if (agentTaskResult.rows.length === 0) {
+        throw new ValidationError(
+          `Feedback-Eintrag mit ID ${data.agentTaskId} nicht gefunden`,
+          { agentTaskId: `Feedback-Eintrag mit ID ${data.agentTaskId} nicht gefunden` },
+        );
+      }
+    }
+
     const now = new Date().toISOString();
     const result = await client.execute({
-      sql: `INSERT INTO ticket (owner, type, title, body, status, solution, pickedUpAt, resolvedAt, createdAt, updatedAt)
-            VALUES ('HUMAN', ?, ?, ?, 'DEFINITION', NULL, NULL, NULL, ?, ?)
+      sql: `INSERT INTO ticket (owner, type, title, body, status, solution, pickedUpAt, resolvedAt, createdAt, updatedAt, fullyReady, agentTaskId)
+            VALUES ('HUMAN', ?, ?, ?, 'DEFINITION', NULL, NULL, NULL, ?, ?, ?, ?)
             RETURNING *`,
-      args: [data.type, data.title, data.body, now, now],
+      args: [
+        data.type,
+        data.title,
+        data.body,
+        now,
+        now,
+        data.fullyReady ? 1 : 0,
+        data.agentTaskId ?? null,
+      ],
     });
     const row = result.rows[0] as unknown as TicketRow;
     return toDTO(row, []);
@@ -587,12 +620,14 @@ export const ticketService = {
    * Human answers (admin). Inserts a HUMAN comment.
    * If handBackToAi: also set status=TODO, owner=AI, clear solution+resolvedAt.
    * Guard: handBackToAi is only allowed when ticket is ON_HOLD+HUMAN.
+   * If clearFullyReady: also reset fullyReady to 0.
    * All in one batch.
    */
   async addComment(
     id: number,
     body: string,
     handBackToAi?: boolean,
+    clearFullyReady?: boolean,
   ): Promise<TicketDTO> {
     // Verify ticket exists first (throws 404 if missing)
     const ticket = await this.findById(id);
@@ -620,6 +655,13 @@ export const ticketService = {
         sql: `UPDATE ticket
               SET status = 'TODO', owner = 'AI', solution = NULL, resolvedAt = NULL, updatedAt = ?
               WHERE id = ?`,
+        args: [now, id],
+      });
+    }
+
+    if (clearFullyReady) {
+      stmts.push({
+        sql: `UPDATE ticket SET fullyReady = 0, updatedAt = ? WHERE id = ?`,
         args: [now, id],
       });
     }
