@@ -24,6 +24,7 @@ const MOCK_TICKET: Ticket = {
   body: 'Bitte einen CSV-Export der Firmen implementieren.',
   status: 'TODO',
   solution: null,
+  agentTaskId: null,
   commentCount: 1,
   comments: [MOCK_COMMENT],
   pickedUpAt: null,

@@ -21,6 +21,7 @@ export interface Ticket {
   body: string;
   status: TicketStatus;
   solution: TicketSolution | null;
+  agentTaskId: number | null;
   commentCount?: number;
   comments?: TicketComment[];
   pickedUpAt: string | null;

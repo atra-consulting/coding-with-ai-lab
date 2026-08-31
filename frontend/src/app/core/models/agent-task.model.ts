@@ -10,6 +10,7 @@ export interface AgentTask {
   status: AgentTaskStatus;
   comment: string | null;
   metadata: string | null;
+  ticketId: number | null;
   pickedUpAt: string | null;
   resolvedAt: string | null;
   createdAt: string;

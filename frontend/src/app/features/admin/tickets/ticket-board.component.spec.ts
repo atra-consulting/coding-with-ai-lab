@@ -21,6 +21,7 @@ function makeTicket(id: number, overrides: Partial<Ticket> = {}): Ticket {
     body: `Body of ticket ${id}`,
     status: 'TODO',
     solution: null,
+    agentTaskId: null,
     commentCount: 0,
     comments: [],
     pickedUpAt: null,

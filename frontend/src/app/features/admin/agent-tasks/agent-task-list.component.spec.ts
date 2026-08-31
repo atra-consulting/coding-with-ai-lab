@@ -16,6 +16,7 @@ const makeTask = (id: number, source: AgentTask['source'] = 'EMAIL'): AgentTask 
   status: 'OPEN',
   comment: null,
   metadata: null,
+  ticketId: null,
   pickedUpAt: null,
   resolvedAt: null,
   createdAt: '2024-01-01T10:00:00.000Z',

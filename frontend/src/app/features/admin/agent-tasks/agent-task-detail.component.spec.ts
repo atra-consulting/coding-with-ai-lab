@@ -15,6 +15,7 @@ const MOCK_TASK: AgentTask = {
   status: 'DONE',
   comment: 'Implemented pipeline total in Chancen board header.',
   metadata: '{"issueNumber":42,"repo":"crm"}',
+  ticketId: null,
   pickedUpAt: '2024-01-02T08:00:00.000Z',
   resolvedAt: '2024-01-02T12:00:00.000Z',
   createdAt: '2024-01-01T10:00:00.000Z',
