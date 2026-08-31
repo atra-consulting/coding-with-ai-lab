@@ -52,6 +52,10 @@ const OwnerBodySchema = z.object({
 
 // GET /api/tickets/next
 // Claim oldest TODO+AI ticket. Optional ?type filter.
+// Agent token or loopback bypass only — this is a GET that mutates state
+// (claims a ticket), so it must not accept an admin session cookie: a
+// SameSite=Lax cookie still rides cross-site top-level GET navigations,
+// which would open a CSRF hole for claiming tickets.
 router.get(
   '/next',
   requireAgentToken,
@@ -76,10 +80,11 @@ router.get(
 // ─── Admin literal-path endpoints (must come before /:id) ─────────────────────
 
 // GET /api/tickets/board
+// Accepts agent token, loopback bypass, or admin session — a skill can peek
+// the whole board without claiming anything and without an admin login.
 router.get(
   '/board',
-  requireAuth,
-  requireRole('ADMIN'),
+  requireAgentTokenOrAdminSession,
   asyncHandler(async (_req: Request, res: Response) => {
     res.json(await ticketService.getBoard());
   }),
@@ -146,10 +151,11 @@ router.get(
 );
 
 // POST /api/tickets  (create)
+// Accepts agent token, loopback bypass, or admin session — so a headless skill
+// can file a ticket without an admin login.
 router.post(
   '/',
-  requireAuth,
-  requireRole('ADMIN'),
+  requireAgentTokenOrAdminSession,
   asyncHandler(async (req: Request, res: Response) => {
     const dto = validate(CreateBodySchema, req.body);
     const ticket = await ticketService.create(dto);
@@ -170,10 +176,11 @@ router.get(
 );
 
 // PATCH /api/tickets/:id/status
+// Accepts agent token, loopback bypass, or admin session — a skill can move a
+// ticket to any column (incl. DEFINITION) without an admin login.
 router.patch(
   '/:id/status',
-  requireAuth,
-  requireRole('ADMIN'),
+  requireAgentTokenOrAdminSession,
   asyncHandler(async (req: Request, res: Response) => {
     const id = parseInt(req.params['id'] as string, 10);
     const dto = validate(StatusBodySchema, req.body);
@@ -182,10 +189,11 @@ router.patch(
 );
 
 // PATCH /api/tickets/:id/owner
+// Accepts agent token, loopback bypass, or admin session — a skill can flip a
+// ticket's owner (e.g. to AI) without an admin login.
 router.patch(
   '/:id/owner',
-  requireAuth,
-  requireRole('ADMIN'),
+  requireAgentTokenOrAdminSession,
   asyncHandler(async (req: Request, res: Response) => {
     const id = parseInt(req.params['id'] as string, 10);
     const dto = validate(OwnerBodySchema, req.body);
@@ -194,9 +202,11 @@ router.patch(
 );
 
 // POST /api/tickets/:id/start  (agent)
+// Accepts agent token, loopback bypass, or admin session — a headless skill
+// can start a ticket without an admin login.
 router.post(
   '/:id/start',
-  requireAgentToken,
+  requireAgentTokenOrAdminSession,
   asyncHandler(async (req: Request, res: Response) => {
     const id = parseInt(req.params['id'] as string, 10);
     res.json(await ticketService.start(id));
@@ -204,9 +214,11 @@ router.post(
 );
 
 // POST /api/tickets/:id/done  (agent)
+// Accepts agent token, loopback bypass, or admin session — a headless skill
+// can finish a ticket without an admin login.
 router.post(
   '/:id/done',
-  requireAgentToken,
+  requireAgentTokenOrAdminSession,
   asyncHandler(async (req: Request, res: Response) => {
     const id = parseInt(req.params['id'] as string, 10);
     const dto = validate(DoneBodySchema, req.body);
@@ -215,9 +227,11 @@ router.post(
 );
 
 // POST /api/tickets/:id/ask  (agent)
+// Accepts agent token, loopback bypass, or admin session — a headless skill
+// can ask a question without an admin login.
 router.post(
   '/:id/ask',
-  requireAgentToken,
+  requireAgentTokenOrAdminSession,
   asyncHandler(async (req: Request, res: Response) => {
     const id = parseInt(req.params['id'] as string, 10);
     const dto = validate(AskBodySchema, req.body);
@@ -248,11 +262,12 @@ router.post(
   }),
 );
 
-// POST /api/tickets/:id/comments  (admin only)
+// POST /api/tickets/:id/comments
+// Accepts agent token, loopback bypass, or admin session — a skill can post a
+// comment (e.g. asking for missing info) without an admin login.
 router.post(
   '/:id/comments',
-  requireAuth,
-  requireRole('ADMIN'),
+  requireAgentTokenOrAdminSession,
   asyncHandler(async (req: Request, res: Response) => {
     const id = parseInt(req.params['id'] as string, 10);
     const dto = validate(CommentBodySchema, req.body);

@@ -74,9 +74,9 @@ Same fields as ticket, but `comments` is replaced by `commentCount: number`.
 
 ## Authentication
 
-Two main schemes. `GET /:id` accepts all three (see below).
+Three schemes. Most verb endpoints accept more than one — the finish/ask verbs (`/:id/start`, `/:id/done`, `/:id/ask`) plus the write endpoints a skill needs (`create`, `/:id/owner`, `/:id/comments`, `/:id/status`) plus `GET /:id` and `GET /board` accept **agent token · loopback bypass · admin session** (first match wins). `GET /next` is the exception: it's a GET that mutates state (claims a ticket), so it accepts **agent token · loopback bypass only** — never an admin session, to avoid a GET-based CSRF surface (a `SameSite=Lax` session cookie still rides cross-site top-level GET navigations).
 
-### Agent token (machine endpoints: `/next`, `/:id/start`, `/:id/done`, `/:id/ask`)
+### Agent token (used by `/next`, `/:id/start`, `/:id/done`, `/:id/ask`, `POST /`, `GET /:id`, `GET /board`, `PATCH /:id/owner`, `PATCH /:id/status`, `POST /:id/comments`)
 
 Send the shared secret in **either** header:
 
@@ -87,7 +87,7 @@ X-Agent-Token: <AGENT_API_TOKEN>
 ```
 
 - Compared against `AGENT_API_TOKEN` env var via SHA-256 + constant-time `timingSafeEqual`.
-- If `AGENT_API_TOKEN` is **unset/empty**, every agent endpoint returns **401**.
+- If `AGENT_API_TOKEN` is **unset/empty**, these endpoints still work with a valid admin session — agent token and loopback bypass are both skipped when the token is unset, so the check falls through to the session check.
 - Missing or wrong token → **401**.
 - **Localhost bypass:** Set `AGENT_AUTH_ALLOW_LOOPBACK=1` in `backend/.env`. Requests from `127.0.0.1`, `::1`, or `::ffff:127.0.0.1` with no `Authorization` or `X-Agent-Token` header then skip validation. Requests with proxy-forwarding headers (`X-Forwarded-For`, `X-Real-IP`, `Forwarded`) are never bypassed. Local development only — never set in production.
 - Locally the backend auto-loads `backend/.env`; in CI set it as a GitHub Actions secret.
@@ -105,11 +105,17 @@ cp backend/.env.example backend/.env
 set -a && source backend/.env && set +a
 ```
 
-### Admin session (all other endpoints)
+### Admin session
 
 Standard browser session cookie + role `ADMIN` (`requireAuth` + `requireRole('ADMIN')`).
 
 - No session → **401**. Authenticated but not admin → **403**.
+
+**Admin-only** (session required, no token or loopback accepted): `GET /`, `GET /summary`, `POST /:id/wont-do`, `POST /:id/hand-to-ai`, `POST /reset`.
+
+**Agent token _or_ loopback bypass only** (no admin session — GET mutates state, so an admin session would open a CSRF hole via cross-site GET navigation): `GET /next`.
+
+**Admin session _or_ agent token _or_ loopback bypass** (first match wins): `POST /:id/start`, `POST /:id/done`, `POST /:id/ask`, `GET /:id`, `GET /board`, `POST /` (create), `PATCH /:id/owner`, `PATCH /:id/status`, `POST /:id/comments`. A wrong token is rejected outright (never falls through to the session check). These let a headless skill work and finish a ticket — or file, refine, peek, and move one — without an admin login.
 
 The admin board UI is at **`/admin/tickets`**.
 
@@ -117,8 +123,8 @@ The admin board UI is at **`/admin/tickets`**.
 
 ## Endpoints
 
-### GET `/api/tickets/next?type=TYPE` — claim the next ticket (agent)
-**Auth:** agent token. `type` is optional.
+### GET `/api/tickets/next?type=TYPE` — claim the next ticket (agent token · loopback bypass)
+**Auth:** agent token · loopback bypass (first match wins). **No admin session** — this is a GET that mutates state (claims a ticket); accepting an admin session cookie here would open a CSRF hole (a `SameSite=Lax` session cookie still rides cross-site top-level GET navigations). `type` is optional.
 
 Atomically flips the oldest `TODO` + `owner=AI` ticket to `IN_PROGRESS` (sets `pickedUpAt`). The status flip is the claim guard. Optional `type` filter (`FEATURE`, `BUG`, `CHORE`).
 
@@ -136,8 +142,8 @@ curl -s -H "Authorization: Bearer $AGENT_API_TOKEN" \
 
 ---
 
-### POST `/api/tickets/:id/done` — mark complete (agent)
-**Auth:** agent token. **Body:** `{ "comment": "<optional string>" }`.
+### POST `/api/tickets/:id/done` — mark complete (agent token · loopback · admin)
+**Auth:** agent token · loopback bypass · admin session (first match wins). **Body:** `{ "comment": "<optional string>" }`.
 
 Sets `status=DONE`, `solution=DONE`, `resolvedAt`. Guard: ticket must be `IN_PROGRESS`.
 
@@ -145,7 +151,8 @@ Sets `status=DONE`, `solution=DONE`, `resolvedAt`. Guard: ticket must be `IN_PRO
 |--------|---------|
 | `200` + ticket | done |
 | `400` | body validation failure |
-| `401` | bad/missing token |
+| `401` | bad/missing token and no admin session |
+| `403` | logged in but not admin (production, no token) |
 | `404` | no ticket with that id |
 | `409` | ticket not `IN_PROGRESS` |
 
@@ -158,8 +165,8 @@ curl -s -X POST -H "Authorization: Bearer $AGENT_API_TOKEN" \
 
 ---
 
-### POST `/api/tickets/:id/ask` — hand back with a question (agent)
-**Auth:** agent token. **Body:** `{ "question": "<non-empty string>" }`.
+### POST `/api/tickets/:id/ask` — hand back with a question (agent token · loopback · admin)
+**Auth:** agent token · loopback bypass · admin session (first match wins). **Body:** `{ "question": "<non-empty string>" }`.
 
 Sets `status=ON_HOLD`, `owner=HUMAN`. Inserts an `AGENT` comment with the question text. Guard: ticket must be `IN_PROGRESS`.
 
@@ -167,7 +174,8 @@ Sets `status=ON_HOLD`, `owner=HUMAN`. Inserts an `AGENT` comment with the questi
 |--------|---------|
 | `200` + ticket | on hold, question posted |
 | `400` | `question` missing/empty |
-| `401` | bad/missing token |
+| `401` | bad/missing token and no admin session |
+| `403` | logged in but not admin (production, no token) |
 | `404` | no ticket with that id |
 | `409` | ticket not `IN_PROGRESS` |
 
@@ -207,10 +215,12 @@ Response is the Spring-Data-style page shape:
 
 ---
 
-### GET `/api/tickets/board` — Kanban board (admin)
-**Auth:** admin session.
+### GET `/api/tickets/board` — Kanban board (agent token · loopback · admin)
+**Auth:** agent token · loopback bypass · admin session (first match wins).
 
 All tickets grouped by status. Each column sorted by `createdAt ASC`. Tickets include `commentCount`.
+
+Skills and agents can call this with the agent token from anywhere (CI, production). The loopback bypass works on localhost only. Either way, peek the whole queue without claiming anything.
 
 ```json
 {
@@ -225,7 +235,8 @@ All tickets grouped by status. Each column sorted by `createdAt ASC`. Tickets in
 | Result | Meaning |
 |--------|---------|
 | `200` + board | grouped tickets |
-| `401` / `403` | not logged in / not admin |
+| `401` | bad/missing token and no admin session |
+| `403` | logged in but not admin (production, no token) |
 
 ---
 
@@ -265,8 +276,8 @@ Skills and agents can call this endpoint on localhost without any token when `AG
 
 ---
 
-### POST `/api/tickets/:id/start` — set ticket to in progress (agent)
-**Auth:** agent token.
+### POST `/api/tickets/:id/start` — set ticket to in progress (agent token · loopback · admin)
+**Auth:** agent token · loopback bypass · admin session (first match wins).
 
 Explicitly transitions a `TODO` ticket with `owner=AI` to `IN_PROGRESS` (sets `pickedUpAt`). Use when you already know the ticket id and do not want to go through `/next`. The `/next` endpoint does the same transition automatically when it claims a ticket.
 
@@ -275,7 +286,8 @@ Explicitly transitions a `TODO` ticket with `owner=AI` to `IN_PROGRESS` (sets `p
 | `200` + ticket | now IN_PROGRESS (includes `comments` array) |
 | `404` | no ticket with that id |
 | `409` | ticket is not TODO+AI (wrong status, wrong owner, or already IN_PROGRESS/DONE) |
-| `401` | bad/missing token |
+| `401` | bad/missing token and no admin session |
+| `403` | logged in but not admin (production, no token) |
 
 ```bash
 curl -s -X POST -H "Authorization: Bearer $AGENT_API_TOKEN" \
@@ -284,51 +296,64 @@ curl -s -X POST -H "Authorization: Bearer $AGENT_API_TOKEN" \
 
 ---
 
-### POST `/api/tickets` — create (admin)
-**Auth:** admin session. **Body:** `{ "type": "FEATURE"|"BUG"|"CHORE", "title": "<string>", "body": "<string>" }`.
+### POST `/api/tickets` — create (agent token · loopback · admin)
+**Auth:** agent token, loopback bypass, or admin session (first match wins). **Body:** `{ "type": "FEATURE"|"BUG"|"CHORE", "title": "<string>", "body": "<string>" }`.
 
-Creates a ticket with `owner=HUMAN`, `status=DEFINITION` (lands in the intake column), no comments.
+Creates a ticket with `owner=HUMAN`, `status=DEFINITION` (lands in the intake column), no comments. A skill can call this with the agent token — no admin login needed.
 
 | Result | Meaning |
 |--------|---------|
 | `201` + ticket | created |
 | `400` | validation failure |
-| `401` / `403` | not logged in / not admin |
+| `401` | bad/missing token and no admin session |
+| `403` | logged in but not admin (production, no token) |
 
 ```bash
-curl -s -X POST -H "Content-Type: application/json" \
-  -b "JSESSIONID=$SESSION" \
+# Agent token (headless skill):
+curl -s -X POST -H "Authorization: Bearer $AGENT_API_TOKEN" \
+  -H "Content-Type: application/json" \
   -d '{"type":"BUG","title":"Login button missing on mobile","body":"Reproducible on iOS 17 Safari."}' \
   "$APP_BASE_URL/api/tickets"
 ```
 
 ---
 
-### PATCH `/api/tickets/:id/status` — change status (admin)
-**Auth:** admin session. **Body:** `{ "status": "DEFINITION"|"TODO"|"IN_PROGRESS"|"ON_HOLD"|"DONE" }`.
+### PATCH `/api/tickets/:id/status` — change status (agent token · loopback · admin)
+**Auth:** agent token · loopback bypass · admin session (first match wins). **Body:** `{ "status": "DEFINITION"|"TODO"|"IN_PROGRESS"|"ON_HOLD"|"DONE" }`.
 
 Used for drag-drop on the Kanban board (all five columns are valid drop targets, including `DEFINITION`). Moving into `DONE` sets `solution=DONE` and `resolvedAt`. Moving out of `DONE` clears `solution` and `resolvedAt`. Never changes `owner`. Note: the "Nach Bereit" button on the detail page is **not** this endpoint — it uses `POST /:id/hand-to-ai` (which also sets `owner=AI`).
+
+A skill can move a ticket to any column — including back to `DEFINITION` — with the agent token.
 
 | Result | Meaning |
 |--------|---------|
 | `200` + ticket | updated |
 | `400` | invalid status value |
 | `404` | no ticket with that id |
-| `401` / `403` | not logged in / not admin |
+| `401` | bad/missing token and no admin session |
+| `403` | logged in but not admin (production, no token) |
 
 ---
 
-### PATCH `/api/tickets/:id/owner` — change owner (admin)
-**Auth:** admin session. **Body:** `{ "owner": "AI"|"HUMAN" }`.
+### PATCH `/api/tickets/:id/owner` — change owner (agent token · loopback · admin)
+**Auth:** agent token, loopback bypass, or admin session (first match wins). **Body:** `{ "owner": "AI"|"HUMAN" }`.
 
-Changes owner only; status is not touched.
+Changes owner only; status is not touched. A skill can assign a `DEFINITION` ticket to the AI ("An KI übergeben") with the agent token.
 
 | Result | Meaning |
 |--------|---------|
 | `200` + ticket | updated |
 | `400` | invalid owner value |
 | `404` | no ticket with that id |
-| `401` / `403` | not logged in / not admin |
+| `401` | bad/missing token and no admin session |
+| `403` | logged in but not admin (production, no token) |
+
+```bash
+curl -s -X PATCH -H "Authorization: Bearer $AGENT_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"owner":"AI"}' \
+  "$APP_BASE_URL/api/tickets/3/owner"
+```
 
 ---
 
@@ -366,10 +391,10 @@ curl -s -X POST -b "JSESSIONID=$SESSION" \
 
 ---
 
-### POST `/api/tickets/:id/comments` — add human comment (admin)
-**Auth:** admin session. **Body:** `{ "body": "<non-empty string>", "handBackToAi": <optional boolean> }`.
+### POST `/api/tickets/:id/comments` — add comment (agent token · loopback · admin)
+**Auth:** agent token, loopback bypass, or admin session (first match wins). **Body:** `{ "body": "<non-empty string>", "handBackToAi": <optional boolean> }`.
 
-Inserts a `HUMAN` comment. If `handBackToAi: true`, also sets `status=TODO`, `owner=AI`, clears `solution` and `resolvedAt` — returning the ticket to the AI queue. Guard: `handBackToAi` is only allowed when `status=ON_HOLD` and `owner=HUMAN`.
+Inserts a comment. **The comment is always stored with `author=HUMAN`** — regardless of who calls it (there is no author field in the body). A skill posting here still writes a `HUMAN` comment. If `handBackToAi: true`, also sets `status=TODO`, `owner=AI`, clears `solution` and `resolvedAt` — returning the ticket to the AI queue. Guard: `handBackToAi` is only allowed when `status=ON_HOLD` and `owner=HUMAN`.
 
 | Result | Meaning |
 |--------|---------|
@@ -377,12 +402,14 @@ Inserts a `HUMAN` comment. If `handBackToAi: true`, also sets `status=TODO`, `ow
 | `400` | `body` missing/empty |
 | `404` | no ticket with that id |
 | `409` | `handBackToAi=true` but ticket is not `ON_HOLD+HUMAN` |
-| `401` / `403` | not logged in / not admin |
+| `401` | bad/missing token and no admin session |
+| `403` | logged in but not admin (production, no token) |
 
 ```bash
-curl -s -X POST -H "Content-Type: application/json" \
-  -b "JSESSIONID=$SESSION" \
-  -d '{"body":"Use a semicolon for German Excel compatibility.","handBackToAi":true}' \
+# Agent token (headless skill) — posts a HUMAN-authored comment:
+curl -s -X POST -H "Authorization: Bearer $AGENT_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"body":"Welches Trennzeichen soll die CSV-Datei verwenden?"}' \
   "$APP_BASE_URL/api/tickets/7/comments"
 ```
 
@@ -411,13 +438,13 @@ Deletes all rows in `ticket_comment` and `ticket`, then re-seeds the 12 workshop
                    │                          DONE                                    │
                    │           solution = DONE | WONT_DO                              │
                    └─────────────────────────────────────────────────────────────────┘
-                         ▲ POST /done (agent)            ▲ POST /wont-do (admin)
+                         ▲ POST /done                    ▲ POST /wont-do (admin)
                          │ solution=DONE                 │ solution=WONT_DO
                          │                               │ owner must be HUMAN
                     IN_PROGRESS                       ON_HOLD  (owner=HUMAN)
                          ▲                               ▲          │
             GET /next    │                 POST /ask     │          │ POST /comments
-           OR /start     │                 (agent)       │          │ handBackToAi=true
+           OR /start     │                               │          │ handBackToAi=true
            (owner=AI)    │                               │          │ owner→AI
                          │                               │          │
                         TODO  ◀──────────────────────────────────────┘
@@ -435,16 +462,16 @@ Deletes all rows in `ticket_comment` and `ticket`, then re-seeds the 12 workshop
 
 | Trigger | From | To | Side effects |
 |---------|------|----|-------------|
-| `PATCH /:id/owner {AI}` (admin) | `DEFINITION` | `DEFINITION` | `owner→AI` ("An KI übergeben") |
+| `PATCH /:id/owner {AI}` (agent · loopback · admin) | `DEFINITION` | `DEFINITION` | `owner→AI` ("An KI übergeben") |
 | `POST /:id/hand-to-ai` (admin) | `DEFINITION` | `TODO` | `owner→AI` ("Nach Bereit") |
-| `GET /next` | `TODO` + `owner=AI` | `IN_PROGRESS` | sets `pickedUpAt` |
-| `POST /start` (agent) | `TODO` + `owner=AI` | `IN_PROGRESS` | sets `pickedUpAt` |
-| `POST /done` (agent) | `IN_PROGRESS` | `DONE` | `solution=DONE`, `resolvedAt` |
-| `POST /ask` (agent) | `IN_PROGRESS` | `ON_HOLD` | `owner→HUMAN`, AGENT comment |
-| `POST /comments` + `handBackToAi` (admin) | `ON_HOLD` + `owner=HUMAN` | `TODO` | `owner→AI`, `solution`/`resolvedAt` cleared, HUMAN comment |
+| `GET /next` (agent · loopback) | `TODO` + `owner=AI` | `IN_PROGRESS` | sets `pickedUpAt` |
+| `POST /start` (agent · loopback · admin) | `TODO` + `owner=AI` | `IN_PROGRESS` | sets `pickedUpAt` |
+| `POST /done` (agent · loopback · admin) | `IN_PROGRESS` | `DONE` | `solution=DONE`, `resolvedAt` |
+| `POST /ask` (agent · loopback · admin) | `IN_PROGRESS` | `ON_HOLD` | `owner→HUMAN`, AGENT comment |
+| `POST /comments` + `handBackToAi` (agent · loopback · admin) | `ON_HOLD` + `owner=HUMAN` | `TODO` | `owner→AI`, `solution`/`resolvedAt` cleared, HUMAN comment |
 | `POST /wont-do` (admin) | any (not `DONE`), `owner=HUMAN` | `DONE` | `solution=WONT_DO`, `resolvedAt` |
-| `PATCH /status → DONE` (admin) | any | `DONE` | `solution=DONE`, `resolvedAt` |
-| `PATCH /status → non-DONE` (admin) | any | target status | `solution`/`resolvedAt` cleared |
+| `PATCH /status → DONE` (agent · loopback · admin) | any | `DONE` | `solution=DONE`, `resolvedAt` |
+| `PATCH /status → non-DONE` (agent · loopback · admin) | any | target status | `solution`/`resolvedAt` cleared |
 
 ---
 
@@ -495,7 +522,7 @@ Seven tickets carry a seeded `AGENT` comment: the five `DEFINITION` tickets (1�
 
 ## For skill authors
 
-A workshop skill drives this API as an agent. Use the **agent endpoints only** — the admin endpoints (`board`, `summary`, `create`, `status`, `owner`, `wont-do`, `comments`, `reset`) are for the human dashboard.
+A workshop skill drives this API as an agent. It uses the **agent-token endpoints** — the claim/finish/ask verbs **plus** the write endpoints a skill needs to file and refine a ticket: `POST /` (create), `PATCH /:id/owner`, and `POST /:id/comments` — **plus** `GET /board` (peek the queue without claiming) and `PATCH /:id/status` (move a ticket to any column, incl. `DEFINITION`). The remaining admin endpoints (`summary`, `list`, `wont-do`, `hand-to-ai`, `reset`) stay session-only for the human dashboard.
 
 **Auth.** Send the shared agent token on every call. Same token as the Agent Tasks API (`AGENT_API_TOKEN`):
 
@@ -509,6 +536,11 @@ X-Agent-Token: $AGENT_API_TOKEN
 
 | Step | Call | Notes |
 |------|------|-------|
+| Peek board | `GET /api/tickets/board` | Read all columns without claiming. Agent token or loopback bypass. |
+| Create | `POST /api/tickets` | Body `{ "type", "title", "body" }`. New ticket lands `DEFINITION` + `owner=HUMAN`. Use to file a triaged feedback item as an intake ticket. `201` on success. |
+| Assign to AI | `PATCH /api/tickets/:id/owner` | Body `{ "owner": "AI" }`. Flips owner without changing status — "An KI übergeben" on a `DEFINITION` ticket. |
+| Comment | `POST /api/tickets/:id/comments` | Body `{ "body": string }`. Adds a comment (stored as `author=HUMAN`). Use to record what a thin ticket is missing. |
+| Set status | `PATCH /api/tickets/:id/status` | Body `{ "status" }`. Move to any column incl. `DEFINITION`. Sets/clears `solution` + `resolvedAt` on DONE transitions. |
 | Claim | `GET /api/tickets/next` | Optional `?type=FEATURE\|BUG\|CHORE`. Claims the oldest `TODO` ticket owned by `AI`, flips it to `IN_PROGRESS`. **`204` = queue empty, stop.** The response includes the full `comments` thread. |
 | Start | `POST /api/tickets/:id/start` | No body. From `TODO`+`owner=AI` → `IN_PROGRESS`. Use when you have the id but did not go through `/next`. Response includes full `comments` thread. |
 | Read | `GET /api/tickets/:id` | Re-read a ticket by id (full ticket + comments). Accepts agent token or loopback bypass. |

@@ -1,6 +1,6 @@
 # Skills
 
-Dieses Projekt hat drei eigene Skills. Sie liegen in `.claude/skills/`. Jeder Skill ist ein Ordner mit einer `SKILL.md`.
+Dieses Projekt hat vier eigene Skills. Sie liegen in `.claude/skills/`. Jeder Skill ist ein Ordner mit einer `SKILL.md`.
 
 ## Was ist ein Skill?
 
@@ -68,6 +68,23 @@ Aktualisiert `.claude/agents/`, `docs/specs/` und `CLAUDE.md`. Passend zu den Co
   /update-claude-files Fokus auf die neue Ticket-API
   ```
 - Datei: `.claude/skills/update-claude-files/SKILL.md`
+
+### `/write-ticket` — Feedback in ein neues Ticket triagieren
+
+Läuft headless (`claude -p`). Kein Mensch antwortet. Baut nie Code.
+
+- **Wann nutzen:** In CI. Um Feedback aus der Agent-Task-Queue in ein Kanban-Ticket zu verwandeln. Oder um freien Text direkt in ein Ticket zu triagieren.
+- **Was passiert:** Der Skill nimmt ein Feedback-Element (Agent-Task aus der Queue, per ID, per Task-URL, oder freier Text). Er beurteilt es selbst. Er legt immer ein neues Ticket an — Status „Definition", Owner Mensch. Ist das Feedback zu dünn, kommentiert er genau, was fehlt. Er pusht nie und öffnet nie einen PR.
+- **Argumente (optional):** `[task-id | task-url | feedback-text]`. Ohne Argument beansprucht der Skill das nächste Feedback aus der Queue. Reine Zahl → Task-ID. Task-URL (z. B. `http://localhost:7200/admin/agent-tasks/23`) → Task-ID aus der URL. Sonstiger freier Text → direktes Prosa-Feedback (überspringt die Queue).
+- **Wichtig:** Der Skill ruft nie `AskUserQuestion`. Er hält nie an. Er braucht `AGENT_API_TOKEN` in der Umgebung.
+- **Beispiel:**
+  ```
+  /write-ticket 14
+  /write-ticket http://localhost:7200/admin/agent-tasks/23
+  /write-ticket Dark-Mode-Umschalter im Header ergänzen
+  ```
+- Datei: `.claude/skills/write-ticket/SKILL.md`
+- Hintergrund: [docs/specs/SPEC-API-TASKS.md](specs/SPEC-API-TASKS.md) · [docs/specs/SPEC-API-TICKETS.md](specs/SPEC-API-TICKETS.md)
 
 ## Übernahme in dein Projekt
 

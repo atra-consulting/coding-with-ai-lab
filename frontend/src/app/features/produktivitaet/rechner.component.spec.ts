@@ -12,6 +12,7 @@ import {
   DEFAULT_DURATIONS,
   PROZESS_ANNAHMEN,
   PROZESS_CAPTION,
+  PROZESS_STEP_LABELS,
   PROZESSE,
   ProzessKey,
 } from '../../core/models/prozess-defaults';
@@ -102,6 +103,13 @@ describe('RechnerComponent', () => {
   let httpMock: HttpTestingController;
 
   beforeEach(async () => {
+    // The component now hydrates barLimit from sessionStorage on construction
+    // and persists it via a field effect() on every change — start from a
+    // known-clean slate BEFORE the component is created, so hydration always
+    // starts from empty. Mirrors ticket-board.component.spec.ts's recentOnly
+    // sessionStorage-isolation pattern (Karma runs specs in random order).
+    sessionStorage.removeItem('rechner.barLimit');
+
     mockSzenarioService = makeMockSzenarioService();
 
     await TestBed.configureTestingModule({
@@ -124,6 +132,9 @@ describe('RechnerComponent', () => {
 
   afterEach(() => {
     httpMock.verify();
+    // Several tests below mutate barLimit (which persists to sessionStorage via
+    // its field effect) — clear it so it can't leak into a sibling spec.
+    sessionStorage.removeItem('rechner.barLimit');
   });
 
   // ─── Component creation ───────────────────────────────────────────────────
@@ -695,6 +706,108 @@ describe('RechnerComponent', () => {
       component.onNavChange({ activeId: 1, nextId: 3, preventDefault: () => {} } as NgbNavChangeEvent);
       expect(component.barLimit()).toBe(3); // process index 2 revealed
       expect(component.isBarVisible(2)).toBeTrue();
+    });
+  });
+
+  // ─── barLimit sessionStorage persistence (RECHNER-PROZESS-VERBESSERUNGEN) ──
+  //
+  // barLimit is hydrated from sessionStorage on construction (readBarLimit()) and
+  // persisted only inside cycleBarLimit(), the explicit "Alle Prozesse" toggle
+  // handler — mirrors ticket-board.component.ts's recentOnly pattern (read on
+  // init, write only in the explicit toggle). Incidental widening via
+  // revealProcess() (tab navigation, selectProzess) updates the in-memory signal
+  // only and must NOT be persisted.
+
+  describe('barLimit sessionStorage persistence', () => {
+    const STORAGE_KEY = 'rechner.barLimit';
+
+    it('cycleBarLimit() writes the new value to sessionStorage', () => {
+      component.cycleBarLimit();
+
+      expect(sessionStorage.getItem(STORAGE_KEY)).toBe('1');
+    });
+
+    it('a component constructed while sessionStorage holds "2" starts with barLimit() === 2 (remembered across screens)', () => {
+      sessionStorage.setItem(STORAGE_KEY, '2');
+
+      const freshComponent = TestBed.createComponent(RechnerComponent).componentInstance;
+
+      expect(freshComponent.barLimit()).toBe(2);
+    });
+
+    it('a junk stored value ("x") yields barLimit() === 0 on construction', () => {
+      sessionStorage.setItem(STORAGE_KEY, 'x');
+
+      const freshComponent = TestBed.createComponent(RechnerComponent).componentInstance;
+
+      expect(freshComponent.barLimit()).toBe(0);
+    });
+
+    it('an out-of-range stored value ("9") yields barLimit() === 0 on construction', () => {
+      sessionStorage.setItem(STORAGE_KEY, '9');
+
+      const freshComponent = TestBed.createComponent(RechnerComponent).componentInstance;
+
+      expect(freshComponent.barLimit()).toBe(0);
+    });
+
+    it('does not throw and defaults barLimit() to 0 when sessionStorage.getItem() throws', () => {
+      // barLimit is hydrated via a field initializer (readBarLimit()), so the spy
+      // must be in place BEFORE the component is constructed.
+      spyOn(sessionStorage, 'getItem').and.throwError('Storage disabled');
+
+      let freshComponent!: RechnerComponent;
+      expect(() => {
+        freshComponent = TestBed.createComponent(RechnerComponent).componentInstance;
+      }).not.toThrow();
+
+      expect(freshComponent.barLimit()).toBe(0);
+    });
+
+    it('does not throw when sessionStorage.setItem() throws', () => {
+      spyOn(sessionStorage, 'setItem').and.throwError('Storage disabled');
+
+      expect(() => {
+        component.cycleBarLimit();
+      }).not.toThrow();
+      // The in-memory update still happens even though persistence failed silently.
+      expect(component.barLimit()).toBe(1);
+    });
+
+    it('navigation-driven widening (revealProcess via selectProzess) does NOT persist to sessionStorage', () => {
+      component.barLimit.set(2); // shows processes 0 and 1; sessionStorage stays untouched
+      sessionStorage.removeItem(STORAGE_KEY);
+
+      // selectProzess() calls revealProcess(), which widens barLimit as a
+      // side effect of tab navigation — this must stay in-memory only.
+      component.selectProzess(2);
+
+      expect(component.barLimit()).toBe(3); // in-memory signal did widen
+      expect(sessionStorage.getItem(STORAGE_KEY)).toBeNull(); // but nothing was persisted
+    });
+  });
+
+  // ─── DEFAULT_DURATIONS: KI-step duration guard (RECHNER-PROZESS-VERBESSERUNGEN) ─
+
+  describe('DEFAULT_DURATIONS KI-step duration guard', () => {
+    it('the KI-labelled steps of halbautomatisch sum to 60 minutes', () => {
+      // Derive the KI-step indices from the labels themselves, rather than
+      // hardcoding them, so the guard tracks the domain rule (which steps are
+      // "done by the AI") even if the step order or count changes.
+      const works = DEFAULT_DURATIONS.halbautomatisch.works;
+      const labels = PROZESS_STEP_LABELS.halbautomatisch;
+      const kiSum = labels.reduce(
+        (sum, label, i) => (label.startsWith('KI') ? sum + works[i] : sum),
+        0,
+      );
+
+      expect(kiSum).toBe(60);
+    });
+
+    it('DEFAULT_DURATIONS.vollautomatisch.works sums to 60 minutes', () => {
+      const sum = DEFAULT_DURATIONS.vollautomatisch.works.reduce((s, v) => s + v, 0);
+
+      expect(sum).toBe(60);
     });
   });
 });

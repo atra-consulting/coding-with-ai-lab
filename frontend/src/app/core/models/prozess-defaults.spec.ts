@@ -55,7 +55,7 @@ describe('DEFAULT_DURATIONS — canonical arrays', () => {
   });
 
   it('halbautomatisch works matches the canonical 11-element array', () => {
-    expect(DEFAULT_DURATIONS.halbautomatisch.works).toEqual([0, 5, 10, 10, 5, 10, 10, 5, 10, 30, 20]);
+    expect(DEFAULT_DURATIONS.halbautomatisch.works).toEqual([0, 5, 10, 11, 5, 10, 11, 5, 11, 30, 22]);
   });
 
   it('halbautomatisch waits matches the canonical 10-element array', () => {
@@ -63,7 +63,7 @@ describe('DEFAULT_DURATIONS — canonical arrays', () => {
   });
 
   it('vollautomatisch works matches the canonical 2-element array', () => {
-    expect(DEFAULT_DURATIONS.vollautomatisch.works).toEqual([0, 20]);
+    expect(DEFAULT_DURATIONS.vollautomatisch.works).toEqual([0, 60]);
   });
 
   it('vollautomatisch waits matches the canonical 1-element array [5] (changed from [240])', () => {
@@ -80,12 +80,12 @@ describe('DEFAULT_DURATIONS — totals', () => {
     expect(total(DEFAULT_DURATIONS.agileKi)).toBe(2190);
   });
 
-  it('halbautomatisch totals 440 minutes (work 115 + wait 325)', () => {
-    expect(total(DEFAULT_DURATIONS.halbautomatisch)).toBe(440);
+  it('halbautomatisch totals 445 minutes (work 120 + wait 325)', () => {
+    expect(total(DEFAULT_DURATIONS.halbautomatisch)).toBe(445);
   });
 
-  it('vollautomatisch totals 25 minutes (work 20 + wait 5)', () => {
-    expect(total(DEFAULT_DURATIONS.vollautomatisch)).toBe(25);
+  it('vollautomatisch totals 65 minutes (work 60 + wait 5)', () => {
+    expect(total(DEFAULT_DURATIONS.vollautomatisch)).toBe(65);
   });
 });
 

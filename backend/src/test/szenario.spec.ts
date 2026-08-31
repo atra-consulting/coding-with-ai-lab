@@ -18,7 +18,7 @@
  *                agileKiSteps round-trips element-by-element with values distinct from
  *                humanSteps, so a column-swap bug in create()/update() would be caught.
  *   Seed: after startup, the seeded Standard-Szenario (id=1) reflects the 4-process
- *         canonical totals (3,880 / 2,190 / 440 / 25) and has a valid 19-length
+ *         canonical totals (3,880 / 2,190 / 445 / 65) and has a valid 19-length
  *         agileKiSteps. The pre-existing-DB ALTER/upgrade path (adding the
  *         agileKiSteps column to an old 3-process DB) is NOT exercised here — it
  *         is a manual/scripted check (see PLAN-RECHNER-OVERHAUL.md §8), not
@@ -66,10 +66,10 @@ const AGILE_KI_WAITS_18: number[] = [
 const AGILE_KI_WORKS_19_ALT: number[] = AGILE_KI_WORKS_19.map((w) => w + 1);
 const AGILE_KI_WAITS_18_ALT: number[] = AGILE_KI_WAITS_18.map((w) => w + 1);
 
-const SEMI_WORKS_11: number[] = [0, 5, 10, 10, 5, 10, 10, 5, 10, 30, 20];
+const SEMI_WORKS_11: number[] = [0, 5, 10, 11, 5, 10, 11, 5, 11, 30, 22];
 const SEMI_WAITS_10: number[] = [5, 60, 5, 60, 60, 5, 60, 5, 60, 5];
 
-const AUTO_WORKS_2: number[] = [0, 20];
+const AUTO_WORKS_2: number[] = [0, 60];
 const AUTO_WAITS_1: number[] = [5];
 
 // Seed-exact values for the "Seed defaults" suite below — kept as separate
@@ -938,14 +938,14 @@ test.describe('Seed defaults — Standard-Szenario reflects canonical totals', (
       expect(total).toBe(2190);
     });
 
-    await test.step('semiAutomatedSteps works+waits sums to 440', () => {
+    await test.step('semiAutomatedSteps works+waits sums to 445', () => {
       const total = sum(body.semiAutomatedSteps.works) + sum(body.semiAutomatedSteps.waits);
-      expect(total).toBe(440);
+      expect(total).toBe(445);
     });
 
-    await test.step('automatedSteps works+waits sums to 25', () => {
+    await test.step('automatedSteps works+waits sums to 65', () => {
       const total = sum(body.automatedSteps.works) + sum(body.automatedSteps.waits);
-      expect(total).toBe(25);
+      expect(total).toBe(65);
     });
 
     await test.step('agileKiSteps.works has exactly 19 elements', () => {

@@ -18,8 +18,23 @@
  *   POST /api/tickets/reset           — deletes and reseeds 12 tickets
  *
  * Authorization matrix:
- *   - Agent endpoints (/next, /:id/done, /:id/ask): require Bearer token
- *   - Admin session endpoints: require ADMIN role (user=USER gets 403)
+ *   - Agent-token-or-admin endpoints (/:id/start, /:id/done, /:id/ask, create,
+ *     /:id, /:id/owner, /:id/comments, /board, /:id/status): agent token,
+ *     loopback bypass, or admin session (first match wins). A wrong token is
+ *     still rejected (401) regardless of loopback/session. /:id/start,
+ *     /:id/done, and /:id/ask were widened from agent-token-only to this
+ *     matrix so an admin session (not just a headless skill or the agent
+ *     token) can also start/finish/ask on a ticket already claimed via
+ *     /next. /board and /:id/status were widened from admin-only to this
+ *     matrix so a skill can read the board / move a ticket without an admin
+ *     login.
+ *   - Agent-token-only endpoint: /next. It was briefly widened the same way
+ *     as /:id/start, /:id/done, and /:id/ask, then REVERTED back to
+ *     requireAgentToken after a review flagged it as a GET-based CSRF
+ *     surface — an admin session alone (no CSRF protection on a simple GET)
+ *     must not be able to claim a ticket.
+ *   - Admin-only endpoints (summary, list, /:id/wont-do, /:id/hand-to-ai,
+ *     reset): require ADMIN role (user=USER gets 403)
  *
  * Seeded state (after POST /reset or fresh DB):
  *   Ids 1-12. DEFINITION + owner=HUMAN: 1,2,3,4,5 (5 tickets, all FEATURE), each
@@ -195,18 +210,154 @@ test.describe('Auth matrix — agent endpoints', () => {
   });
 });
 
+// ─── Suite: Auth matrix — admin session on widened agent endpoints ───────────
+//
+// /:id/start, /:id/done, and /:id/ask were widened from requireAgentToken to
+// requireAgentTokenOrAdminSession: agent token, loopback bypass, or admin
+// session (first match wins).
+//
+// GET /next was widened the same way but has since been REVERTED back to
+// requireAgentToken (agent-token-only) after a review flagged it as a
+// GET-based CSRF surface — a bare admin session (no CSRF protection on a
+// simple GET) must not be able to claim a ticket. The /next tests below
+// assert that reverted, agent-token-only behavior, not a widening.
+//
+// IMPORTANT: this test environment sets AGENT_AUTH_ALLOW_LOOPBACK=1, and the
+// loopback bypass fires FIRST — purely on remoteAddress plus the absence of
+// an auth/forwarding header — before the middleware ever reaches the
+// agent-token/admin-session check. A plain admin-context call from localhost
+// would therefore return 200 regardless of which auth branch is configured,
+// proving nothing. Every test below sends 'X-Forwarded-For' to disable the
+// loopback bypass (same pattern as src/test/agentTasks.spec.ts:220-234 and
+// :295-301), so the results here genuinely exercise the auth branch under
+// test rather than the loopback bypass.
+//
+// Regression coverage for the agent-token happy path lives in the
+// 'GET /api/tickets/next', 'POST /api/tickets/:id/done',
+// 'POST /api/tickets/:id/ask', and 'POST /api/tickets/:id/start' suites
+// below; the wrong-token → 401 case is covered in 'Auth matrix — agent
+// endpoints' above (and again in the ':id/start' suite), so neither is
+// duplicated here.
+test.describe('Auth matrix — admin session on widened agent endpoints', () => {
+  const NO_LOOPBACK_HEADERS = { 'X-Forwarded-For': '10.0.0.1' };
+
+  let admin: APIRequestContext;
+  let anon: APIRequestContext;
+
+  test.beforeEach(async () => {
+    admin = await loginCtx('admin', 'admin123');
+    await resetTickets(admin);
+    anon = await anonCtx();
+  });
+
+  test.afterEach(async () => {
+    await admin.dispose();
+    await anon.dispose();
+  });
+
+  // ── GET /next (reverted to agent-token-only — GET-based CSRF surface) ───────
+
+  test('GET /next with admin session + X-Forwarded-For (loopback bypass disabled) → 401 (admin session no longer accepted, reverted to agent-token-only)', async () => {
+    const resp = await admin.get('/api/tickets/next', { headers: NO_LOOPBACK_HEADERS });
+    expect(resp.status()).toBe(401);
+  });
+
+  test('GET /next without session + X-Forwarded-For (loopback bypass disabled) → 401 (negative control)', async () => {
+    const resp = await anon.get('/api/tickets/next', { headers: NO_LOOPBACK_HEADERS });
+    expect(resp.status()).toBe(401);
+  });
+
+  // ── POST /:id/start ─────────────────────────────────────────────────────────
+
+  test('POST /:id/start with admin session + X-Forwarded-For (loopback bypass disabled) → 200, drives TODO+AI ticket to IN_PROGRESS', async () => {
+    // Ticket 6 is TODO+AI after reset.
+    const resp = await admin.post('/api/tickets/6/start', { data: {}, headers: NO_LOOPBACK_HEADERS });
+
+    await test.step('status 200', () => { expect(resp.status()).toBe(200); });
+
+    const body = await resp.json() as Ticket;
+    await test.step('status is IN_PROGRESS', () => { expect(body.status).toBe('IN_PROGRESS'); });
+    await test.step('owner remains AI', () => { expect(body.owner).toBe('AI'); });
+  });
+
+  test('POST /:id/start without session + X-Forwarded-For (loopback bypass disabled) → 401 (negative control)', async () => {
+    const resp = await anon.post('/api/tickets/6/start', { data: {}, headers: NO_LOOPBACK_HEADERS });
+    expect(resp.status()).toBe(401);
+  });
+
+  // ── POST /:id/done ──────────────────────────────────────────────────────────
+
+  test('POST /:id/done with admin session + X-Forwarded-For (loopback bypass disabled) → 200 on an IN_PROGRESS ticket', async () => {
+    // Drive ticket 6 to IN_PROGRESS via the admin session first, same header
+    // set throughout so the whole chain runs on the admin-session branch.
+    const startResp = await admin.post('/api/tickets/6/start', { data: {}, headers: NO_LOOPBACK_HEADERS });
+    expect(startResp.status()).toBe(200);
+    const started = await startResp.json() as Ticket;
+    expect(started.status).toBe('IN_PROGRESS');
+
+    const resp = await admin.post('/api/tickets/6/done', { data: {}, headers: NO_LOOPBACK_HEADERS });
+
+    await test.step('status 200', () => { expect(resp.status()).toBe(200); });
+
+    const body = await resp.json() as Ticket;
+    await test.step('status is DONE', () => { expect(body.status).toBe('DONE'); });
+    await test.step('solution is DONE', () => { expect(body.solution).toBe('DONE'); });
+  });
+
+  test('POST /:id/done without session + X-Forwarded-For (loopback bypass disabled) → 401 (negative control)', async () => {
+    // Drive ticket 6 to IN_PROGRESS via the admin session (same header) first,
+    // so the anon call below hits the auth guard rather than a 409 wrong-state.
+    const startResp = await admin.post('/api/tickets/6/start', { data: {}, headers: NO_LOOPBACK_HEADERS });
+    expect(startResp.status()).toBe(200);
+
+    const resp = await anon.post('/api/tickets/6/done', { data: {}, headers: NO_LOOPBACK_HEADERS });
+    expect(resp.status()).toBe(401);
+  });
+
+  // ── POST /:id/ask ───────────────────────────────────────────────────────────
+
+  test('POST /:id/ask with admin session + X-Forwarded-For (loopback bypass disabled) → 200 on an IN_PROGRESS ticket', async () => {
+    const startResp = await admin.post('/api/tickets/6/start', { data: {}, headers: NO_LOOPBACK_HEADERS });
+    expect(startResp.status()).toBe(200);
+
+    const resp = await admin.post('/api/tickets/6/ask', {
+      data: { question: 'Admin-session question — is this reachable now?' },
+      headers: NO_LOOPBACK_HEADERS,
+    });
+
+    await test.step('status 200', () => { expect(resp.status()).toBe(200); });
+
+    const body = await resp.json() as Ticket;
+    await test.step('status is ON_HOLD', () => { expect(body.status).toBe('ON_HOLD'); });
+    await test.step('owner is HUMAN', () => { expect(body.owner).toBe('HUMAN'); });
+  });
+
+  test('POST /:id/ask without session + X-Forwarded-For (loopback bypass disabled) → 401 (negative control)', async () => {
+    const startResp = await admin.post('/api/tickets/6/start', { data: {}, headers: NO_LOOPBACK_HEADERS });
+    expect(startResp.status()).toBe(200);
+
+    const resp = await anon.post('/api/tickets/6/ask', {
+      data: { question: 'Should be rejected before reaching the service.' },
+      headers: NO_LOOPBACK_HEADERS,
+    });
+    expect(resp.status()).toBe(401);
+  });
+});
+
 // ─── Suite: Auth matrix — admin endpoints ────────────────────────────────────
 
 test.describe('Auth matrix — admin endpoints', () => {
   let anon: APIRequestContext;
   let user: APIRequestContext;
   let agent: APIRequestContext;
+  let wrongToken: APIRequestContext;
   let admin: APIRequestContext;
 
   test.beforeAll(async () => {
     anon = await anonCtx();
     user = await loginCtx('user', 'test123');
     agent = await agentCtx();
+    wrongToken = await wrongTokenCtx();
     admin = await loginCtx('admin', 'admin123');
     await resetTickets(admin);
   });
@@ -215,26 +366,36 @@ test.describe('Auth matrix — admin endpoints', () => {
     await anon.dispose();
     await user.dispose();
     await agent.dispose();
+    await wrongToken.dispose();
     await admin.dispose();
   });
 
-  // GET /board
-  test('GET /board without session → 401', async () => {
+  // GET /board — widened (commit ff92664) to requireAgentTokenOrAdminSession:
+  // agent token, loopback bypass, or admin session (first match wins). These
+  // three assertions previously expected 401/403 back when /board was
+  // admin-session-only; updated here to match the widened middleware, mirroring
+  // the pattern already used below for POST / and GET /:id.
+  test('GET /board without session → 200 (loopback bypass)', async () => {
     const resp = await anon.get('/api/tickets/board');
-    expect(resp.status()).toBe(401);
+    expect(resp.status()).toBe(200);
   });
 
-  test('GET /board with USER role → 403', async () => {
+  test('GET /board with USER role → 200 (loopback bypass)', async () => {
     const resp = await user.get('/api/tickets/board');
-    expect(resp.status()).toBe(403);
+    expect(resp.status()).toBe(200);
   });
 
-  test('GET /board with agent token only (no session) → 401', async () => {
+  test('GET /board with agent token → 200', async () => {
     const resp = await agent.get('/api/tickets/board');
+    expect(resp.status()).toBe(200);
+  });
+
+  test('GET /board with wrong token → 401', async () => {
+    const resp = await wrongToken.get('/api/tickets/board');
     expect(resp.status()).toBe(401);
   });
 
-  // GET /summary
+  // GET /summary — NOT widened; still requireAuth + requireRole('ADMIN') only.
   test('GET /summary without session → 401', async () => {
     const resp = await anon.get('/api/tickets/summary');
     expect(resp.status()).toBe(401);
@@ -243,6 +404,11 @@ test.describe('Auth matrix — admin endpoints', () => {
   test('GET /summary with USER role → 403', async () => {
     const resp = await user.get('/api/tickets/summary');
     expect(resp.status()).toBe(403);
+  });
+
+  test('GET /summary with wrong agent token (no session) → 401 (regression guard: still admin-only, unaffected by the /board and /:id/status auth widening)', async () => {
+    const resp = await wrongToken.get('/api/tickets/summary');
+    expect(resp.status()).toBe(401);
   });
 
   // POST /reset
@@ -267,15 +433,26 @@ test.describe('Auth matrix — admin endpoints', () => {
     expect(resp.status()).toBe(403);
   });
 
-  // POST / (create)
-  test('POST / without session → 401', async () => {
+  // POST / (create) — loopback bypass / agent token active in test environment.
+  // 401/403 only enforced in production (no loopback, no token).
+  test('POST / without session → 201 (loopback bypass)', async () => {
     const resp = await anon.post('/api/tickets', { data: { type: 'FEATURE', title: 'T', body: 'B' } });
-    expect(resp.status()).toBe(401);
+    expect(resp.status()).toBe(201);
   });
 
-  test('POST / with USER role → 403', async () => {
+  test('POST / with USER role → 201 (loopback bypass)', async () => {
     const resp = await user.post('/api/tickets', { data: { type: 'FEATURE', title: 'T', body: 'B' } });
-    expect(resp.status()).toBe(403);
+    expect(resp.status()).toBe(201);
+  });
+
+  test('POST / with agent token → 201', async () => {
+    const resp = await agent.post('/api/tickets', { data: { type: 'FEATURE', title: 'T', body: 'B' } });
+    expect(resp.status()).toBe(201);
+  });
+
+  test('POST / with wrong token → 401', async () => {
+    const resp = await wrongToken.post('/api/tickets', { data: { type: 'FEATURE', title: 'T', body: 'B' } });
+    expect(resp.status()).toBe(401);
   });
 
   // GET /:id — loopback bypass active in test environment; 401/403 only enforced in production
@@ -289,26 +466,51 @@ test.describe('Auth matrix — admin endpoints', () => {
     expect(resp.status()).toBe(200);
   });
 
-  // PATCH /:id/status
-  test('PATCH /:id/status without session → 401', async () => {
+  // PATCH /:id/status — widened (commit ff92664) to requireAgentTokenOrAdminSession:
+  // agent token, loopback bypass, or admin session (first match wins). These
+  // assertions previously expected 401/403 back when /:id/status was
+  // admin-session-only; updated here to match the widened middleware, mirroring
+  // the pattern already used below for PATCH /:id/owner.
+  test('PATCH /:id/status without session → 200 (loopback bypass)', async () => {
     const resp = await anon.patch('/api/tickets/1/status', { data: { status: 'TODO' } });
-    expect(resp.status()).toBe(401);
+    expect(resp.status()).toBe(200);
   });
 
-  test('PATCH /:id/status with USER role → 403', async () => {
+  test('PATCH /:id/status with USER role → 200 (loopback bypass)', async () => {
     const resp = await user.patch('/api/tickets/1/status', { data: { status: 'TODO' } });
-    expect(resp.status()).toBe(403);
+    expect(resp.status()).toBe(200);
   });
 
-  // PATCH /:id/owner
-  test('PATCH /:id/owner without session → 401', async () => {
-    const resp = await anon.patch('/api/tickets/1/owner', { data: { owner: 'AI' } });
+  test('PATCH /:id/status with agent token → 200', async () => {
+    const resp = await agent.patch('/api/tickets/1/status', { data: { status: 'TODO' } });
+    expect(resp.status()).toBe(200);
+  });
+
+  test('PATCH /:id/status with wrong token → 401', async () => {
+    const resp = await wrongToken.patch('/api/tickets/1/status', { data: { status: 'TODO' } });
     expect(resp.status()).toBe(401);
   });
 
-  test('PATCH /:id/owner with USER role → 403', async () => {
+  // PATCH /:id/owner — loopback bypass / agent token active in test environment.
+  // 401/403 only enforced in production (no loopback, no token).
+  test('PATCH /:id/owner without session → 200 (loopback bypass)', async () => {
+    const resp = await anon.patch('/api/tickets/1/owner', { data: { owner: 'AI' } });
+    expect(resp.status()).toBe(200);
+  });
+
+  test('PATCH /:id/owner with USER role → 200 (loopback bypass)', async () => {
     const resp = await user.patch('/api/tickets/1/owner', { data: { owner: 'AI' } });
-    expect(resp.status()).toBe(403);
+    expect(resp.status()).toBe(200);
+  });
+
+  test('PATCH /:id/owner with agent token → 200', async () => {
+    const resp = await agent.patch('/api/tickets/1/owner', { data: { owner: 'HUMAN' } });
+    expect(resp.status()).toBe(200);
+  });
+
+  test('PATCH /:id/owner with wrong token → 401', async () => {
+    const resp = await wrongToken.patch('/api/tickets/1/owner', { data: { owner: 'AI' } });
+    expect(resp.status()).toBe(401);
   });
 
   // POST /:id/wont-do
@@ -322,15 +524,26 @@ test.describe('Auth matrix — admin endpoints', () => {
     expect(resp.status()).toBe(403);
   });
 
-  // POST /:id/comments
-  test('POST /:id/comments without session → 401', async () => {
+  // POST /:id/comments — loopback bypass / agent token active in test environment.
+  // 401/403 only enforced in production (no loopback, no token).
+  test('POST /:id/comments without session → 200 (loopback bypass)', async () => {
     const resp = await anon.post('/api/tickets/1/comments', { data: { body: 'Hello' } });
-    expect(resp.status()).toBe(401);
+    expect(resp.status()).toBe(200);
   });
 
-  test('POST /:id/comments with USER role → 403', async () => {
+  test('POST /:id/comments with USER role → 200 (loopback bypass)', async () => {
     const resp = await user.post('/api/tickets/1/comments', { data: { body: 'Hello' } });
-    expect(resp.status()).toBe(403);
+    expect(resp.status()).toBe(200);
+  });
+
+  test('POST /:id/comments with agent token → 200', async () => {
+    const resp = await agent.post('/api/tickets/1/comments', { data: { body: 'Hello from agent' } });
+    expect(resp.status()).toBe(200);
+  });
+
+  test('POST /:id/comments with wrong token → 401', async () => {
+    const resp = await wrongToken.post('/api/tickets/1/comments', { data: { body: 'Hello' } });
+    expect(resp.status()).toBe(401);
   });
 });
 
@@ -985,6 +1198,32 @@ test.describe('PATCH /api/tickets/:id/status', () => {
     expect(body.owner).toBe('AI'); // owner never changed by PATCH /status
     expect(body.solution).toBeNull();
   });
+
+  test('agent token: move TODO+AI ticket 6 to DEFINITION → 200, status=DEFINITION', async () => {
+    // /:id/status was widened (commit ff92664) to accept an agent token so a
+    // skill can move a ticket to any column without an admin login.
+    // Ticket 6 is TODO+AI after reset (beforeEach above resets before this test).
+    const agent = await agentCtx();
+
+    const resp = await agent.patch('/api/tickets/6/status', { data: { status: 'DEFINITION' } });
+
+    await test.step('status 200', () => { expect(resp.status()).toBe(200); });
+
+    const body = await resp.json() as Ticket;
+    await test.step('status is DEFINITION', () => { expect(body.status).toBe('DEFINITION'); });
+    await test.step('owner unchanged (AI)', () => { expect(body.owner).toBe('AI'); });
+    await test.step('solution is null', () => { expect(body.solution).toBeNull(); });
+
+    // Side-effect: re-fetch and confirm persisted state (via the admin session,
+    // which continues to work per the auth widening).
+    const persisted = await (await admin.get('/api/tickets/6')).json() as Ticket;
+    await test.step('persisted status is DEFINITION', () => { expect(persisted.status).toBe('DEFINITION'); });
+    await test.step('persisted owner is still AI', () => { expect(persisted.owner).toBe('AI'); });
+
+    await agent.dispose();
+    // No manual restore needed — this describe's beforeEach resets before every
+    // test, including whichever test runs next.
+  });
 });
 
 // ─── Suite: PATCH /api/tickets/:id/owner ─────────────────────────────────────
@@ -1424,6 +1663,28 @@ test.describe('GET /api/tickets/board', () => {
     await test.step('DONE is empty', () => {
       expect(body.DONE.length).toBe(0);
     });
+  });
+
+  test('agent token: GET /board → 200 with all five status columns present', async () => {
+    // /board was widened (commit ff92664) to accept an agent token so a skill
+    // can peek the whole board without an admin login.
+    const agent = await agentCtx();
+
+    const resp = await agent.get('/api/tickets/board');
+
+    await test.step('status 200', () => { expect(resp.status()).toBe(200); });
+
+    const body = await resp.json() as TicketBoard;
+
+    await test.step('all five status columns are present as arrays', () => {
+      expect(Array.isArray(body.DEFINITION)).toBe(true);
+      expect(Array.isArray(body.TODO)).toBe(true);
+      expect(Array.isArray(body.IN_PROGRESS)).toBe(true);
+      expect(Array.isArray(body.ON_HOLD)).toBe(true);
+      expect(Array.isArray(body.DONE)).toBe(true);
+    });
+
+    await agent.dispose();
   });
 
   test('a freshly created ticket appears in the DEFINITION column', async () => {
