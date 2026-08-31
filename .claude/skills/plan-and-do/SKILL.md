@@ -2,8 +2,8 @@
 name: "project:plan-and-do"
 description: "End-to-end implementation workflow from idea to code review. Use for building features, implementing tasks, fixing complex bugs, or any substantial coding work. Handles planning, implementation, testing, and review automatically."
 argument-hint: "description" [special-instructions|resume:<step>] | ticket-url | ticket-number
-version: 1.12.0
-last-modified: 2026-07-07
+version: 1.13.0
+last-modified: 2026-08-25
 allowed-tools:
   - Read
   - Write
@@ -63,7 +63,7 @@ If NOT in plan mode → continue.
 ## SKILL HEADER
 
 ```
-Plan and Do (v1.12.0, 2026-07-07)
+Plan and Do (v1.13.0, 2026-08-25)
 ************************************
 
 Plan and implement any work from freeform description
@@ -159,62 +159,19 @@ When asking for approval, also display the full absolute path of every file that
 
 ## AGENT DISCOVERY
 
-Read project's CLAUDE.md for `## Agents` section.
+Read `plan-and-do-delegation.md` → `## 12. AGENT DISCOVERY` and apply it: classify every agent in `CLAUDE.md` → `## Agents`. Sections 13 (dispatch narration) and 14 (reviewer scope filter) govern every dispatch that follows.
 
-**If found:** Parse each row's `name` and classify. Rules are **order-sensitive** — stop at the first match:
+Results feed `discovery.*` in the state file. Timing is unchanged — the first step that needs an agent triggers discovery.
 
-0. Name starts with `python-`, `shell-`, or `skill-` → tooling agent (general, not CRM domain). Classify by suffix:
-   - ends with `-reviewer` → `tooling_review_agents` (e.g., `python-reviewer`, `shell-reviewer`, `skill-reviewer`)
-   - else (ends with `-coder`) → `tooling_coding_agents` (e.g., `python-coder`, `shell-coder`, `skill-coder`)
-   Dispatch tooling agents ONLY when the changed files are tooling files (`.py`, `.sh`/`.bash`, or files under `.claude/`). Never dispatch them for CRM domain files.
-1. Contains `-test-coder` → `test_coding_agents` (e.g., `be-test-coder`, `fe-test-coder`)
-2. Contains `-test-reviewer` → `test_review_agents` (e.g., `be-test-reviewer`, `fe-test-reviewer`)
-3. Contains `-test-runner` or ends with `-tester` → `test_runner_agents` (e.g., `be-test-runner`, `fe-test-runner`)
-4. Ends with `-writer` or `-analyst` → `writer_agents` (e.g., `ba-writer`)
-5. Ends with `-coder` or `-designer` → `coding_agents` (e.g., `be-coder`, `fe-coder`, `ui-designer`)
-6. Ends with `-reviewer` → `review_agents` (e.g., `be-reviewer`, `fe-reviewer`)
-7. Anything else (e.g., `admin`) → skip as utility
-
-The order matters: `be-test-coder` must hit rule 1, NOT rule 5. Always check for `-test-` first. Rule 0 runs before all others.
-
-Display all eight lists in one block (six standard plus the two tooling lists), then set `agents_available = true` if any list is non-empty.
-
-**If not found:** Display: "No agents found. Running in direct mode." Set `agents_available = false`.
-
-## DISPATCH NARRATION RULE
-
-**Before EVERY `Task` tool call**, output ONE line:
-```
-→ Launching <agent_name>: <one-sentence purpose>
-```
-
-**When dispatching multiple agents in parallel**, output one line per agent BEFORE the parallel batch:
-```
-→ Launching be-reviewer, fe-reviewer, db-reviewer in parallel: review phase 1 output.
-```
-
-This keeps the user informed about which agents do what work, without breaking the parallel execution.
-
-## REVIEWER SCOPE FILTER
-
-When launching `review_agents` (Steps 6.2, 8.1, 11.1), do NOT launch every reviewer every time. Filter by domain match against the work being reviewed:
-
-- Files under `backend/` or backend keywords (route, service, middleware, schema) → include `be-reviewer`
-- Files under `frontend/` or frontend keywords (component, template, route, form) → include `fe-reviewer`
-- Schema/SQL/Drizzle/migration changes → include `db-reviewer`
-- Visual/CSS/SCSS/template changes → include `ui-reviewer`
-- PRDs, plans, or pure spec text → include `ba-reviewer`
-- `**/*.py` changed → include `python-reviewer`
-- `**/*.sh` or `**/*.bash` changed → include `shell-reviewer`
-- Files under `.claude/**` (skills, agents, prompts) → include `skill-reviewer`
-
-Always include at least one reviewer. If unsure, default to `be-reviewer` and `fe-reviewer`.
+If no agents are found, display "No agents found. Running in direct mode." and set `agents_available = false`.
 
 ---
 
 ## Context Recovery
 
 If you lose track of variables after context compression, re-read `[docs_folder]/state/STATE-[task_key].json`. Trust the file over conversation memory.
+
+**Legacy state files:** a state file written before a feature existed lacks its keys. Treat a missing `delegation` object, `delegation.assignments`, `delegation.escalations`, or `discovery.planner_agents` as empty (`{}` / `[]`) and create it on the next write. Never warn, never error.
 
 ---
 
@@ -427,6 +384,7 @@ Write `[state_dir]/STATE-[task_key].json` using Write tool:
   },
   "discovery": {
     "agents_available": false,
+    "planner_agents": [],
     "writer_agents": [],
     "coding_agents": [],
     "review_agents": [],
@@ -442,9 +400,17 @@ Write `[state_dir]/STATE-[task_key].json` using Write tool:
     "prd_file": null,
     "plan_file": null
   },
+  "delegation": {
+    "assignments": [],
+    "escalations": []
+  },
   "completed_steps": []
 }
 ```
+
+### What goes in `delegation`
+
+`delegation.assignments` records one entry per subagent dispatch, of any kind — PRD/plan draft, review, fix, implementation slice, phase review, test fix, post-review testing: step label, agent, model, verification method. `delegation.escalations` records slice, from-tier, to-tier, reason. Both stay empty in direct mode. Step 13.1 prints every recorded entry.
 
 Do NOT git add/commit yet. File committed on new branch in Step 4.
 
@@ -562,16 +528,40 @@ Analyze user_description and codebase using Grep/Glob. Identify patterns, module
 
 **If agents_available:**
 
-1. **Draft:** Launch `ba-writer` (or first `writer_agent`) via Task tool to write the PRD. If no writer agents exist, use the first `coding_agent` instead. If no coding agents exist either, write the PRD directly. Provide user_description, codebase context from Step 6.1, and the structure below. Apply the **DISPATCH NARRATION RULE**.
-2. **Review:** Apply the **REVIEWER SCOPE FILTER** — for a PRD always include `ba-reviewer`, plus any domain reviewers whose area the PRD covers. Launch them in parallel via Task tool. Apply the DISPATCH NARRATION RULE. Each reviewer gets the draft PRD and checks for completeness, correctness, and feasibility from their domain perspective.
-3. **Fix:** Collect all reviewer findings. Fix issues automatically — no user prompt needed. If reviewers disagree, prefer the more conservative/thorough approach.
+1. **Draft:** Launch ONE agent via Task tool to write the PRD, in this order of preference: first `planner_agent`, else `ba-writer` (or first `writer_agent`), else first `coding_agent`, else write directly. Model: `opus` for a complex task, `sonnet` for a small one — never `haiku`. Provide user_description, codebase context from Step 6.1, and the structure below. Apply the **DISPATCH NARRATION RULE** (`plan-and-do-delegation.md` → `## 13. DISPATCH NARRATION RULE`).
+2. **Review:** Apply the **REVIEWER SCOPE FILTER** (`plan-and-do-delegation.md` → `## 14. REVIEWER SCOPE FILTER`) — for a PRD always include `ba-reviewer`, plus any domain reviewers whose area the PRD covers. Launch them in parallel via Task tool. Model: one tier below the draft, floor of `sonnet` for anything security- or architecture-relevant. Apply the DISPATCH NARRATION RULE from the same file. Each reviewer gets the draft PRD and checks for completeness, correctness, and feasibility from their domain perspective.
+3. **Fix:** Collect all reviewer findings. Delegate the fixes to the drafting agent with the findings in the prompt — no user prompt needed. Model: same tier as the draft. If reviewers disagree, prefer the more conservative/thorough approach. Fix directly only when `coding_agents` is empty or `agents_available == false`. Failed fixes run the escalation loop (`plan-and-do-delegation.md` → `## 8. ESCALATION LOOP`).
 4. **Result:** The reviewed and fixed PRD becomes the final draft for user approval.
+
+**Record:** log the draft, each reviewer, and the fix in `delegation.assignments` — step "PRD draft" / "PRD review: [agent]" / "PRD fix", agent, model, verification method.
 
 **Otherwise:** Write directly.
 
-Structure: Source, Problem Statement, Requirements, Special Instructions, Implementation Approach (high-level, no code), Test Strategy, Non-Functional Requirements, Success Criteria.
+Structure:
 
-Keep brief. No code samples. Details go in Step 7 plan.
+```markdown
+## Summary
+### Business Summary
+[2-4 sentences. Business audience. What this change does and why it matters. No jargon, no file paths, no code.]
+
+### Technical Summary
+[2-4 sentences. Technical audience. The shape of the change at a high level.]
+
+## Source
+## Problem Statement
+## Requirements
+## Special Instructions
+## Implementation Approach (high-level, no code)
+## Test Strategy
+## Non-Functional Requirements
+## Success Criteria
+## Technical Notes (optional)
+[Only if needed. Technical audience. Deeper technical detail than the Technical Summary. Skip this section when the Technical Summary already covers it.]
+```
+
+Audience rule: everything above must read clearly to a business person, except Technical Summary and Technical Notes — those two are for technical readers only.
+
+Keep brief. No code samples anywhere in the PRD — not even in Technical Notes. Details go in the Step 7 plan.
 
 ### Step 6.3: Write to File
 
@@ -621,37 +611,9 @@ Create implementation tasks: file changes, tests, configuration, verification st
 
 ### Step 7.3: Generate Detailed Plan
 
-**If agents_available:**
+Read `plan-and-do-delegation.md` → `## 10. STEP 7.3: PLAN DRAFT/REVIEW/FIX CYCLE` and execute it. Short version: a planner writes the WHOLE plan in one dispatch — no merge needed. Without one, all `coding_agents` draft in parallel and the orchestrator merges. Review and fix run either way.
 
-1. **Draft:** Launch ALL `coding_agents` in parallel via Task tool. Each coder contributes plan tasks for their domain (backend, frontend, database, etc.). Provide PRD (if exists), user_description, codebase analysis, and the plan structure below.
-2. **Merge:** Combine all coder outputs into one coherent plan. Resolve overlaps and ensure consistent task ordering.
-3. **Review:** Launch ALL `review_agents` in parallel via Task tool. Each reviewer checks the merged plan for completeness, feasibility, missing edge cases, and correct task ordering from their domain perspective.
-4. **Fix:** Collect all reviewer findings. Fix issues automatically — no user prompt needed. If reviewers flag missing tasks or wrong ordering, update the plan.
-5. **Result:** The reviewed and fixed plan becomes the final draft for user approval.
-
-**Otherwise:** Write directly.
-
-Structure:
-```markdown
-# Implementation Plan: [task_key]
-
-## Test Command
-`[test_command]`
-
-## Tasks
-### 1. [Category]
-- [ ] Task items with specific details
-
-### 2. Test Implementation
-- [ ] Test cases
-
-### 3. Verification
-- [ ] Run tests, check formatting
-
-## Tests
-### Unit Tests / Integration Tests / Edge Cases
-- [ ] Specific test cases with what they verify
-```
+Plan structure: `plan-and-do-delegation.md` → `## 11. PLAN STRUCTURE (Step 7.3)`.
 
 ### Step 7.4: Write to File
 
@@ -712,20 +674,13 @@ EOF
 
 ### Step 8.1: Execute Plan
 
-**If agents_available:** Dispatch task groups to coding agents via Task tool. Use this file-path → agent mapping (override only when CLAUDE.md says otherwise):
+**If agents_available AND `coding_agents` is not empty:**
 
-| File pattern | Agent |
-|--------------|-------|
-| `backend/src/routes/**`, `backend/src/services/**`, `backend/src/middleware/**`, `backend/src/app.ts`, `backend/src/utils/**` | `be-coder` |
-| `backend/src/db/**`, `backend/src/config/migrate.ts`, `backend/src/config/db.ts`, `backend/src/seed/**` | `db-coder` |
-| `frontend/src/app/features/**`, `frontend/src/app/core/**`, `frontend/src/app/app.*` | `fe-coder` |
-| `frontend/src/styles.scss`, `*.scss`, visual/template-only changes | `ui-designer` |
-| `**/*.py` | `python-coder` |
-| `**/*.sh`, `**/*.bash` | `shell-coder` |
-| `.claude/**` (skills, agents, prompts, settings) | `skill-coder` |
-| Anything else (config, scripts, docs) | nearest match by domain, else direct mode |
+Dispatch each task group to the agent and model that its `**Agent:**` / `**Model:**` lines name — the user approved those assignments at Step 7.5, follow them, do not re-decide. Apply the **DISPATCH NARRATION RULE** (`plan-and-do-delegation.md` → `## 13. DISPATCH NARRATION RULE`) before every Task call. Launch independent groups in parallel, in a single message with multiple Task calls. Serialize only when one group's output feeds another.
 
-Apply the **DISPATCH NARRATION RULE** before every Task call. Launch independent agents in parallel.
+**If the plan carries no `Agent:`/`Model:` lines** (a plan written before this feature): display "Plan has no agent assignments. Choosing per task group." Then pick the agent per `plan-and-do-delegation.md` → `## 15. FILE PATH → AGENT MAP (Step 8.1)` and the tier by difficulty per `## 2. MODEL LADDER` / `## 4. AGENT AND MODEL ARE SEPARATE CHOICES`. Never fail on this.
+
+Write each slice prompt to stand alone: exact file paths to touch, what to change, acceptance criteria, expected output format, what NOT to touch, and the Commit Scoping Rule (`git add [exact paths]`, never `git add -A`/`git add .`/`git commit -a`, and never `git push`). Also tell the agent not to run the project test suite — it reports what it changed, the orchestrator runs tests. **Exception:** test-runner dispatches (Step 9.1, Step 11.1) are exempt from the no-test-suite rule — running the suite is their entire purpose. Full contract in `plan-and-do-delegation.md` → `## 5. SLICE PROMPT CONTRACT`.
 
 Each agent commits the work it produced. **If `prd_file` exists**, the commit message MUST end with `PRD: [prd_file]` per CLAUDE.md:
 ```
@@ -735,11 +690,18 @@ PRD: [prd_file relative to repo root]
 ```
 Omit the `PRD:` footer when no PRD exists.
 
+**Record** each dispatch in state under `delegation.assignments`: task group, agent, model, verification method.
+
+**Verify every slice.** Read the diff at minimum, or delegate a review slice to the matching reviewer agent one tier below the coder. Do NOT run the test suite per slice — it runs once after a parallel group finishes, and again at Step 9. Never two test runs at once.
+
+**On failure, escalate:** two attempts per tier, then one tier up. You do the slice yourself only after `opus` fails twice — record it in `delegation.escalations` and flag it in the Step 13 summary. Full loop in `plan-and-do-delegation.md` → `## 8. ESCALATION LOOP`.
+
 **Phase review (agents_available only):** If the plan has multiple phases or numbered task groups, treat each group as a phase. After each phase completes:
-1. Apply the **REVIEWER SCOPE FILTER** — pick only the reviewers whose domain the phase touched. Launch them in parallel via Task tool. Apply the DISPATCH NARRATION RULE.
-2. Collect all reviewer findings. Fix issues automatically — no user prompt needed.
+1. Apply the **REVIEWER SCOPE FILTER** (`plan-and-do-delegation.md` → `## 14. REVIEWER SCOPE FILTER`) — pick only the reviewers whose domain the phase touched. Launch them in parallel via Task tool, each with an explicit model — one tier below the coder that did the phase, floor of `sonnet` for security or architecture. Apply the DISPATCH NARRATION RULE from the same file.
+2. Collect all reviewer findings. Delegate the fixes to the coding agent that owns the phase, with the findings in the prompt. Model: tier by severity — a typo is `haiku`, a security or design flaw is `opus`. Fix directly only when `coding_agents` is empty or `agents_available == false`. Failed fixes run the escalation loop.
 3. Commit fixes: `fix: Address phase [N] review findings. [task_key]` (with `PRD:` footer if applicable)
 4. Then proceed to the next phase.
+5. **Record** each reviewer and fix dispatch in `delegation.assignments` — step "Phase [N] review: [agent]" / "Phase [N] fix".
 
 This catches issues early, before they compound across phases.
 
@@ -748,9 +710,11 @@ This catches issues early, before they compound across phases.
 - Backend files changed → `be-test-coder` writes Playwright API tests under `backend/src/test/`
 - Frontend files changed → `fe-test-coder` writes Jasmine specs colocated with sources
 
-Apply the **DISPATCH NARRATION RULE**. Launch in parallel when both scopes are touched. Each agent commits its test files: `test: Add tests for [description]. [task_key]` (with `PRD:` footer if applicable).
+Model: default `sonnet`. `haiku` only for genuinely mechanical, spelled-out test edits. `opus` needs a named trigger — same triggers as Step 8.1 implementation slices: cross-cutting, unknown-cause, architecture, security.
 
-Then launch matching `test_review_agents` (`be-test-reviewer` / `fe-test-reviewer`) in parallel to review the new tests. Auto-fix findings and commit: `fix: Address test review findings. [task_key]`. No user prompt.
+Apply the **DISPATCH NARRATION RULE** (`plan-and-do-delegation.md` → `## 13. DISPATCH NARRATION RULE`). Launch in parallel when both scopes are touched. Each agent commits its test files: `test: Add tests for [description]. [task_key]` (with `PRD:` footer if applicable).
+
+Then launch matching `test_review_agents` (`be-test-reviewer` / `fe-test-reviewer`) in parallel to review the new tests. Model: one tier below the test author that wrote what they're reviewing, floor `sonnet` for security-relevant tests. Auto-fix findings and commit: `fix: Address test review findings. [task_key]`. No user prompt.
 
 Skip the test authoring phase when:
 - The plan explicitly marks the change as test-inappropriate (e.g., a pure docs edit)
@@ -777,12 +741,12 @@ If questions arise: explain the issue, then call the `AskUserQuestion` tool with
 
 ### Step 9.1: Run Tests
 
-**If `test_runner_agents` is non-empty:** Launch each relevant runner in parallel via Task tool. Match by scope:
+**If `test_runner_agents` is non-empty:** Launch each relevant runner in parallel via Task tool, model: `haiku`. Match by scope:
 - Backend files changed → `be-test-runner`
 - Frontend files changed → `fe-test-runner`
 - Both scopes → launch both in parallel
 
-Apply the **DISPATCH NARRATION RULE**. Collect each runner's pass/fail report.
+Apply the **DISPATCH NARRATION RULE** (`plan-and-do-delegation.md` → `## 13. DISPATCH NARRATION RULE`). Collect each runner's pass/fail report.
 
 **Otherwise:** Execute `[test_command]` directly.
 
@@ -791,10 +755,11 @@ Apply the **DISPATCH NARRATION RULE**. Collect each runner's pass/fail report.
 **If tests pass:** Continue to Step 9.3.
 
 **If tests fail:**
-1. Show failures, attempt automatic fix (no prompt)
+1. Show failures. Delegate the fix to the coding agent that owns the failing code, at the tier the failure warrants — a clear one-line break is `haiku`, an unknown cause is `opus`. Fix directly only when `coding_agents` is empty or `agents_available == false`. Record the dispatch in `delegation.assignments` (step "Test fix", agent, model, verification).
 2. Commit fixes: `fix: Fix test failures. [task_key]`
 3. Re-run tests
-4. If still failing: show details, call the `AskUserQuestion` tool with: "What should I try next?" Apply guidance. Retry.
+4. **If still failing:** run the escalation loop — two attempts per tier, then one tier up (see `plan-and-do-delegation.md` → `## 8. ESCALATION LOOP`). Record escalations in `delegation.escalations`.
+5. **Only after the escalation loop is exhausted** (`opus` failed twice): show details, call the `AskUserQuestion` tool with: "What should I try next?" Apply guidance. Retry. **Never ask on the first failure.**
 
 ### Step 9.3: Implementation Complete — Auto-Advance
 
@@ -848,9 +813,9 @@ Display artifact paths per the ARTIFACT PATH DISPLAY RULE.
 **If no issues:** Continue without prompting.
 
 **If issues found:**
-- `workflow_scope == "full"` AND this is the first review round → Auto-fix, commit `fix: Address code review findings. [task_key]` (with `PRD:` footer if applicable), re-run `/project:review`, return to 10.2. No prompt.
+- `workflow_scope == "full"` AND this is the first review round → Auto-fix: delegate each finding to the coding agent that owns the file, tier by severity (a typo is `haiku`, a security or design flaw is `opus`). Group findings by agent and launch in parallel via Task tool. Fix directly only when `coding_agents` is empty or `agents_available == false`. Failed fixes run the escalation loop (`plan-and-do-delegation.md` → `## 8. ESCALATION LOOP`). Record each dispatch in `delegation.assignments` (step "Review fix: [file]"). Commit `fix: Address code review findings. [task_key]` (with `PRD:` footer if applicable), re-run `/project:review`, return to 10.2. No prompt.
 - Second review round, OR `workflow_scope == "implement-review"`, OR the same finding survives → Call the `AskUserQuestion` tool with: 1-Fix findings, 2-Skip to summary, 3-Quit.
-  - Fix → fix issues, commit, re-run `/project:review`, return to 10.2
+  - Fix → delegate each finding to the coding agent that owns the file, tier by severity (a typo is `haiku`, a security or design flaw is `opus`). Group findings by agent and launch in parallel. Fix directly only when `coding_agents` is empty or `agents_available == false`. Failed fixes run the escalation loop. Record each dispatch in `delegation.assignments` (step "Review fix: [file]"). Commit, re-run `/project:review`, return to 10.2.
   - Skip → continue
 
 **After Checkpoint 10 resolves (no issues or user chose Skip):** If `workflow_scope == "implement-review"`, skip to STEP 13 (summary). Do not ask — the user already chose this scope at plan approval.
@@ -863,10 +828,10 @@ Display artifact paths per the ARTIFACT PATH DISPLAY RULE.
 
 Code review may have changed implementation or test code. Re-run the relevant runners once to confirm the suite is still green.
 
-**If `test_runner_agents` is non-empty:** Launch the same runners as Step 9.1 (match by scope) in parallel via Task tool. Apply the **DISPATCH NARRATION RULE**.
+**If `test_runner_agents` is non-empty:** Launch the same runners as Step 9.1 (match by scope) in parallel via Task tool, model: `haiku`. Apply the **DISPATCH NARRATION RULE** (`plan-and-do-delegation.md` → `## 13. DISPATCH NARRATION RULE`). Record the dispatch in `delegation.assignments` (step "Post-review testing: [agent]").
 
 - All pass → continue to STEP 12
-- Any fail → auto-fix the smallest case, commit `fix: Restore green tests after review. [task_key]`, re-run once. If still failing, surface the report and call the `AskUserQuestion` tool with: 1-Investigate (returns to STEP 8), 2-Skip to summary, 3-Quit.
+- Any fail → delegate the fix to the coding agent that owns the failing code, at the tier the failure warrants — a clear one-line break is `haiku`, an unknown cause is `opus`. Fix directly only when `coding_agents` is empty or `agents_available == false`. Record the dispatch in `delegation.assignments`. Commit `fix: Restore green tests after review. [task_key]`, re-run once. If still failing, surface the report and call the `AskUserQuestion` tool with: 1-Investigate (returns to STEP 8), 2-Skip to summary, 3-Quit. (This one-retry-then-ask flow is intentional, not a missing escalation ladder — Step 11.1 does not run the full two-attempts-per-tier loop from `## 8. ESCALATION LOOP` that Step 8.1/9.2 use.)
 
 **Otherwise (no agents):** Re-run `[test_command]` directly. Same fail-handling as above.
 
@@ -936,6 +901,8 @@ No prompt — the user can clean up later if they want.
 
 ### Step 13.1: Display Summary
 
+The table below gets one row per dispatch recorded in `delegation.assignments`, in run order.
+
 ```
 === Implementation Summary ===
 
@@ -946,7 +913,14 @@ Files Changed: [count]
 Commits Created: [count]
 Tests: [passed/failed counts]
 Code Review: [issues found/no issues]
-Agents Used: [list or "None (direct mode)"]
+
+Agents & Models Used: [table below, or "None (direct mode)"]
+
+| Step | Agent | Model | Verified by | Escalated |
+|------|-------|-------|-------------|-----------|
+| [e.g. "PRD draft", "PRD review: ba-reviewer", "Plan fix", "Implementation: [task group]", "Phase [N] review: [agent]", "Test fix", "Review fix: [file]", "Post-review testing: [agent]"] | [agent] | [tier] | [diff read / reviewer / tests / n/a] | [no, or "haiku -> sonnet"] |
+
+[If any slice ran directly after opus failed twice, say so here.]
 
 [If PRD exists]: Specifications: [full absolute path to prd_file]
 Plan: [full absolute path to plan_file]

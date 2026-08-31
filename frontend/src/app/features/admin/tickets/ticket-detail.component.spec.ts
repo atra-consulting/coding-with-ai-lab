@@ -727,6 +727,10 @@ describe('TicketDetailComponent — DEFINITION status actions', () => {
     expect(component.statusLabel('DEFINITION')).toBe('Definition');
   });
 
+  it('shows "Bereit" as the status label via statusLabel()', () => {
+    expect(component.statusLabel('TODO')).toBe('Bereit');
+  });
+
   it('renders the "Definition" status badge in the DOM', () => {
     const badge: HTMLElement = fixture.nativeElement.querySelector('.bg-info.text-dark');
     expect(badge).toBeTruthy();
