@@ -305,7 +305,7 @@ export const AGENT_TASK_SEED: AgentTaskSeedRow[] = [
   {
     id: 23,
     source: 'EMAIL',
-    title: 'Improve chances',
+    title: 'Chancen verbessern',
     body: 'Ich möchte zu einer Chance eine einfache, freie Notiz schreiben. Es gibt schon ein Beschreiibungs-Feld - ich will trotzdem ein neues Feld. Ein mehrzeiliges Textfeld reicht, bearbeitbar beim Anlegen und Ändern. Pflicht ist es nicht. Bitte nichts Kompliziertes, keine Formatierung oder Verknüpfungen. Außerdem soll das \'Phase\'-Label in der Chancen-Liste genauso wie in der Detail-Ansicht aussehen.',
     status: 'OPEN',
     comment: null,
@@ -328,6 +328,26 @@ export async function seedAgentTasks(): Promise<void> {
   }));
 
   await client.batch(stmts, 'write');
+
+  // INSERT OR IGNORE above never touches a row that already exists, so an
+  // already-seeded database (any developer's existing local SQLite file, or
+  // a deployed Turso database) never picks up the corrected id-23 title just
+  // because AGENT_TASK_SEED changed. Run a one-time corrective UPDATE on
+  // every startup, guarded so it fires only while id 23 still carries the
+  // old English literal. Sourcing the replacement value from
+  // AGENT_TASK_SEED (rather than a second hardcoded string) means the seed
+  // row and this correction can never drift apart. Once the title has been
+  // corrected once, the WHERE clause no longer matches and every later call
+  // is a no-op (0 rows affected, no error). A row a human has since renamed
+  // to some other value is left untouched for the same reason.
+  const row23 = AGENT_TASK_SEED.find((row) => row.id === 23);
+  if (!row23) {
+    throw new Error('seedAgentTasks: AGENT_TASK_SEED has no row with id 23');
+  }
+  await client.execute({
+    sql: "UPDATE agent_task SET title = ? WHERE id = 23 AND title = 'Improve chances'",
+    args: [row23.title],
+  });
 
   console.log(`=== Seeder: agent_task ensured (${AGENT_TASK_SEED.length} rows, INSERT OR IGNORE) ===`);
 }
