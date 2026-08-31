@@ -9,6 +9,7 @@ import {
   type TicketType,
   type TicketStatus,
   type TicketSolution,
+  type TicketCommentAuthor,
 } from '../db/schema/enums.js';
 import { seedTickets, TICKET_SEED_COUNT } from '../seed/ticketSeed.js';
 
@@ -617,17 +618,19 @@ export const ticketService = {
   },
 
   /**
-   * Human answers (admin). Inserts a HUMAN comment.
-   * If handBackToAi: also set status=TODO, owner=AI, clear solution+resolvedAt.
-   * Guard: handBackToAi is only allowed when ticket is ON_HOLD+HUMAN.
-   * If clearFullyReady: also reset fullyReady to 0.
-   * All in one batch.
+   * Add a comment (HUMAN by default). If handBackToAi: also set status=TODO,
+   * owner=AI, clear solution+resolvedAt. Guard: handBackToAi is only allowed
+   * when ticket is ON_HOLD+HUMAN. If clearFullyReady: also reset fullyReady
+   * to 0. All in one batch.
+   * The route handler is responsible for only ever passing author='AGENT'
+   * for agent-token/loopback callers — never for an admin session.
    */
   async addComment(
     id: number,
     body: string,
     handBackToAi?: boolean,
     clearFullyReady?: boolean,
+    author: TicketCommentAuthor = 'HUMAN',
   ): Promise<TicketDTO> {
     // Verify ticket exists first (throws 404 if missing)
     const ticket = await this.findById(id);
@@ -645,8 +648,8 @@ export const ticketService = {
     const stmts: { sql: string; args: (string | number | null)[] }[] = [
       {
         sql: `INSERT INTO ticket_comment (ticketId, author, authorName, body, createdAt)
-              VALUES (?, 'HUMAN', NULL, ?, ?)`,
-        args: [id, body, now],
+              VALUES (?, ?, NULL, ?, ?)`,
+        args: [id, author, body, now],
       },
     ];
 

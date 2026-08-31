@@ -5,12 +5,13 @@ import { requireAgentToken, requireAgentTokenOrAdminSession } from '../middlewar
 import { ticketService } from '../services/ticketService.js';
 import { parsePaginationParams, parseSort } from '../utils/pagination.js';
 import { validate } from '../utils/validation.js';
-import { ValidationError } from '../utils/errors.js';
+import { ValidationError, ForbiddenError } from '../utils/errors.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import {
   TICKET_TYPE,
   TICKET_STATUS,
   TICKET_OWNER,
+  TICKET_COMMENT_AUTHOR,
 } from '../db/schema/enums.js';
 
 const router = Router();
@@ -33,6 +34,7 @@ const CommentBodySchema = z.object({
   body: z.string().min(1, 'Kommentar-Text ist erforderlich'),
   handBackToAi: z.boolean().optional(),
   clearFullyReady: z.boolean().optional(),
+  author: z.enum(TICKET_COMMENT_AUTHOR, { errorMap: () => ({ message: 'Ungültiger Autor' }) }).optional(),
 });
 
 const CreateBodySchema = z.object({
@@ -268,13 +270,33 @@ router.post(
 // POST /api/tickets/:id/comments
 // Accepts agent token, loopback bypass, or admin session — a skill can post a
 // comment (e.g. asking for missing info) without an admin login.
+// author defaults to HUMAN. author=AGENT is rejected whenever the request
+// carries an authenticated admin session cookie (req.session.userId) — even
+// if AGENT_AUTH_ALLOW_LOOPBACK let the request bypass requireAgentToken*
+// without ever inspecting the session. sessionMiddleware runs globally
+// (app.ts) ahead of all route auth, so req.session.userId reflects the
+// caller's real identity regardless of which branch of
+// requireAgentTokenOrAdminSession matched — unlike req.currentUser, which the
+// loopback-bypass branch never sets. This is the one signal that's reliable
+// in both dev (loopback on) and production (loopback off).
 router.post(
   '/:id/comments',
   requireAgentTokenOrAdminSession,
   asyncHandler(async (req: Request, res: Response) => {
     const id = parseInt(req.params['id'] as string, 10);
     const dto = validate(CommentBodySchema, req.body);
-    res.json(await ticketService.addComment(id, dto.body, dto.handBackToAi, dto.clearFullyReady));
+    if (dto.author === 'AGENT' && req.session.userId) {
+      throw new ForbiddenError('Nur ein Agent-Token oder Loopback-Zugriff darf Kommentare als AGENT speichern');
+    }
+    res.json(
+      await ticketService.addComment(
+        id,
+        dto.body,
+        dto.handBackToAi,
+        dto.clearFullyReady,
+        dto.author,
+      ),
+    );
   }),
 );
 
