@@ -399,26 +399,32 @@ curl -s -X POST -b "JSESSIONID=$SESSION" \
 ---
 
 ### POST `/api/tickets/:id/comments` — add comment (agent token · loopback · admin)
-**Auth:** agent token, loopback bypass, or admin session (first match wins). **Body:** `{ "body": "<non-empty string>", "handBackToAi": <optional boolean>, "clearFullyReady": <optional boolean> }`.
+**Auth:** agent token, loopback bypass, or admin session (first match wins). **Body:** `{ "body": "<non-empty string>", "handBackToAi": <optional boolean>, "clearFullyReady": <optional boolean>, "author": <optional "HUMAN"|"AGENT"> }`.
 
-Inserts a comment. **The comment is always stored with `author=HUMAN`** — regardless of who calls it (there is no author field in the body). A skill posting here still writes a `HUMAN` comment. If `handBackToAi: true`, also sets `status=TODO`, `owner=AI`, clears `solution` and `resolvedAt` — returning the ticket to the AI queue. Guard: `handBackToAi` is only allowed when `status=ON_HOLD` and `owner=HUMAN`.
+Inserts a comment. `author` defaults to `HUMAN` when omitted. Sending `author: "AGENT"` is only honored for a caller that authenticated via **agent token or loopback bypass** — a request carrying an authenticated admin session (`req.session.userId` set, however `requireAgentTokenOrAdminSession` matched) gets **403** instead, so an admin session can never post a comment that impersonates the agent. If `handBackToAi: true`, also sets `status=TODO`, `owner=AI`, clears `solution` and `resolvedAt` — returning the ticket to the AI queue. Guard: `handBackToAi` is only allowed when `status=ON_HOLD` and `owner=HUMAN`.
 
-If `clearFullyReady: true`, also resets the ticket's `fullyReady` marker to `false` — "I looked at this, it is not as complete as claimed." Resetting an already-off marker is harmless and still returns `200`. `clearFullyReady` and `handBackToAi` are independent — either can be sent alone, or both together. If `handBackToAi` is rejected because the ticket is not `ON_HOLD+HUMAN`, **nothing at all is written**: not the comment, not the `clearFullyReady` change.
+If `clearFullyReady: true`, also resets the ticket's `fullyReady` marker to `false` — "I looked at this, it is not as complete as claimed." Resetting an already-off marker is harmless and still returns `200`. `clearFullyReady` and `handBackToAi` are independent — either can be sent alone, or both together. If `handBackToAi` is rejected because the ticket is not `ON_HOLD+HUMAN`, **nothing at all is written**: not the comment, not the `clearFullyReady` change. Likewise, an `author: "AGENT"` rejection (403) writes nothing.
 
 | Result | Meaning |
 |--------|---------|
 | `200` + ticket | comment added (ticket re-claimed if handBackToAi) |
-| `400` | `body` missing/empty |
+| `400` | `body` missing/empty, or `author` not `HUMAN`/`AGENT` |
 | `404` | no ticket with that id |
 | `409` | `handBackToAi=true` but ticket is not `ON_HOLD+HUMAN` |
 | `401` | bad/missing token and no admin session |
-| `403` | logged in but not admin (production, no token) |
+| `403` | `author: "AGENT"` sent by an authenticated admin session, or logged in but not admin (production, no token) |
 
 ```bash
-# Agent token (headless skill) — posts a HUMAN-authored comment:
+# Agent token (headless skill) — posts a HUMAN-authored comment (default):
 curl -s -X POST -H "Authorization: Bearer $AGENT_API_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"body":"Welches Trennzeichen soll die CSV-Datei verwenden?"}' \
+  "$APP_BASE_URL/api/tickets/7/comments"
+
+# Agent token — posts an AGENT-authored comment (shown as "Claude Code" in the UI):
+curl -s -X POST -H "Authorization: Bearer $AGENT_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"body":"Automatisch erkannt: Ticket ist ready.", "author":"AGENT"}' \
   "$APP_BASE_URL/api/tickets/7/comments"
 ```
 
