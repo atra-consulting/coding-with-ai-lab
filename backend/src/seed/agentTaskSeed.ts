@@ -19,8 +19,8 @@ export const AGENT_TASK_SEED: AgentTaskSeedRow[] = [
   {
     id: 1,
     source: 'EMAIL',
-    title: 'Show company phone number in the company list view',
-    body: 'The phone number is stored but not shown in the company list table. Please add the `phone` column to the company list.',
+    title: 'Telefonnummer in der Firmenliste anzeigen',
+    body: 'Die Telefonnummer wird gespeichert, aber in der Firmenliste nicht angezeigt. Bitte fügt die Spalte `phone` zur Firmenliste hinzu.',
     status: 'OPEN',
     comment: null,
     metadata: '{"sender":"k.bauer@mueller.de","subject":"Feature request: phone in company list"}',
@@ -32,8 +32,8 @@ export const AGENT_TASK_SEED: AgentTaskSeedRow[] = [
   {
     id: 2,
     source: 'EMAIL',
-    title: 'Sort activity list by date descending by default',
-    body: 'When I open the activity list for a company, the entries are shown in the order they were created, oldest first. It would make much more sense to show the most recent activities at the top. Please change the default sort order of the activity list to date descending.',
+    title: 'Aktivitätenliste standardmäßig nach Datum absteigend sortieren',
+    body: 'Wenn ich die Aktivitätenliste einer Firma öffne, werden die Einträge in der Reihenfolge ihrer Erstellung angezeigt, älteste zuerst. Es wäre viel sinnvoller, die neuesten Aktivitäten oben zu zeigen. Bitte ändert die Standard-Sortierung der Aktivitätenliste auf Datum absteigend.',
     status: 'OPEN',
     comment: null,
     metadata: '{"sender":"m.hoffmann@fischer.de","subject":"Activity list sort order"}',
@@ -45,8 +45,8 @@ export const AGENT_TASK_SEED: AgentTaskSeedRow[] = [
   {
     id: 3,
     source: 'EMAIL',
-    title: 'Make the app look nicer',
-    body: 'Hi, the app works but it doesn\'t look great. Can you make it look nicer? Thanks.',
+    title: 'App optisch verbessern',
+    body: 'Hallo, die App funktioniert, sieht aber nicht besonders gut aus. Könnt ihr sie optisch verbessern? Danke.',
     status: 'OPEN',
     comment: null,
     metadata: '{"sender":"user123@example.com","subject":"UI feedback"}',
@@ -58,8 +58,8 @@ export const AGENT_TASK_SEED: AgentTaskSeedRow[] = [
   {
     id: 4,
     source: 'EMAIL',
-    title: 'Fix the broken feature',
-    body: 'Something is broken. Please fix it as soon as possible.',
+    title: 'Kaputtes Feature reparieren',
+    body: 'Irgendetwas ist kaputt. Bitte so schnell wie möglich reparieren.',
     status: 'OPEN',
     comment: null,
     metadata: '{"sender":"anon@example.com","subject":"Bug report"}',
@@ -227,8 +227,8 @@ export const AGENT_TASK_SEED: AgentTaskSeedRow[] = [
   {
     id: 17,
     source: 'EMAIL',
-    title: 'Show phone numbers in the contacts list',
-    body: 'In the contacts list I can see everyone\'s email and company, but not their phone number. When I want to call someone I have to open their profile every single time, which is really slow. Could you please show the phone number right in the list? Thanks!',
+    title: 'Telefonnummern in der Kontaktliste anzeigen',
+    body: 'In der Kontaktliste sehe ich die E-Mail-Adresse und die Firma aller Kontakte, aber nicht deren Telefonnummer. Wenn ich jemanden anrufen möchte, muss ich jedes Mal das Profil öffnen, das ist wirklich langsam. Könnt ihr die Telefonnummer bitte direkt in der Liste anzeigen? Danke!',
     status: 'OPEN',
     comment: null,
     metadata: '{"sender":"l.zimmermann@bayer-group.de","subject":"Feature request: phone number in contacts list"}',
@@ -240,8 +240,8 @@ export const AGENT_TASK_SEED: AgentTaskSeedRow[] = [
   {
     id: 18,
     source: 'EMAIL',
-    title: 'Show the website in the company list',
-    body: 'When I look at the company list I can see the name, industry, email and phone, but not the website. I often need to open several companies\' websites quickly, and right now I have to click into each one. Could you add the website to the list so I can see it at a glance? Thank you!',
+    title: 'Webseite in der Firmenliste anzeigen',
+    body: 'Wenn ich mir die Firmenliste ansehe, sehe ich Name, Branche, E-Mail und Telefon, aber nicht die Webseite. Ich muss oft schnell mehrere Firmen-Webseiten öffnen und klicke dafür aktuell jede Firma einzeln an. Könnt ihr die Webseite in der Liste ergänzen, damit ich sie auf einen Blick sehe? Danke!',
     status: 'OPEN',
     comment: null,
     metadata: '{"sender":"t.berger@vertrieb-nord.de","subject":"Company list: please show website URL"}',
@@ -348,6 +348,31 @@ export async function seedAgentTasks(): Promise<void> {
     sql: "UPDATE agent_task SET title = ? WHERE id = 23 AND title = 'Improve chances'",
     args: [row23.title],
   });
+
+  // Same one-time-correction pattern as row 23 above, for the EMAIL rows
+  // reworded from English to German. Each entry's oldTitle is the exact
+  // pre-translation English title, used as the WHERE guard so the UPDATE
+  // fires only on a row that still carries it (fresh seeds already get the
+  // German text from AGENT_TASK_SEED via INSERT OR IGNORE above; a row a
+  // human has since edited is left untouched).
+  const GERMAN_TRANSLATION_FIXUPS: Array<{ id: number; oldTitle: string }> = [
+    { id: 1, oldTitle: 'Show company phone number in the company list view' },
+    { id: 2, oldTitle: 'Sort activity list by date descending by default' },
+    { id: 3, oldTitle: 'Make the app look nicer' },
+    { id: 4, oldTitle: 'Fix the broken feature' },
+    { id: 17, oldTitle: 'Show phone numbers in the contacts list' },
+    { id: 18, oldTitle: 'Show the website in the company list' },
+  ];
+  for (const { id, oldTitle } of GERMAN_TRANSLATION_FIXUPS) {
+    const row = AGENT_TASK_SEED.find((r) => r.id === id);
+    if (!row) {
+      throw new Error(`seedAgentTasks: AGENT_TASK_SEED has no row with id ${id}`);
+    }
+    await client.execute({
+      sql: 'UPDATE agent_task SET title = ?, body = ? WHERE id = ? AND title = ?',
+      args: [row.title, row.body, id, oldTitle],
+    });
+  }
 
   console.log(`=== Seeder: agent_task ensured (${AGENT_TASK_SEED.length} rows, INSERT OR IGNORE) ===`);
 }

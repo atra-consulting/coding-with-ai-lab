@@ -16,6 +16,30 @@ const dataDir = join(__dirname, '..', '..', 'data');
 const tursoUrl = process.env['TURSO_DATABASE_URL'];
 const isTest = process.env['NODE_ENV'] === 'test';
 
+// Playwright's worker runtime sets TEST_WORKER_INDEX on every worker process
+// unconditionally (lib/worker/workerMain.js), before any spec file or its
+// imports run - regardless of which playwright config launched it. So if
+// this module loads inside a Playwright worker (isPlaywrightWorker) but
+// NODE_ENV never got set to 'test' (isTest), something skipped the test-DB
+// isolation - e.g. a stray --config pointing at a config without a
+// globalSetup that sets NODE_ENV=test - and this connection would otherwise
+// silently land on the developer's live crmdb.sqlite (or a real Turso DB).
+// Refuse instead of connecting. This is deliberately independent of any one
+// config file: it protects the DB even if a *new* unsafe config appears
+// later. ALLOW_DEV_DB_TESTS=1 is an explicit escape hatch for the rare case
+// of intentionally running spec files against a non-test database.
+const isPlaywrightWorker = process.env['TEST_WORKER_INDEX'] !== undefined;
+if (isPlaywrightWorker && !isTest && process.env['ALLOW_DEV_DB_TESTS'] !== '1') {
+  throw new Error(
+    'Refusing to connect to the database: this process is a Playwright test worker ' +
+      '(TEST_WORKER_INDEX is set) but NODE_ENV is not "test", so it would otherwise hit ' +
+      'the live database instead of the isolated crmdb.test.sqlite. Run the suite via ' +
+      '`npm test` / `npx playwright test` with no --config override (the default ' +
+      'playwright.config.ts sets NODE_ENV=test before this module loads). If you really ' +
+      'intend to run tests against the current database, set ALLOW_DEV_DB_TESTS=1.'
+  );
+}
+
 // Route the Playwright suite (NODE_ENV=test) to its own SQLite file so
 // `npm test` never touches the developer's working database — this wins
 // even when TURSO_DATABASE_URL is set, so a stray Turso env var left over
