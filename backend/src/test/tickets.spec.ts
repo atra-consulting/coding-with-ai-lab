@@ -5,7 +5,9 @@
  *   GET  /api/tickets/next            — claim, type filter, 204 exhausted
  *   POST /api/tickets/:id/done        — happy path, 409 wrong state, 404 missing
  *   POST /api/tickets/:id/ask         — happy path, 400 empty question, 409 wrong state
- *   POST /api/tickets/:id/comments    — add HUMAN comment, handBackToAi flow
+ *   POST /api/tickets/:id/comments    — add comment (HUMAN by default), optional
+ *                                        author=AGENT (agent token/loopback only,
+ *                                        403 for admin session), handBackToAi flow
  *   POST /api/tickets/:id/wont-do     — owner=HUMAN only, 409 on owner=AI
  *   PATCH /api/tickets/:id/status     — drag-drop semantics, solution management
  *   PATCH /api/tickets/:id/owner      — flip owner only
@@ -2133,6 +2135,89 @@ test.describe('POST /:id/comments — handBackToAi:false leaves status/owner unc
     await test.step('persisted comment count matches', () => {
       expect(persisted.comments.length).toBe(commentCountBefore + 1);
     });
+  });
+});
+
+// ─── Suite: POST /:id/comments — author field (agent vs admin) ──────────────
+
+test.describe('POST /:id/comments — author field', () => {
+  let admin: APIRequestContext;
+  let agent: APIRequestContext;
+  let anon: APIRequestContext;
+
+  test.beforeEach(async () => {
+    admin = await loginCtx('admin', 'admin123');
+    await resetTickets(admin);
+    agent = await agentCtx();
+    anon = await anonCtx();
+  });
+
+  test.afterEach(async () => {
+    await admin.dispose();
+    await agent.dispose();
+    await anon.dispose();
+  });
+
+  test('agent token + author=AGENT → 200, comment stored as AGENT', async () => {
+    const resp = await agent.post('/api/tickets/1/comments', {
+      data: { body: 'Automated note from the skill.', author: 'AGENT' },
+    });
+    expect(resp.status()).toBe(200);
+    const body = await resp.json() as Ticket;
+    const newComment = body.comments.find((c) => c.body === 'Automated note from the skill.');
+    expect(newComment?.author).toBe('AGENT');
+  });
+
+  test('loopback bypass + author=AGENT → 200, comment stored as AGENT', async () => {
+    const resp = await anon.post('/api/tickets/1/comments', {
+      data: { body: 'Loopback note.', author: 'AGENT' },
+    });
+    expect(resp.status()).toBe(200);
+    const body = await resp.json() as Ticket;
+    const newComment = body.comments.find((c) => c.body === 'Loopback note.');
+    expect(newComment?.author).toBe('AGENT');
+  });
+
+  test('agent token, no author field → 200, defaults to HUMAN', async () => {
+    const resp = await agent.post('/api/tickets/1/comments', {
+      data: { body: 'No author specified.' },
+    });
+    expect(resp.status()).toBe(200);
+    const body = await resp.json() as Ticket;
+    const newComment = body.comments.find((c) => c.body === 'No author specified.');
+    expect(newComment?.author).toBe('HUMAN');
+  });
+
+  test('admin session + author=AGENT → 403, no comment written', async () => {
+    const before = await (await admin.get('/api/tickets/1')).json() as Ticket;
+    const commentCountBefore = before.comments.length;
+
+    const resp = await admin.post('/api/tickets/1/comments', {
+      data: { body: 'Trying to impersonate the agent.', author: 'AGENT' },
+    });
+    expect(resp.status()).toBe(403);
+
+    const after = await (await admin.get('/api/tickets/1')).json() as Ticket;
+    expect(after.comments.length).toBe(commentCountBefore);
+  });
+
+  test('admin session + author=HUMAN (explicit) → 200, stored as HUMAN', async () => {
+    const resp = await admin.post('/api/tickets/1/comments', {
+      data: { body: 'Explicit human author.', author: 'HUMAN' },
+    });
+    expect(resp.status()).toBe(200);
+    const body = await resp.json() as Ticket;
+    const newComment = body.comments.find((c) => c.body === 'Explicit human author.');
+    expect(newComment?.author).toBe('HUMAN');
+  });
+
+  test('invalid author value → 400', async () => {
+    const resp = await agent.post('/api/tickets/1/comments', {
+      data: { body: 'Bad author.', author: 'ROBOT' },
+    });
+    expect(resp.status()).toBe(400);
+    const body = await resp.json() as ErrorBody;
+    expect(typeof body.fieldErrors).toBe('object');
   });
 });
 
