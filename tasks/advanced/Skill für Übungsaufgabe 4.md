@@ -123,7 +123,7 @@ Frag nur das, was dich wirklich blockiert. Dann **beenden**. `plan-and-do` NICHT
 Den Slash-Befehl aufrufen. Füge die Antworten aus dem Thread in die Beschreibung ein, damit `plan-and-do` den vollständigen Kontext hat:
 
 ```
-/project:plan-and-do "<Ticket-Titel + Body, plus die gelösten Entscheidungen aus den HUMAN-Kommentaren>"
+/plan-and-do "<Ticket-Titel + Body, plus die gelösten Entscheidungen aus den HUMAN-Kommentaren>"
 ```
 
 Der Skill hat interaktive Checkpoints (`AskUserQuestion`), die NICHT beantwortet werden können. **Jeden vorab autorisieren. Diese Daueranweisungen dem Aufruf voranstellen und auf JEDEN Checkpoint anwenden, ohne je anzuhalten:**
