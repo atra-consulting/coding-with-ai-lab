@@ -40,7 +40,7 @@
                 <span class="small text-muted">Letzter Lauf:</span>
                 <span [class]="statusBadgeClass(job.lastRun.status)">{{ job.lastRun.status }}</span>
               </div>
-              <div class="small text-muted mt-1">{{ job.lastRun.startedAt | date: 'dd.MM.yyyy HH:mm' }}</div>
+              <div class="small text-muted mt-1">{{ job.lastRun.startedAt | berlinDateTime }}</div>
             } @else {
               <span class="small text-muted">Noch kein Lauf aufgezeichnet.</span>
             }
@@ -94,8 +94,8 @@
             <td><span [class]="statusBadgeClass(run.status)">{{ run.status }}</span></td>
             <td>{{ run.job }}</td>
             <td><span [class]="triggerBadgeClass(run.trigger)">{{ run.trigger }}</span></td>
-            <td>{{ run.startedAt | date: 'dd.MM.yyyy HH:mm' }}</td>
-            <td>{{ run.finishedAt ? (run.finishedAt | date: 'dd.MM.yyyy HH:mm') : '—' }}</td>
+            <td>{{ run.startedAt | berlinDateTime }}</td>
+            <td>{{ run.finishedAt | berlinDateTime }}</td>
             <td>{{ formatDuration(run.durationMs) }}</td>
             <td>
               @if (run.githubRunUrl) {

@@ -1,4 +1,3 @@
-import { DatePipe } from '@angular/common';
 import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { switchMap } from 'rxjs';
@@ -20,10 +19,11 @@ import { TicketService } from '../../../core/services/ticket.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
+import { BerlinDateTimePipe } from '../../../shared/pipes/berlin-date-time.pipe';
 
 @Component({
   selector: 'app-ticket-detail',
-  imports: [RouterLink, ReactiveFormsModule, FaIconComponent, LoadingSpinnerComponent, DatePipe, MarkdownPipe],
+  imports: [RouterLink, ReactiveFormsModule, FaIconComponent, LoadingSpinnerComponent, BerlinDateTimePipe, MarkdownPipe],
   template: `
     @if (loading) {
       <app-loading-spinner />
@@ -59,19 +59,19 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
 
             <dl class="row mt-3 text-muted small">
               <dt class="col-sm-4">Erstellt</dt>
-              <dd class="col-sm-8">{{ ticket.createdAt | date:'dd.MM.yyyy HH:mm' }}</dd>
+              <dd class="col-sm-8">{{ ticket.createdAt | berlinDateTime }}</dd>
 
               <dt class="col-sm-4">Aktualisiert</dt>
-              <dd class="col-sm-8">{{ ticket.updatedAt | date:'dd.MM.yyyy HH:mm' }}</dd>
+              <dd class="col-sm-8">{{ ticket.updatedAt | berlinDateTime }}</dd>
 
               @if (ticket.pickedUpAt) {
                 <dt class="col-sm-4">Aufgenommen</dt>
-                <dd class="col-sm-8">{{ ticket.pickedUpAt | date:'dd.MM.yyyy HH:mm' }}</dd>
+                <dd class="col-sm-8">{{ ticket.pickedUpAt | berlinDateTime }}</dd>
               }
 
               @if (ticket.resolvedAt) {
                 <dt class="col-sm-4">Abgeschlossen</dt>
-                <dd class="col-sm-8">{{ ticket.resolvedAt | date:'dd.MM.yyyy HH:mm' }}</dd>
+                <dd class="col-sm-8">{{ ticket.resolvedAt | berlinDateTime }}</dd>
               }
 
               @if (ticket.agentTaskId) {
@@ -103,7 +103,7 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
                         <fa-icon [icon]="comment.author === 'AGENT' ? faRobot : faUser" class="me-1" />
                         {{ comment.author === 'AGENT' ? 'Claude Code' : (comment.authorName ?? 'Mensch') }}
                       </span>
-                      <span class="comment-time text-muted small">{{ comment.createdAt | date:'dd.MM.yyyy HH:mm' }}</span>
+                      <span class="comment-time text-muted small">{{ comment.createdAt | berlinDateTime }}</span>
                     </div>
                     <div class="comment-body markdown-body" [innerHTML]="comment.body | markdown"></div>
                   </div>

@@ -92,19 +92,19 @@ describe('AgentTaskDetailComponent', () => {
     expect(text).toContain('Implemented pipeline total in Chancen board header.');
   });
 
-  it('renders the createdAt date', () => {
+  it('renders the createdAt date formatted in Berlin time', () => {
     const text: string = fixture.nativeElement.textContent;
-    expect(text).toContain('2024-01-01T10:00:00.000Z');
+    expect(text).toContain('1. Jan. 2024, 11:00');
   });
 
-  it('renders pickedUpAt when present', () => {
+  it('renders pickedUpAt when present, formatted in Berlin time', () => {
     const text: string = fixture.nativeElement.textContent;
-    expect(text).toContain('2024-01-02T08:00:00.000Z');
+    expect(text).toContain('2. Jan. 2024, 9:00');
   });
 
-  it('renders resolvedAt when present', () => {
+  it('renders resolvedAt when present, formatted in Berlin time', () => {
     const text: string = fixture.nativeElement.textContent;
-    expect(text).toContain('2024-01-02T12:00:00.000Z');
+    expect(text).toContain('2. Jan. 2024, 13:00');
   });
 
   it('renders metadata in a second <pre> element when metadata is present', () => {
