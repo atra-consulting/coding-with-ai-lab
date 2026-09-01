@@ -1,12 +1,17 @@
-import { formatDate, registerLocaleData } from '@angular/common';
-import localeDe from '@angular/common/locales/de';
 import { Pipe, PipeTransform } from '@angular/core';
 
-// Registered here (not just in main.ts) so formatDate finds 'de-DE' data
-// regardless of bootstrap order — this matters in Karma specs, which don't run main.ts.
-registerLocaleData(localeDe, 'de-DE');
-
-const BERLIN_DATE_TIME_FORMAT = 'd. MMM y, H:mm';
+// Angular's formatDate() with an IANA timezone name parses an Intl "longOffset"
+// string internally and silently falls back to 0 offset when that parsing fails
+// (observed on Linux CI's Chrome build). Intl.DateTimeFormat's own timeZone
+// handling doesn't go through that parsing step, so it stays correct everywhere.
+const BERLIN_DATE_TIME_FORMATTER = new Intl.DateTimeFormat('de-DE', {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+  hour: 'numeric',
+  minute: '2-digit',
+  timeZone: 'Europe/Berlin',
+});
 
 /**
  * Formats a timestamp as short German text in Europe/Berlin time, e.g. "1. Sept. 2026, 7:23".
@@ -14,7 +19,7 @@ const BERLIN_DATE_TIME_FORMAT = 'd. MMM y, H:mm';
  */
 export function formatBerlinDateTime(value: string | number | Date | null | undefined): string {
   if (value == null) return '—';
-  return formatDate(value, BERLIN_DATE_TIME_FORMAT, 'de-DE', 'Europe/Berlin');
+  return BERLIN_DATE_TIME_FORMATTER.format(new Date(value));
 }
 
 @Pipe({ name: 'berlinDateTime' })
