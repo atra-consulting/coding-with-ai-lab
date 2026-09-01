@@ -12,6 +12,7 @@ import {
 import { Aktivitaet } from '../../../core/models/aktivitaet.model';
 import { AktivitaetService } from '../../../core/services/aktivitaet.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
+import { formatBerlinDateTime } from '../../../shared/pipes/berlin-date-time.pipe';
 
 @Component({
   selector: 'app-aktivitaet-list',
@@ -43,16 +44,7 @@ export class AktivitaetListComponent implements OnInit {
       headerName: 'Datum',
       filter: 'agDateColumnFilter',
       initialSort: 'desc',
-      valueFormatter: (params) => {
-        if (!params.value) return '-';
-        return new Date(params.value).toLocaleDateString('de-DE', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-        });
-      },
+      valueFormatter: (params) => formatBerlinDateTime(params.value),
     },
     { field: 'firmaName', headerName: 'Firma', valueFormatter: (p) => p.value || '-' },
     { field: 'personName', headerName: 'Person', valueFormatter: (p) => p.value || '-' },

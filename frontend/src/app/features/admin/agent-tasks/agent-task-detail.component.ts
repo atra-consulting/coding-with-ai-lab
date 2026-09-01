@@ -2,10 +2,11 @@ import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AgentTask } from '../../../core/models/agent-task.model';
 import { AgentTaskService } from '../../../core/services/agent-task.service';
+import { BerlinDateTimePipe } from '../../../shared/pipes/berlin-date-time.pipe';
 
 @Component({
   selector: 'app-agent-task-detail',
-  imports: [RouterLink],
+  imports: [RouterLink, BerlinDateTimePipe],
   template: `
     @if (loading) {
       <div class="d-flex justify-content-center py-4">
@@ -41,16 +42,16 @@ import { AgentTaskService } from '../../../core/services/agent-task.service';
           <dd class="col-sm-9">{{ task.comment ?? '—' }}</dd>
 
           <dt class="col-sm-3">Aufgenommen am</dt>
-          <dd class="col-sm-9">{{ task.pickedUpAt ?? '—' }}</dd>
+          <dd class="col-sm-9">{{ task.pickedUpAt | berlinDateTime }}</dd>
 
           <dt class="col-sm-3">Abgeschlossen am</dt>
-          <dd class="col-sm-9">{{ task.resolvedAt ?? '—' }}</dd>
+          <dd class="col-sm-9">{{ task.resolvedAt | berlinDateTime }}</dd>
 
           <dt class="col-sm-3">Erstellt am</dt>
-          <dd class="col-sm-9">{{ task.createdAt }}</dd>
+          <dd class="col-sm-9">{{ task.createdAt | berlinDateTime }}</dd>
 
           <dt class="col-sm-3">Aktualisiert am</dt>
-          <dd class="col-sm-9">{{ task.updatedAt }}</dd>
+          <dd class="col-sm-9">{{ task.updatedAt | berlinDateTime }}</dd>
 
           @if (task.ticketId) {
             <dt class="col-sm-3">Ticket</dt>

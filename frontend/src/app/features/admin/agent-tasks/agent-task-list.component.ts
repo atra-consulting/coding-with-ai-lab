@@ -5,10 +5,11 @@ import { NgbPagination } from '@ng-bootstrap/ng-bootstrap';
 import { AgentTask, AgentTaskSource } from '../../../core/models/agent-task.model';
 import { Page } from '../../../core/models/page.model';
 import { AgentTaskService } from '../../../core/services/agent-task.service';
+import { BerlinDateTimePipe } from '../../../shared/pipes/berlin-date-time.pipe';
 
 @Component({
   selector: 'app-agent-task-list',
-  imports: [RouterLink, NgbPagination],
+  imports: [RouterLink, NgbPagination, BerlinDateTimePipe],
   template: `
     <div class="page-header">
       <h2>App-Feedback{{ activeSource ? ' – ' + activeSource : '' }}</h2>
@@ -46,8 +47,8 @@ import { AgentTaskService } from '../../../core/services/agent-task.service';
                 <td>{{ task.id }}</td>
                 <td>{{ task.title }}</td>
                 <td><span [class]="statusBadgeClass(task.status)">{{ task.status }}</span></td>
-                <td>{{ task.pickedUpAt ? task.pickedUpAt : '—' }}</td>
-                <td>{{ task.resolvedAt ? task.resolvedAt : '—' }}</td>
+                <td>{{ task.pickedUpAt | berlinDateTime }}</td>
+                <td>{{ task.resolvedAt | berlinDateTime }}</td>
                 <td>{{ bodyPreview(task.body) }}</td>
               </tr>
             }

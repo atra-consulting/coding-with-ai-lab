@@ -1,14 +1,14 @@
-import { DatePipe } from '@angular/common';
 import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgbPagination } from '@ng-bootstrap/ng-bootstrap';
 import { CronJob, CronRun, CronRunStatus, CronTrigger } from '../../../core/models/cron.model';
 import { Page } from '../../../core/models/page.model';
 import { CronService } from '../../../core/services/cron.service';
+import { BerlinDateTimePipe } from '../../../shared/pipes/berlin-date-time.pipe';
 
 @Component({
   selector: 'app-cron-dashboard',
-  imports: [NgbPagination, DatePipe],
+  imports: [NgbPagination, BerlinDateTimePipe],
   templateUrl: './cron-dashboard.component.html',
   styleUrl: './cron-dashboard.component.scss',
 })
