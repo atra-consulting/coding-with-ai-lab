@@ -34,7 +34,7 @@ Prompt unten verweist darauf.
 **1 — Skill bauen lassen**
 
 ```
-/plan-and-do Schreibe den /do-factory-full Projekt-Skill, so wie er in der Datei "@aufgaben/agent-factory/skill-spec-02-factory-skill.md" beschrieben ist.
+/plan-and-do Schreibe den /do-factory-full Projekt-Skill, so wie er in der Datei "@tasks/agent-factory/skill-spec-02-factory-skill.md" beschrieben ist.
 ```
 
 ## Abnahme

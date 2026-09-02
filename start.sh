@@ -19,6 +19,15 @@ for arg in "$@"; do
   esac
 done
 
+# --- Agent-API-Token ------------------------------------------------------
+# Die Agent-Endpunkte (/api/agent-tasks, /api/tickets) antworten ohne gesetztes
+# AGENT_API_TOKEN mit 401 — auch von localhost. Im frisch geklonten Repo liegt
+# nur .env.example; ohne diesen Schritt scheitert die Factory-Uebung.
+if [ ! -f "${ROOT_DIR}/backend/.env" ]; then
+  cp "${ROOT_DIR}/backend/.env.example" "${ROOT_DIR}/backend/.env"
+  echo "backend/.env aus .env.example angelegt (Agent-Endpunkte brauchen ein Token)."
+fi
+
 # --- Prerequisite checks ---
 
 # Check Node.js is installed
