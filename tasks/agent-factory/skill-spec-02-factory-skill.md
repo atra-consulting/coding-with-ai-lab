@@ -10,6 +10,9 @@ API-Referenz: [`API-TASKS.md`](API-TASKS.md) (Abschnitt „For skill authors").
 
 - API-Basis-URL: Umgebungsvariable `APP_BASE_URL`, sonst `http://localhost:7070`.
 - Auth-Header bei jedem API-Aufruf: `Authorization: Bearer $AGENT_API_TOKEN`.
+- Token laden, bevor du den ersten Aufruf machst: Ist `$AGENT_API_TOKEN` nicht
+  gesetzt, lies es aus `backend/.env` (`set -a; . ./backend/.env; set +a`).
+  Ohne Token antwortet jeder Agent-Endpunkt mit **401** — auch von localhost.
 - Quellen, in Prioritätsreihenfolge: `EMAIL`, `GITHUB_ISSUE`, `ERROR_REPORT`, `APP_LOG`. Mit der Umgebungsvariable `TASK_SOURCE` überschreibbar (dann nur diese eine Quelle verwenden).
 
 ## Parameter
