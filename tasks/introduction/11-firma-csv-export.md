@@ -1,10 +1,10 @@
 # 11 — CSV-Export für Firmenliste
 
-**Dauer:** 25 min
+**Dauer:** 20 min
 **Sozialform:** einzeln
 **Werkzeug:** Claude Code
 **Voraussetzung:** Lab läuft unter `localhost:7200`
-**Ziel:** Ein Knopf über der Firmenliste lädt alle Firmen als CSV-Datei herunter.
+**Ziel:** Ein Knopf über der Firmenliste lädt alle Firmen als CSV-Datei herunter — gebaut ohne Skill und ohne Subagent.
 **Ergebnis:** Eine `firmen-YYYY-MM-DD.csv`, die Excel direkt und mit korrekten Umlauten öffnet.
 
 Die Datei enthält alle Firmen, nicht nur die aktuelle Seite. Das Backend
@@ -13,18 +13,36 @@ Excel-Kompatibilität.
 
 ## Schritte
 
-1. Claude Code im Projekt-Root starten: `claude --dangerously-skip-permissions`.
-2. Den Prompt einfügen und an den Checkpoints PRD, Plan und Review lesen,
-   dann `Continue`.
-3. App neu starten (`./start.sh`) und über der Firmenliste „CSV-Export"
+Diese Aufgabe läuft **ohne** `/plan-and-do`: Sie ist die erste im Kurs, und
+gezeigt werden soll die Schleife darunter — Prompt, Plan, Arbeit, Prüfung.
+
+1. Claude Code im Projekt-Root starten: `claude --permission-mode auto`.
+2. Mit „Shift"+„Tab" in den Plan-Modus schalten (steht links unten) und mit `/model`
+   Sonnet auswählen.
+3. Den Prompt einfügen, den Plan lesen und korrigieren, dann laufen lassen.
+4. App neu starten (`./start.sh`) und über der Firmenliste „CSV-Export"
    klicken.
-4. Die heruntergeladene Datei in Excel öffnen und die Umlaute prüfen.
-5. Diff ansehen: `git diff main --stat`.
+5. Die heruntergeladene Datei in Excel öffnen und die Umlaute prüfen.
+6. Diff ansehen: `git diff main --stat`.
+
+## Folienschritte
+
+1. Mit „Shift"+„Tab" in den Plan-Modus, `/model` auf Sonnet.
+2. Prompt einfügen — keine Skills, keine Subagents.
+3. Plan lesen und korrigieren, dann laufen lassen.
+4. Datei in Excel öffnen: Stimmen die Umlaute?
 
 ## Prompt
 
 ```
-/plan-and-do "CSV-Export für die Firmenliste. Über der Firmen-Liste erscheint ein Button 'CSV-Export'. Klick lädt eine Datei firmen-YYYY-MM-DD.csv mit allen Firmen herunter (nicht nur die aktuelle Seite). Die CSV enthält ID, Name, Branche, Telefon, E-Mail und Erstelldatum. Excel soll die Datei direkt öffnen können, auch mit deutschen Umlauten."
+CSV-Export für die Firmenliste. Über der Firmen-Liste erscheint ein Button
+'CSV-Export'. Klick lädt eine Datei firmen-YYYY-MM-DD.csv mit allen Firmen
+herunter (nicht nur die aktuelle Seite). Die CSV enthält ID, Name, Branche,
+Telefon, E-Mail und Erstelldatum. Excel soll die Datei direkt öffnen können,
+auch mit deutschen Umlauten. Benutze keine Custom Skills in diesem Projekt
+und keine Subagents. Erstelle eine neue Git-Branche für Deine Arbeit, aber
+keinen PR. docs/specs/SPECS.md sind die Spezifikationen dieser App. Schreibe
+Tests, aber keine, die den Browser automatisieren.
 ```
 
 ## Abnahme
