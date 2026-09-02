@@ -41,8 +41,8 @@ type Question = StarQuestion | ChoiceQuestion | MultiChoiceQuestion | TextQuesti
 
 const FEEDBACK_CONFIG = {
   title: 'Schulungs-Feedback',
-  subtitle: 'Coding with AI — 07.04.2026',
-  trainers: 'Trainer: David Kreutzer & Karsten Silz',
+  subtitle: 'Agentic Engineering Bootcamp — 03.–04.09.2026',
+  trainers: 'Trainer: David Kreutzer, Daniel Wochnik, Benjamin Steimer',
   thankYou: 'Vielen Dank für deine Teilnahme 😊',
   welcomeSubtext: 'Wir hoffen, du konntest etwas Wertvolles für dich mitnehmen.',
   successMessage: 'Dein Feedback hilft uns, die nächste Schulung noch besser zu machen.',
