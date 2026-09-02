@@ -52,68 +52,76 @@ export function requireAgentToken(req: Request, _res: Response, next: NextFuncti
   next();
 }
 
-// Accepts loopback bypass, agent token, OR admin session.
-// Use on admin endpoints that skills also need to read locally.
-export function requireAgentTokenOrAdminSession(
-  req: Request,
-  _res: Response,
-  next: NextFunction,
-): void {
-  const configuredToken = process.env['AGENT_API_TOKEN'];
+// Shared implementation for the two session-accepting agent guards below.
+// requireAdminRole=false lets ANY logged-in user through — used on the
+// read-only ticket endpoints so non-admin workshop participants can follow
+// the board. Write endpoints keep requireAdminRole=true.
+function agentTokenOrSession(requireAdminRole: boolean) {
+  return function (req: Request, _res: Response, next: NextFunction): void {
+    const configuredToken = process.env['AGENT_API_TOKEN'];
 
-  // Loopback bypass — gated on configuredToken being set, matching requireAgentToken.
-  // Prevents accidental open access if AGENT_AUTH_ALLOW_LOOPBACK=1 is left on without a token.
-  if (configuredToken && process.env['AGENT_AUTH_ALLOW_LOOPBACK'] === '1') {
-    const remoteAddress = req.socket?.remoteAddress ?? '';
-    const localhostAddresses = ['127.0.0.1', '::1', '::ffff:127.0.0.1'];
-    const hasAuthHeader = !!req.headers['authorization'] || !!req.headers['x-agent-token'];
-    const hasForwardingHeader =
-      !!req.headers['x-forwarded-for'] || !!req.headers['x-real-ip'] || !!req.headers['forwarded'];
-    if (localhostAddresses.includes(remoteAddress) && !hasAuthHeader && !hasForwardingHeader) {
-      next();
-      return;
-    }
-  }
-
-  // Agent token — if a token header is present and wrong, reject immediately.
-  // Do not fall through to session so a bad token is never silently ignored.
-  if (configuredToken) {
-    let incomingToken: string | undefined;
-    const authHeader = req.headers['authorization'];
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      incomingToken = authHeader.slice(7);
-    } else {
-      const xAgentToken = req.headers['x-agent-token'];
-      if (typeof xAgentToken === 'string') {
-        incomingToken = xAgentToken;
-      }
-    }
-    if (incomingToken) {
-      const expectedHash = createHash('sha256').update(configuredToken).digest();
-      const incomingHash = createHash('sha256').update(incomingToken).digest();
-      if (timingSafeEqual(expectedHash, incomingHash)) {
+    // Loopback bypass — gated on configuredToken being set, matching requireAgentToken.
+    // Prevents accidental open access if AGENT_AUTH_ALLOW_LOOPBACK=1 is left on without a token.
+    if (configuredToken && process.env['AGENT_AUTH_ALLOW_LOOPBACK'] === '1') {
+      const remoteAddress = req.socket?.remoteAddress ?? '';
+      const localhostAddresses = ['127.0.0.1', '::1', '::ffff:127.0.0.1'];
+      const hasAuthHeader = !!req.headers['authorization'] || !!req.headers['x-agent-token'];
+      const hasForwardingHeader =
+        !!req.headers['x-forwarded-for'] || !!req.headers['x-real-ip'] || !!req.headers['forwarded'];
+      if (localhostAddresses.includes(remoteAddress) && !hasAuthHeader && !hasForwardingHeader) {
         next();
         return;
       }
-      next(new UnauthorizedError('Ungültiger Agent-Token'));
-      return;
     }
-  }
 
-  // Admin session
-  const userId = req.session.userId;
-  if (userId) {
-    const user = findById(userId);
-    if (user) {
-      if (!user.roles.includes('ADMIN')) {
-        next(new ForbiddenError('Zugriff verweigert'));
+    // Agent token — if a token header is present and wrong, reject immediately.
+    // Do not fall through to session so a bad token is never silently ignored.
+    if (configuredToken) {
+      let incomingToken: string | undefined;
+      const authHeader = req.headers['authorization'];
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        incomingToken = authHeader.slice(7);
+      } else {
+        const xAgentToken = req.headers['x-agent-token'];
+        if (typeof xAgentToken === 'string') {
+          incomingToken = xAgentToken;
+        }
+      }
+      if (incomingToken) {
+        const expectedHash = createHash('sha256').update(configuredToken).digest();
+        const incomingHash = createHash('sha256').update(incomingToken).digest();
+        if (timingSafeEqual(expectedHash, incomingHash)) {
+          next();
+          return;
+        }
+        next(new UnauthorizedError('Ungültiger Agent-Token'));
         return;
       }
-      req.currentUser = user;
-      next();
-      return;
     }
-  }
 
-  next(new UnauthorizedError('Nicht authentifiziert'));
+    // Session
+    const userId = req.session.userId;
+    if (userId) {
+      const user = findById(userId);
+      if (user) {
+        if (requireAdminRole && !user.roles.includes('ADMIN')) {
+          next(new ForbiddenError('Zugriff verweigert'));
+          return;
+        }
+        req.currentUser = user;
+        next();
+        return;
+      }
+    }
+
+    next(new UnauthorizedError('Nicht authentifiziert'));
+  };
 }
+
+// Accepts loopback bypass, agent token, OR admin session.
+// Use on admin endpoints that skills also need to read locally.
+export const requireAgentTokenOrAdminSession = agentTokenOrSession(true);
+
+// Accepts loopback bypass, agent token, OR ANY logged-in session.
+// Read-only ticket endpoints use this so participants can follow the board.
+export const requireAgentTokenOrSession = agentTokenOrSession(false);

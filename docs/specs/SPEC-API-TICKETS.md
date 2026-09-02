@@ -78,7 +78,7 @@ Same fields as ticket, but `comments` is replaced by `commentCount: number`. `fu
 
 ## Authentication
 
-Three schemes. Most verb endpoints accept more than one — the finish/ask verbs (`/:id/start`, `/:id/done`, `/:id/ask`) plus the write endpoints a skill needs (`create`, `/:id/owner`, `/:id/comments`, `/:id/status`) plus `GET /:id` and `GET /board` accept **agent token · loopback bypass · admin session** (first match wins). `GET /next` is the exception: it's a GET that mutates state (claims a ticket), so it accepts **agent token · loopback bypass only** — never an admin session, to avoid a GET-based CSRF surface (a `SameSite=Lax` session cookie still rides cross-site top-level GET navigations).
+Three schemes. Most verb endpoints accept more than one — the finish/ask verbs (`/:id/start`, `/:id/done`, `/:id/ask`) plus the write endpoints a skill needs (`create`, `/:id/owner`, `/:id/comments`, `/:id/status`) accept **agent token · loopback bypass · admin session** (first match wins). The three read endpoints `GET /board`, `GET /summary` and `GET /:id` go one step wider: **any logged-in user** may read them, so workshop participants can follow the board without an admin account. They stay read-only — every write still needs an admin session or an agent token. `GET /next` is the exception: it's a GET that mutates state (claims a ticket), so it accepts **agent token · loopback bypass only** — never an admin session, to avoid a GET-based CSRF surface (a `SameSite=Lax` session cookie still rides cross-site top-level GET navigations).
 
 ### Agent token (used by `/next`, `/:id/start`, `/:id/done`, `/:id/ask`, `POST /`, `GET /:id`, `GET /board`, `PATCH /:id/owner`, `PATCH /:id/status`, `POST /:id/comments`)
 
@@ -115,13 +115,17 @@ Standard browser session cookie + role `ADMIN` (`requireAuth` + `requireRole('AD
 
 - No session → **401**. Authenticated but not admin → **403**.
 
-**Admin-only** (session required, no token or loopback accepted): `GET /`, `GET /summary`, `POST /:id/wont-do`, `POST /:id/hand-to-ai`, `POST /reset`.
+**Admin-only** (session required, no token or loopback accepted): `GET /`, `POST /:id/wont-do`, `POST /:id/hand-to-ai`, `POST /reset`.
+
+**Any logged-in session** (`requireAuth`, no role check): `GET /summary`. Read-only counts for the board header.
 
 **Agent token _or_ loopback bypass only** (no admin session — GET mutates state, so an admin session would open a CSRF hole via cross-site GET navigation): `GET /next`.
 
-**Admin session _or_ agent token _or_ loopback bypass** (first match wins): `POST /:id/start`, `POST /:id/done`, `POST /:id/ask`, `GET /:id`, `GET /board`, `POST /` (create), `PATCH /:id/owner`, `PATCH /:id/status`, `POST /:id/comments`. A wrong token is rejected outright (never falls through to the session check). These let a headless skill work and finish a ticket — or file, refine, peek, and move one — without an admin login.
+**Admin session _or_ agent token _or_ loopback bypass** (first match wins): `POST /:id/start`, `POST /:id/done`, `POST /:id/ask`, `POST /` (create), `PATCH /:id/owner`, `PATCH /:id/status`, `POST /:id/comments`. A wrong token is rejected outright (never falls through to the session check). These let a headless skill work and finish a ticket — or file, refine, peek, and move one — without an admin login.
 
-The admin board UI is at **`/admin/tickets`**.
+**Any logged-in session _or_ agent token _or_ loopback bypass** (first match wins): `GET /board`, `GET /:id`. Read-only, so a non-admin participant may follow the board and open a ticket.
+
+The board UI is at **`/admin/tickets`**. Every logged-in user may open it; a non-admin sees it read-only (no drag-drop, no create, no comment form).
 
 ---
 
@@ -219,7 +223,7 @@ Response is the Spring-Data-style page shape:
 
 ---
 
-### GET `/api/tickets/board` — Kanban board (agent token · loopback · admin)
+### GET `/api/tickets/board` — Kanban board (agent token · loopback · any logged-in user)
 **Auth:** agent token · loopback bypass · admin session (first match wins).
 
 All tickets grouped by status. Each column sorted by `createdAt ASC`. Tickets include `commentCount`.
@@ -244,7 +248,7 @@ Skills and agents can call this with the agent token from anywhere (CI, producti
 
 ---
 
-### GET `/api/tickets/summary` — counts by dimension (admin)
+### GET `/api/tickets/summary` — counts by dimension (any logged-in user)
 **Auth:** admin session. All known enum values are always present (zero if no tickets).
 
 ```json
@@ -537,7 +541,7 @@ Seven tickets carry a seeded `AGENT` comment: the five `DEFINITION` tickets (1�
 
 ## For skill authors
 
-A workshop skill drives this API as an agent. It uses the **agent-token endpoints** — the claim/finish/ask verbs **plus** the write endpoints a skill needs to file and refine a ticket: `POST /` (create), `PATCH /:id/owner`, and `POST /:id/comments` — **plus** `GET /board` (peek the queue without claiming) and `PATCH /:id/status` (move a ticket to any column, incl. `DEFINITION`). The remaining admin endpoints (`summary`, `list`, `wont-do`, `hand-to-ai`, `reset`) stay session-only for the human dashboard.
+A workshop skill drives this API as an agent. It uses the **agent-token endpoints** — the claim/finish/ask verbs **plus** the write endpoints a skill needs to file and refine a ticket: `POST /` (create), `PATCH /:id/owner`, and `POST /:id/comments` — **plus** `GET /board` (peek the queue without claiming) and `PATCH /:id/status` (move a ticket to any column, incl. `DEFINITION`). The remaining admin endpoints (`list`, `wont-do`, `hand-to-ai`, `reset`) stay session-only for the human dashboard; `summary` needs any logged-in session.
 
 **Auth.** Send the shared agent token on every call. Same token as the Agent Tasks API (`AGENT_API_TOKEN`):
 

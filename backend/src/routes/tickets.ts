@@ -1,7 +1,11 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { requireAuth, requireRole } from '../middleware/auth.js';
-import { requireAgentToken, requireAgentTokenOrAdminSession } from '../middleware/agentAuth.js';
+import {
+  requireAgentToken,
+  requireAgentTokenOrAdminSession,
+  requireAgentTokenOrSession,
+} from '../middleware/agentAuth.js';
 import { ticketService } from '../services/ticketService.js';
 import { parsePaginationParams, parseSort } from '../utils/pagination.js';
 import { validate } from '../utils/validation.js';
@@ -85,21 +89,23 @@ router.get(
 // ─── Admin literal-path endpoints (must come before /:id) ─────────────────────
 
 // GET /api/tickets/board
-// Accepts agent token, loopback bypass, or admin session — a skill can peek
-// the whole board without claiming anything and without an admin login.
+// Accepts agent token, loopback bypass, or ANY logged-in session — a skill can
+// peek the whole board without claiming anything and without an admin login,
+// and non-admin workshop participants can follow the board read-only.
 router.get(
   '/board',
-  requireAgentTokenOrAdminSession,
+  requireAgentTokenOrSession,
   asyncHandler(async (_req: Request, res: Response) => {
     res.json(await ticketService.getBoard());
   }),
 );
 
 // GET /api/tickets/summary
+// Read-only counts — any logged-in user, so the board header renders for
+// participants too.
 router.get(
   '/summary',
   requireAuth,
-  requireRole('ADMIN'),
   asyncHandler(async (_req: Request, res: Response) => {
     res.json(await ticketService.getSummary());
   }),
@@ -171,9 +177,10 @@ router.post(
 // ─── Parameterised endpoints ──────────────────────────────────────────────────
 
 // GET /api/tickets/:id
+// Read-only detail — any logged-in user (see /board).
 router.get(
   '/:id',
-  requireAgentTokenOrAdminSession,
+  requireAgentTokenOrSession,
   asyncHandler(async (req: Request, res: Response) => {
     const id = parseInt(req.params['id'] as string, 10);
     res.json(await ticketService.findById(id));

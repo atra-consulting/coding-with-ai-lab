@@ -24,15 +24,16 @@ export const ADMIN_ROUTES: Routes = [
     loadComponent: () =>
       import('./cron/cron-dashboard.component').then((m) => m.CronDashboardComponent),
   },
+  // Kein roleGuard: Das Ticket-Board ist fuer jeden eingeloggten Nutzer
+  // lesbar, damit Workshop-Teilnehmer den Status verfolgen koennen.
+  // Schreibende Aktionen sind in den Komponenten auf Admins beschraenkt.
   {
     path: 'tickets',
-    canActivate: [roleGuard('ROLE_ADMIN')],
     loadComponent: () =>
       import('./tickets/ticket-board.component').then((m) => m.TicketBoardComponent),
   },
   {
     path: 'tickets/:id',
-    canActivate: [roleGuard('ROLE_ADMIN')],
     loadComponent: () =>
       import('./tickets/ticket-detail.component').then((m) => m.TicketDetailComponent),
   },

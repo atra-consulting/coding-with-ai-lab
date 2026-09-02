@@ -92,7 +92,6 @@ export class SidebarComponent {
           label: 'Tickets',
           route: '/admin/tickets',
           icon: faClipboardList,
-          requiredRole: 'ROLE_ADMIN',
         },
         {
           label: 'Cron-Jobs',
