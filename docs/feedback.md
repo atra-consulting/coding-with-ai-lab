@@ -37,6 +37,8 @@ Teilnehmende scannen den Code und landen auf `/feedback`. Titel und Trainer-Zeil
 - **Vorhanden und nicht leer** → Text im Formular kommt aus der URL.
 - **Fehlt oder leer** → Formular zeigt den Standardtext.
 
+Die Basis-URL steht fest im Code: die Konstante `FEEDBACK_BASE_URL` in `frontend/src/app/features/feedback/feedback-qr.component.ts`. Zieht das Tool auf eine andere Domain um, muss diese Konstante mit — sonst zeigen alle neuen QR-Codes weiter auf die alte Adresse.
+
 Jede Antwort landet per JSON in einem Google Sheet (Google Apps Script, unverändert seit früheren Versionen). Jede Zeile trägt jetzt zusätzlich `schulung` und `trainerName`, damit Antworten mehrerer Schulungen später auseinandergehalten werden können.
 
 **Achtung bei der Google-Sheet-Spalte:** Das Feld heißt `trainerName`, nicht `trainer`. Der Name `trainer` ist schon durch eine Bewertungsfrage im Formular belegt („Wie gut waren Aufbau und Struktur des Trainings?"). Wer das Sheet oder das Apps Script pflegt, braucht eine Spalte `trainerName` — nicht `trainer`.
