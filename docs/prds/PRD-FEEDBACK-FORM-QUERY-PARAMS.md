@@ -38,9 +38,11 @@ When a participant opens the feedback page through a link that carries a trainin
 
 ### 3. Every response is tagged with a training and trainer
 
-Each submitted feedback response includes `schulung` (training name) and `trainer` (trainer name) fields, tagged with the values shown on the page — override or default, never blank. This lets responses landing in the shared spreadsheet later be grouped or filtered by training.
+Each submitted feedback response includes `schulung` (training name) and `trainerName` (trainer name) fields, tagged with the values shown on the page — override or default, never blank. This lets responses landing in the shared spreadsheet later be grouped or filtered by training.
 
-**Assumption to confirm:** this project only sends the response; it does not own the spreadsheet or the script that writes rows into it. Whoever owns that script may need to add a matching column to receive the new training/trainer tags. This PRD cannot verify or change that script or sheet.
+**Field name note:** the trainer-name field is called `trainerName`, not `trainer` — the feedback form already sends a `trainer` field for an unrelated star-rating question ("Wie gut waren Aufbau und Struktur des Trainings?"), so the new field uses a different name to avoid colliding with it.
+
+**Assumption to confirm:** this project only sends the response; it does not own the spreadsheet or the script that writes rows into it. Whoever owns that script may need to add a matching column (`schulung`, `trainerName`) to receive the new training/trainer tags. This PRD cannot verify or change that script or sheet.
 
 ### 4. A simple way to build a per-training link
 
@@ -120,7 +122,7 @@ Manual check: open the feedback page with and without training/trainer informati
 
 ## Open Questions
 
-1. Does the Google Apps Script / target spreadsheet already have columns for training name and trainer name, or does its owner need to add them before this ships? This repo has no visibility into that script or sheet.
+1. Does the Google Apps Script / target spreadsheet already have columns named `schulung` and `trainerName` (not `trainer` — see the field name note in Requirement 3), or does its owner need to add them before this ships? This repo has no visibility into that script or sheet.
 2. Should the QR page pre-fill its two text boxes from its own current address (e.g., for a trainer re-visiting a bookmarked link)? Not requested; assumed out of scope — boxes start empty on every page load.
 3. Is a single shared length cap (200 characters) acceptable for both the training-name and trainer-name boxes, or should they differ?
 

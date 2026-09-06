@@ -2,7 +2,7 @@
   "version": 1,
   "task_key": "FEEDBACK-FORM-QUERY-PARAMS",
   "status": "in_progress",
-  "current_step": "7.5",
+  "current_step": "9.3",
   "started": "2026-09-06T00:00:00.000Z",
   "updated": "2026-09-06T00:00:00.000Z",
   "config": {
@@ -50,9 +50,17 @@
       {"step": "PRD fix", "agent": "planner", "model": "sonnet", "verification": "orchestrator diff read"},
       {"step": "Plan draft", "agent": "planner", "model": "sonnet", "verification": "review cycle"},
       {"step": "Plan review: fe-reviewer", "agent": "fe-reviewer", "model": "haiku", "verification": "read plan + source files"},
-      {"step": "Plan fix (scope decision, no re-dispatch)", "agent": "orchestrator", "model": "n/a", "verification": "documented in plan Open Questions #4 — kept template-driven forms as out-of-scope, not delegated"}
+      {"step": "Plan fix (scope decision, no re-dispatch)", "agent": "orchestrator", "model": "n/a", "verification": "documented in plan Open Questions #4 — kept template-driven forms as out-of-scope, not delegated"},
+      {"step": "Implementation: Task 1 FeedbackFormComponent", "agent": "fe-coder", "model": "sonnet", "verification": "diff read"},
+      {"step": "Implementation: Task 2 FeedbackQrComponent", "agent": "fe-coder", "model": "sonnet", "verification": "diff read"},
+      {"step": "Test authoring: Task 3 feedback-form spec", "agent": "fe-test-coder", "model": "sonnet", "verification": "diff read + agent self-ran scoped Karma (7 pass)"},
+      {"step": "Test authoring: Task 4 feedback-qr spec", "agent": "fe-test-coder", "model": "sonnet", "verification": "diff read"},
+      {"step": "Review: Task 5 component review", "agent": "fe-reviewer", "model": "sonnet", "verification": "read PRD/plan/diffs, ran ng build — no findings"},
+      {"step": "Review: Task 6 test review", "agent": "fe-test-reviewer", "model": "sonnet", "verification": "read specs + plan — 2 WARNING findings"},
+      {"step": "Test fix: address review WARNINGs", "agent": "fe-test-coder", "model": "sonnet", "verification": "diff read + agent self-ran scoped Karma (19 pass)"},
+      {"step": "Verification: Task 7 full suite (fe-test-runner)", "agent": "fe-test-runner", "model": "haiku", "verification": "536 pass, 19 fail — all 19 pre-existing/unrelated (ticket board), confirmed via git diff showing zero changes to that directory on this branch"}
     ],
     "escalations": []
   },
-  "completed_steps": []
+  "completed_steps": ["1", "2", "2.1", "3.1", "3.2", "3.3", "4.1", "4.2", "4.3", "4.4", "4.4b", "4.5", "5.1", "6.1", "6.2", "6.3", "6.4", "6.5", "7.1", "7.2", "7.3", "7.4", "7.5", "7.6", "8.1", "9.1", "9.2", "9.3"]
 }
