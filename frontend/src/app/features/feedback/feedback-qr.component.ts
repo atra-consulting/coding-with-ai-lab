@@ -2,6 +2,9 @@ import { Component, OnInit, signal, ElementRef, viewChild } from '@angular/core'
 import { FormsModule } from '@angular/forms';
 import * as QRCode from 'qrcode';
 
+/** Public deployment of the feedback form. The QR code always points here, never at localhost. */
+const FEEDBACK_BASE_URL = 'https://atra-feedback.vercel.app';
+
 @Component({
   selector: 'app-feedback-qr',
   templateUrl: './feedback-qr.component.html',
@@ -15,8 +18,9 @@ export class FeedbackQrComponent implements OnInit {
   trainerInput = '';
 
   ngOnInit(): void {
-    const baseUrl = window.location.origin;
-    this.feedbackUrl.set(this.buildFeedbackUrl(baseUrl, this.schulungInput, this.trainerInput));
+    this.feedbackUrl.set(
+      this.buildFeedbackUrl(FEEDBACK_BASE_URL, this.schulungInput, this.trainerInput),
+    );
   }
 
   ngAfterViewInit(): void {
@@ -43,7 +47,7 @@ export class FeedbackQrComponent implements OnInit {
 
   onInputChange(): void {
     this.feedbackUrl.set(
-      this.buildFeedbackUrl(window.location.origin, this.schulungInput, this.trainerInput),
+      this.buildFeedbackUrl(FEEDBACK_BASE_URL, this.schulungInput, this.trainerInput),
     );
     this.generateQR();
   }

@@ -75,7 +75,7 @@ describe('FeedbackQrComponent', () => {
       component.onInputChange();
 
       expect(component.feedbackUrl()).toBe(
-        component.buildFeedbackUrl(window.location.origin, 'Test', ''),
+        component.buildFeedbackUrl('https://atra-feedback.vercel.app', 'Test', ''),
       );
     });
 
@@ -88,7 +88,7 @@ describe('FeedbackQrComponent', () => {
       fixture.detectChanges();
 
       expect(component.feedbackUrl()).toBe(
-        component.buildFeedbackUrl(window.location.origin, 'Test', ''),
+        component.buildFeedbackUrl('https://atra-feedback.vercel.app', 'Test', ''),
       );
     });
   });
@@ -120,10 +120,16 @@ describe('FeedbackQrComponent', () => {
   });
 
   describe('initial load', () => {
-    it('feedbackUrl() is the bare origin/feedback URL with no query string before any input', () => {
+    it('feedbackUrl() is the bare deployed feedback URL with no query string before any input', () => {
       fixture.detectChanges();
 
-      expect(component.feedbackUrl()).toBe(`${window.location.origin}/feedback`);
+      expect(component.feedbackUrl()).toBe('https://atra-feedback.vercel.app/feedback');
+    });
+
+    it('never points at the local origin, even when served from localhost', () => {
+      fixture.detectChanges();
+
+      expect(component.feedbackUrl().startsWith('https://atra-feedback.vercel.app/')).toBeTrue();
     });
   });
 });

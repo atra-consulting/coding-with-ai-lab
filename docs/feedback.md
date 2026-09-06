@@ -24,6 +24,8 @@ Eine Schulung braucht **keinen eigenen Deploy** mehr. Ein Deploy bedient beliebi
 
 Teilnehmende scannen den Code und landen auf `/feedback`. Titel und Trainer-Zeile zeigen automatisch, was du eingetragen hast.
 
+**Der QR-Code zeigt immer auf <https://atra-feedback.vercel.app/feedback>** — auch wenn du `/feedback-qr` lokal auf `localhost` öffnest. Sonst wäre der Code auf dem Handy der Teilnehmenden wertlos.
+
 **Beide Felder leer lassen** → das Formular zeigt den fest hinterlegten Standardtext (aktuell: „Agentic Engineering Bootcamp"). Bereits verteilte QR-Codes ohne Parameter funktionieren unverändert weiter.
 
 **Maximal 200 Zeichen** pro Feld. Längerer Text wird beim Erzeugen des Links automatisch abgeschnitten — keine Fehlermeldung.
