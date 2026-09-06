@@ -1,12 +1,15 @@
 import { TestBed } from '@angular/core/testing';
 import { ComponentFixture, fakeAsync, tick } from '@angular/core/testing';
+import { signal } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { of, Subject, throwError } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { TicketDetailComponent } from './ticket-detail.component';
 import { TicketService } from '../../../core/services/ticket.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { BenutzerInfo } from '../../../core/models/auth.model';
 import { Ticket, TicketComment } from '../../../core/models/ticket.model';
 
 // ─── Test-data factories ──────────────────────────────────────────────────────
@@ -69,6 +72,33 @@ function makeMockTicketService(): jasmine.SpyObj<TicketService> {
   ]);
 }
 
+// Write actions in the detail view are gated behind isAdmin(), which reads
+// AuthService.currentUser(). Without this stub the real root service is injected,
+// currentUser() is null, and every action control stays hidden.
+const ADMIN_USER: BenutzerInfo = {
+  id: 1,
+  benutzername: 'admin',
+  vorname: 'Admin',
+  nachname: 'User',
+  email: 'admin@test.de',
+  rollen: ['ROLE_ADMIN', 'ROLE_USER'],
+  permissions: [],
+};
+
+const REGULAR_USER: BenutzerInfo = {
+  id: 2,
+  benutzername: 'user',
+  vorname: 'Regular',
+  nachname: 'User',
+  email: 'user@test.de',
+  rollen: ['ROLE_USER'],
+  permissions: [],
+};
+
+function makeMockAuth(user: BenutzerInfo | null = ADMIN_USER) {
+  return { currentUser: signal<BenutzerInfo | null>(user) };
+}
+
 function makeMockNotification(): jasmine.SpyObj<NotificationService> {
   return jasmine.createSpyObj<NotificationService>('NotificationService', [
     'success',
@@ -124,6 +154,7 @@ describe('TicketDetailComponent — creation and load', () => {
       providers: [
         provideRouter([]),
         { provide: TicketService, useValue: mockService },
+        { provide: AuthService, useValue: makeMockAuth() },
         { provide: NotificationService, useValue: makeMockNotification() },
         { provide: NgbModal, useValue: makeModalStub() },
         { provide: ActivatedRoute, useValue: makeRoute('10') },
@@ -166,6 +197,7 @@ describe('TicketDetailComponent — template rendering', () => {
       providers: [
         provideRouter([]),
         { provide: TicketService, useValue: mockService },
+        { provide: AuthService, useValue: makeMockAuth() },
         { provide: NotificationService, useValue: makeMockNotification() },
         { provide: NgbModal, useValue: makeModalStub() },
         { provide: ActivatedRoute, useValue: makeRoute('10') },
@@ -234,6 +266,7 @@ describe('TicketDetailComponent — App-Feedback link', () => {
       providers: [
         provideRouter([]),
         { provide: TicketService, useValue: mockService },
+        { provide: AuthService, useValue: makeMockAuth() },
         { provide: NotificationService, useValue: makeMockNotification() },
         { provide: NgbModal, useValue: makeModalStub() },
         { provide: ActivatedRoute, useValue: makeRoute('10') },
@@ -264,6 +297,7 @@ describe('TicketDetailComponent — App-Feedback link', () => {
       providers: [
         provideRouter([]),
         { provide: TicketService, useValue: mockService },
+        { provide: AuthService, useValue: makeMockAuth() },
         { provide: NotificationService, useValue: makeMockNotification() },
         { provide: NgbModal, useValue: makeModalStub() },
         { provide: ActivatedRoute, useValue: makeRoute('10') },
@@ -297,6 +331,7 @@ describe('TicketDetailComponent — no comments', () => {
       providers: [
         provideRouter([]),
         { provide: TicketService, useValue: mockService },
+        { provide: AuthService, useValue: makeMockAuth() },
         { provide: NotificationService, useValue: makeMockNotification() },
         { provide: NgbModal, useValue: makeModalStub() },
         { provide: ActivatedRoute, useValue: makeRoute('10') },
@@ -330,6 +365,7 @@ describe('TicketDetailComponent — error state', () => {
       providers: [
         provideRouter([]),
         { provide: TicketService, useValue: mockService },
+        { provide: AuthService, useValue: makeMockAuth() },
         { provide: NotificationService, useValue: makeMockNotification() },
         { provide: NgbModal, useValue: makeModalStub() },
         { provide: ActivatedRoute, useValue: makeRoute('99') },
@@ -365,6 +401,7 @@ describe('TicketDetailComponent — "Zurück an KI" (handBackToAi)', () => {
       providers: [
         provideRouter([]),
         { provide: TicketService, useValue: mockService },
+        { provide: AuthService, useValue: makeMockAuth() },
         { provide: NotificationService, useValue: makeMockNotification() },
         { provide: NgbModal, useValue: makeModalStub() },
         { provide: ActivatedRoute, useValue: makeRoute('10') },
@@ -471,6 +508,7 @@ describe('TicketDetailComponent — addComment() error path', () => {
       providers: [
         provideRouter([]),
         { provide: TicketService, useValue: mockService },
+        { provide: AuthService, useValue: makeMockAuth() },
         { provide: NotificationService, useValue: makeMockNotification() },
         { provide: NgbModal, useValue: makeModalStub() },
         { provide: ActivatedRoute, useValue: makeRoute('10') },
@@ -525,6 +563,7 @@ describe('TicketDetailComponent — "Won\'t Do" button', () => {
       providers: [
         provideRouter([]),
         { provide: TicketService, useValue: mockService },
+        { provide: AuthService, useValue: makeMockAuth() },
         { provide: NotificationService, useValue: mockNotification },
         { provide: NgbModal, useValue: makeModalStub() },
         { provide: ActivatedRoute, useValue: makeRoute('10') },
@@ -580,6 +619,7 @@ describe('TicketDetailComponent — "Won\'t Do" dismissed modal', () => {
       providers: [
         provideRouter([]),
         { provide: TicketService, useValue: mockService },
+        { provide: AuthService, useValue: makeMockAuth() },
         { provide: NotificationService, useValue: makeMockNotification() },
         // Dismiss stub — modal promise rejects
         { provide: NgbModal, useValue: makeModalDismissStub() },
@@ -613,6 +653,7 @@ describe('TicketDetailComponent — "Won\'t Do" hidden when owner=AI', () => {
       providers: [
         provideRouter([]),
         { provide: TicketService, useValue: mockService },
+        { provide: AuthService, useValue: makeMockAuth() },
         { provide: NotificationService, useValue: makeMockNotification() },
         { provide: NgbModal, useValue: makeModalStub() },
         { provide: ActivatedRoute, useValue: makeRoute('10') },
@@ -636,6 +677,7 @@ describe('TicketDetailComponent — "Won\'t Do" hidden when owner=AI', () => {
       providers: [
         provideRouter([]),
         { provide: TicketService, useValue: mockService },
+        { provide: AuthService, useValue: makeMockAuth() },
         { provide: NotificationService, useValue: makeMockNotification() },
         { provide: NgbModal, useValue: makeModalStub() },
         { provide: ActivatedRoute, useValue: makeRoute('10') },
@@ -675,6 +717,7 @@ describe('TicketDetailComponent — toggleOwner()', () => {
       providers: [
         provideRouter([]),
         { provide: TicketService, useValue: mockService },
+        { provide: AuthService, useValue: makeMockAuth() },
         { provide: NotificationService, useValue: makeMockNotification() },
         { provide: NgbModal, useValue: makeModalStub() },
         { provide: ActivatedRoute, useValue: makeRoute('10') },
@@ -753,6 +796,7 @@ describe('TicketDetailComponent — DEFINITION status actions', () => {
       providers: [
         provideRouter([]),
         { provide: TicketService, useValue: mockService },
+        { provide: AuthService, useValue: makeMockAuth() },
         { provide: NotificationService, useValue: mockNotification },
         { provide: NgbModal, useValue: makeModalStub() },
         { provide: ActivatedRoute, useValue: makeRoute('10') },
@@ -884,6 +928,7 @@ describe('TicketDetailComponent — Definition actions absent for non-DEFINITION
       providers: [
         provideRouter([]),
         { provide: TicketService, useValue: mockService },
+        { provide: AuthService, useValue: makeMockAuth() },
         { provide: NotificationService, useValue: makeMockNotification() },
         { provide: NgbModal, useValue: makeModalStub() },
         { provide: ActivatedRoute, useValue: makeRoute('10') },
@@ -914,6 +959,7 @@ describe('TicketDetailComponent — Definition actions absent for non-DEFINITION
       providers: [
         provideRouter([]),
         { provide: TicketService, useValue: mockService },
+        { provide: AuthService, useValue: makeMockAuth() },
         { provide: NotificationService, useValue: makeMockNotification() },
         { provide: NgbModal, useValue: makeModalStub() },
         { provide: ActivatedRoute, useValue: makeRoute('10') },
@@ -925,6 +971,59 @@ describe('TicketDetailComponent — Definition actions absent for non-DEFINITION
 
     const text: string = fixture.nativeElement.textContent;
     expect(text).toContain('Eigentümer ändern');
+  });
+});
+
+// ─── Read-only view for non-admins ────────────────────────────────────────────
+
+// Participants may follow the board without an admin login. They read the ticket
+// but must not see any write control.
+describe('TicketDetailComponent — read-only view for a non-admin', () => {
+  async function renderAsRegularUser() {
+    const ticket = makeTicket({ owner: 'HUMAN', status: 'DEFINITION' });
+    const mockService = makeMockTicketService();
+    mockService.getById.and.returnValue(of(ticket));
+
+    await TestBed.configureTestingModule({
+      imports: [TicketDetailComponent],
+      providers: [
+        provideRouter([]),
+        { provide: TicketService, useValue: mockService },
+        { provide: AuthService, useValue: makeMockAuth(REGULAR_USER) },
+        { provide: NotificationService, useValue: makeMockNotification() },
+        { provide: NgbModal, useValue: makeModalStub() },
+        { provide: ActivatedRoute, useValue: makeRoute('10') },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(TicketDetailComponent);
+    fixture.detectChanges();
+    return fixture;
+  }
+
+  it('still shows the ticket content', async () => {
+    const fixture = await renderAsRegularUser();
+    const text: string = fixture.nativeElement.textContent;
+    expect(text).toContain('CSV-Export für Firmenliste');
+    expect(text).toContain('Bitte CSV-Export implementieren.');
+  });
+
+  it('shows the "Details" heading instead of "Aktionen"', async () => {
+    const fixture = await renderAsRegularUser();
+    const text: string = fixture.nativeElement.textContent;
+    expect(text).toContain('Details');
+    expect(text).not.toContain('Aktionen');
+  });
+
+  it('renders no comment form and no write buttons', async () => {
+    const fixture = await renderAsRegularUser();
+    const text: string = fixture.nativeElement.textContent;
+    expect(text).not.toContain('Kommentar hinzufügen');
+    expect(text).not.toContain('An KI übergeben');
+    expect(text).not.toContain('Nach Bereit');
+    expect(text).not.toContain('Eigentümer ändern');
+    expect(text).not.toContain('Wird nicht gemacht');
+    expect(fixture.nativeElement.querySelector('textarea')).toBeNull();
   });
 });
 
@@ -942,6 +1041,7 @@ describe('TicketDetailComponent — badge helper methods', () => {
       providers: [
         provideRouter([]),
         { provide: TicketService, useValue: mockService },
+        { provide: AuthService, useValue: makeMockAuth() },
         { provide: NotificationService, useValue: makeMockNotification() },
         { provide: NgbModal, useValue: makeModalStub() },
         { provide: ActivatedRoute, useValue: makeRoute('10') },
