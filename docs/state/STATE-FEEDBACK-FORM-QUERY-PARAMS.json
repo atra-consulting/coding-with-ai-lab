@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "task_key": "FEEDBACK-FORM-QUERY-PARAMS",
+  "status": "in_progress",
+  "current_step": "4.5",
+  "started": "2026-09-06T00:00:00.000Z",
+  "updated": "2026-09-06T00:00:00.000Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "There's a feedback form in here. It gets deployed to a single URL at https://atra-feedback.vercel.app/feedback How can I have multiple feedback forms running through that one URL? A colleague suggested: \"Um es einfach zu halten würde ich das vielleicht über query Parameter lösen, und da den entsprechenden Schulungsnamen und Trainernamen übergeben. Die rufen das eh über QR Code auf, da fällt das nicht auf.\"",
+    "special_instructions": null,
+    "ticket_mode": false,
+    "ticket_id": null,
+    "ticket_url": null,
+    "ticket_api_base": null,
+    "ticket_claimed": false,
+    "branch_name": "feedback-form-query-params-multi-training",
+    "original_branch": "main",
+    "original_head": "555113f42c032c11955f92f1afc4050220447671",
+    "docs_folder": "docs",
+    "is_git_repo": true,
+    "workflow_scope": null,
+    "pr_prefix": null,
+    "pr_exists": false,
+    "pr_url": null
+  },
+  "discovery": {
+    "agents_available": false,
+    "planner_agents": [],
+    "writer_agents": [],
+    "coding_agents": [],
+    "review_agents": [],
+    "test_coding_agents": [],
+    "test_review_agents": [],
+    "test_runner_agents": [],
+    "tooling_coding_agents": [],
+    "tooling_review_agents": [],
+    "test_command": null
+  },
+  "artifacts": {
+    "prd_skipped": null,
+    "prd_file": null,
+    "plan_file": null
+  },
+  "delegation": {
+    "assignments": [],
+    "escalations": []
+  },
+  "completed_steps": []
+}
