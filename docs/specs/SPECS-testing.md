@@ -244,6 +244,8 @@ await TestBed.configureTestingModule({
 
 Provide `HttpClientTestingModule` (or `provideHttpClient()` + `provideHttpClientTesting()`) for any component or service that makes HTTP calls. Never let real HTTP requests escape in unit tests.
 
+**Note:** A component may call the global `fetch()` API directly instead of Angular's `HttpClient` — e.g. `FeedbackFormComponent`, which posts to an external Google Apps Script endpoint outside the app's own backend. `HttpClientTestingModule` does not intercept `fetch()` calls. Isolate these with `spyOn(window, 'fetch').and.resolveTo(new Response())` (or `.and.rejectWith(...)` / `.and.returnValue(Promise.reject(...))` for the error branch), and assert on `fetchSpy.calls.mostRecent().args` for URL/body. See `feedback-form.component.spec.ts`.
+
 ### Dependency injection in tests
 
 Angular 21 uses `inject()` inside components. Override dependencies via TestBed providers:
@@ -299,6 +301,8 @@ For components using `inject()` that cannot be overridden by a provider, use `Te
 | `features/produktivitaet/einheit.spec.ts` | Zeiteinheit helpers — `einheitZuFaktor`, `feldWertZuMinuten`, `maxWertFuerEinheit`, `durationValidatorsFor`, round-trip conversion |
 | `features/produktivitaet/rechner.component.spec.ts` | `RechnerComponent` — productivity calculator: unit conversion, scenario load/save, role/pie/flowchart derivations |
 | `features/produktivitaet/svg-util.spec.ts` | SVG utility functions — `computeSegments`, `computeComparisonBars`, `computePieSlices` |
+| `features/feedback/feedback-form.component.spec.ts` | `FeedbackFormComponent` — `schulung`/`trainer` query-param overrides of `config.subtitle`/`config.trainers` with fallback to hardcoded defaults, 200-char truncation after trim, and submitted-payload field tagging (`schulung`, `trainerName` kept distinct from the star-rating `trainer` answer key) |
+| `features/feedback/feedback-qr.component.spec.ts` | `FeedbackQrComponent` — `buildFeedbackUrl()` query-string building/encoding/200-char truncation (pure function), `onInputChange()` `[(ngModel)]`/`(ngModelChange)` DOM wiring via a real dispatched `input` event, label/input `for`/`id` association |
 
 ### Code standards (both stacks)
 
