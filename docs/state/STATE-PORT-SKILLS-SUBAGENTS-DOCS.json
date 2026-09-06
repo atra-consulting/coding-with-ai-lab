@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "task_key": "PORT-SKILLS-SUBAGENTS-DOCS",
+  "status": "in_progress",
+  "current_step": "4.5",
+  "started": "2026-09-06T00:00:00Z",
+  "updated": "2026-09-06T00:00:00Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "The solution-jfs-2026 branch has documentation on how to copy over the skills and subagents of this repo. That's outdated - more skills, more subagents. Update the documentation on a new branch and port it over so it fits the main branch. The stuff is linked to in the @README.MD",
+    "special_instructions": "Fix docs on main only (do not touch solution-jfs-2026's actual files, out of scope). Remove the README pointer that sends conference listeners to switch to the solution-jfs-2026 branch, since main already has a self-contained 'Skills & Subagents übernehmen' section.",
+    "ticket_mode": false,
+    "ticket_id": null,
+    "ticket_url": null,
+    "ticket_api_base": null,
+    "ticket_claimed": false,
+    "branch_name": "port-skills-subagents-docs-update",
+    "original_branch": "main",
+    "original_head": "2d3d912a97430cf9fb2a99484ac9571706d6d362",
+    "docs_folder": "docs",
+    "is_git_repo": true,
+    "workflow_scope": null,
+    "pr_prefix": null,
+    "pr_exists": false,
+    "pr_url": null
+  },
+  "discovery": {
+    "agents_available": false,
+    "planner_agents": [],
+    "writer_agents": [],
+    "coding_agents": [],
+    "review_agents": [],
+    "test_coding_agents": [],
+    "test_review_agents": [],
+    "test_runner_agents": [],
+    "tooling_coding_agents": [],
+    "tooling_review_agents": [],
+    "test_command": null
+  },
+  "artifacts": {
+    "prd_skipped": null,
+    "prd_file": null,
+    "plan_file": null
+  },
+  "delegation": {
+    "assignments": [],
+    "escalations": []
+  },
+  "completed_steps": []
+}
