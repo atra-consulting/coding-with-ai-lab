@@ -39,7 +39,7 @@ configuration belongs in this file.
 
 Agent files: `.claude/agents/`
 
-The `planner`, `python-*`, `shell-*`, and `skill-*` agents are general tooling agents — they are not bound to the CRM domain specs and instead read the root `CLAUDE.md` plus, for shell, `docs/specs/SPECS-infrastructure.md`.
+The `planner`, `data-reader`, `data-writer`, `python-*`, `shell-*`, and `skill-*` agents are general tooling agents — they are not bound to the CRM domain specs and instead read the root `CLAUDE.md` plus, for shell, `docs/specs/SPECS-infrastructure.md`.
 
 ## Spec Reading Lists
 
@@ -47,7 +47,7 @@ Each subagent in `.claude/agents/` has a `## Specifications` reading list naming
 
 | Spec | Scope | Primary for |
 |------|-------|-------------|
-| [`DOMAIN.md`](docs/specs/DOMAIN.md) | Business domain: entity meaning, relationships, delete behavior, sales pipeline, roles (no schema) | All 17 domain-bound agents (every agent except `planner` and the `python-*`, `shell-*`, `skill-*` tooling agents) |
+| [`DOMAIN.md`](docs/specs/DOMAIN.md) | Business domain: entity meaning, relationships, delete behavior, sales pipeline, roles (no schema) | All 17 domain-bound agents (every agent except `planner`, `data-reader`, `data-writer`, and the `python-*`, `shell-*`, `skill-*` tooling agents) |
 | [`SPECS.md`](docs/specs/SPECS.md) | Root index, architecture, tech stack, domain model, seed data | ba-writer, ba-reviewer |
 | [`SPECS-backend.md`](docs/specs/SPECS-backend.md) | Backend API: routes, services, auth, errors, pagination, code patterns | be-coder, be-reviewer |
 | [`SPECS-database.md`](docs/specs/SPECS-database.md) | Entities, schema, columns, enums, foreign keys, migrations | db-coder, db-reviewer |
