@@ -1,8 +1,8 @@
 {
   "version": 1,
   "task_key": "PORT-SKILLS-SUBAGENTS-DOCS",
-  "status": "in_progress",
-  "current_step": "7.5",
+  "status": "completed",
+  "current_step": "13.2",
   "started": "2026-09-06T00:00:00Z",
   "updated": "2026-09-06T00:00:00Z",
   "config": {
@@ -47,7 +47,13 @@
       {"step": "Plan draft", "agent": "planner", "model": "sonnet", "verified_by": "review agents"},
       {"step": "Plan review: ba-reviewer", "agent": "ba-reviewer", "model": "haiku", "verified_by": "n/a"},
       {"step": "Plan review: skill-reviewer", "agent": "skill-reviewer", "model": "haiku", "verified_by": "n/a"},
-      {"step": "Plan fix", "agent": "planner", "model": "sonnet", "verified_by": "orchestrator read"}
+      {"step": "Plan fix", "agent": "planner", "model": "sonnet", "verified_by": "orchestrator read"},
+      {"step": "Implementation: docs/SUBAGENTS.md", "agent": "skill-coder", "model": "sonnet", "verified_by": "skill-reviewer + orchestrator read"},
+      {"step": "Implementation: docs/SKILLS.md", "agent": "skill-coder", "model": "sonnet", "verified_by": "skill-reviewer + orchestrator read"},
+      {"step": "Implementation: README.MD", "agent": "skill-coder", "model": "sonnet", "verified_by": "skill-reviewer + orchestrator read"},
+      {"step": "Implementation: CLAUDE.md (optional)", "agent": "skill-coder", "model": "haiku", "verified_by": "skill-reviewer + orchestrator read"},
+      {"step": "Verification", "agent": "skill-reviewer", "model": "haiku", "verified_by": "orchestrator judgment (1 false-positive finding overridden, doc's own pipe-spacing convention)"},
+      {"step": "Code review (Round 1)", "agent": "ba-reviewer", "model": "sonnet", "verified_by": "clean pass, no issues"}
     ],
     "escalations": []
   },
