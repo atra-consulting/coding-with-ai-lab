@@ -85,11 +85,38 @@ describe('SidebarComponent', () => {
     expect(text).not.toContain('App-Feedback');
   });
 
-  it('does not render the Administration section header when all its items are hidden', () => {
+  // "Tickets" lost its requiredRole, so the Administration section always keeps one
+  // visible item. The header therefore stays visible for a regular user; only the
+  // admin-only entries drop out.
+  it('renders the Administration section header for a regular user but hides its admin-only items', () => {
     mockAuthService.currentUser.set(regularUser);
     fixture.detectChanges();
     const text = fixture.nativeElement.textContent as string;
-    expect(text).not.toContain('Administration');
+    expect(text).toContain('Administration');
+    expect(text).toContain('Tickets');
+    expect(text).not.toContain('App-Feedback');
+    expect(text).not.toContain('Cron-Jobs');
+  });
+
+  it("does not render a section header when all of that section's items are hidden", () => {
+    component.sections = [
+      {
+        title: 'Nur für Admins',
+        items: [
+          {
+            label: 'Geheim',
+            route: '/admin/geheim',
+            icon: component.faListCheck,
+            requiredRole: 'ROLE_ADMIN',
+          },
+        ],
+      },
+    ];
+    mockAuthService.currentUser.set(regularUser);
+    fixture.detectChanges();
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).not.toContain('Nur für Admins');
+    expect(text).not.toContain('Geheim');
   });
 
   it('renders the Administration section header when user has ADMIN role', () => {
