@@ -77,6 +77,12 @@ describe('FeedbackFormComponent', () => {
       expect(fixture.componentInstance.config.subtitle).toBe('Nur-Schulung');
       expect(fixture.componentInstance.config.trainers).toBe(DEFAULT_TRAINERS);
     });
+
+    it('truncates schulung to 200 chars after trimming', async () => {
+      const fixture = await createFixture({ schulung: 'x'.repeat(250) });
+
+      expect(fixture.componentInstance.config.subtitle).toBe('x'.repeat(200));
+    });
   });
 
   describe('submitted payload', () => {
