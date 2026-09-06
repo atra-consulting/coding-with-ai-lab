@@ -237,7 +237,7 @@ Five GitHub Actions workflows in `.github/workflows/`:
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
-| `deploy.yml` | Push to `main` (after tests pass) | Runs backend type-check + Playwright tests, frontend unit tests + build, then deploys to Vercel (production) |
+| `deploy.yml` | Push to `main` (after tests pass) | Runs backend type-check + Playwright tests, frontend unit tests + build, then deploys to **two** Vercel projects (production): the main app and the feedback site |
 | `agent-task-runner.yml` | `repository_dispatch` event `solve-agent-tasks` | Runs the autonomous agent against OPEN `agent_task` rows |
 | `do-factory-automatic.yml` | `repository_dispatch` event `solve-agent-tasks`; also `workflow_dispatch`, daily `schedule` | Runs the `/do-factory-automatic` skill against one OPEN `agent_task`; pushes a branch and opens a PR (never merges) |
 | `github-issue-agent.yml` | `repository_dispatch` event `solve-github-issues` | Runs the GitHub-issue refinement agent against one labelled issue |
@@ -250,3 +250,12 @@ Five GitHub Actions workflows in `.github/workflows/`:
 - Rewrites: `/api/*` → `api/index`; everything else → `index.html` (Angular SPA)
 - Vercel cron: `GET /api/cron/agent-tasks` at `0 2 * * *` (daily 02:00 UTC)
 - Cloud database: Turso (libSQL) when `TURSO_DATABASE_URL` is set — required on Vercel (read-only filesystem)
+
+**Two Vercel projects, one repo.** `vercel.json` sets `git.deploymentEnabled: false`, so Vercel never deploys on a push by itself. `deploy.yml` drives both projects, each in its own job because `vercel pull` and `vercel build` write into `.vercel/`:
+
+| Job | Project | URL | Project-id secret |
+|-----|---------|-----|-------------------|
+| `deploy` | Main CRM app | <https://coding-with-ai-lab.vercel.app> | `VERCEL_PROJECT_ID` |
+| `deploy-feedback` | Feedback site | <https://atra-feedback.vercel.app> | `VERCEL_PROJECT_ID_FEEDBACK` |
+
+Both jobs share `VERCEL_TOKEN` and `VERCEL_ORG_ID`; set `VERCEL_ORG_ID_FEEDBACK` only if the feedback project lives in another Vercel team. The feedback site needs its own deploy because `/feedback-qr` hardcodes `https://atra-feedback.vercel.app` (see [docs/feedback.md](../feedback.md)) — a QR code built on one project always points at the other.
