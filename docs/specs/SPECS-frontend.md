@@ -129,9 +129,9 @@ Additional methods:
 
 Three public components. No auth required. No backend calls — data posts directly to a Google Apps Script URL.
 
-- **FeedbackFormComponent** (`/feedback`): Multi-step survey. Question types: `stars` (1–5 rating), `choice` (single select), `multichoice` (multi select), `text` (free text). Submits JSON payload via `fetch` with `mode: no-cors`.
+- **FeedbackFormComponent** (`/feedback`): Multi-step survey. Question types: `stars` (1–5 rating), `choice` (single select), `multichoice` (multi select), `text` (free text). Reads optional `schulung`/`trainer` query params via `ActivatedRoute` (snapshot) and overrides the displayed subtitle/trainer text; falls back to the hardcoded defaults when a param is absent, blank, or over 200 characters. Submits JSON payload via `fetch` with `mode: no-cors`, including `schulung` and `trainerName` fields.
 - **ThankyouComponent** (`/danke`): Confirmation page after submission.
-- **FeedbackQrComponent** (`/feedback-qr`): Displays a QR code linking to `/feedback`. Uses the `qrcode` library. Intended for trainer display during sessions.
+- **FeedbackQrComponent** (`/feedback-qr`): Displays a QR code linking to `/feedback`. Two `ngModel`-bound text inputs (Schulung, Trainer) let the trainer customize the target URL; a pure `buildFeedbackUrl()` method rebuilds `/feedback?schulung=...&trainer=...` (values trimmed, capped at 200 characters, URL-encoded) and the QR code regenerates on every keystroke. Uses the `qrcode` library. Intended for trainer display during sessions.
 
 ### Dashboard
 

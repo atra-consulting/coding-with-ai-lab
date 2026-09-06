@@ -249,6 +249,7 @@ Konventionen und Patterns für AI-gestützte Entwicklung: **[AGENTS.md](AGENTS.m
 | [docs/SKILLS.md](docs/SKILLS.md) | Alle 6 Custom-Skills erklärt |
 | [docs/TRANSFER.md](docs/TRANSFER.md) | Skills & Subagents ins eigene Projekt übernehmen |
 | [docs/TOOLS.md](docs/TOOLS.md) | Produktivitäts-Rechner, Agent-Tasks, Ticket-Board |
+| [docs/feedback.md](docs/feedback.md) | Feedback-Formular: neues Formular pro Schulung anlegen |
 | [AGENTS.md](AGENTS.md) | Anweisungen und Konventionen für AI-Coding-Assistenten (tool-neutral) |
 | [CLAUDE.md](CLAUDE.md) | Claude-Code-Spezifika (Subagents, Spec-Leselisten) — importiert `AGENTS.md` |
 | [docs/specs/SPECS.md](docs/specs/SPECS.md) | Detaillierte Spezifikationen pro Bereich |

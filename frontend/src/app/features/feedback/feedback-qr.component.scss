@@ -68,6 +68,40 @@ $primary: #264892;
   text-align: center;
 }
 
+.qr-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.qr-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+
+  label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #333;
+  }
+
+  input {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.95rem;
+    color: #333;
+    border: 2px solid #e8eaf0;
+    border-radius: 8px;
+    background: #fff;
+
+    &:focus {
+      outline: none;
+      border-color: $primary;
+    }
+  }
+}
+
 .scan-text {
   font-size: 1rem;
   font-weight: 600;
