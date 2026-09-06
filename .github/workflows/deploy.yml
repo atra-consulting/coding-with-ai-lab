@@ -103,3 +103,60 @@ jobs:
       - name: Vercel — deploy prebuilt
         working-directory: .
         run: npx vercel@latest deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+  # atra-feedback.vercel.app is a SEPARATE Vercel project fed by this same repo.
+  # It serves the trainer QR page (/feedback-qr) and the participant form
+  # (/feedback). Deploying only the project above left it on a stale build: its
+  # /feedback ignored the ?schulung= / ?trainer= params the QR page had already
+  # started emitting, so every scanned code showed the old hardcoded training.
+  # A separate job, not extra steps — `vercel pull` and `vercel build` write
+  # into .vercel/, so two projects cannot share one working directory.
+  deploy-feedback:
+    name: Deploy to Vercel (feedback site)
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    env:
+      # Falls back to the main org — override only if the feedback project sits
+      # in a different Vercel team (VERCEL_TOKEN must then reach both).
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID_FEEDBACK || secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_FEEDBACK }}
+
+    steps:
+      # Fail, never skip: a missing secret would silently leave the feedback site
+      # stale — the exact failure this job exists to prevent.
+      - name: Check the feedback project id is set
+        run: |
+          if [ -z "$VERCEL_PROJECT_ID" ]; then
+            echo "::error::Secret VERCEL_PROJECT_ID_FEEDBACK is missing. Copy it from Vercel → atra-feedback → Settings → Project ID."
+            exit 1
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      # api/index.ts imports backend sources; Vercel's function bundler
+      # resolves their dependencies from backend/node_modules at build time.
+      - name: Backend — install dependencies (for function bundling)
+        working-directory: backend
+        run: npm ci
+
+      - name: Vercel — pull project settings
+        working-directory: .
+        run: npx vercel@latest pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Vercel — build
+        working-directory: .
+        run: npx vercel@latest build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Vercel — deploy prebuilt
+        working-directory: .
+        run: npx vercel@latest deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
