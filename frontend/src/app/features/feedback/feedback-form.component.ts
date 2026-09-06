@@ -167,8 +167,8 @@ export class FeedbackFormComponent {
     const schulungParam = this.route.snapshot.queryParamMap.get('schulung');
     const trainerParam = this.route.snapshot.queryParamMap.get('trainer');
 
-    const schulungTrimmed = schulungParam?.trim() ?? '';
-    const trainerTrimmed = trainerParam?.trim() ?? '';
+    const schulungTrimmed = schulungParam?.trim().slice(0, 200) ?? '';
+    const trainerTrimmed = trainerParam?.trim().slice(0, 200) ?? '';
 
     this.resolvedSchulung = schulungTrimmed ? schulungTrimmed : FEEDBACK_CONFIG.subtitle;
     this.resolvedTrainerNames = trainerTrimmed ? trainerTrimmed : DEFAULT_TRAINER_NAMES;
