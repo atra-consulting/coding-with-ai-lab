@@ -2,7 +2,7 @@
   "version": 1,
   "task_key": "FEEDBACK-FORM-QUERY-PARAMS",
   "status": "in_progress",
-  "current_step": "4.5",
+  "current_step": "6.4",
   "started": "2026-09-06T00:00:00.000Z",
   "updated": "2026-09-06T00:00:00.000Z",
   "config": {
@@ -25,25 +25,30 @@
     "pr_url": null
   },
   "discovery": {
-    "agents_available": false,
-    "planner_agents": [],
-    "writer_agents": [],
-    "coding_agents": [],
-    "review_agents": [],
-    "test_coding_agents": [],
-    "test_review_agents": [],
-    "test_runner_agents": [],
-    "tooling_coding_agents": [],
-    "tooling_review_agents": [],
+    "agents_available": true,
+    "planner_agents": ["planner"],
+    "writer_agents": ["ba-writer", "data-writer"],
+    "coding_agents": ["be-coder", "db-coder", "fe-coder", "ui-designer"],
+    "review_agents": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer"],
+    "test_coding_agents": ["be-test-coder", "fe-test-coder"],
+    "test_review_agents": ["be-test-reviewer", "fe-test-reviewer"],
+    "test_runner_agents": ["be-test-runner", "fe-test-runner"],
+    "tooling_coding_agents": ["python-coder", "shell-coder", "skill-coder"],
+    "tooling_review_agents": ["python-reviewer", "shell-reviewer", "skill-reviewer"],
     "test_command": null
   },
   "artifacts": {
-    "prd_skipped": null,
-    "prd_file": null,
+    "prd_skipped": false,
+    "prd_file": "docs/prds/PRD-FEEDBACK-FORM-QUERY-PARAMS.md",
     "plan_file": null
   },
   "delegation": {
-    "assignments": [],
+    "assignments": [
+      {"step": "PRD draft", "agent": "planner", "model": "sonnet", "verification": "review + fix cycle"},
+      {"step": "PRD review: ba-reviewer", "agent": "ba-reviewer", "model": "haiku", "verification": "read PRD + source files"},
+      {"step": "PRD review: fe-reviewer", "agent": "fe-reviewer", "model": "haiku", "verification": "read PRD + source files"},
+      {"step": "PRD fix", "agent": "planner", "model": "sonnet", "verification": "orchestrator diff read"}
+    ],
     "escalations": []
   },
   "completed_steps": []
