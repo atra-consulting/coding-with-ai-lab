@@ -2,7 +2,7 @@
   "version": 1,
   "task_key": "PORT-SKILLS-SUBAGENTS-DOCS",
   "status": "in_progress",
-  "current_step": "4.5",
+  "current_step": "7.5",
   "started": "2026-09-06T00:00:00Z",
   "updated": "2026-09-06T00:00:00Z",
   "config": {
@@ -19,31 +19,36 @@
     "original_head": "2d3d912a97430cf9fb2a99484ac9571706d6d362",
     "docs_folder": "docs",
     "is_git_repo": true,
-    "workflow_scope": null,
-    "pr_prefix": null,
+    "workflow_scope": "full",
+    "pr_prefix": "feat:",
     "pr_exists": false,
     "pr_url": null
   },
   "discovery": {
-    "agents_available": false,
-    "planner_agents": [],
-    "writer_agents": [],
-    "coding_agents": [],
-    "review_agents": [],
-    "test_coding_agents": [],
-    "test_review_agents": [],
-    "test_runner_agents": [],
-    "tooling_coding_agents": [],
-    "tooling_review_agents": [],
-    "test_command": null
+    "agents_available": true,
+    "planner_agents": ["planner"],
+    "writer_agents": ["ba-writer", "data-writer"],
+    "coding_agents": ["be-coder", "db-coder", "fe-coder", "ui-designer"],
+    "review_agents": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer"],
+    "test_coding_agents": ["be-test-coder", "fe-test-coder"],
+    "test_review_agents": ["be-test-reviewer", "fe-test-reviewer"],
+    "test_runner_agents": ["be-test-runner", "fe-test-runner"],
+    "tooling_coding_agents": ["python-coder", "shell-coder", "skill-coder"],
+    "tooling_review_agents": ["python-reviewer", "shell-reviewer", "skill-reviewer"],
+    "test_command": "none — docs-only, verified by cross-checking counts/lists against .claude/agents and .claude/skills"
   },
   "artifacts": {
-    "prd_skipped": null,
+    "prd_skipped": true,
     "prd_file": null,
-    "plan_file": null
+    "plan_file": "docs/plans/PLAN-PORT-SKILLS-SUBAGENTS-DOCS.md"
   },
   "delegation": {
-    "assignments": [],
+    "assignments": [
+      {"step": "Plan draft", "agent": "planner", "model": "sonnet", "verified_by": "review agents"},
+      {"step": "Plan review: ba-reviewer", "agent": "ba-reviewer", "model": "haiku", "verified_by": "n/a"},
+      {"step": "Plan review: skill-reviewer", "agent": "skill-reviewer", "model": "haiku", "verified_by": "n/a"},
+      {"step": "Plan fix", "agent": "planner", "model": "sonnet", "verified_by": "orchestrator read"}
+    ],
     "escalations": []
   },
   "completed_steps": []
