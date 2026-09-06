@@ -1,5 +1,6 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 
 // ─── Fragen hier anpassen ───────────────────────────────────────────
 // Typ 'stars': Sterne-Bewertung 1-5, mit labels pro Stern
@@ -39,10 +40,12 @@ type Question = StarQuestion | ChoiceQuestion | MultiChoiceQuestion | TextQuesti
 
 // ─── Konfiguration ──────────────────────────────────────────────────
 
+const DEFAULT_TRAINER_NAMES = 'David Kreutzer, Daniel Wochnik, Benjamin Steimer';
+
 const FEEDBACK_CONFIG = {
   title: 'Schulungs-Feedback',
   subtitle: 'Agentic Engineering Bootcamp — 03.–04.09.2026',
-  trainers: 'Trainer: David Kreutzer, Daniel Wochnik, Benjamin Steimer',
+  trainers: `Trainer: ${DEFAULT_TRAINER_NAMES}`,
   thankYou: 'Vielen Dank für deine Teilnahme 😊',
   welcomeSubtext: 'Wir hoffen, du konntest etwas Wertvolles für dich mitnehmen.',
   successMessage: 'Dein Feedback hilft uns, die nächste Schulung noch besser zu machen.',
@@ -145,7 +148,11 @@ export class FeedbackFormComponent {
   // Google Apps Script Web App URL – nach Deployment hier eintragen
   private readonly GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxA6hGsevrLXP3CVG9yf4sRoUTqxrnipO5gZkVwfW09lX3ab6Bxyf0gS6hNujAkKybT/exec';
 
-  readonly config = FEEDBACK_CONFIG;
+  private readonly route = inject(ActivatedRoute);
+
+  readonly resolvedSchulung: string;
+  readonly resolvedTrainerNames: string;
+  config: typeof FEEDBACK_CONFIG;
   readonly questions = QUESTIONS;
 
   answers: Record<string, string | number> = {};
@@ -155,6 +162,23 @@ export class FeedbackFormComponent {
   submitted = signal(false);
   submitting = signal(false);
   error = signal('');
+
+  constructor() {
+    const schulungParam = this.route.snapshot.queryParamMap.get('schulung');
+    const trainerParam = this.route.snapshot.queryParamMap.get('trainer');
+
+    const schulungTrimmed = schulungParam?.trim() ?? '';
+    const trainerTrimmed = trainerParam?.trim() ?? '';
+
+    this.resolvedSchulung = schulungTrimmed ? schulungTrimmed : FEEDBACK_CONFIG.subtitle;
+    this.resolvedTrainerNames = trainerTrimmed ? trainerTrimmed : DEFAULT_TRAINER_NAMES;
+
+    this.config = {
+      ...FEEDBACK_CONFIG,
+      subtitle: this.resolvedSchulung,
+      trainers: `Trainer: ${this.resolvedTrainerNames}`,
+    };
+  }
 
   toggleMultiChoice(key: string, value: string): void {
     if (!this.multiAnswers[key]) this.multiAnswers[key] = [];
@@ -221,6 +245,8 @@ export class FeedbackFormComponent {
         payload[q.key] = this.answers[q.key] || '';
       }
     }
+    payload['schulung'] = this.resolvedSchulung;
+    payload['trainerName'] = this.resolvedTrainerNames;
 
     try {
       await fetch(this.GOOGLE_SCRIPT_URL, {
