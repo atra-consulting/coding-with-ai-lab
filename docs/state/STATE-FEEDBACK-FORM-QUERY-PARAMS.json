@@ -2,7 +2,7 @@
   "version": 1,
   "task_key": "FEEDBACK-FORM-QUERY-PARAMS",
   "status": "in_progress",
-  "current_step": "9.3",
+  "current_step": "11.2",
   "started": "2026-09-06T00:00:00.000Z",
   "updated": "2026-09-06T00:00:00.000Z",
   "config": {
@@ -58,7 +58,9 @@
       {"step": "Review: Task 5 component review", "agent": "fe-reviewer", "model": "sonnet", "verification": "read PRD/plan/diffs, ran ng build — no findings"},
       {"step": "Review: Task 6 test review", "agent": "fe-test-reviewer", "model": "sonnet", "verification": "read specs + plan — 2 WARNING findings"},
       {"step": "Test fix: address review WARNINGs", "agent": "fe-test-coder", "model": "sonnet", "verification": "diff read + agent self-ran scoped Karma (19 pass)"},
-      {"step": "Verification: Task 7 full suite (fe-test-runner)", "agent": "fe-test-runner", "model": "haiku", "verification": "536 pass, 19 fail — all 19 pre-existing/unrelated (ticket board), confirmed via git diff showing zero changes to that directory on this branch"}
+      {"step": "Verification: Task 7 full suite (fe-test-runner)", "agent": "fe-test-runner", "model": "haiku", "verification": "536 pass, 19 fail — all 19 pre-existing/unrelated (ticket board), confirmed via git diff showing zero changes to that directory on this branch"},
+      {"step": "Code review (local, /project:review embedded)", "agent": "ba-reviewer, fe-reviewer, ui-reviewer", "model": "sonnet", "verification": "3 rounds, 10 findings, 6 fixed (3 code/test via fe-coder+fe-test-coder, 3 docs direct), 4 SUGGESTION-level remaining, no CRITICAL"},
+      {"step": "Post-review testing", "agent": "orchestrator (direct npm run test:ci)", "model": "n/a", "verification": "537 pass, 19 pre-existing/unrelated fail"}
     ],
     "escalations": []
   },
