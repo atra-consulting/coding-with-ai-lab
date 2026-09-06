@@ -427,18 +427,19 @@ test.describe('Auth matrix — admin endpoints', () => {
     expect(resp.status()).toBe(401);
   });
 
-  // GET /summary — NOT widened; still requireAuth + requireRole('ADMIN') only.
+  // GET /summary — widened (commit f73135a) to requireAuth only: any logged-in
+  // session, no role check, so the board header renders for participants too.
   test('GET /summary without session → 401', async () => {
     const resp = await anon.get('/api/tickets/summary');
     expect(resp.status()).toBe(401);
   });
 
-  test('GET /summary with USER role → 403', async () => {
+  test('GET /summary with USER role → 200', async () => {
     const resp = await user.get('/api/tickets/summary');
-    expect(resp.status()).toBe(403);
+    expect(resp.status()).toBe(200);
   });
 
-  test('GET /summary with wrong agent token (no session) → 401 (regression guard: still admin-only, unaffected by the /board and /:id/status auth widening)', async () => {
+  test('GET /summary with wrong agent token (no session) → 401 (still requireAuth: a bearer token alone is not a session)', async () => {
     const resp = await wrongToken.get('/api/tickets/summary');
     expect(resp.status()).toBe(401);
   });
