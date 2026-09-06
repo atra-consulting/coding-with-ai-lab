@@ -122,10 +122,16 @@ Manual check: open the feedback page with and without training/trainer informati
 
 ## Open Questions
 
-1. Does the Google Apps Script / target spreadsheet already have columns named `schulung` and `trainerName` (not `trainer` — see the field name note in Requirement 3), or does its owner need to add them before this ships? This repo has no visibility into that script or sheet.
+1. ~~Does the Google Apps Script / target spreadsheet already have columns named `schulung` and `trainerName`?~~ **Answered 2026-09-06: no, and the gap was larger than a missing column.** `doPost` writes a hardcoded list of exactly 11 values via `sheet.appendRow([...])` — there is no mapping over the sheet's header row, so adding a column alone changes nothing. Neither `schulung` nor `trainerName` was written. The script now lives in this repo as [scripts/feedback-webhook.gs](../../scripts/feedback-webhook.gs); see [docs/feedback.md](../feedback.md#der-webhook) for how to roll a change out. This shipped before the question was answered — the form sent both fields for four days while the sheet silently dropped them, invisible because the form posts with `mode: 'no-cors'`.
 2. Should the QR page pre-fill its two text boxes from its own current address (e.g., for a trainer re-visiting a bookmarked link)? Not requested; assumed out of scope — boxes start empty on every page load.
 3. Is a single shared length cap (200 characters) acceptable for both the training-name and trainer-name boxes, or should they differ?
 
 ## Implementierung
 
-_(wird nach Merge ergänzt)_
+| Was | Wo |
+|-----|-----|
+| Query-Parameter im Formular und auf der QR-Seite | PR [#145](https://github.com/atra-consulting/coding-with-ai-lab/pull/145) |
+| Eigener Deploy-Job für die Feedback-Seite | PR [#148](https://github.com/atra-consulting/coding-with-ai-lab/pull/148) |
+| Apps Script versioniert, `schulung` + `trainerName` ergänzt | dieser PR |
+
+Die letzte Zeile schließt die Kette: Bis dahin sendete das Formular beide Felder, ohne dass sie im Sheet ankamen.

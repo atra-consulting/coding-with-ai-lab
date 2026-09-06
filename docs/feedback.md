@@ -39,9 +39,55 @@ Teilnehmende scannen den Code und landen auf `/feedback`. Titel und Trainer-Zeil
 
 Die Basis-URL steht fest im Code: die Konstante `FEEDBACK_BASE_URL` in `frontend/src/app/features/feedback/feedback-qr.component.ts`. Zieht das Tool auf eine andere Domain um, muss diese Konstante mit — sonst zeigen alle neuen QR-Codes weiter auf die alte Adresse.
 
-Jede Antwort landet per JSON in einem Google Sheet (Google Apps Script, unverändert seit früheren Versionen). Jede Zeile trägt jetzt zusätzlich `schulung` und `trainerName`, damit Antworten mehrerer Schulungen später auseinandergehalten werden können.
+Jede Antwort landet per JSON in einem Google Sheet. Der Payload enthält `schulung` und `trainerName` zusätzlich zu den Antworten — damit Antworten mehrerer Schulungen auseinandergehalten werden können.
 
-**Achtung bei der Google-Sheet-Spalte:** Das Feld heißt `trainerName`, nicht `trainer`. Der Name `trainer` ist schon durch eine Bewertungsfrage im Formular belegt („Wie gut waren Aufbau und Struktur des Trainings?"). Wer das Sheet oder das Apps Script pflegt, braucht eine Spalte `trainerName` — nicht `trainer`.
+**Das Senden allein genügt nicht.** Was im Sheet ankommt, entscheidet das Google Apps Script, und das steht außerhalb dieses Repos. Siehe [Der Webhook](#der-webhook).
+
+**Achtung beim Feldnamen:** Das Feld heißt `trainerName`, nicht `trainer`. Der Name `trainer` ist schon durch eine Bewertungsfrage im Formular belegt („Wie gut waren Aufbau und Struktur des Trainings?"). Beide gehen getrennt raus.
+
+## Der Webhook
+
+Das Google Apps Script, das die Zeilen ins Sheet schreibt, liegt als Kopie unter [scripts/feedback-webhook.gs](../scripts/feedback-webhook.gs). **Die Kopie ist nicht die laufende Fassung** — der Code wird in Google ausgeführt und muss dort von Hand nachgezogen werden.
+
+`doPost` schreibt mit `sheet.appendRow([...])` eine **fest verdrahtete Liste von Werten** in fester Reihenfolge. Es gibt kein Mapping über die Kopfzeile des Sheets. Daraus folgen zwei Dinge, die man leicht falsch macht:
+
+- Ein neues Feld im Payload landet **nirgends**, solange es nicht in `appendRow` steht. Der Payload wächst, das Sheet nicht.
+- Eine neue Spalte im Sheet allein bewirkt **gar nichts**. Der Code muss zuerst.
+
+| Spalte | Payload-Feld |
+|--------|--------------|
+| A Schulungsdatum | `schulungsDatum` |
+| B Timestamp | `timestamp` |
+| C Gesamteindruck (1-5) | `gesamteindruck` |
+| D Praxisnutzen (1-5) | `praxisnutzen` |
+| E Struktur (1-5) | `trainer` ← die Sterne-Frage |
+| F AI-Erfahrung | `aiErfahrung` |
+| G Vorwissen | `vorwissen` |
+| H KI-Zukunft | `kiZukunft` |
+| I Advanced-Themen | `advancedThemen` |
+| J Highlight | `highlight` |
+| K Verbesserung | `verbesserung` |
+| L Schulung | `schulung` |
+| M Trainer (Name) | `trainerName` |
+
+### Eine Änderung am Script ausrollen
+
+1. Code im [Script-Editor](https://script.google.com/d/1C-iyfZfWKqP89ptjjD_qVW-Jx3KJLDWvkXrhoWBo87IKIIfQRPJv2bcT/edit) anpassen — und dieselbe Änderung in `scripts/feedback-webhook.gs` committen.
+2. **Bereitstellung verwalten** → Stift → Version **Neu** → **Bereitstellen**. Ohne diesen Schritt läuft weiter der alte Code.
+3. **Nicht** „Neue Bereitstellung" wählen: das vergibt eine neue `/exec`-URL, und die steht als `GOOGLE_SCRIPT_URL` fest im Frontend.
+
+### Prüfen, ob die Kette lebt
+
+```bash
+curl -sL "$(grep -o 'https://script.google.com/macros/s/[A-Za-z0-9_-]*/exec' \
+  frontend/src/app/features/feedback/feedback-form.component.ts | head -1)"
+# lebt: 200 + "Feedback webhook is running."
+# tot:  403 + "Sie benötigen Zugriff"
+```
+
+Der 403 tritt auf, wenn die Web-App ihre OAuth-Autorisierung verliert — das passiert bei nicht verifizierten Apps, deren Consent-Screen im Status *Testing* steht. Der Fix sitzt nicht in den Zugriffseinstellungen, sondern unter „Bereitstellungen verwalten → Zugriff gewähren".
+
+**Der GET-Test beweist nur, dass die Web-App antwortet** — nicht, dass `doPost` ein neues Feld auch schreibt. Weil das Formular mit `mode: 'no-cors'` sendet, verwirft der Browser die Antwort: Der Teilnehmer sieht „Vielen Dank", auch wenn das Script die Zeile verwirft oder ein Feld fallen lässt. Nach jeder Änderung am Payload oder am Script deshalb eine Testzeile abschicken und im Sheet nachsehen.
 
 ## Deploy
 
