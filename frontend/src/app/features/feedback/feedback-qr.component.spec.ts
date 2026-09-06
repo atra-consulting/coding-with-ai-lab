@@ -78,6 +78,19 @@ describe('FeedbackQrComponent', () => {
         component.buildFeedbackUrl(window.location.origin, 'Test', ''),
       );
     });
+
+    it('updates feedbackUrl() when typing into the real #schulung-input element (proves [(ngModel)] + (ngModelChange) wiring, not just the direct method call)', () => {
+      fixture.detectChanges();
+
+      const input: HTMLInputElement = fixture.nativeElement.querySelector('#schulung-input');
+      input.value = 'Test';
+      input.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+
+      expect(component.feedbackUrl()).toBe(
+        component.buildFeedbackUrl(window.location.origin, 'Test', ''),
+      );
+    });
   });
 
   describe('DOM: input labels', () => {

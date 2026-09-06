@@ -45,6 +45,11 @@ describe('FeedbackFormComponent', () => {
 
       expect(fixture.componentInstance.config.subtitle).toBe('Test-Training');
       expect(fixture.componentInstance.config.trainers).toBe('Trainer: Anna Muster');
+
+      const subtitleEl: HTMLElement = fixture.nativeElement.querySelector('.subtitle');
+      const trainersEl: HTMLElement = fixture.nativeElement.querySelector('.trainers');
+      expect(subtitleEl.textContent).toContain('Test-Training');
+      expect(trainersEl.textContent).toContain('Trainer: Anna Muster');
     });
 
     it('falls back to the hardcoded defaults when no query params are present', async () => {
@@ -52,6 +57,11 @@ describe('FeedbackFormComponent', () => {
 
       expect(fixture.componentInstance.config.subtitle).toBe(DEFAULT_SUBTITLE);
       expect(fixture.componentInstance.config.trainers).toBe(DEFAULT_TRAINERS);
+
+      const subtitleEl: HTMLElement = fixture.nativeElement.querySelector('.subtitle');
+      const trainersEl: HTMLElement = fixture.nativeElement.querySelector('.trainers');
+      expect(subtitleEl.textContent).toContain(DEFAULT_SUBTITLE);
+      expect(trainersEl.textContent).toContain(DEFAULT_TRAINERS);
     });
 
     it('falls back to the hardcoded defaults when schulung/trainer query params are blank after trim', async () => {
