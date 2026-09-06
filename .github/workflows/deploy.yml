@@ -44,15 +44,24 @@ jobs:
 
       # --- Frontend ---
 
+      # These run even after a backend step failed, so one run reports both halves
+      # of the suite. Before this, a red backend step skipped everything below it:
+      # 19 broken frontend tests sat unnoticed on main behind a failing backend
+      # test, and only surfaced once that backend test was fixed (PR #143 / #144).
+      # !cancelled() rather than always() — a cancelled run must still stop.
+
       - name: Frontend — install dependencies
+        if: ${{ !cancelled() }}
         working-directory: frontend
         run: npm ci
 
       - name: Frontend — run unit tests (CI)
+        if: ${{ !cancelled() }}
         working-directory: frontend
         run: npm run test:ci
 
       - name: Frontend — build
+        if: ${{ !cancelled() }}
         working-directory: frontend
         run: npx ng build
 
