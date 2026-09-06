@@ -28,7 +28,7 @@ test.describe('GET /api/health', () => {
 
   test('returns 200', async () => {
     const resp = await ctx.get('/api/health');
-    expect(resp.status()).toBe(200);
+    expect(resp.status()).toBe(599); // TEMP: deliberate failure to verify CI step independence
   });
 
   test('response body has status: "ok"', async () => {
