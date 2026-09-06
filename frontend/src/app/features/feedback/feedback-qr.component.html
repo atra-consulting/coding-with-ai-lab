@@ -9,6 +9,31 @@
     </div>
 
     <div class="qr-body">
+      <div class="qr-inputs">
+        <div class="qr-input-group">
+          <label for="schulung-input">Schulungsname</label>
+          <input
+            id="schulung-input"
+            type="text"
+            maxlength="200"
+            [(ngModel)]="schulungInput"
+            (ngModelChange)="onInputChange()"
+            autocomplete="off"
+          />
+        </div>
+        <div class="qr-input-group">
+          <label for="trainer-input">Trainer</label>
+          <input
+            id="trainer-input"
+            type="text"
+            maxlength="200"
+            [(ngModel)]="trainerInput"
+            (ngModelChange)="onInputChange()"
+            autocomplete="off"
+          />
+        </div>
+      </div>
+
       <p class="scan-text">QR-Code scannen und Feedback geben</p>
       <div class="qr-wrapper">
         <canvas #qrCanvas></canvas>
