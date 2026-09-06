@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "task_key": "PORT-SKILLS-SUBAGENTS-DOCS",
+  "status": "completed",
+  "current_step": "13.2",
+  "started": "2026-09-06T00:00:00Z",
+  "updated": "2026-09-06T00:00:00Z",
+  "config": {
+    "input_mode": "freeform",
+    "user_description": "The solution-jfs-2026 branch has documentation on how to copy over the skills and subagents of this repo. That's outdated - more skills, more subagents. Update the documentation on a new branch and port it over so it fits the main branch. The stuff is linked to in the @README.MD",
+    "special_instructions": "Fix docs on main only (do not touch solution-jfs-2026's actual files, out of scope). Remove the README pointer that sends conference listeners to switch to the solution-jfs-2026 branch, since main already has a self-contained 'Skills & Subagents übernehmen' section.",
+    "ticket_mode": false,
+    "ticket_id": null,
+    "ticket_url": null,
+    "ticket_api_base": null,
+    "ticket_claimed": false,
+    "branch_name": "port-skills-subagents-docs-update",
+    "original_branch": "main",
+    "original_head": "2d3d912a97430cf9fb2a99484ac9571706d6d362",
+    "docs_folder": "docs",
+    "is_git_repo": true,
+    "workflow_scope": "full",
+    "pr_prefix": "feat:",
+    "pr_exists": false,
+    "pr_url": null
+  },
+  "discovery": {
+    "agents_available": true,
+    "planner_agents": ["planner"],
+    "writer_agents": ["ba-writer", "data-writer"],
+    "coding_agents": ["be-coder", "db-coder", "fe-coder", "ui-designer"],
+    "review_agents": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer"],
+    "test_coding_agents": ["be-test-coder", "fe-test-coder"],
+    "test_review_agents": ["be-test-reviewer", "fe-test-reviewer"],
+    "test_runner_agents": ["be-test-runner", "fe-test-runner"],
+    "tooling_coding_agents": ["python-coder", "shell-coder", "skill-coder"],
+    "tooling_review_agents": ["python-reviewer", "shell-reviewer", "skill-reviewer"],
+    "test_command": "none — docs-only, verified by cross-checking counts/lists against .claude/agents and .claude/skills"
+  },
+  "artifacts": {
+    "prd_skipped": true,
+    "prd_file": null,
+    "plan_file": "docs/plans/PLAN-PORT-SKILLS-SUBAGENTS-DOCS.md"
+  },
+  "delegation": {
+    "assignments": [
+      {"step": "Plan draft", "agent": "planner", "model": "sonnet", "verified_by": "review agents"},
+      {"step": "Plan review: ba-reviewer", "agent": "ba-reviewer", "model": "haiku", "verified_by": "n/a"},
+      {"step": "Plan review: skill-reviewer", "agent": "skill-reviewer", "model": "haiku", "verified_by": "n/a"},
+      {"step": "Plan fix", "agent": "planner", "model": "sonnet", "verified_by": "orchestrator read"},
+      {"step": "Implementation: docs/SUBAGENTS.md", "agent": "skill-coder", "model": "sonnet", "verified_by": "skill-reviewer + orchestrator read"},
+      {"step": "Implementation: docs/SKILLS.md", "agent": "skill-coder", "model": "sonnet", "verified_by": "skill-reviewer + orchestrator read"},
+      {"step": "Implementation: README.MD", "agent": "skill-coder", "model": "sonnet", "verified_by": "skill-reviewer + orchestrator read"},
+      {"step": "Implementation: CLAUDE.md (optional)", "agent": "skill-coder", "model": "haiku", "verified_by": "skill-reviewer + orchestrator read"},
+      {"step": "Verification", "agent": "skill-reviewer", "model": "haiku", "verified_by": "orchestrator judgment (1 false-positive finding overridden, doc's own pipe-spacing convention)"},
+      {"step": "Code review (Round 1)", "agent": "ba-reviewer", "model": "sonnet", "verified_by": "clean pass, no issues"}
+    ],
+    "escalations": []
+  },
+  "completed_steps": []
+}

@@ -1,6 +1,6 @@
 # Subagents
 
-Dieses Projekt hat 23 Subagents. Sie liegen in `.claude/agents/`. Jeder Agent ist eine Markdown-Datei.
+Dieses Projekt hat 26 Subagents. Sie liegen in `.claude/agents/`. Jeder Agent ist eine Markdown-Datei.
 
 ## Was ist ein Subagent?
 
@@ -72,21 +72,24 @@ Jede Zeile: Name, Zweck, Modell. Das Modell steht in der Agent-Datei (`model:`).
 
 ### Tooling — allgemein, nicht an die CRM-Domäne gebunden
 
-Diese sechs Agents kennen die CRM-Specs nicht. Sie lesen nur die Root-`CLAUDE.md`. `shell-*` liest zusätzlich `docs/specs/SPECS-infrastructure.md`. Du kannst sie leicht in andere Projekte übernehmen.
+Diese neun Agents kennen die CRM-Specs nicht. Sie lesen nur die Root-`CLAUDE.md`. `shell-*` liest zusätzlich `docs/specs/SPECS-infrastructure.md`. Du kannst sie leicht in andere Projekte übernehmen.
 
 | Agent | Zweck | Modell |
 |-------|-------|--------|
+| `planner` | Entwirft PRDs und Implementierungspläne. Weist jeder Task-Gruppe Agent und Modell-Stufe zu. Schreibt selbst keinen Code. | sonnet |
 | `python-coder` | Schreibt plattformübergreifende Python-Skripte. Datenanalyse. | sonnet |
 | `python-reviewer` | Prüft Python. Korrektheit, Portabilität, externe Daten. | sonnet |
 | `shell-coder` | Schreibt Shell-Skripte für macOS, Linux, WSL. | sonnet |
 | `shell-reviewer` | Prüft Shell-Skripte. Hänger, Endlosschleifen, Portabilität. | sonnet |
 | `skill-coder` | Erstellt und ändert Claude-Code-Skills und -Subagents. | sonnet |
 | `skill-reviewer` | Prüft Skills und Subagents. | sonnet |
+| `data-reader` | Sammelt Fakten aus Dateien oder dem Web. Nur lesend. | haiku |
+| `data-writer` | Schreibt fertigen Inhalt in eine Datei an einem bekannten Pfad. Nur schreibend. | haiku |
 
 ## Domänengebunden oder allgemein?
 
-- **18 Agents sind an die CRM-Domäne gebunden.** Sie lesen die Specs in `docs/specs/`. Sie kennen Firma, Person, Chance und die Regeln. Willst du sie übernehmen, passt du die Specs an dein Projekt an. Siehe [TRANSFER.md](TRANSFER.md).
-- **6 Tooling-Agents sind allgemein** (`python-*`, `shell-*`, `skill-*`). Sie passen fast überall.
+- **17 Agents sind an die CRM-Domäne gebunden.** Sie lesen die Specs in `docs/specs/`. Sie kennen Firma, Person, Chance und die Regeln. Willst du sie übernehmen, passt du die Specs an dein Projekt an. Siehe [TRANSFER.md](TRANSFER.md).
+- **9 Tooling-Agents sind allgemein** (`python-*`, `shell-*`, `skill-*`, `planner`, `data-reader`, `data-writer`). Sie passen fast überall.
 
 ## Mehr Details
 

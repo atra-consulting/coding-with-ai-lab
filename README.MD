@@ -29,7 +29,7 @@
 
 Dieses Repo dient zwei Zielgruppen:
 
-- **Konferenz-Zuhörer** wollen die Skills und Subagents in ihr eigenes Projekt holen. Start: [Auf die `solution-jfs-2026`-Branch wechseln](https://github.com/atra-consulting/coding-with-ai-lab/blob/solution-jfs-2026/README.MD).
+- **Konferenz-Zuhörer** wollen die Skills und Subagents in ihr eigenes Projekt holen. Start: [Skills & Subagents übernehmen](#für-konferenz-zuhörer-skills--subagents-übernehmen).
 - **Workshop-Teilnehmer** wollen Aufgaben in dieser App lösen. Start: [Aufgaben bearbeiten](#für-workshop-teilnehmer-aufgaben-bearbeiten).
 
 Der gemeinsame Teil (Schnellstart, Login, Tools) gilt für beide.
@@ -146,13 +146,13 @@ Details zu jedem Tool: **[docs/TOOLS.md](docs/TOOLS.md)**
 
 Du willst die Skills und Subagents aus diesem Repo in dein eigenes Projekt holen? So geht es.
 
-1. Lies, was es gibt: **[docs/SUBAGENTS.md](docs/SUBAGENTS.md)** (24 Subagents) und **[docs/SKILLS.md](docs/SKILLS.md)** (6 Skills).
+1. Lies, was es gibt: **[docs/SUBAGENTS.md](docs/SUBAGENTS.md)** (26 Subagents) und **[docs/SKILLS.md](docs/SKILLS.md)** (4 Skills).
 2. Folge der Anleitung: **[docs/TRANSFER.md](docs/TRANSFER.md)**. Kopieren, anpassen lassen, prüfen — Schritt für Schritt.
 
 | Dokument | Inhalt |
 |----------|--------|
-| [docs/SUBAGENTS.md](docs/SUBAGENTS.md) | Alle 24 Subagents. Zweck, Modell, Gruppen. |
-| [docs/SKILLS.md](docs/SKILLS.md) | Alle 6 Skills. Zweck, Argumente, Beispiele. |
+| [docs/SUBAGENTS.md](docs/SUBAGENTS.md) | Alle 26 Subagents. Zweck, Modell, Gruppen. |
+| [docs/SKILLS.md](docs/SKILLS.md) | Alle 4 Skills. Zweck, Argumente, Beispiele. |
 | [docs/TRANSFER.md](docs/TRANSFER.md) | Übernahme in dein Projekt. 8 Schritte. |
 
 ---
@@ -245,8 +245,8 @@ Konventionen und Patterns für AI-gestützte Entwicklung: **[AGENTS.md](AGENTS.m
 | [docs/CHEATSHEET-CLAUDE-CODE.md](docs/CHEATSHEET-CLAUDE-CODE.md) | Claude Code Spickzettel für Einsteiger |
 | [docs/welcome_DE.MD](docs/welcome_DE.MD) | Deutsche Workshop-Einführung |
 | [docs/welcome_EN.MD](docs/welcome_EN.MD) | English workshop introduction |
-| [docs/SUBAGENTS.md](docs/SUBAGENTS.md) | Alle 24 Subagents erklärt |
-| [docs/SKILLS.md](docs/SKILLS.md) | Alle 6 Custom-Skills erklärt |
+| [docs/SUBAGENTS.md](docs/SUBAGENTS.md) | Alle 26 Subagents erklärt |
+| [docs/SKILLS.md](docs/SKILLS.md) | Alle 4 Custom-Skills erklärt |
 | [docs/TRANSFER.md](docs/TRANSFER.md) | Skills & Subagents ins eigene Projekt übernehmen |
 | [docs/TOOLS.md](docs/TOOLS.md) | Produktivitäts-Rechner, Agent-Tasks, Ticket-Board |
 | [docs/feedback.md](docs/feedback.md) | Feedback-Formular: neues Formular pro Schulung anlegen |
