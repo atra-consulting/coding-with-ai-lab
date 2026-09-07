@@ -23,6 +23,15 @@ if not "%~2"=="" (
     exit /b 1
 )
 
+:: --- Agent-API-Token ------------------------------------------------------
+:: Die Agent-Endpunkte (/api/agent-tasks, /api/tickets) antworten ohne gesetztes
+:: AGENT_API_TOKEN mit 401 - auch von localhost. Im frisch geklonten Repo liegt
+:: nur .env.example; ohne diesen Schritt scheitert die Factory-Aufgabe.
+if not exist "%ROOT_DIR%\backend\.env" (
+    copy /y "%ROOT_DIR%\backend\.env.example" "%ROOT_DIR%\backend\.env" >nul
+    echo backend\.env aus .env.example angelegt ^(Agent-Endpunkte brauchen ein Token^).
+)
+
 :: --- Prerequisite checks ---
 
 :: Check Node.js is installed
