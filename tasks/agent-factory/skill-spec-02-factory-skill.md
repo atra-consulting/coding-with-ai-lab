@@ -17,7 +17,7 @@ API-Referenz: [`API-TASKS.md`](API-TASKS.md) (Abschnitt „For skill authors").
 
 ## Parameter
 
-Wenn dieser Skill mit einer Zahl als Parameter aufgerufen wird (z. B. `/process-next-task 14`), ist das eine Task-ID. Dann **Schritt 1 überspringen** und direkt mit dieser ID in Schritt 2 einsteigen — die Task per GET laden und verarbeiten. Keine „next"-Auswahl.
+Wenn dieser Skill mit einer Zahl als Parameter aufgerufen wird (z. B. `/tickets-implementieren 14`), ist das eine Task-ID. Dann **Schritt 1 überspringen** und direkt mit dieser ID in Schritt 2 einsteigen — die Task per GET laden und verarbeiten. Keine „next"-Auswahl.
 
 ## Schritt 1 — Nächste Aufgabe beanspruchen
 
@@ -50,7 +50,7 @@ curl -s -w '\n%{http_code}' \
 
 ## Schritt 2 — Beurteilen: bauen oder ablehnen (VOR dem Schreiben von Code entscheiden)
 
-Beauftrage den **`requirements-reviewer`-Subagenten**, um die Entscheidung zu treffen. Übergib ihm `title`, `body` und `metadata` der Aufgabe und bitte ihn, folgendes zu beurteilen:
+Beauftrage den **`ba-reviewer`-Subagenten**, um die Entscheidung zu treffen. Er liegt im Lab und ist genau dafür gebaut: Anforderungen auf Lücken prüfen. Übergib ihm `title`, `body` und `metadata` der Aufgabe und bitte ihn, folgendes zu beurteilen:
 
 - Beschreibt die Aufgabe EINE klare, konkrete Änderung?
 - Sind alle Fakten vorhanden, die zur Umsetzung nötig sind?

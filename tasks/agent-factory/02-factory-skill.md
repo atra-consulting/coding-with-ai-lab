@@ -3,9 +3,9 @@
 **Dauer:** 20 min
 **Sozialform:** einzeln
 **Werkzeug:** Claude Code
-**Voraussetzung:** Subagent `requirements-reviewer` aus Aufgabe 01
-**Ziel:** Ein Skill holt das nächste Ticket, prüft mit `requirements-reviewer`, ob es baubar ist, und setzt es per `/plan-and-do` bis zum Pull Request um.
-**Ergebnis:** Ein Projekt-Skill `do-factory-full`, den `/skills` nach dem Neustart anzeigt.
+**Voraussetzung:** keine — die benötigten Subagenten liegen im Lab
+**Ziel:** Ein Skill holt das nächste Ticket, prüft mit `ba-reviewer`, ob es baubar ist, und setzt es per `/plan-and-do` bis zum Pull Request um.
+**Ergebnis:** Ein Projekt-Skill `tickets-implementieren`, den `/skills` nach dem Neustart anzeigt.
 
 Was der Skill genau tun soll, steht in
 [`skill-spec-02-factory-skill.md`](skill-spec-02-factory-skill.md) — der
@@ -14,7 +14,7 @@ Prompt unten verweist darauf.
 ## Schritte
 
 1. Claude Code starten, mit mehrmaligem „Shift"-„Tab" in den Auto-Modus
-   gehen (steht links unten) und mit `/model` Sonnet auswählen.
+   gehen (steht links unten).
 2. Den Prompt eingeben (Prompt 1).
 3. Am Checkpoint den Plan lesen und korrigieren — nicht durchklicken.
 4. Claude Code durch den Prozess laufen lassen — dabei kommen die
@@ -23,7 +23,7 @@ Prompt unten verweist darauf.
 
 ## Folienschritte
 
-1. Claude Code starten, Auto-Modus, `/model` auf Sonnet.
+1. Claude Code starten, Auto-Modus.
 2. Prompt aus der Aufgabe eingeben.
 3. Am Checkpoint den Plan lesen, nicht durchklicken.
 4. `skill-coder` und `skill-reviewer` arbeiten lassen.
@@ -34,9 +34,9 @@ Prompt unten verweist darauf.
 **1 — Skill bauen lassen**
 
 ```
-/plan-and-do Schreibe den /do-factory-full Projekt-Skill, so wie er in der Datei "@tasks/agent-factory/skill-spec-02-factory-skill.md" beschrieben ist.
+/plan-and-do Schreibe den /tickets-implementieren Projekt-Skill, so wie er in der Datei "@tasks/agent-factory/skill-spec-02-factory-skill.md" beschrieben ist.
 ```
 
 ## Abnahme
 
-- `/skills` zeigt `do-factory-full` an.
+- `/skills` zeigt `tickets-implementieren` an.
