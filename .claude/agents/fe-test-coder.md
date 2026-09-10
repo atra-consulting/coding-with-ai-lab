@@ -81,9 +81,3 @@ Run a build to make sure nothing broke:
 cd frontend && npx ng build
 ```
 Do NOT execute the test suite — the `fe-test-runner` agent runs it. Hand off the new spec files and note which components/services they cover.
-
-## Playwright MCP (Optional)
-
-You MAY use Playwright MCP (`mcp__playwright__*`) to look at the live UI at `http://localhost:7200` when designing a test — for example, to confirm the DOM structure you are asserting against, capture selectors, or reproduce a user flow before encoding it as a spec. Use this as research, not as a test runner. The actual Jasmine/Karma specs you write must still run in Karma via `ng test`.
-
-The dev server must already be running. Close the browser (`browser_close`) when done.

@@ -70,17 +70,6 @@ Your spec reading list (paths are relative to the repo root):
 - Helpful error messages
 - Confirmation dialogs for destructive actions (NgbModal + ConfirmDialogComponent)
 
-## Playwright MCP (Optional)
-
-You MAY use Playwright MCP (`mcp__playwright__*`) to inspect the live UI at `http://localhost:7200` before and after design changes. Typical uses:
-
-- Take screenshots at different `browser_resize` widths to check responsive breakpoints
-- Snapshot the DOM to verify spacing, hierarchy, and class usage
-- Check contrast, focus indicators, and touch-target sizes on rendered elements
-- Exercise hover, focus, and interactive states (`browser_hover`, `browser_click`)
-
-The dev server must already be running (`./start.sh` or `ng serve`). Close the browser (`browser_close`) when done.
-
 ## Output Format
 
 Provide specific recommendations with:

@@ -68,16 +68,3 @@ Always run:
 2. Smoke-test the affected route in the dev server (`http://localhost:7200`) — `ng serve` hot-reloads, so no restart needed
 
 Fix any TypeScript errors before committing.
-
-## Playwright MCP (Optional)
-
-You MAY use Playwright MCP (`mcp__playwright__*`) to verify UI behavior in the running dev server at `http://localhost:7200`. Typical uses:
-
-- Navigate to an affected route after your change
-- Snapshot or screenshot to confirm the rendered state
-- Check `browser_console_messages` for runtime errors
-- Click, type, or submit forms to exercise happy paths before committing
-
-The dev server must already be running (`./start.sh` or `ng serve`). Close the browser (`browser_close`) when done.
-
-Use Playwright MCP as a complement to `ng build`, not a replacement — always run the build first.

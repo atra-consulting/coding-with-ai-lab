@@ -71,39 +71,4 @@ If the compile step fails (TypeScript error, missing import), report it as a "bu
 
 If the same test fails twice with a browser-timing error, mention "likely flaky / environment issue" in the report.
 
-## Playwright MCP (Required for Browser Tests)
-
-The Karma/Jasmine command above is the default. For any browser-based test or UI smoke check beyond that — e.g., verifying a rendered page at `http://localhost:7200`, running an E2E flow, or reproducing a user-reported issue live in a browser — you MUST use the Playwright MCP tools (`mcp__playwright__*`). Do NOT reach for shell scripts, `curl`, external browsers, or `ng e2e` for this purpose.
-
-### When Playwright MCP is required
-
-- Caller asks you to "open the app", "load the page", "check the UI in a browser", "run a smoke test", or similar
-- Caller asks for an E2E or integration test run that exercises real routing, rendering, or user interaction
-- A Karma failure mentions DOM behavior that needs live-browser confirmation
-
-### Typical flow
-
-1. Confirm the dev server is running. If not, report "Dev server not running at http://localhost:7200 — caller must start it (./start.sh)" and STOP.
-2. `mcp__playwright__browser_navigate` to the target route.
-3. `mcp__playwright__browser_snapshot` or `mcp__playwright__browser_take_screenshot` to capture state.
-4. Assert the expected UI elements via snapshot content or `browser_evaluate`.
-5. For interactions, use `browser_click`, `browser_type`, `browser_fill_form`, `browser_press_key` as needed.
-6. Check `mcp__playwright__browser_console_messages` for runtime errors.
-7. Always end with `mcp__playwright__browser_close`.
-
-### Report format for browser tests
-
-Use the same Report shape as the Karma section, but set:
-
-```
-Command: Playwright MCP (mcp__playwright__*)
-```
-
-List each asserted scenario as a pass/fail row. On failure, include the selector or assertion that failed and the console messages captured.
-
-### Playwright Rules
-
-- Do NOT start or stop the dev server — that is the caller's job.
-- Do NOT install Chromium via Playwright; if `browser_install` is needed, report the missing dependency and STOP.
-- Do NOT write Playwright spec files to disk — you drive the browser live via MCP.
-- Do NOT retry a browser scenario more than once — flakiness is a signal.
+Live-browser smoke checks and E2E runs are out of scope for this agent. No browser automation tool is configured in this repo.

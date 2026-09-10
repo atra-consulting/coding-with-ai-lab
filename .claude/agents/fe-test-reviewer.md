@@ -84,9 +84,3 @@ Do NOT flag these as issues:
 - Issues a typechecker would catch
 - Pedantic nitpicks a senior engineer wouldn't call out
 - Test style preferences unless explicitly in CLAUDE.md
-
-## Playwright MCP (Optional)
-
-You MAY use Playwright MCP (`mcp__playwright__*`) to cross-check that a spec's DOM assertions match the real UI at `http://localhost:7200` — for example, when a test asserts against a selector that looks wrong or outdated. Use it to confirm the spec tests the actual rendered structure, not a phantom one.
-
-The dev server must already be running. Close the browser (`browser_close`) when done. Do NOT run the Karma suite yourself — that is the `fe-test-runner`'s job.
