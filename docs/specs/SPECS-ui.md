@@ -71,6 +71,7 @@ Values from `frontend/src/styles.scss`.
 - Background: `$primary` (`#264892`).
 - Height: `calc(100vh - 56px)`.
 - Scrolls internally via `overflow-y: auto` with `scrollbar-gutter: stable` (prevents the scrollbar from clipping collapsed-width icons). Direct flex children carry `flex-shrink: 0` so they overflow instead of compressing when content is taller than the viewport.
+- Scrollbar thumb tinted translucent white (`rgba(255, 255, 255, 0.5)`) for WCAG-contrast against the `$primary` background: `scrollbar-color` for Firefox, `::-webkit-scrollbar`/`::-webkit-scrollbar-thumb` (8px wide) for WebKit browsers.
 
 ### Navbar
 
