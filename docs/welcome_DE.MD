@@ -394,16 +394,6 @@ Die Aufgaben liegen im Ordner **`/tasks/`**. Du startest eine Aufgabe mit dem Sk
 | `/clear` | Konversationshistorie löschen |
 | `/compact` | Kontext komprimieren |
 
-## Playwright-MCP: Browser-Automation
-
-Damit steuert die KI die laufende Anwendung direkt im Browser:
-
-- **Screenshots** machen und Änderungen visuell prüfen
-- **Formulare ausfüllen und Buttons klicken**, um Features zu testen
-- Durch die Anwendung **navigieren** und Abläufe verifizieren
-- **Grenzfälle** automatisch durchspielen
-- **UI-Fehler debuggen**, indem die KI sieht, was du siehst
-
 ## Weiterführende Dokumentation
 
 | Dokument | Inhalt |

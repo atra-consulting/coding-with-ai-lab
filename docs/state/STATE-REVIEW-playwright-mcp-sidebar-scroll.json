@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "branch": "playwright-mcp-sidebar-scroll",
+  "main_branch": "9527f2631ceceeaf703dcdb6fe45cbf1900d8a7b",
+  "docs_folder": "docs",
+  "special_instructions": null,
+  "review_agents_available": true,
+  "fix_agents_available": true,
+  "all_reviewers": ["ba-reviewer", "be-reviewer", "db-reviewer", "fe-reviewer", "ui-reviewer", "be-test-reviewer", "fe-test-reviewer"],
+  "all_coders": ["be-coder", "db-coder", "fe-coder", "be-test-coder", "fe-test-coder"],
+  "all_designers": ["ui-designer"],
+  "changed_files": [
+    ".claude/agents/fe-coder.md",
+    ".claude/agents/fe-reviewer.md",
+    ".claude/agents/fe-test-coder.md",
+    ".claude/agents/fe-test-reviewer.md",
+    ".claude/agents/fe-test-runner.md",
+    ".claude/agents/skill-coder.md",
+    ".claude/agents/ui-designer.md",
+    ".claude/agents/ui-reviewer.md",
+    ".gitignore",
+    ".mcp.json",
+    "README.MD",
+    "docs/plans/PLAN-PLAYWRIGHT-MCP-SIDEBAR-SCROLL.md",
+    "docs/specs/SPECS-ui.md",
+    "docs/state/STATE-PLAYWRIGHT-MCP-SIDEBAR-SCROLL.json",
+    "docs/welcome_DE.MD",
+    "docs/welcome_EN.MD",
+    "frontend/src/styles.scss"
+  ],
+  "dry_run_mode": false,
+  "started": "2026-09-10T04:00:00.000Z"
+}
