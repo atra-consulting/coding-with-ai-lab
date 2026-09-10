@@ -69,7 +69,8 @@ Values from `frontend/src/styles.scss`.
 - `width: var(--sidebar-width)`.
 - Transition: `width var(--sidebar-transition)` where `--sidebar-transition: 0.3s ease`.
 - Background: `$primary` (`#264892`).
-- Min-height: `calc(100vh - 56px)`.
+- Height: `calc(100vh - 56px)`.
+- Scrolls internally via `overflow-y: auto` with `scrollbar-gutter: stable` (prevents the scrollbar from clipping collapsed-width icons). Direct flex children carry `flex-shrink: 0` so they overflow instead of compressing when content is taller than the viewport.
 
 ### Navbar
 
