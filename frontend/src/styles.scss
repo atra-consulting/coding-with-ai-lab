@@ -20,7 +20,9 @@ body {
 }
 
 .sidebar {
-  min-height: calc(100vh - 56px);
+  // height (not min-height): a floor lets the box grow past the viewport instead of
+  // clipping, so overflow-y never gets anything to scroll — must be a ceiling here.
+  height: calc(100vh - 56px);
   background-color: $primary;
   width: var(--sidebar-width);
   position: fixed;
@@ -30,7 +32,14 @@ body {
   padding-top: 0.5rem;
   overflow-y: auto;
   overflow-x: hidden;
+  scrollbar-gutter: stable;
   transition: width var(--sidebar-transition);
+
+  // Direct children only: keep their natural height so the sidebar overflows/scrolls
+  // instead of squashing the nav links to fit.
+  > * {
+    flex-shrink: 0;
+  }
 
   ul.nav.mt-auto {
     border-top: 1px solid rgba(255, 255, 255, 0.1);
