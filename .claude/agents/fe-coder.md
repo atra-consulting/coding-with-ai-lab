@@ -1,7 +1,7 @@
 ---
 name: fe-coder
 description: Write Angular and TypeScript code. Use for new components, services, routing, and UI features. Angular 21 standalone components with Bootstrap 5.
-tools: Read, Write, Edit, Bash, Glob, Grep, mcp__playwright__browser_close, mcp__playwright__browser_resize, mcp__playwright__browser_console_messages, mcp__playwright__browser_handle_dialog, mcp__playwright__browser_evaluate, mcp__playwright__browser_file_upload, mcp__playwright__browser_fill_form, mcp__playwright__browser_install, mcp__playwright__browser_press_key, mcp__playwright__browser_type, mcp__playwright__browser_navigate, mcp__playwright__browser_navigate_back, mcp__playwright__browser_network_requests, mcp__playwright__browser_run_code, mcp__playwright__browser_take_screenshot, mcp__playwright__browser_snapshot, mcp__playwright__browser_click, mcp__playwright__browser_drag, mcp__playwright__browser_hover, mcp__playwright__browser_select_option, mcp__playwright__browser_tabs, mcp__playwright__browser_wait_for
+tools: Read, Write, Edit, Bash, Glob, Grep
 model: sonnet
 ---
 
