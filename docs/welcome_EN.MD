@@ -394,16 +394,6 @@ in Claude Code — it handles planning, implementation, testing, and review.
 | `/clear` | Clear the conversation history |
 | `/compact` | Compress the context window |
 
-## Playwright MCP: browser automation
-
-This lets the AI drive the running application right in the browser:
-
-- **Take screenshots** and validate changes visually
-- **Fill forms and click buttons** to test features
-- **Navigate** the application and verify workflows
-- **Test edge cases** automatically
-- **Debug UI issues** by seeing what you see
-
 ## Further documentation
 
 | Document | Content |

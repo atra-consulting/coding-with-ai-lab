@@ -58,7 +58,6 @@ atra.consulting [bietet KI-Training an](https://atra.consulting/ki-loesungen/), 
 
 **Referenz**
 
-- [Playwright-MCP: Browser-Automation](#playwright-mcp-browser-automation)
 - [Features](#features)
 - [Tech-Stack](#tech-stack)
 - [Weiterführende Dokumentation](#weiterführende-dokumentation)
@@ -196,18 +195,6 @@ Der Skill übernimmt Planung, Implementierung, Testing und Code Review automatis
 | `/help` | Hilfe zu Claude Code |
 | `/clear` | Konversationshistorie löschen |
 | `/compact` | Kontext komprimieren |
-
----
-
-## Playwright-MCP: Browser-Automation
-
-Playwright-MCP ermöglicht der AI, direkt mit der laufenden Anwendung im Browser zu interagieren:
-
-- **Screenshots** der UI machen und Änderungen visuell validieren
-- **Formulare ausfüllen und Buttons klicken** um Features zu testen
-- Durch die Anwendung **navigieren** und Workflows verifizieren
-- **Grenzfälle** und Benutzerinteraktionen automatisch testen
-- **UI-Probleme debuggen** durch visuelle Kontrolle der Anwendung
 
 ---
 
