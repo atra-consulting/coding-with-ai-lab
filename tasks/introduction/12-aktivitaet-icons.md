@@ -4,7 +4,7 @@
 **Sozialform:** einzeln
 **Werkzeug:** Claude Code
 **Voraussetzung:** Lab läuft unter `localhost:7200`
-**Ziel:** In der Aktivitäten-Liste steht vor dem Typ ein passendes FontAwesome-Icon — fünf Typ-Icons plus ein neutrales Fallback, klein im Code und sofort sichtbar.
+**Ziel:** In der Aktivitäten-Liste steht vor dem Typ ein passendes FontAwesome-Icon: fünf Typ-Icons plus ein neutrales Fallback.
 
 Mapping-Vorschlag (FontAwesome Solid): `ANRUF` → `faPhone`, `EMAIL` →
 `faEnvelope`, `MEETING` → `faUsers`, `NOTIZ` → `faNoteSticky`, `AUFGABE` →

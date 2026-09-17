@@ -4,7 +4,7 @@
 **Sozialform:** einzeln
 **Werkzeug:** Claude Code
 **Voraussetzung:** Lab läuft unter `localhost:7200` (`GOOGLE_GEMINI_KEY` nur für den optionalen Schritt 3)
-**Ziel:** Beim Anlegen einer Firma oder Person warnt die Anwendung vor einem sehr ähnlichen bestehenden Eintrag: ein Dialog zeigt mögliche Duplikate mit Ähnlichkeits-Score und bietet drei Wege an.
+**Ziel:** Beim Anlegen einer Firma oder Person warnt die Anwendung vor einem sehr ähnlichen bestehenden Eintrag: Ein Dialog zeigt mögliche Duplikate mit Ähnlichkeits-Score und bietet an, trotzdem anzulegen, den vorhandenen Eintrag zu öffnen oder abzubrechen.
 
 Klassisches Fuzzy-Matching plus optionale KI-Validierung. Bei Verdacht kann
 der User die Einträge zusammenführen.
