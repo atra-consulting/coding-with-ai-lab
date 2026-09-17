@@ -4,8 +4,7 @@
 **Sozialform:** einzeln
 **Werkzeug:** Terminal
 **Voraussetzung:** Lab geklont und gestartet (Aufgabe 10)
-**Ziel:** Der Arbeitszyklus Branch anlegen, ändern, Unterschied ansehen, festschreiben ist einmal selbst durchlaufen.
-**Ergebnis:** `git log --oneline -3` zeigt zwei eigene Commits auf eurem Branch, `git diff main --stat` genau eine geänderte Datei.
+**Ziel:** Ihr durchlauft den Arbeitszyklus einmal selbst — Branch anlegen, ändern, Unterschied ansehen, festschreiben: `git log --oneline -3` zeigt zwei eigene Commits auf eurem Branch, `git diff main --stat` genau eine geänderte Datei.
 
 An Tag 2 tut der Agent genau das — ihr sollt es einmal selbst getan haben,
 um zu wissen, was ein Diff und ein Commit sind.

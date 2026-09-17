@@ -4,8 +4,7 @@
 **Sozialform:** einzeln
 **Werkzeug:** Terminal
 **Voraussetzung:** Lab läuft unter `localhost:7200` (Aufgabe 10)
-**Ziel:** Drei Zeilen aus dem Startlog sind eingeordnet und ein provozierter Fehler ist erklärt.
-**Ergebnis:** Drei Aussagen zum Startlog, die Erklärung für `401` statt `404` und ein Blick in Network-Tab und Console.
+**Ziel:** Ihr ordnet drei Zeilen aus dem Startlog ein, erklärt an einem provozierten Fehler, warum `401` statt `404` kommt, und habt dafür in Network-Tab und Console gesehen.
 
 Ein Log ist kein Rauschen, sondern der Bericht der Anwendung über sich
 selbst. Wer drei Zeilen darin einordnen kann, kann an Tag 2 beurteilen, ob

@@ -4,8 +4,7 @@
 **Sozialform:** Paare
 **Werkzeug:** Claude Code
 **Voraussetzung:** PRD aus Aufgabe 02 liegt seit Aufgabe 11 unter `docs/prds/PRD-FIRMA-FAVORIT.md`
-**Ziel:** Der Agent setzt euer eigenes PRD durch alle Schichten um, von der Datenbank bis zur Oberfläche.
-**Ergebnis:** Ein Feature, dessen PRD-Anforderungen ihr einzeln mit Ja oder Nein abgenommen habt.
+**Ziel:** Der Agent setzt euer eigenes PRD durch alle Schichten um, von der Datenbank bis zur Oberfläche, und ihr nehmt jede PRD-Anforderung einzeln mit Ja oder Nein ab.
 
 Der Bogen von Tag 1 schließt sich: Euer PRD „Firmen als Favorit markieren"
 liegt im Repo. Ihr prüft am Plan-Checkpoint, ob der Agent es verstanden hat,

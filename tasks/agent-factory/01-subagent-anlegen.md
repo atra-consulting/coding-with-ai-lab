@@ -3,8 +3,7 @@
 **Dauer:** 10 min
 **Sozialform:** einzeln
 **Werkzeug:** Claude Code
-**Ziel:** Ein Subagent `requirements-reviewer` beurteilt, ob Anforderungen vollständig sind, und fragt nach, was fehlt.
-**Ergebnis:** Der Subagent liegt im Projekt und steht in der Agents-Sektion der `CLAUDE.md`.
+**Ziel:** Ein Subagent `requirements-reviewer` beurteilt, ob Anforderungen vollständig sind, und fragt nach, was fehlt; er liegt im Projekt und steht in der Agents-Sektion der `CLAUDE.md`.
 
 Den braucht ihr für die Skills, die ihr danach baut: Er ist die Instanz, die
 in der Factory prüft, ob eine Aufgabe überhaupt baubar ist.

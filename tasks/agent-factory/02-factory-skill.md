@@ -4,8 +4,7 @@
 **Sozialform:** einzeln
 **Werkzeug:** Claude Code
 **Voraussetzung:** keine — die benötigten Subagenten liegen im Lab
-**Ziel:** Ein Skill holt das nächste Ticket, prüft mit `ba-reviewer`, ob es baubar ist, und setzt es per `/plan-and-do` bis zum Pull Request um.
-**Ergebnis:** Ein Projekt-Skill `tickets-implementieren`, den `/skills` nach dem Neustart anzeigt.
+**Ziel:** Ein Projekt-Skill `tickets-implementieren` holt das nächste Ticket, prüft mit `ba-reviewer`, ob es baubar ist, und setzt es per `/plan-and-do` bis zum Pull Request um; `/skills` zeigt ihn nach dem Neustart an.
 
 Was der Skill genau tun soll, steht in
 [`skill-spec-02-factory-skill.md`](skill-spec-02-factory-skill.md) — der
