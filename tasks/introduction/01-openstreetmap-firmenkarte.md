@@ -4,8 +4,7 @@
 **Sozialform:** einzeln
 **Werkzeug:** Claude Code
 **Voraussetzung:** Lab läuft unter `localhost:7200`
-**Ziel:** Die Firmen-Detailseite zeigt die Adressen der Firma als Marker auf einer OpenStreetMap-Karte.
-**Ergebnis:** Eine Leaflet-Karte unter den Stammdaten, die automatisch auf alle Marker zoomt.
+**Ziel:** Die Firmen-Detailseite zeigt die Adressen der Firma als Marker auf einer Leaflet-Karte unter den Stammdaten, die automatisch auf alle Marker zoomt.
 
 Die Adressen der Firma haben bereits `latitude` / `longitude` in der
 Datenbank (Seed-Daten) — die Koordinaten landen direkt als Marker auf der

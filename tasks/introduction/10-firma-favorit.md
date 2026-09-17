@@ -4,8 +4,7 @@
 **Sozialform:** einzeln
 **Werkzeug:** Claude Code
 **Voraussetzung:** Lab läuft unter `localhost:7200`
-**Ziel:** Ein Stern-Icon in der Firmenliste markiert eine Firma als Favorit, eine Checkbox filtert darauf.
-**Ergebnis:** Ein Favoritenstatus, der pro Firma in der Datenbank steht und das Neuladen übersteht.
+**Ziel:** Ein Stern-Icon in der Firmenliste markiert eine Firma als Favorit, eine Checkbox filtert darauf, und der Favoritenstatus steht pro Firma in der Datenbank und übersteht das Neuladen.
 
 Zeigt Full-Stack mit PATCH-Endpoint, Boolean-Toggle und Filter-Logik. Der
 Zustand wird pro Firma gespeichert, nicht pro User.

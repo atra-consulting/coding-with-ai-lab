@@ -4,8 +4,7 @@
 **Sozialform:** einzeln
 **Werkzeug:** Claude Code
 **Voraussetzung:** Lab läuft unter `localhost:7200`
-**Ziel:** Ein Icon-Button im Header schaltet die App zwischen hell und dunkel, und die Wahl überlebt das Neuladen.
-**Ergebnis:** Ein Umschalter, dessen Zustand in `localStorage` steht und beim nächsten Öffnen wiederhergestellt wird.
+**Ziel:** Ein Icon-Button im Header schaltet die App zwischen hell und dunkel; der Zustand steht in `localStorage` und wird beim nächsten Öffnen wiederhergestellt.
 
 Bootstrap 5.3 kann das nativ über `data-bs-theme="dark"` am `<html>`-Element —
 eigenes CSS braucht es dafür nicht.

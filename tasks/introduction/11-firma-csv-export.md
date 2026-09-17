@@ -4,8 +4,7 @@
 **Sozialform:** einzeln
 **Werkzeug:** Claude Code
 **Voraussetzung:** Lab läuft unter `localhost:7200`
-**Ziel:** Ein Knopf über der Firmenliste lädt alle Firmen als CSV-Datei herunter — gebaut ohne Skill und ohne Subagent.
-**Ergebnis:** Eine `firmen-YYYY-MM-DD.csv`, die Excel direkt und mit korrekten Umlauten öffnet.
+**Ziel:** Ein Knopf über der Firmenliste lädt alle Firmen als `firmen-YYYY-MM-DD.csv` herunter, die Excel direkt und mit korrekten Umlauten öffnet — gebaut ohne Skill und ohne Subagent.
 
 Die Datei enthält alle Firmen, nicht nur die aktuelle Seite. Das Backend
 liefert sie mit passendem `Content-Type` und UTF-8-BOM für die

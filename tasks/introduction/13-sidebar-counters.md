@@ -4,8 +4,7 @@
 **Sozialform:** einzeln
 **Werkzeug:** Claude Code
 **Voraussetzung:** Lab läuft unter `localhost:7200`
-**Ziel:** Neben den vier Menüpunkten der Seitennavigation steht die Anzahl der Datensätze.
-**Ergebnis:** Vier graue Badges aus einem einzigen Request an `/api/dashboard`.
+**Ziel:** Neben den vier Menüpunkten der Seitennavigation steht die Anzahl der Datensätze als vier graue Badges, befüllt aus einem einzigen Request an `/api/dashboard`.
 
 Das Backend hat bereits einen `GET /api/dashboard`-Endpoint, der
 `firmenCount`, `personenCount` und `offeneChancenCount` liefert. Für die

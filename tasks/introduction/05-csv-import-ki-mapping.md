@@ -4,8 +4,7 @@
 **Sozialform:** einzeln
 **Werkzeug:** Claude Code
 **Voraussetzung:** Lab läuft unter `localhost:7200`, `GOOGLE_GEMINI_KEY` exportiert
-**Ziel:** Beim CSV-Import schlägt die KI vor, welche CSV-Spalte zu welchem CRM-Feld gehört.
-**Ergebnis:** Ein Import, bei dem der Nutzer den KI-Vorschlag pro Spalte bestätigt oder korrigiert, bevor Daten entstehen.
+**Ziel:** Beim CSV-Import schlägt die KI vor, welche CSV-Spalte zu welchem CRM-Feld gehört, und der Nutzer bestätigt oder korrigiert den Vorschlag pro Spalte, bevor Daten entstehen.
 
 Der User lädt eine Firmen-Liste hoch, die KI schlägt ein Mapping vor, der
 User bestätigt oder korrigiert, dann werden die Daten importiert.

@@ -3,8 +3,7 @@
 **Dauer:** 120 min
 **Sozialform:** einzeln
 **Werkzeug:** Claude Code
-**Ziel:** Claude Code zieht ein komplettes neues Projekt hoch — Framework, Auth, CRUD und Design.
-**Ergebnis:** Eine lauffähige Next.js-App für den Künstler „Roy Bildermann" mit öffentlicher Galerie und geschütztem Admin-Bereich.
+**Ziel:** Claude Code zieht ein komplettes neues Projekt hoch — Framework, Auth, CRUD und Design — und liefert eine lauffähige Next.js-App für den Künstler „Roy Bildermann" mit öffentlicher Galerie und geschütztem Admin-Bereich.
 
 Die Website präsentiert seine Werke und Informationen über den Künstler;
 dazu gibt es einen geschützten Login-Bereich, in dem der Künstler seine

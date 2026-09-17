@@ -4,8 +4,7 @@
 **Sozialform:** einzeln
 **Werkzeug:** Claude Code
 **Voraussetzung:** Lab läuft unter `localhost:7200`, `GOOGLE_GEMINI_KEY` exportiert
-**Ziel:** Ein Knopf auf Firmen- und Personen-Detailseite fasst die Geschäftsbeziehung zusammen und schlägt nächste Schritte vor.
-**Ergebnis:** Eine Karte mit höchstens 150 Wörtern Zusammenfassung und bis zu fünf nächsten Schritten.
+**Ziel:** Ein Knopf auf Firmen- und Personen-Detailseite zeigt eine Karte mit höchstens 150 Wörtern Zusammenfassung der Geschäftsbeziehung und bis zu fünf vorgeschlagenen nächsten Schritten.
 
 Das System sammelt alle zugehörigen Aktivitäten und Chancen und übergibt sie
 strukturiert an Gemini. Der API-Key bleibt im Backend.

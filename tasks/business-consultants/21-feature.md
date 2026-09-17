@@ -4,8 +4,7 @@
 **Sozialform:** Paare
 **Werkzeug:** Claude Code
 **Voraussetzung:** Lab läuft unter `localhost:7200`
-**Ziel:** Neben dem Gesamtwert der Chancen-Liste steht der gewichtete Wert — Wert mal Wahrscheinlichkeit.
-**Ergebnis:** Eine Zahl, die eurer Handrechnung standhält, und drei Entscheidungen, die ihr vor dem Prompt getroffen habt.
+**Ziel:** Neben dem Gesamtwert der Chancen-Liste steht der gewichtete Wert — Wert mal Wahrscheinlichkeit —, eine Zahl, die eurer Handrechnung standhält, aufbauend auf drei Entscheidungen, die ihr vor dem Prompt getroffen habt.
 
 Ein Feature, das aus der Fachlichkeit kommt: Über der Chancen-Liste steht
 heute „Gesamtwert". Der Vertrieb will daneben den **gewichteten** Wert.

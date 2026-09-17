@@ -4,8 +4,7 @@
 **Sozialform:** einzeln
 **Werkzeug:** Claude Code
 **Voraussetzung:** Lab läuft unter `localhost:7200`, `GOOGLE_GEMINI_KEY` exportiert
-**Ziel:** Ein Chat-Fenster in der Anwendung beantwortet freie Fragen zu den CRM-Daten.
-**Ergebnis:** Ein aufklappbares Chat-Widget, dessen Antworten aus den vom Backend gelieferten CRM-Daten stammen.
+**Ziel:** Ein aufklappbares Chat-Widget in der Anwendung beantwortet freie Fragen zu den CRM-Daten, mit Antworten, die aus den vom Backend gelieferten Daten stammen.
 
 Die KI bekommt die Firmen, Personen, Chancen und Aktivitäten als
 strukturierten Kontext mit und antwortet in natürlicher Sprache — Beispiel:

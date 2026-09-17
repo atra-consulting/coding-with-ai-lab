@@ -4,8 +4,7 @@
 **Sozialform:** Paare
 **Werkzeug:** Claude Code
 **Voraussetzung:** Lab läuft unter `localhost:7200`
-**Ziel:** Aus der Support-Meldung aus Aufgabe 04 wird ein Fehlerbericht, der dem Agenten als Spezifikation genügt.
-**Ergebnis:** Ein Fix, der sich Zeile für Zeile gegen den eigenen Fehlerbericht abhaken lässt.
+**Ziel:** Aus der Support-Meldung aus Aufgabe 04 wird ein Fehlerbericht, der dem Agenten als Spezifikation genügt, und ein Fix, der sich Zeile für Zeile gegen diesen Fehlerbericht abhaken lässt.
 
 Die Meldung lautet: „Ich kann keine Chance mehr speichern, der Knopf ist
 grau." Ihr stellt den Fehler nach, schreibt einen Fehlerbericht, den ein

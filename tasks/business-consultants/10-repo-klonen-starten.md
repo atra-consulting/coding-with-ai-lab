@@ -3,8 +3,7 @@
 **Dauer:** 35 min
 **Sozialform:** einzeln
 **Werkzeug:** Terminal
-**Ziel:** Das CRM-Lab läuft auf dem eigenen Rechner, und das Repository ist gelesen wie eine Akte.
-**Ergebnis:** Die Anwendung läuft unter `localhost:7200`, eine Chance ist angelegt, und ihr könnt zu drei Fragen sagen, in welcher Datei die Antwort steht.
+**Ziel:** Das CRM-Lab läuft unter `localhost:7200`, eine Chance ist angelegt, und ihr könnt zu drei Fragen sagen, in welcher Datei die Antwort steht — das Repository ist gelesen wie eine Akte.
 
 Die drei Handgriffe, die jeder Entwickler täglich macht — Terminal öffnen,
 Repository klonen, Anwendung starten —, dazu das Lesen des Repositorys:

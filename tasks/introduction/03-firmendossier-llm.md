@@ -4,8 +4,7 @@
 **Sozialform:** einzeln
 **Werkzeug:** Claude Code
 **Voraussetzung:** Lab läuft unter `localhost:7200`, `GOOGLE_GEMINI_KEY` exportiert
-**Ziel:** Ein Knopf auf der Firmen-Detailseite holt über die Gemini API ein Dossier zur Firma.
-**Ergebnis:** Eine Karte mit Zusammenfassung und drei aktuellen Presseberichten, deren Links aus dem Web-Grounding stammen.
+**Ziel:** Ein Knopf auf der Firmen-Detailseite holt über die Gemini API ein Dossier zur Firma: eine Karte mit Zusammenfassung und drei aktuellen Presseberichten, deren Links aus dem Web-Grounding stammen.
 
 Gute Aufgabe, um Web-Grounding und strukturierte LLM-Responses zu zeigen —
 dafür kommen erst real existierende Firmen in die Testdaten, sonst hat die

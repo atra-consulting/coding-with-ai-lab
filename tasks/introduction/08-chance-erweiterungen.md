@@ -4,8 +4,7 @@
 **Sozialform:** einzeln
 **Werkzeug:** Claude Code
 **Voraussetzung:** Lab läuft unter `localhost:7200`
-**Ziel:** Die Phase einer Chance erscheint als farbiger Badge, und Chancen bekommen ein freies Notiz-Feld.
-**Ergebnis:** Zwei Erweiterungen aus einem Durchlauf — eine rein visuelle im Frontend, eine durch den ganzen Stack.
+**Ziel:** Die Phase einer Chance erscheint als farbiger Badge, und Chancen bekommen ein freies Notiz-Feld — zwei Erweiterungen aus einem Durchlauf, eine rein visuell im Frontend, eine durch den ganzen Stack.
 
 Teil 1 rendert die Phase statt als Text als Bootstrap-Badge: `NEU` blau
 (primary), `QUALIFIZIERT` hellblau (info), `ANGEBOT` gelb (warning),
