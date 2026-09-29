@@ -1,7 +1,7 @@
 # Autonomous Agent Task Runner — REFERENCE / DEMO workflow.
 #
-# This is a teaching artifact for the "Claude Code for Advanced Users" workshop.
-# It shows how Claude Code, driven by GitHub Actions, can pull tasks from the app,
+# This is a teaching artifact for the "Copilot CLI for Advanced Users" workshop.
+# It shows how GitHub Copilot CLI, driven by GitHub Actions, can pull tasks from the app,
 # decide to solve or reject each, implement them, and merge to main — autonomously.
 #
 # Triggers:
@@ -17,9 +17,8 @@
 # Required repository secrets:
 #   AGENT_API_TOKEN         - shared secret for /api/agent-tasks/* AND /api/cron/runs/*/complete
 #   APP_BASE_URL            - base URL of the DEPLOYED app (e.g. https://your-app.vercel.app)
-#   CLAUDE_CODE_OAUTH_TOKEN - subscription OAuth token Claude Code uses to authenticate.
-#                             Create it locally with `claude setup-token`. Use this INSTEAD
-#                             of ANTHROPIC_API_KEY (a pay-as-you-go API key); do not set both.
+#   (no model secret) - Copilot CLI uses the built-in workflow token; the org
+#                             must allow "Copilot CLI billed to the organization".
 #
 # The Vercel-side env vars (CRON_SECRET, GH_DISPATCH_TOKEN) live in Vercel, not here —
 # see docs/specs/SPEC-API-TASKS.md "Environment Variables".
@@ -49,6 +48,11 @@ on:
 # Single-flight: queue overlapping runs rather than running them concurrently.
 # The API side also guards with a RUNNING cron_run check, so a queued run that
 # finds no OPEN tasks simply records a SKIP.
+permissions:
+  contents: write
+  copilot-requests: write
+  pull-requests: write
+
 concurrency:
   group: agent-task-runner
   cancel-in-progress: false
@@ -78,19 +82,17 @@ jobs:
         working-directory: backend
         run: npm ci
 
-      - name: Install Claude Code
-        run: npm install -g @anthropic-ai/claude-code
+      - name: Install Copilot CLI
+        run: npm install -g @github/copilot
 
       - name: Drain all agent task sources
         id: drain
         env:
           AGENT_API_TOKEN: ${{ secrets.AGENT_API_TOKEN }}
           APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
-          # Claude Code authenticates via the subscription OAuth token (created with
-          # `claude setup-token`), NOT a pay-as-you-go API key. Do NOT also set
-          # ANTHROPIC_API_KEY here — if present it takes precedence and an invalid
-          # value yields "Invalid API key · Fix external API key".
-          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # Copilot CLI authenticates with the built-in workflow token
+          # (permissions: copilot-requests: write).
+          COPILOT_GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -uo pipefail
           # source enum value : prompt file suffix
@@ -103,7 +105,7 @@ jobs:
           for entry in "${SOURCES[@]}"; do
             SOURCE="${entry%%:*}"
             SUFFIX="${entry##*:}"
-            PROMPT=".claude/prompts/agent-${SUFFIX}.md"
+            PROMPT=".github/prompts/agent-${SUFFIX}.md"
             if [ ! -f "$PROMPT" ]; then
               echo "Prompt not found, skipping: $PROMPT"
               continue
@@ -118,9 +120,9 @@ jobs:
               echo "  [${SOURCE} #${i}] Running prompt..."
               # The prompt itself claims (/next) and works ONE task per run, then
               # exits. We loop until it reports the queue is empty.
-              OUTPUT=$(claude -p "$(cat "$PROMPT")" --dangerously-skip-permissions 2>&1) || {
+              OUTPUT=$(copilot -p "$(cat "$PROMPT")" --allow-all --no-ask-user 2>&1) || {
                 echo "$OUTPUT"
-                echo "  claude run failed for ${SOURCE}; stopping this source." >&2
+                echo "  copilot run failed for ${SOURCE}; stopping this source." >&2
                 RUN_STATUS="FAILED"
                 break
               }

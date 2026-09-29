@@ -29,10 +29,10 @@ Thumbs.db
 /*.png
 /*.jpg
 
-# Claude Code local settings
-.claude/settings.local.json
+# Copilot CLI local settings
+.copilot/
 .vercel
 
-# update-claude-files embedded result (regenerated every run, never committed)
-docs/state/UPDATE-CLAUDE-FILES-RESULT.md
+# update-agent-files embedded result (regenerated every run, never committed)
+docs/state/UPDATE-AGENT-FILES-RESULT.md
 .worktrees/

@@ -334,8 +334,7 @@ Each job renders as its own card in `/admin/cron` with a dedicated "Jetzt ausfü
 | `GH_DISPATCH_TOKEN` | Vercel only | the dispatcher's `repository_dispatch` call (fine-grained PAT: Contents R/W + Actions R/W) |
 | `GH_DISPATCH_REPO` | Vercel only (optional) | overrides the dispatch target; defaults to `atra-consulting/coding-with-ai-lab` |
 | `APP_BASE_URL` | GitHub repo secret | runner → app base URL for the callback |
-| `ANTHROPIC_API_KEY` | GitHub repo secret | Claude CLI in the agent-task runner |
-| `CLAUDE_CODE_OAUTH_TOKEN` | GitHub repo secret | Claude CLI auth in the GitHub-issue agent (subscription token via `claude setup-token`; use **instead of** `ANTHROPIC_API_KEY`) |
+| — (`github.token`) | GitHub Actions, built in | Copilot CLI auth in both agent workflows (`permissions: copilot-requests: write`; org policy "Allow use of Copilot CLI billed to the organization") |
 | `GH_PROJECT_TOKEN` | GitHub repo secret | **GitHub-issue agent only.** Classic PAT with scopes `repo`, `project`, `read:org`. Used by `gh` + `git` for issue/label/PR/push **and** moving the issue on Project board #7. The default `GITHUB_TOKEN` cannot write Projects v2. |
 
 All are read from `process.env`; never commit values. The Vercel cron is set to **once daily** (`0 2 * * *`) because Hobby plans reject sub-daily schedules at deploy time — bump it to `*/10 * * * *` only after upgrading to **Pro**. The admin "Run now" button (`/admin/cron`) triggers the same dispatch on demand on **any** plan, and is also the local-dev test path (Vercel crons don't fire locally).
@@ -348,8 +347,8 @@ A **second** autonomous agent, separate from the agent-task runner. It works aga
 
 **Pieces**
 - **Trigger:** `GET /api/cron/github-issues` (above) → `repository_dispatch` `solve-github-issues`.
-- **Workflow:** [`.github/workflows/github-issue-agent.yml`](../../.github/workflows/github-issue-agent.yml) — runs `claude -p` once with the prompt below, then calls `/runs/:id/complete`.
-- **Prompt:** [`.claude/prompts/agent-github-refinement.md`](../../.claude/prompts/agent-github-refinement.md).
+- **Workflow:** [`.github/workflows/github-issue-agent.yml`](../../.github/workflows/github-issue-agent.yml) — runs `copilot -p` once with the prompt below, then calls `/runs/:id/complete`.
+- **Prompt:** [`.github/prompts/agent-github-refinement.md`](../../.github/prompts/agent-github-refinement.md).
 - **Token:** `GH_PROJECT_TOKEN` (see env table) — needs Projects-v2 write, which the default `GITHUB_TOKEN` lacks.
 
 **Per-run flow**
@@ -410,4 +409,4 @@ for each source in [EMAIL, GITHUB_ISSUE, APP_LOG, ERROR_REPORT]:
 
 - `docs/prds/PRD-AUTONOMOUS-TASK-SOURCES.md` — full requirements and acceptance criteria.
 - `docs/specs/SPEC-API-TICKETS.md` — Kanban ticket queue (separate system, adds the ask/answer conversation).
-- `.claude/prompts/agent-*.md` — the per-source prompts that call this API.
+- `.github/prompts/agent-*.md` — the per-source prompts that call this API.

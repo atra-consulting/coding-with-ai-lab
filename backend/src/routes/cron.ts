@@ -135,7 +135,7 @@ router.get(
 //
 // Triggered by an admin clicking "Jetzt ausführen" on the github-issue agent card
 // (manual only — there is no Vercel cron for this job). Fires the
-// `solve-github-issues` workflow, which runs Claude Code against ONE open GitHub
+// `solve-github-issues` workflow, which runs GitHub Copilot CLI against ONE open GitHub
 // issue labelled "Refinement needed".
 //
 // Unlike /agent-tasks there is no backend-visible work queue to pre-check (the

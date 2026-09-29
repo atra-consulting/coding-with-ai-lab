@@ -23,10 +23,8 @@
 #   GH_PROJECT_TOKEN        - PAT (classic) with scopes: repo, project, read:org.
 #                             Used by gh + git for ALL issue/PR/board/push actions.
 #                             The default GITHUB_TOKEN CANNOT write Projects v2.
-#   CLAUDE_CODE_OAUTH_TOKEN - subscription OAuth token (create with `claude setup-token`).
-#                             Use INSTEAD of ANTHROPIC_API_KEY; do not set both.
-#   AGENT_API_TOKEN         - shared secret for the /api/cron/runs/<id>/complete callback.
-#   APP_BASE_URL            - base URL of the DEPLOYED app (e.g. https://your-app.vercel.app).
+#   (no model secret) - Copilot CLI uses the built-in workflow token; the org
+#                             must allow "Copilot CLI billed to the organization".
 
 name: GitHub Issue Agent
 
@@ -43,6 +41,7 @@ concurrency:
 
 permissions:
   contents: write
+  copilot-requests: write
   issues: write
   pull-requests: write
 
@@ -76,8 +75,8 @@ jobs:
         working-directory: backend
         run: npm ci
 
-      - name: Install Claude Code
-        run: npm install -g @anthropic-ai/claude-code
+      - name: Install Copilot CLI
+        run: npm install -g @github/copilot
 
       - name: Configure git identity
         run: |
@@ -89,19 +88,19 @@ jobs:
         env:
           # gh CLI + git auth (issues, labels, project board, push, PR).
           GH_TOKEN: ${{ secrets.GH_PROJECT_TOKEN }}
-          # Claude Code subscription auth. Do NOT also set ANTHROPIC_API_KEY.
-          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # Copilot CLI auth: built-in workflow token (permissions: copilot-requests: write).
+          COPILOT_GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -uo pipefail
-          PROMPT=".claude/prompts/agent-github-refinement.md"
+          PROMPT=".github/prompts/agent-github-refinement.md"
           RUN_STATUS="SUCCESS"
           SOLVED=0
           REJECTED=0
 
           echo "Running GitHub issue agent (one issue per run)…"
-          OUTPUT=$(claude -p "$(cat "$PROMPT")" --dangerously-skip-permissions 2>&1) || {
+          OUTPUT=$(copilot -p "$(cat "$PROMPT")" --allow-all --no-ask-user 2>&1) || {
             echo "$OUTPUT"
-            echo "claude run failed." >&2
+            echo "copilot run failed." >&2
             RUN_STATUS="FAILED"
           }
           echo "$OUTPUT"
