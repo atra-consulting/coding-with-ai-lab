@@ -75,7 +75,7 @@ gh issue edit "$NUM" --repo "$REPO" --add-label "Input needed"
 
 The question must be concrete and answerable in one reply (e.g. "Welches Zeichenlimit soll die Notiz haben — 500, 1000 oder 2000?"). Generic questions ("unclear") are not acceptable. List every open decision in one comment so a single answer unblocks the issue.
 
-Then print `AGENT_RESULT: INPUT_NEEDED #<NUM>` and **exit**. Do NOT invoke plan-and-do.
+Then print `AGENT_RESULT: INPUT_NEEDED #<NUM>` and **exit**. Do NOT build anything.
 
 ## Step 3b — IMPLEMENT path
 
@@ -96,20 +96,16 @@ gh project item-edit --project-id "$PROJECT_ID" --id "$ITEM_ID" \
   --field-id "$STATUS_FIELD" --single-select-option-id "$OPT_INPROGRESS"
 ```
 
-### 3b.2 — Implement via plan-and-do
+### 3b.2 — Implement
 
-Invoke the existing skill `.claude/skills/plan-and-do/SKILL.md` with the issue **body** as the description, and pass these **special instructions**.
+Implement the issue yourself, in this order. You run headless: never call `AskUserQuestion` — decide and continue.
 
-**You run headless. plan-and-do has interactive checkpoints (`AskUserQuestion`) you CANNOT answer. Apply these standing answers to EVERY checkpoint, without waiting:**
-
-- PRD decision (Step 5): **skip the PRD** → go straight to the plan (these are small, well-scoped changes).
-- Plan approval / workflow scope (Step 7.5): choose **"Approve, implement, review, and create PR"** (= `full`).
-- Test command (Step 7.1): there is **no heavy test suite to run** here. Use a lightweight build check as the test command — **`cd backend && npx tsc --noEmit`** for backend changes and/or **`cd frontend && npx ng build`** for frontend changes. **Do NOT author or modify automated tests** (Playwright/Jasmine) — that matches this project's standing preference; skip the test-authoring phase.
-- Keep planning files: **yes**.
-- PR target/base: **`main`** (the branch checked out in CI). Put **`Closes #<NUM>`** as the first line of the PR body so the issue links to the PR.
-- Post-completion → Push and PR (PC.2): **"Push and create pull request"**.
-- Post-completion → Merge (PC.4): **"Skip merge (done)"**. **NEVER merge.** The PR stays open for human review.
-- Every other checkpoint / `AskUserQuestion`: choose **Continue** (or the recommended option). Never stop.
+1. **Branch:** `git switch -c agent/issue-<NUM>` from `main` (the branch checked out in CI).
+2. **Plan briefly:** read `CLAUDE.md` and the specs it points to, list the files you will change. No PRD — these are small, well-scoped changes.
+3. **Implement:** use the subagents in `.claude/agents/` where they fit (`db-coder`, `be-coder`, `fe-coder`, `ui-designer`).
+4. **Check:** there is **no heavy test suite to run** here. Use a lightweight build check — **`cd backend && npx tsc --noEmit`** for backend changes and/or **`cd frontend && npx ng build`** for frontend changes. **Do NOT author or modify automated tests** (Playwright/Jasmine) — that matches this project's standing preference.
+5. **Review:** run `/review embedded` and fix what it finds.
+6. **Ship:** commit, push, open a PR against **`main`** with **`Closes #<NUM>`** as the first line of the body. **NEVER merge.** The PR stays open for human review.
 
 **If you cannot finish** (the change is larger than it looked, the build won't pass after a reasonable attempt, or you hit a real ambiguity mid-way): do NOT leave the issue stuck. Fall back to the ASK path — move the board back to Backlog, comment on the issue explaining the blocker, @-mention `@dave0688`, add the `Input needed` label:
 
@@ -124,7 +120,7 @@ Then print `AGENT_RESULT: INPUT_NEEDED #<NUM>` and **exit**.
 
 ### 3b.3 — After the PR exists: move to "In review" and link it
 
-plan-and-do leaves you on the feature branch (it does not merge). Find the PR and finish:
+You are still on the feature branch. Find the PR and finish:
 
 ```bash
 BRANCH="$(git branch --show-current)"

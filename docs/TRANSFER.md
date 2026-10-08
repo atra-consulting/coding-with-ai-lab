@@ -101,6 +101,6 @@ Beende Claude Code. Starte es neu. Fertig.
 
 ## Danach
 
-Teste die Skills an einer kleinen Aufgabe. Zum Beispiel `/plan-and-do "kleines Feature"`. Läuft das sauber, passt die Übernahme.
+Teste die Skills an einer kleinen Änderung. Zum Beispiel `/review` auf einem Branch mit einem kleinen Feature. Läuft das sauber, passt die Übernahme.
 
 Mehr zu den Bausteinen: [SUBAGENTS.md](SUBAGENTS.md) · [SKILLS.md](SKILLS.md)

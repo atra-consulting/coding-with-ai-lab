@@ -6,7 +6,7 @@
 # one at a time, until that source's queue is empty (/next returns HTTP 204).
 #
 # For each task Claude decides accept or reject:
-#   - doable  -> runs the plan-and-do skill, creates a branch/PR, merges, calls /done
+#   - doable  -> implements it (see .claude/prompts/agent-*.md), creates a branch/PR, merges, calls /done
 #   - reject  -> calls /reject with a comment and stops
 #
 # Local use only. Requires a running app (./start.sh) and Claude Code on PATH.

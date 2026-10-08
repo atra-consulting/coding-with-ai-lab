@@ -59,7 +59,7 @@ For a long or highly structured document, a caller can dial you up to a higher m
 
 ## Registering this role
 
-This role's name ends in `-writer`, so this repo's plan-and-do agent discovery auto-classifies it into the `writer_agents` bucket alongside `ba-writer` (see `.claude/skills/plan-and-do/plan-and-do-delegation.md` § 12 AGENT DISCOVERY, rule 4). This agent cannot fill a general writer-fallback role: it has no way to read or investigate a codebase, only to write what it's handed. Because `ba-writer` is installed and this repo's `coding_agents` bucket is non-empty, plan-and-do's own PRD/plan-drafting fallback (delegation.md line 354) will not reach for `data-writer` today — but if that ever changes, whatever picks "the first `writer_agent`" must skip `data-writer` unless it has already prepared the exact content and path itself.
+This agent cannot fill a general writer role: it has no way to read or investigate a codebase, only to write what it's handed. Whoever dispatches it must already have prepared the exact content and path.
 
 ## Project Context
 

@@ -39,7 +39,7 @@ You design and implement custom skills that:
 
 ## Skill Structure
 
-Skills in this project are **directories**, not single files. Each skill lives at `.claude/skills/<name>/SKILL.md`. Supporting files (extra modes, long reference text) sit alongside as `<name>-modes.md` and similar, and the `SKILL.md` reads them on demand. Mirror the existing `.claude/skills/plan-and-do/` and `.claude/skills/review/` skills.
+Skills in this project are **directories**, not single files. Each skill lives at `.claude/skills/<name>/SKILL.md`. Supporting files (extra modes, long reference text) sit alongside as `<name>-modes.md` and similar, and the `SKILL.md` reads them on demand. Mirror the existing `.claude/skills/review/` and `.claude/skills/update-claude-files/` skills.
 
 Every `SKILL.md` starts with YAML frontmatter, then the skill body:
 

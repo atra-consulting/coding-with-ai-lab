@@ -13,7 +13,7 @@ This is a pure lookup — grep across the repo for one key and report locations.
 
 <example>
 Context: Before editing a set of reference files, the assistant wants a quick inventory.
-user: \"Collect the current line count and section headings of every file under skills/plan-and-do/.\"
+user: \"Collect the current line count and section headings of every file under .claude/skills/review/.\"
 assistant: \"I'm going to use the Task tool to launch the data-reader agent to gather that inventory and report it back as a short list.\"
 <commentary>
 Reading and summarizing several files is mechanical fact-gathering, not planning or coding. data-reader does it cheaply and returns only the inventory, not the files themselves.
