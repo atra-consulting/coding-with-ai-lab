@@ -380,14 +380,13 @@ git checkout -b training-0626/john-doe
 
 ## Tasks
 
-Tasks live in the **`/tasks/`** folder. You start one with the `/plan-and-do` skill
-in Claude Code — it handles planning, implementation, testing, and review.
+Tasks live in the **`/tasks/`** folder. Describe the task to Claude Code in plain
+words, have it show you the plan first, and check the result — finally with `/review`.
 
 ## Useful commands
 
 | Command | Purpose |
 |---------|---------|
-| `/plan-and-do <task>` | End-to-end: planning → coding → testing → review |
 | `/review` | Review code changes with a multi-round feedback cycle |
 | `/simplify` | Check code for quality, reuse, and efficiency |
 | `/help` | Get help with Claude Code |

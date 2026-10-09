@@ -73,7 +73,7 @@ Skill receives: `$ARGUMENTS`
 
 Parse the first token:
 
-- **`embedded`** → Embedded mode. plan-and-do calls this before it opens a PR. Optional second token `base:<sha>` scopes the run to the branch. Skip the header and every confirmation. Never call `AskUserQuestion`.
+- **`embedded`** → Embedded mode. A calling skill or agent prompt uses this before it opens a PR. Optional second token `base:<sha>` scopes the run to the branch. Skip the header and every confirmation. Never call `AskUserQuestion`.
 - **Empty / whitespace** → Standalone mode (default).
 - **Any other text** → Standalone mode. Treat the text as `special_instructions` — focus the update there, but still cover every stale target.
 
@@ -355,7 +355,7 @@ Files modified:  [N]
 
 ### Embedded
 
-Do NOT commit — the caller (plan-and-do Step 12) commits real changes. Always write the result file so the caller has one code path:
+Do NOT commit — in embedded mode the caller commits real changes. Always write the result file so the caller has one code path:
 
 ```bash
 mkdir -p docs/state

@@ -21,7 +21,7 @@ You are executing the **review** skill, which provides local code review with a 
 
 ## RESULTS DISPLAY GUARANTEE
 
-**The skill MUST ALWAYS surface its review results. It never finishes silently.** This holds in every mode — **embedded** (called from `plan-and-do`) or **stand-alone**, dry-run or normal.
+**The skill MUST ALWAYS surface its review results. It never finishes silently.** This holds in every mode — **embedded** (called from an agent prompt or another skill) or **stand-alone**, dry-run or normal.
 
 Every run MUST produce the full review content. One of these two carries it:
 
@@ -65,7 +65,7 @@ Parse arguments to determine mode:
 - **"help"** -> Help mode (show usage and exit)
 - **"doctor"** -> Doctor mode (run health checks and exit)
 - **"dryrun" or "dry-run" or "dry_run"** -> Dry-run mode
-- **"embedded"** -> Embedded mode (called from plan-and-do, skip header/plan-check/confirmation)
+- **"embedded"** -> Embedded mode (called from an agent prompt or another skill, skip header/plan-check/confirmation)
 - **`base:<ref>`** -> Optional. Compare against `<ref>` (a branch name or commit SHA) instead of main/master. Combines with other modes, e.g. `embedded base:abc1234`. This token is extracted in PHASE 1 parsing and is NOT treated as special instructions.
 - **Other text** -> Treat as special instructions for the review
 
@@ -604,7 +604,7 @@ Display: `Fix plans created: <count> fixes proposed`
 
 ### Step 5.2.5: FINDINGS APPROVAL CHECKPOINT
 
-**Skip this checkpoint** when no fix agents exist, when this round found zero issues (Step 5.1.3 already exits the loop in that case, so this condition is redundant but kept as a safety guard), or in **embedded mode** (called from plan-and-do — the caller drives fix approval at its own checkpoint; approve all planned fixes automatically and continue to Step 5.3).
+**Skip this checkpoint** when no fix agents exist, when this round found zero issues (Step 5.1.3 already exits the loop in that case, so this condition is redundant but kept as a safety guard), or in **embedded mode** (called from an agent prompt or another skill — the caller drives fix approval; approve all planned fixes automatically and continue to Step 5.3).
 
 **Otherwise (fix agents exist AND findings are present — any severity):** Display the full findings table including proposed fixes:
 

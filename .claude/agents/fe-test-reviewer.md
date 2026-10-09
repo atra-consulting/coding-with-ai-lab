@@ -68,7 +68,7 @@ Include `file:line` references and a concrete fix for each finding.
 
 ## Confidence Scoring
 
-When invoked from the `/review` skill (or as part of `/plan-and-do`), score each issue on a 0-100 scale:
+When invoked from the `/review` skill, score each issue on a 0-100 scale:
 - **0**: False positive. Does not stand up to scrutiny, or is a pre-existing issue.
 - **25**: Might be real, but could be false positive. Stylistic issues not in CLAUDE.md.
 - **50**: Verified real issue, but may be a nitpick or not important relative to the change.

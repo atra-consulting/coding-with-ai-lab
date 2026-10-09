@@ -250,4 +250,4 @@ Dieser Print läuft **immer**, wenn Schritt 3 ein Ticket angelegt hat — egal o
 
 Dann **beenden**. Ein Feedback-Element pro Durchlauf.
 
-**Kein `git push`, kein PR, kein `plan-and-do`.** Dieser Skill baut nichts — er triagiert nur.
+**Kein `git push`, kein PR, kein Bauen.** Dieser Skill baut nichts — er triagiert nur.

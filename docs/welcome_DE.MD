@@ -380,14 +380,13 @@ git checkout -b training-0626/max-mustermann
 
 ## Aufgaben
 
-Die Aufgaben liegen im Ordner **`/tasks/`**. Du startest eine Aufgabe mit dem Skill
-`/plan-and-do` in Claude Code — der übernimmt Planung, Umsetzung, Tests und Review.
+Die Aufgaben liegen im Ordner **`/tasks/`**. Du beauftragst Claude Code im Klartext,
+lässt dir den Plan zeigen und prüfst das Ergebnis — am Ende mit `/review`.
 
 ## Nützliche Befehle
 
 | Befehl | Zweck |
 |--------|-------|
-| `/plan-and-do <Aufgabe>` | End-to-End: Planung → Coding → Testing → Review |
 | `/review` | Code-Änderungen prüfen, mit iterativem Feedback |
 | `/simplify` | Code auf Qualität, Wiederverwendung und Effizienz prüfen |
 | `/help` | Hilfe zu Claude Code |

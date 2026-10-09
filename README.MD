@@ -145,13 +145,13 @@ Details zu jedem Tool: **[docs/TOOLS.md](docs/TOOLS.md)**
 
 Du willst die Skills und Subagents aus diesem Repo in dein eigenes Projekt holen? So geht es.
 
-1. Lies, was es gibt: **[docs/SUBAGENTS.md](docs/SUBAGENTS.md)** (26 Subagents) und **[docs/SKILLS.md](docs/SKILLS.md)** (4 Skills).
+1. Lies, was es gibt: **[docs/SUBAGENTS.md](docs/SUBAGENTS.md)** (26 Subagents) und **[docs/SKILLS.md](docs/SKILLS.md)** (3 Skills).
 2. Folge der Anleitung: **[docs/TRANSFER.md](docs/TRANSFER.md)**. Kopieren, anpassen lassen, prüfen — Schritt für Schritt.
 
 | Dokument | Inhalt |
 |----------|--------|
 | [docs/SUBAGENTS.md](docs/SUBAGENTS.md) | Alle 26 Subagents. Zweck, Modell, Gruppen. |
-| [docs/SKILLS.md](docs/SKILLS.md) | Alle 4 Skills. Zweck, Argumente, Beispiele. |
+| [docs/SKILLS.md](docs/SKILLS.md) | Alle 3 Skills. Zweck, Argumente, Beispiele. |
 | [docs/TRANSFER.md](docs/TRANSFER.md) | Übernahme in dein Projekt. 8 Schritte. |
 
 ---
@@ -175,13 +175,8 @@ git checkout -b training-0626/max-mustermann
 ### Aufgabe starten
 
 1. Aufgaben findest du im Ordner **`/tasks/`**
-2. Starte eine Aufgabe mit dem **`/plan-and-do`**-Skill in Claude Code:
-
-```
-/plan-and-do <Aufgabenbeschreibung>
-```
-
-Der Skill übernimmt Planung, Implementierung, Testing und Code Review automatisch.
+2. Lies Ziel und Ergebnis der Aufgabe und beauftrage Claude Code im Klartext — so, wie du es einem neuen Kollegen erklären würdest. Lass dir zuerst den Plan zeigen, bevor gebaut wird.
+3. Vor dem Abschluss: `/review` prüft deine Änderungen.
 
 ---
 
@@ -189,7 +184,6 @@ Der Skill übernimmt Planung, Implementierung, Testing und Code Review automatis
 
 | Befehl | Zweck |
 |--------|-------|
-| `/plan-and-do <Aufgabe>` | End-to-End-Implementierung (Planung → Coding → Testing → Review) |
 | `/review` | Code-Änderungen mit iterativem Feedback prüfen |
 | `/simplify` | Code auf Qualität, Wiederverwendung und Effizienz prüfen |
 | `/help` | Hilfe zu Claude Code |

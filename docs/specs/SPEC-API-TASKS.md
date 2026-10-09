@@ -356,7 +356,7 @@ A **second** autonomous agent, separate from the agent-task runner. It works aga
 1. Pick ONE open `Refinement needed` issue (skip ones already `Input needed`; prefer non-`Likely to fail`; tie-break lowest number).
 2. **Decide** implement vs ask.
    - **Ask** (info/decision missing, or the issue text says so): comment a precise question + `@dave0688`, add the **`Input needed`** label. Board stays **Backlog**. → `AGENT_RESULT: INPUT_NEEDED`.
-   - **Implement** (all info present): move the issue to **In progress** on board #7 → run `plan-and-do` (build check only; **no test authoring**) → open a PR against `main` (**never merged**, left for human review) → move to **In review** + comment the PR link. → `AGENT_RESULT: IMPLEMENTED`.
+   - **Implement** (all info present): move the issue to **In progress** on board #7 → implement it directly (branch, change, build check only, `/review embedded`; **no test authoring**) → open a PR against `main` (**never merged**, left for human review) → move to **In review** + comment the PR link. → `AGENT_RESULT: IMPLEMENTED`.
 3. If implementation stalls, it falls back to the ask path (Backlog + `Input needed` + comment).
 
 **Status is tracked on the Project board** (#7 "Coding with AI: Fortgeschrittenen-Schulung"), not via labels — except the explicit `Input needed` label that flags issues awaiting a maintainer reply. Project IDs and status-option ids are pinned in the prompt.

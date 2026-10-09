@@ -4,7 +4,7 @@
 # `agent_task` queue, THIS workflow works against REAL GitHub issues labelled
 # "Refinement needed". It processes exactly ONE issue per run:
 #   • move the issue to "In progress" on the project board (#7),
-#   • if all info is present → implement it (plan-and-do) and open a PR (NO merge),
+#   • if all info is present → implement it (see .claude/prompts/agent-github-refinement.md) and open a PR (NO merge),
 #     then move the issue to "In review",
 #   • if a decision/clarification is missing → comment + @-mention the maintainer,
 #     add the "Input needed" label, and leave the board on "Backlog".
