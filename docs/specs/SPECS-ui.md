@@ -223,27 +223,13 @@ Canonical home. Cross-referenced from the Produktivität → Rechner section in 
 
 ## Public-Page Card Template
 
-### Shared pattern — Login, FeedbackQr
+### Login
 
-These two components share the same visual template:
-
-- Centered card (`.login-card` / `.qr-card`), `width: 480px`.
-- `border-radius: 12px` — except `.qr-card` which uses `border-radius: 16px`.
+- Centered card (`.login-card`), `width: 480px`, `border-radius: 12px`.
 - Entry animation: `slideUp 0.4s ease-out` (`translateY(20px) → 0`, `opacity 0 → 1`).
 - Header gradient: `linear-gradient(135deg, $primary 0%, color.adjust($primary, $lightness: -8%) 100%)`.
 - Box shadow: `0 10px 40px rgba(38, 72, 146, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06)`.
 - Page wrapper uses `min-height: 100vh`, flexbox centering, and a light diagonal gradient background (`135deg, #f5f6f8 → #e8eaf0 → #dde1ea`).
-
-### Deviating component — FeedbackForm
-
-`feedback-form.component.scss` does not follow the shared template above. Its differences:
-
-- Card is responsive: `width: 100%`, `max-width: 580px` (not a fixed `480px`).
-- `border-radius: 20px` (not `12px`).
-- Box shadow: `0 20px 60px rgba(38, 72, 146, 0.10), 0 4px 16px rgba(0, 0, 0, 0.05)` (not the shared shadow).
-- Entry animation: `slideUp 0.5s ease-out` (duration is `0.5s`, not `0.4s`); start position is `translateY(24px)` (not `20px`).
-- Header gradient lightness adjustment: `-10%` (not `-8%`).
-- Page background gradient: `linear-gradient(160deg, #f0f2f7 0%, #e2e6f0 50%, #d8dde9 100%)` — different angle (`160deg` vs `135deg`) and different stop colors.
 
 ---
 

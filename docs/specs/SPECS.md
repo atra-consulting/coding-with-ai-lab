@@ -37,7 +37,6 @@ Full-Stack-CRM-Anwendung. Node.js/TypeScript-Backend mit Angular-Frontend.
 | Charts | Chart.js + ng2-charts | 4.5.1 / 10.0.0 |
 | Datentabelle | AG Grid | 35.1.0 |
 | Drag & Drop | @angular/cdk | 21.2.1 |
-| QR-Code | qrcode | 1.5.4 |
 | TypeScript (Backend) | | ^5.8.3 |
 | TypeScript (Frontend) | | ~5.9.2 |
 
