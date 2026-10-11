@@ -114,7 +114,6 @@ Dev dependencies:
 | ag-grid-community | ^35.1.0 | Data grid core |
 | chart.js | ^4.5.1 | Chart rendering |
 | ng2-charts | ^10.0.0 | Angular chart wrapper |
-| qrcode | ^1.5.4 | QR code generation |
 | rxjs | ~7.8.0 | Reactive programming |
 | zone.js | ~0.15.0 | Angular change detection |
 
@@ -237,7 +236,7 @@ Five GitHub Actions workflows in `.github/workflows/`:
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
-| `deploy.yml` | Push to `main` (after tests pass) | Runs backend type-check + Playwright tests, frontend unit tests + build, then deploys to **two** Vercel projects (production): the main app and the feedback site |
+| `deploy.yml` | Push to `main` (after tests pass) | Runs backend type-check + Playwright tests, frontend unit tests + build, then deploys the main app to Vercel (production) |
 | `agent-task-runner.yml` | `repository_dispatch` event `solve-agent-tasks` | Runs the autonomous agent against OPEN `agent_task` rows |
 | `do-factory-automatic.yml` | `repository_dispatch` event `solve-agent-tasks`; also `workflow_dispatch`, daily `schedule` | Runs the `/do-factory-automatic` skill against one OPEN `agent_task`; pushes a branch and opens a PR (never merges) |
 | `github-issue-agent.yml` | `repository_dispatch` event `solve-github-issues` | Runs the GitHub-issue refinement agent against one labelled issue |
@@ -251,11 +250,4 @@ Five GitHub Actions workflows in `.github/workflows/`:
 - Vercel cron: `GET /api/cron/agent-tasks` at `0 2 * * *` (daily 02:00 UTC)
 - Cloud database: Turso (libSQL) when `TURSO_DATABASE_URL` is set — required on Vercel (read-only filesystem)
 
-**Two Vercel projects, one repo.** `vercel.json` sets `git.deploymentEnabled: false`, so Vercel never deploys on a push by itself. `deploy.yml` drives both projects, each in its own job because `vercel pull` and `vercel build` write into `.vercel/`:
-
-| Job | Project | URL | Project-id secret |
-|-----|---------|-----|-------------------|
-| `deploy` | Main CRM app | <https://coding-with-ai-lab.vercel.app> | `VERCEL_PROJECT_ID` |
-| `deploy-feedback` | Feedback site | <https://atra-feedback.vercel.app> | `VERCEL_PROJECT_ID_FEEDBACK` |
-
-Both jobs share `VERCEL_TOKEN` and `VERCEL_ORG_ID`; set `VERCEL_ORG_ID_FEEDBACK` only if the feedback project lives in another Vercel team. The feedback site needs its own deploy because `/feedback-qr` hardcodes `https://atra-feedback.vercel.app` (see [docs/feedback.md](../feedback.md)) — a QR code built on one project always points at the other.
+`vercel.json` sets `git.deploymentEnabled: false`, so Vercel never deploys on a push by itself. The `deploy` job in `deploy.yml` deploys the main CRM app (<https://coding-with-ai-lab.vercel.app>) with `VERCEL_TOKEN`, `VERCEL_ORG_ID`, and `VERCEL_PROJECT_ID`.

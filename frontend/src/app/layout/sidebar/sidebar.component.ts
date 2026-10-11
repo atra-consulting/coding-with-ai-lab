@@ -11,7 +11,6 @@ import {
   faChartLine,
   faClipboardList,
   faClock,
-  faCommentDots,
   faListCheck,
   faMapMarkerAlt,
   faSitemap,
@@ -46,10 +45,6 @@ export class SidebarComponent {
   faAngleDoubleRight = faAngleDoubleRight;
   faClock = faClock;
   faListCheck = faListCheck;
-
-  bottomItems: NavItem[] = [
-    { label: 'Trainings-Feedback', route: '/feedback', icon: faCommentDots },
-  ];
 
   sections: NavSection[] = [
     {

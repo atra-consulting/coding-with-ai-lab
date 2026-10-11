@@ -16,9 +16,6 @@ Visual design, colors, layout measurements, and AG Grid theming: `docs/specs/SPE
 
 ```
 /login                          → LoginComponent (no guard)
-/feedback                       → FeedbackFormComponent (no guard)
-/danke                          → ThankyouComponent (no guard)
-/feedback-qr                    → FeedbackQrComponent (no guard)
 / (authGuard)
   /dashboard                    → DashboardComponent
   /firmen                       → Firma CRUD (list/detail/form)
@@ -60,7 +57,7 @@ There is no `permissionGuard` and no `hasPermission()` in the codebase.
 
 ### Interceptors
 
-- **authInterceptor**: Clones every request with `withCredentials: true` (sends session cookie). On 401, redirects to `/login` — but skips redirect if current path is already a public route (`/login`, `/feedback`, `/feedback-qr`, `/danke`). On 403, shows "Zugriff verweigert" toast. No Bearer token header. No refresh logic.
+- **authInterceptor**: Clones every request with `withCredentials: true` (sends session cookie). On 401, redirects to `/login` — but skips redirect if current path is already `/login`. On 403, shows "Zugriff verweigert" toast. No Bearer token header. No refresh logic.
 - **apiErrorInterceptor**: Catches non-401/403 errors. Shows German toast messages. Passes 401/403 through to `authInterceptor`.
 
 ## Models (core/models/)
@@ -125,14 +122,6 @@ Additional methods:
 - Redirects to `returnUrl` query param (if present and safe) or `/dashboard` on success.
 - No demo-mode button, no `/api/auth/demo-mode` call, no password visibility toggle.
 
-### Feedback
-
-Three public components. No auth required. No backend calls — data posts directly to a Google Apps Script URL.
-
-- **FeedbackFormComponent** (`/feedback`): Multi-step survey. Question types: `stars` (1–5 rating), `choice` (single select), `multichoice` (multi select), `text` (free text). Reads optional `schulung`/`trainer` query params via `ActivatedRoute` (snapshot) and overrides the displayed subtitle/trainer text; falls back to the hardcoded defaults when a param is absent, blank, or over 200 characters. Submits JSON payload via `fetch` with `mode: no-cors`, including `schulung` and `trainerName` fields.
-- **ThankyouComponent** (`/danke`): Confirmation page after submission.
-- **FeedbackQrComponent** (`/feedback-qr`): Displays a QR code linking to `/feedback`. Two `ngModel`-bound text inputs (Schulung, Trainer) let the trainer customize the target URL; a pure `buildFeedbackUrl()` method rebuilds `/feedback?schulung=...&trainer=...` (values trimmed, capped at 200 characters, URL-encoded) and the QR code regenerates on every keystroke. Uses the `qrcode` library. Intended for trainer display during sessions.
-
 ### Dashboard
 
 - Single GET `/api/dashboard` returns `DashboardData`: `firmenCount`, `personenCount`, `offeneChancenCount`, `gewonneneChancenSumme`, `recentChancen`, `recentAktivitaeten`.
@@ -181,7 +170,7 @@ Sections with role-filtered items. Items with a `requiredRole` are hidden when t
 
 Empty sections are hidden. Uses FontAwesome icons (`fa-icon`) and `RouterLinkActive`.
 
-**Bottom-anchored items**: A `bottomItems` array in `SidebarComponent` renders below the main sections, pushed to the bottom via `mt-auto`. Currently holds a single **Feedback** link to `/feedback` (public route, no permission required). A top border separates it from the main nav; the collapse toggle and footer sit below it.
+**Bottom area**: The collapse toggle sits below the main sections, pushed to the bottom via `mt-auto`, with a top border. The footer sits below it.
 
 **Collapsible State**: The sidebar can be collapsed to a mini-view. State is managed by `LayoutService` (`collapsed` signal). Persisted in `localStorage` under the key `sidebar_collapsed`. Items are filtered by role via `visibleItems()` in the sidebar component — role-filter logic, not permission-string logic.
 
