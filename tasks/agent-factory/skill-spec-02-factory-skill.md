@@ -65,7 +65,7 @@ Folge dem Urteil des Subagenten ohne Abweichung.
 
 ## Schritt 3a — Ablehnen (nicht gut genug)
 
-Aufgaben haben keinen Fragerückkanal. Wenn sie nicht baubar ist, mit einem spezifischen, umsetzbaren Grund ablehnen, dann **beenden**. `plan-and-do` NICHT aufrufen.
+Aufgaben haben keinen Fragerückkanal. Wenn sie nicht baubar ist, mit einem spezifischen, umsetzbaren Grund ablehnen, dann **beenden**. Nichts bauen.
 
 ```bash
 curl -s -X POST \
@@ -77,29 +77,29 @@ curl -s -X POST \
 
 Generische Kommentare („unklar") sind nicht akzeptabel.
 
-## Schritt 3b — Bauen (gut genug): `plan-and-do` UNBEAUFSICHTIGT ausführen
+## Schritt 3b — Bauen (gut genug): selbst umsetzen, unbeaufsichtigt
 
-Den Slash-Befehl aufrufen:
+Die Aufgabe selbst umsetzen, in dieser Reihenfolge. Vollständig autonom: zu
+keinem Zeitpunkt `AskUserQuestion` aufrufen oder auf Eingaben warten —
+entscheiden und weitermachen.
 
-```
-/plan-and-do "<der Aufgaben-Body, plus konkrete Details aus Titel/Metadata>"
-```
-
-Der Skill hat interaktive Checkpoints (`AskUserQuestion`), die NICHT beantwortet werden können. **Jeden vorab autorisieren. Diese Daueranweisungen dem Aufruf voranstellen und auf JEDEN Checkpoint anwenden, ohne je anzuhalten:**
-
-> Vollständig autonom und unbeaufsichtigt ausführen. Zu keinem Zeitpunkt `AskUserQuestion` aufrufen oder auf Eingaben warten. Diese Standardantworten auf jeden Checkpoint anwenden:
-> - Entscheidung zu Spezifikationen (PRD): **PRD überspringen**, direkt zum Plan.
-> - Plan-Freigabe: **„Approve, implement, review, and create PR"** (voller Workflow-Umfang).
-> - Jeder Review-Befund-Checkpoint: **alle Korrekturen genehmigen**.
-> - Jeder andere Checkpoint oder Auswahl: **Continue** / die empfohlene Option wählen.
-> - Planungsdateien behalten. Niemals anhalten, um zu fragen. Niemals um Klärung bitten.
-> - Wenn Tests oder der Build scheitern und nicht automatisch nach einem vertretbaren Versuch behoben werden können, den Build abbrechen und zu Schritt 3a übergehen (Aufgabe mit einem Kommentar ablehnen, der den Fehler erklärt), anstatt zu hängen.
-
-`plan-and-do` bis zur Fertigstellung laufen lassen (umsetzen → testen → reviewen → PR).
+1. **Branch:** `git switch -c agent/task-<id>` vom aktuellen `main`.
+2. **Kurz planen:** `CLAUDE.md` und die Specs lesen, auf die sie verweist, und
+   die Dateien auflisten, die sich ändern. Keine PRD — es ist eine kleine,
+   klar umrissene Änderung.
+3. **Umsetzen:** die passenden Subagents aus `.claude/agents/` nutzen
+   (`db-coder`, `be-coder`, `fe-coder`, `ui-designer`), sonst selbst ändern.
+4. **Prüfen:** Build und Tests laufen lassen, die das Projekt vorsieht (siehe
+   `CLAUDE.md` und `docs/specs/SPECS-testing.md`). Scheitern sie und lassen
+   sich nach einem vertretbaren Versuch nicht beheben: abbrechen und zu
+   Schritt 3a übergehen (Aufgabe mit einem Kommentar ablehnen, der den Fehler
+   erklärt), statt zu hängen.
+5. **Review:** `/review embedded` ausführen und beheben, was es findet.
+6. **Abschließen:** committen, pushen, einen PR gegen `main` öffnen.
 
 ## Schritt 4 — Aufgabe als erledigt markieren
 
-Nachdem `plan-and-do` abgeschlossen ist und der PR existiert:
+Nachdem der PR existiert:
 
 ```bash
 curl -s -X POST \
