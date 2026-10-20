@@ -181,7 +181,7 @@ git checkout -b training-0626/max-mustermann
 
 ### Aufgabe starten
 
-1. Die Aufgaben bekommst du im Schulungsportal.
+1. Aufgaben findest du im Ordner **`/tasks/`**
 2. Lies Ziel und Ergebnis der Aufgabe und beauftrage deinen KI-Assistenten (Claude Code oder Copilot CLI) im Klartext — so, wie du es einem neuen Kollegen erklären würdest. Lass dir zuerst den Plan zeigen, bevor gebaut wird.
 3. Vor dem Abschluss: `/review` prüft deine Änderungen.
 

@@ -399,7 +399,7 @@ git checkout -b training-0626/john-doe
 
 ## Tasks
 
-You get the tasks in the training portal. Describe the task to Copilot CLI in plain
+Tasks live in the **`/tasks/`** folder. Describe the task to Copilot CLI in plain
 words, have it show you the plan first, and check the result — finally with `/review`.
 Plan mode: `Shift + Tab` cycles the modes.
 

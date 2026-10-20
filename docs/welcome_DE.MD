@@ -380,7 +380,7 @@ git checkout -b training-0626/max-mustermann
 
 ## Aufgaben
 
-Die Aufgaben bekommst du im Schulungsportal. Du beauftragst Claude Code im Klartext,
+Die Aufgaben liegen im Ordner **`/tasks/`**. Du beauftragst Claude Code im Klartext,
 lässt dir den Plan zeigen und prüfst das Ergebnis — am Ende mit `/review`.
 
 ## Nützliche Befehle
