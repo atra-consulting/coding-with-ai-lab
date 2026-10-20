@@ -1,8 +1,8 @@
 # AGENTS.md
 
-Project knowledge for any AI coding assistant. Claude-Code-specific configuration
-(subagents, spec reading lists) lives in [`CLAUDE.md`](CLAUDE.md), which imports
-this file.
+Project knowledge for Claude Code and GitHub Copilot CLI. Both read this file:
+Copilot CLI directly, Claude Code through [`CLAUDE.md`](CLAUDE.md), which only
+imports it. Keep tool-neutral wording here.
 
 ## Project
 
@@ -10,7 +10,7 @@ Full-stack CRM application. Node.js/TypeScript (Express + Drizzle ORM + libSQL/S
 
 ### Autonomous Agents (advanced workshop)
 
-Two independent Claude-Code-in-CI agents. Both are documented in full in [`docs/specs/SPEC-API-TASKS.md`](docs/specs/SPEC-API-TASKS.md).
+Two independent CI agents. Each runs Claude Code or Copilot CLI (`engine` input, default `claude`). Both are documented in full in [`docs/specs/SPEC-API-TASKS.md`](docs/specs/SPEC-API-TASKS.md).
 
 - **Agent-task runner** — drains the `agent_task` table (sources `EMAIL`, `GITHUB_ISSUE`, `APP_LOG`, `ERROR_REPORT`; lifecycle `OPEN → IN_PROGRESS → DONE | REJECTED`) via the `/api/agent-tasks` API, decides solve-or-reject, implements, and merges. Admin dashboard at `/admin/agent-tasks`. Workflow `.github/workflows/agent-task-runner.yml`, prompts `.claude/prompts/agent-*.md`.
 - **GitHub-issue agent** — works real GitHub issues labelled `Refinement needed`, one per run, triggered from the `solve-github-issues` card in `/admin/cron`. Implements-or-asks; opens a PR against `main` (never merged) or comments a question and adds `Input needed`. Status tracked on GitHub Project board #7. Workflow `.github/workflows/github-issue-agent.yml`, prompt `.claude/prompts/agent-github-refinement.md`.
@@ -85,3 +85,62 @@ Frontend (8+ files): Model interface → Service → Route file → List/Detail/
 ## Specifications
 
 Full system specs: [`docs/specs/SPECS.md`](docs/specs/SPECS.md) — root index, one business-domain doc ([`DOMAIN.md`](docs/specs/DOMAIN.md)), plus six per-area specs (8 SPECS files total). `docs/specs/` also holds two API-reference docs — [`SPEC-API-TASKS.md`](docs/specs/SPEC-API-TASKS.md) and [`SPEC-API-TICKETS.md`](docs/specs/SPEC-API-TICKETS.md) — that document the agent-task and Kanban-ticket APIs.
+
+## Agents
+
+| Agent | Purpose | Type |
+|-------|---------|------|
+| planner | Draft PRDs and implementation plans, assign agent + model tier per task group | planning |
+| admin | Local dev environment, SQLite database, process management | ops |
+| ba-reviewer | Review PRDs, specs, plans for gaps and issues | review |
+| ba-writer | Create business specs, requirements, plans | writing |
+| be-coder | Node.js / TypeScript backend code | coding |
+| be-reviewer | Review backend code, security, patterns | review |
+| db-coder | Drizzle ORM queries, entity schemas, data access | coding |
+| db-reviewer | Review queries, Drizzle mappings, performance | review |
+| fe-coder | Angular 21 frontend code, components, services | coding |
+| fe-reviewer | Review frontend code, patterns, accessibility | review |
+| ui-designer | UI/UX design, layout, styling, accessibility | coding |
+| ui-reviewer | Critical UI evaluation, usability, WCAG audit | review |
+| be-test-coder | Write Playwright API tests for the backend | test-coding |
+| be-test-reviewer | Review backend Playwright tests | test-review |
+| be-test-runner | Execute backend Playwright suite, report pass/fail | test-runner |
+| fe-test-coder | Write Jasmine/Karma unit tests for the frontend | test-coding |
+| fe-test-reviewer | Review frontend Jasmine/Karma tests | test-review |
+| fe-test-runner | Execute frontend Karma suite, report pass/fail | test-runner |
+| python-coder | Cross-platform Python scripts and data analysis (tooling, not app code) | coding |
+| python-reviewer | Review Python for correctness, portability, and external-data handling | review |
+| shell-coder | Cross-platform shell scripts (macOS / Linux / WSL) | coding |
+| shell-reviewer | Review shell scripts for portability, hangs, and safety | review |
+| skill-coder | Create and update skills and subagents (Claude Code + Copilot CLI) | coding |
+| skill-reviewer | Review skills and subagents (Claude Code + Copilot CLI) | review |
+| data-reader | Gather facts from files or the web, read-only | research |
+| data-writer | Write already-finished content to a file at a known path, write-only | writing |
+
+**Agent files:** `.claude/agents/<name>.md` is the source. Edit only there.
+`.github/agents/<name>.agent.md` is the Copilot CLI copy (no `model`, Copilot tool
+names). `scripts/sync-agents.mjs` generates it. **After any change in
+`.claude/agents/`, run `node scripts/sync-agents.mjs` and commit both folders.** CI
+runs `node scripts/sync-agents.mjs --check` and fails on a stale copy.
+
+**Skills:** `.claude/skills/<name>/SKILL.md`. Both tools load skills from there.
+Write skill and agent text tool-neutral: "ask the user" (Claude Code:
+`AskUserQuestion`, Copilot CLI: `ask_user`), "start a subagent" (Claude Code:
+`Agent`/`Task` tool, Copilot CLI: `task` tool).
+
+The `planner`, `data-reader`, `data-writer`, `python-*`, `shell-*`, and `skill-*` agents are general tooling agents — they are not bound to the CRM domain specs and instead read the root `AGENTS.md` plus, for shell, `docs/specs/SPECS-infrastructure.md`.
+
+## Spec Reading Lists
+
+Each subagent in `.claude/agents/` has a `## Specifications` reading list naming its primary spec plus secondary specs. The two API-reference docs ([`SPEC-API-TASKS.md`](docs/specs/SPEC-API-TASKS.md), [`SPEC-API-TICKETS.md`](docs/specs/SPEC-API-TICKETS.md)) sit outside this convention. Spec overview: see above.
+
+| Spec | Scope | Primary for |
+|------|-------|-------------|
+| [`DOMAIN.md`](docs/specs/DOMAIN.md) | Business domain: entity meaning, relationships, delete behavior, sales pipeline, roles (no schema) | All 17 domain-bound agents (every agent except `planner`, `data-reader`, `data-writer`, and the `python-*`, `shell-*`, `skill-*` tooling agents) |
+| [`SPECS.md`](docs/specs/SPECS.md) | Root index, architecture, tech stack, domain model, seed data | ba-writer, ba-reviewer |
+| [`SPECS-backend.md`](docs/specs/SPECS-backend.md) | Backend API: routes, services, auth, errors, pagination, code patterns | be-coder, be-reviewer |
+| [`SPECS-database.md`](docs/specs/SPECS-database.md) | Entities, schema, columns, enums, foreign keys, migrations | db-coder, db-reviewer |
+| [`SPECS-frontend.md`](docs/specs/SPECS-frontend.md) | Angular architecture, routing, auth, guards, models, services, components | fe-coder, fe-reviewer |
+| [`SPECS-ui.md`](docs/specs/SPECS-ui.md) | Styling, design system, AG Grid, layout & shared components | ui-designer, ui-reviewer |
+| [`SPECS-testing.md`](docs/specs/SPECS-testing.md) | Playwright backend API tests, Jasmine/Karma frontend unit tests | be-test-*, fe-test-* |
+| [`SPECS-infrastructure.md`](docs/specs/SPECS-infrastructure.md) | Build, config, DB engine, startup, project structure | admin |

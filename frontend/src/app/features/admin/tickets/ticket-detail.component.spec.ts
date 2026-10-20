@@ -19,7 +19,7 @@ function makeComment(id: number, author: TicketComment['author'] = 'AGENT'): Tic
     id,
     ticketId: 10,
     author,
-    authorName: author === 'AGENT' ? 'Claude Code' : 'Admin',
+    authorName: author === 'AGENT' ? 'KI-Agent' : 'Admin',
     body: `Comment ${id} body`,
     createdAt: '2024-06-01T08:00:00.000Z',
   };
@@ -247,9 +247,9 @@ describe('TicketDetailComponent — template rendering', () => {
     expect(text).toContain('Comment 2 body');
   });
 
-  it('renders "Claude Code" as author name for AGENT comment', () => {
+  it('renders "KI-Agent" as author name for AGENT comment', () => {
     const text: string = fixture.nativeElement.textContent;
-    expect(text).toContain('Claude Code');
+    expect(text).toContain('KI-Agent');
   });
 });
 

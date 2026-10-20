@@ -55,7 +55,7 @@ Agents only ever claim `TODO`+`AI` tickets, so a `DEFINITION` ticket is never au
       "id": 1,
       "ticketId": 7,
       "author": "AGENT",
-      "authorName": "Claude Code",
+      "authorName": "KI-Agent",
       "body": "Welches Trennzeichen soll die CSV-Datei verwenden?",
       "createdAt": "2026-06-21T10:05:00.000Z"
     }
@@ -425,7 +425,7 @@ curl -s -X POST -H "Authorization: Bearer $AGENT_API_TOKEN" \
   -d '{"body":"Welches Trennzeichen soll die CSV-Datei verwenden?"}' \
   "$APP_BASE_URL/api/tickets/7/comments"
 
-# Agent token — posts an AGENT-authored comment (shown as "Claude Code" in the UI):
+# Agent token — posts an AGENT-authored comment (shown as "KI-Agent" in the UI):
 curl -s -X POST -H "Authorization: Bearer $AGENT_API_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"body":"Automatisch erkannt: Ticket ist ready.", "author":"AGENT"}' \
@@ -531,7 +531,7 @@ All errors use the app-wide handler:
 | 12 | Firmen als Favorit markieren | FEATURE | TODO | AI |
 
 Starting board, by intent:
-- **`DEFINITION`** (5, all `HUMAN`): tickets 1–5 — too vague to build. Each carries a seeded `AGENT` comment (`authorName: "Claude Code"`) asking the human to add detail.
+- **`DEFINITION`** (5, all `HUMAN`): tickets 1–5 — too vague to build. Each carries a seeded `AGENT` comment (`authorName: "KI-Agent"`) asking the human to add detail.
 - **`TODO`** / "Bereit" (5, all `AI`): tickets 6, 8, 10, 11, 12 — well-specified and ready. No comments. (Ticket 11 had an open question about the note character limit; the answer — 1000 characters — is baked into its body.)
 - **`ON_HOLD`** / "Wartet" (2, `HUMAN`): tickets 7 and 9 — the AI asked a specific question and is waiting for an answer. Each carries the `AGENT` question as a comment.
 

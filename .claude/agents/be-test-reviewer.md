@@ -74,7 +74,7 @@ Include `file:line` references and a concrete fix for each finding.
 
 When invoked from the `/review` skill, score each issue on a 0-100 scale:
 - **0**: False positive. Does not stand up to scrutiny, or is a pre-existing issue.
-- **25**: Might be real, but could be false positive. Stylistic issues not in CLAUDE.md.
+- **25**: Might be real, but could be false positive. Stylistic issues not in AGENTS.md.
 - **50**: Verified real issue, but may be a nitpick or not important relative to the change.
 - **75**: Highly confident. Verified real issue that will be hit in practice.
 - **100**: Absolutely certain. Confirmed real issue that will happen frequently.
@@ -87,4 +87,4 @@ Do NOT flag these as issues:
 - Pre-existing tests not touched by the change
 - Issues a typechecker would catch
 - Pedantic nitpicks a senior engineer wouldn't call out
-- Test style preferences unless explicitly in CLAUDE.md
+- Test style preferences unless explicitly in AGENTS.md

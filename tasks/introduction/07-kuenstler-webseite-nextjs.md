@@ -2,8 +2,8 @@
 
 **Dauer:** 120 min
 **Sozialform:** einzeln
-**Werkzeug:** Claude Code
-**Ziel:** Claude Code zieht ein komplettes neues Projekt hoch — Framework, Auth, CRUD und Design — und liefert eine lauffähige Next.js-App für den Künstler „Roy Bildermann" mit öffentlicher Galerie und geschütztem Admin-Bereich.
+**Werkzeug:** KI-Assistent (Claude Code oder Copilot CLI)
+**Ziel:** Der KI-Assistent zieht ein komplettes neues Projekt hoch — Framework, Auth, CRUD und Design — und liefert eine lauffähige Next.js-App für den Künstler „Roy Bildermann" mit öffentlicher Galerie und geschütztem Admin-Bereich.
 
 Die Website präsentiert seine Werke und Informationen über den Künstler;
 dazu gibt es einen geschützten Login-Bereich, in dem der Künstler seine
@@ -14,8 +14,9 @@ und ist bewusst zu groß für eine einzige `/plan-and-do`-Runde.
 
 ## Schritte
 
-1. In ein leeres Verzeichnis außerhalb des Labs wechseln und Claude Code
-   starten: `claude --dangerously-skip-permissions`.
+1. In ein leeres Verzeichnis außerhalb des Labs wechseln und den KI-Assistenten
+   starten: `claude --dangerously-skip-permissions` (Claude Code) bzw.
+   `copilot --allow-all` (Copilot CLI).
 2. Den Prompt einfügen und an den Checkpoints PRD, Plan und Review lesen,
    dann `Continue`.
 3. Die vier Schritte des Prompts nacheinander abarbeiten lassen und nach

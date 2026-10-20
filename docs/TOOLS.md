@@ -33,7 +33,7 @@ Balken stellen die Zeiten dar. So siehst du sofort: KI spart Zeit. Du kannst eig
 **URL:** <http://localhost:7200/admin/agent-tasks>
 **Zugang:** Nur Admin (`admin` / `admin123`).
 
-Das Dashboard zeigt die `agent_task`-Tabelle. Ein autonomer Claude-Agent in CI arbeitet diese Tasks ab.
+Das Dashboard zeigt die `agent_task`-Tabelle. Ein autonomer Agent in CI arbeitet diese Tasks ab. Der CI-Agent läuft auf Claude Code. Lokal kannst du die Tasks mit Claude Code oder Copilot CLI abarbeiten — beide nutzen dieselben Skills (`.claude/skills/`) und Subagents.
 
 - **Quellen:** `EMAIL`, `GITHUB_ISSUE`, `APP_LOG`, `ERROR_REPORT`.
 - **Lebenszyklus:** `OPEN → IN_PROGRESS → DONE | REJECTED`.

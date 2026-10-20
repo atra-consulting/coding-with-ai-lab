@@ -1,6 +1,6 @@
 ---
-name: "project:update-claude-files"
-description: "Update .claude/agents, docs/specs, and CLAUDE.md from source code changes — updates existing docs in place, and creates missing ones or removes obsolete ones when the code clearly demands it. Use when features land, the schema changes, or infrastructure shifts. Keeps project documentation in sync with the code."
+name: update-agent-files
+description: "Update .claude/agents, docs/specs, and AGENTS.md from source code changes — updates existing docs in place, and creates missing ones or removes obsolete ones when the code clearly demands it. Use when features land, the schema changes, or infrastructure shifts. Keeps project documentation in sync with the code."
 argument-hint: (optional special instructions)
 version: 1.2.1
 last-modified: 2026-07-07
@@ -17,9 +17,14 @@ allowed-tools:
   - AskUserQuestion
 ---
 
-# Update Claude Files
+# Update Agent Files
 
-You keep this project's docs in sync with its code. Targets: `.claude/agents/*.md`, `docs/specs/*.md` (the `SPECS*.md` set plus `DOMAIN.md`), and `CLAUDE.md`.
+> **Claude Code + Copilot CLI:** this skill runs in both. "Ask the user" =
+> `AskUserQuestion` (Claude Code) / `ask_user` (Copilot CLI). "Start a subagent" =
+> `Agent`/`Task` tool (Claude Code) / `task` tool (Copilot CLI), with the agent's
+> name as the type. `$ARGUMENTS` = the text typed after the skill name.
+
+You keep this project's docs in sync with its code. Targets: `.claude/agents/*.md`, `docs/specs/*.md` (the `SPECS*.md` set plus `DOMAIN.md`), and `AGENTS.md`.
 
 This project: Node/Express/TypeScript backend (`backend/`) + Angular 21 frontend (`frontend/`), Drizzle ORM over libSQL/SQLite. Curated spec set. Curated agent roster. Default: you update existing docs in place. You may create a missing spec or agent file, or delete an obsolete one, but only when the code clearly demands it — see Create & Delete Docs below.
 
@@ -33,7 +38,7 @@ Show full absolute paths. Get the root with `pwd` and prepend it. This lets user
 
 ## HOW TO ASK THE USER FOR DECISIONS
 
-Use the `AskUserQuestion` tool for every prompt. Never print a question as prose and wait. Never read stdin. **Embedded mode never prompts** — see PHASE 0.
+Use the ask-user tool (`AskUserQuestion` / `ask_user`) for every prompt. Never print a question as prose and wait. Never read stdin. **Embedded mode never prompts** — see PHASE 0.
 
 ## Preserve Human-Authored Content
 
@@ -49,7 +54,7 @@ Default: update an existing file. Create or delete only when the code leaves no 
 
 **Delete a spec or agent** only when the area it documents is fully gone from the code — an entity removed, a whole subsystem deleted. Never delete a file just because it looks stale.
 
-**Standalone:** always confirm creates and deletes with `AskUserQuestion` before applying. List exactly which files you will create and which you will delete.
+**Standalone:** always confirm creates and deletes with the ask-user tool before applying. List exactly which files you will create and which you will delete.
 **Embedded:** may create a clearly-missing spec. Never delete a file — too risky mid-PR. Note any file you would have deleted in the result file's Notes instead.
 
 ## Subagents
@@ -73,7 +78,7 @@ Skill receives: `$ARGUMENTS`
 
 Parse the first token:
 
-- **`embedded`** → Embedded mode. A calling skill or agent prompt uses this before it opens a PR. Optional second token `base:<sha>` scopes the run to the branch. Skip the header and every confirmation. Never call `AskUserQuestion`.
+- **`embedded`** → Embedded mode. A calling skill or agent prompt uses this before it opens a PR. Optional second token `base:<sha>` scopes the run to the branch. Skip the header and every confirmation. Never call the ask-user tool.
 - **Empty / whitespace** → Standalone mode (default).
 - **Any other text** → Standalone mode. Treat the text as `special_instructions` — focus the update there, but still cover every stale target.
 
@@ -83,20 +88,20 @@ There is no `help` or `doctor` mode.
 
 **Embedded:** skip this check and the header. Jump to PHASE 1.
 
-**Standalone:** if Claude Code is in plan mode, display:
+**Standalone:** if the session is in plan mode, display:
 ```
 Plan mode detected. This skill cannot run in plan mode.
-Exit plan mode, then run: /update-claude-files
+Exit plan mode, then run: /update-agent-files
 ```
 Then STOP.
 
 ### Skill Header (standalone only)
 
 ```
-Update Claude Files (v1.2.1)
+Update Agent Files (v1.2.1)
 ****************************
 
-Sync .claude/agents, docs/specs, and CLAUDE.md with the code.
+Sync .claude/agents, docs/specs, and AGENTS.md with the code.
 ```
 
 If `special_instructions` set, add:
@@ -114,7 +119,7 @@ Do this as the very first embedded action — before the git check — so any la
 
 ```bash
 mkdir -p docs/state
-rm -f docs/state/UPDATE-CLAUDE-FILES-RESULT.md
+rm -f docs/state/UPDATE-AGENT-FILES-RESULT.md
 ```
 
 This clears any stale result from a previous run. The result file is gitignored — it never gets committed.
@@ -127,7 +132,7 @@ git rev-parse --git-dir
 
 If it fails (not a git repository):
 - **Standalone:** display "Not a git repository. Run this skill inside the repo." Then STOP.
-- **Embedded:** write `docs/state/UPDATE-CLAUDE-FILES-RESULT.md` with `status: error` (PHASE 8 schema, note "not a git repo"), then STOP. Never block the caller.
+- **Embedded:** write `docs/state/UPDATE-AGENT-FILES-RESULT.md` with `status: error` (PHASE 8 schema, note "not a git repo"), then STOP. Never block the caller.
 
 Capture `project_root` (`pwd`) and `current_branch` (`git branch --show-current`).
 
@@ -143,7 +148,7 @@ Print this warning:
 ```
 No agents found in .claude/agents/.
 
-This skill updates the project's agents, specs, and CLAUDE.md together.
+This skill updates the project's agents, specs, and AGENTS.md together.
 It needs the agent roster to run.
 
 Install the agents first:
@@ -165,7 +170,7 @@ Only an empty **agent** roster stops the run here. An empty or missing `docs/spe
 
 - `existing_agents` — from PHASE 2 (`.claude/agents/*.md`).
 - Glob `docs/specs/*.md` → `existing_specs`. Expect the fixed set: `SPECS.md`, `DOMAIN.md`, `SPECS-backend.md`, `SPECS-database.md`, `SPECS-frontend.md`, `SPECS-ui.md`, `SPECS-testing.md`, `SPECS-infrastructure.md`. Use the real names on disk — never invent `SPECS-back-end.md` style names.
-- `CLAUDE.md` at the root.
+- `AGENTS.md` at the root.
 
 ### Step 3.2: Determine Changed Source Files
 
@@ -189,11 +194,11 @@ Check one target at a time. For each doc target `T`:
    ```
 3. A non-empty result → `T` is stale.
 
-Collect stale targets as `stale_targets`. Then apply roll-ups — these two targets have no direct source-glob rows for the categories below: if any other spec file (`SPECS-*.md` **or** `DOMAIN.md`) is stale, add `SPECS.md` (the index). If any backend, frontend, or build/config target (spec or agent) is stale, add `CLAUDE.md`.
+Collect stale targets as `stale_targets`. Then apply roll-ups — these two targets have no direct source-glob rows for the categories below: if any other spec file (`SPECS-*.md` **or** `DOMAIN.md`) is stale, add `SPECS.md` (the index). If any backend, frontend, or build/config target (spec or agent) is stale, add `AGENTS.md`.
 
 ### Step 3.3: Nothing To Do
 
-**Bootstrap exception first.** If `docs/specs/` is empty or missing while `backend/` or `frontend/` source exists, this is not "nothing to do" — it's the bootstrap-create case (Create & Delete Docs). Treat the full fixed spec set (Step 3.1, limited to areas the code actually has) **plus `CLAUDE.md`** as `stale_targets` / the embedded target list, and skip the empty check below. `CLAUDE.md` always joins a bootstrap run — its `## Agents` and `## Specifications` tables need every file the run creates.
+**Bootstrap exception first.** If `docs/specs/` is empty or missing while `backend/` or `frontend/` source exists, this is not "nothing to do" — it's the bootstrap-create case (Create & Delete Docs). Treat the full fixed spec set (Step 3.1, limited to areas the code actually has) **plus `AGENTS.md`** as `stale_targets` / the embedded target list, and skip the empty check below. `AGENTS.md` always joins a bootstrap run — its `## Agents` and `## Specifications` tables need every file the run creates.
 
 If `changed_files` is empty (embedded) or `stale_targets` is empty (standalone):
 - **Standalone:** display "All docs up to date. No source changes since the last doc update." STOP.
@@ -209,27 +214,27 @@ Map each changed / stale source path to its candidate doc targets. Edit a candid
 |---|---|
 | `backend/src/db/**`, `backend/src/config/migrate.ts`, `backend/src/db/schema/**`, `backend/src/seed/**` | `SPECS-database.md`, agents `db-coder` + `db-reviewer`; `DOMAIN.md` **only if** relationship / cascade / delete semantics changed |
 | `backend/src/services/**`, `backend/src/routes/**`, `backend/src/middleware/**` | `SPECS-backend.md`, agents `be-coder` + `be-reviewer`; `DOMAIN.md` **only if** business meaning changed (entities, roles, pipeline, delete behavior) |
-| other `backend/**` (`app.ts`, `utils/**`, `config/**`) | `SPECS-backend.md`, `CLAUDE.md` |
-| `frontend/src/app/**` (components, services, routes, guards) | `SPECS-frontend.md`, agents `fe-coder` + `fe-reviewer`, `CLAUDE.md` |
+| other `backend/**` (`app.ts`, `utils/**`, `config/**`) | `SPECS-backend.md`, `AGENTS.md` |
+| `frontend/src/app/**` (components, services, routes, guards) | `SPECS-frontend.md`, agents `fe-coder` + `fe-reviewer`, `AGENTS.md` |
 | `frontend/**` styling (`*.scss`, `styles.scss`, templates) | `SPECS-ui.md`, agents `ui-designer` + `ui-reviewer` |
 | test files (`backend/src/test/**`, `**/*.spec.ts`, `**/*.e2e.ts`) | `SPECS-testing.md`, `*-test-*` agents |
-| build / config / startup (`package.json`, `start.sh`, `*.config.*`, `tsconfig*.json`, `.github/workflows/**`) | `SPECS-infrastructure.md`, `CLAUDE.md`, agent `admin` |
-| `.claude/agents/**` changed | the affected agent files, `CLAUDE.md` `## Agents` table |
-| `docs/specs/**` changed | `CLAUDE.md` `## Specifications` table |
+| build / config / startup (`package.json`, `start.sh`, `*.config.*`, `tsconfig*.json`, `.github/workflows/**`) | `SPECS-infrastructure.md`, `AGENTS.md`, agent `admin` |
+| `.claude/agents/**` changed | the affected agent files, `AGENTS.md` `## Agents` table |
+| `docs/specs/**` changed | `AGENTS.md` `## Specifications` table |
 
 Roll-up rules:
 - `SPECS.md` (root index) is a candidate whenever any other spec file is a candidate — it indexes them.
-- `CLAUDE.md` is a candidate whenever any backend, frontend, or build target is a candidate.
+- `AGENTS.md` is a candidate whenever any backend, frontend, or build target is a candidate.
 
 **Create / delete triggers (non-bootstrap).** These fire even when `docs/specs/` is not empty — the partial case, one new or removed area among specs that otherwise still exist:
-- A changed source path maps (by the table above) to a spec file that does not exist yet → add that spec as a **create** target, tagged `create`, plus `SPECS.md` and `CLAUDE.md` (roll-up rules).
+- A changed source path maps (by the table above) to a spec file that does not exist yet → add that spec as a **create** target, tagged `create`, plus `SPECS.md` and `AGENTS.md` (roll-up rules).
 - A changed source path shows an entity, route group, or whole subsystem fully removed (Grep confirms zero references left in code) → add its now-orphaned spec/agent file as a **delete** target, tagged `delete`.
 
 Every other target from this table is tagged `update`. PHASE 5 and PHASE 6 branch on this tag.
 
 **DOMAIN.md vs SPECS-database.md.** `DOMAIN.md` holds business meaning only — no schema. A pure schema change (column type, index, nullable) flags `SPECS-database.md` only. A change to relationships, cascade / delete behavior, roles, or the sales pipeline flags `DOMAIN.md` too. Read the diff to decide.
 
-Build the final edit list: intersect candidate targets with `stale_targets` (standalone) or with what the diff actually changed (embedded). Track `agents_changed`, `specs_changed`, `claude_md_changed` for the summary.
+Build the final edit list: intersect candidate targets with `stale_targets` (standalone) or with what the diff actually changed (embedded). Track `agents_changed`, `specs_changed`, `agents_md_changed` for the summary.
 
 **No target flagged.** If the final edit list is empty — the changes touched only files outside this mapping (e.g. only `.claude/skills/**`, `docs/**`, `.gitignore`) — there is nothing to update:
 - **Standalone:** display "No documentation updates needed." STOP.
@@ -237,7 +242,7 @@ Build the final edit list: intersect candidate targets with `stale_targets` (sta
 
 This is separate from PHASE 3.3: there the changed/stale set was empty; here it was non-empty but mapped to no doc target.
 
-**Bootstrap exception.** If Step 3.3's bootstrap case applied, `stale_targets` already holds the full spec set plus `CLAUDE.md` — this check never fires. Carry every spec file straight into the edit list, tagged `create` (`CLAUDE.md` is `update` — it already exists), and continue to PHASE 5.
+**Bootstrap exception.** If Step 3.3's bootstrap case applied, `stale_targets` already holds the full spec set plus `AGENTS.md` — this check never fires. Carry every spec file straight into the edit list, tagged `create` (`AGENTS.md` is `update` — it already exists), and continue to PHASE 5.
 
 ---
 
@@ -255,7 +260,7 @@ Pick a reviewer per flagged target from the table. Dispatch only reviewers whose
 | `SPECS-ui.md` | `ui-reviewer` |
 | `SPECS-testing.md` | `be-test-reviewer` and/or `fe-test-reviewer` (by changed scope) |
 | `SPECS-infrastructure.md` | `admin` (read-only reviewer — infra specialist) |
-| `DOMAIN.md`, `SPECS.md`, `CLAUDE.md` | `ba-reviewer` |
+| `DOMAIN.md`, `SPECS.md`, `AGENTS.md` | `ba-reviewer` |
 | `.claude/agents/<name>.md` | `skill-reviewer` |
 
 Every flagged target must have a reviewer row above — no target is silently dropped. If none matches, use `ba-reviewer` as the catch-all.
@@ -291,7 +296,7 @@ Apply the approved `change_plan`, grouped by updater and by tag (`update` / `cre
 
 | Files | Tag | Updater |
 |---|---|---|
-| `docs/specs/*.md` (`SPECS*`, `DOMAIN.md`), `CLAUDE.md` | `update`, `create` | `ba-writer` |
+| `docs/specs/*.md` (`SPECS*`, `DOMAIN.md`), `AGENTS.md` | `update`, `create` | `ba-writer` |
 | `docs/specs/*.md` (`SPECS*`, `DOMAIN.md`) | `delete` | orchestrator, inline — never `ba-writer` (no Bash tool) |
 | `.claude/agents/*.md` | `update`, `create`, `delete` | `skill-coder` (has Bash) |
 
@@ -301,9 +306,9 @@ Each updater gets its change list plus these rules:
 - Preserve human prose, manual sections, structure, and German domain terms.
 - For a `create` target: write the full file content the reviewer drafted, with the Write tool.
 - Creates and deletes happen only after the standalone confirmation (embedded: `create` only — `delete` targets were already dropped in PHASE 5).
-- For `CLAUDE.md`: also keep the `## Agents` table (one row per `.claude/agents/` file) and the `## Specifications` table (one row per `docs/specs/*.md`) in sync with the files on disk. Never drop a user-written rule.
+- For `AGENTS.md`: also keep the `## Agents` table (one row per `.claude/agents/` file) and the `## Specifications` table (one row per `docs/specs/*.md`) in sync with the files on disk. Never drop a user-written rule.
 
-**Deleting a spec.** `ba-writer` has no Bash tool — it cannot run `rm` or `git rm`. Do not route `delete`-tagged spec/`CLAUDE.md` targets to it. The orchestrator deletes these itself, inline, right here in PHASE 6:
+**Deleting a spec.** `ba-writer` has no Bash tool — it cannot run `rm` or `git rm`. Do not route `delete`-tagged spec/`AGENTS.md` targets to it. The orchestrator deletes these itself, inline, right here in PHASE 6:
 
 ```bash
 git rm <path>
@@ -311,9 +316,9 @@ git rm <path>
 
 `git rm` deletes the file and stages the removal in one step. Agent-file deletes stay with `skill-coder` — it has Bash and can run `git rm` itself.
 
-Collect the files each updater (and the orchestrator, for spec deletes) changed, created, and deleted. Track `agents_changed`, `agents_created`, `agents_deleted`, `specs_changed`, `specs_created`, `specs_deleted`, `claude_md_changed` for the summary.
+Collect the files each updater (and the orchestrator, for spec deletes) changed, created, and deleted. Track `agents_changed`, `agents_created`, `agents_deleted`, `specs_changed`, `specs_created`, `specs_deleted`, `agents_md_changed` for the summary.
 
-Report: "Agents: [N] updated. Specs: [N] updated. CLAUDE.md: [sections or none]."
+Report: "Agents: [N] updated. Specs: [N] updated. AGENTS.md: [sections or none]."
 
 ---
 
@@ -323,10 +328,18 @@ Quick self-check on the edited files:
 
 - Each edited doc still parses — headings intact, tables well-formed.
 - Any file created or deleted this run was warranted by the code — matches a Create & Delete Docs case, not a guess.
-- `CLAUDE.md` `## Agents` and `## Specifications` tables list every file now on disk, including files created this run and excluding files deleted this run.
+- `AGENTS.md` `## Agents` and `## Specifications` tables list every file now on disk, including files created this run and excluding files deleted this run.
 - Human-authored prose preserved — the diff touches only stale facts.
 
-Fix any issue inline with the Edit tool. Then continue to PHASE 8.
+Fix any issue inline with the Edit tool.
+
+If any `.claude/agents/` file changed, was created, or was deleted this run, refresh the Copilot CLI copies:
+```bash
+node scripts/sync-agents.mjs
+```
+It rewrites `.github/agents/*.agent.md` from `.claude/agents/`. Never edit `.github/agents/` by hand.
+
+Then continue to PHASE 8.
 
 ---
 
@@ -336,8 +349,8 @@ Fix any issue inline with the Edit tool. Then continue to PHASE 8.
 
 Commit the docs you changed, including any file you created or deleted:
 ```bash
-git add -A -- .claude/agents docs/specs CLAUDE.md
-git commit -m "docs: Update project documentation via update-claude-files"
+git add -A -- .claude/agents .github/agents docs/specs AGENTS.md
+git commit -m "docs: Update project documentation via update-agent-files"
 ```
 `git add -A` on these paths stages new and deleted files too, not just edits. Stage only the areas you touched. If nothing changed, say "No changes to commit." Then print a summary:
 ```
@@ -349,7 +362,7 @@ Agents deleted:  [list or "none"]
 Specs updated:   [list or "none"]
 Specs created:   [list or "none"]
 Specs deleted:   [list or "none"]
-CLAUDE.md:       [sections or "none"]
+AGENTS.md:       [sections or "none"]
 Files modified:  [N]
 ```
 
@@ -361,7 +374,7 @@ Do NOT commit — in embedded mode the caller commits real changes. Always write
 mkdir -p docs/state
 ```
 
-Write `docs/state/UPDATE-CLAUDE-FILES-RESULT.md` (gitignored, never committed) with this exact schema:
+Write `docs/state/UPDATE-AGENT-FILES-RESULT.md` (gitignored, never committed) with this exact schema:
 
 ```markdown
 # Documentation Update Result
@@ -378,7 +391,7 @@ status: updated | no-changes | skipped-no-agents | error
 - Created: [list or "none"]
 - Deleted: [list or "none"]
 
-## CLAUDE.md
+## AGENTS.md
 - Sections updated: [list or "none"]
 
 ## Notes
@@ -388,7 +401,7 @@ status: updated | no-changes | skipped-no-agents | error
 [full paths, one per line, or "none"]
 ```
 
-Never call `AskUserQuestion` in embedded mode. If anything fails mid-run, write `status: error` with the reason into the result file and return — never propagate a hard stop that could block the PR.
+Never call the ask-user tool in embedded mode. If anything fails mid-run, write `status: error` with the reason into the result file and return — never propagate a hard stop that could block the PR.
 
 STOP — update complete.
 
@@ -396,4 +409,4 @@ STOP — update complete.
 
 ## Context Recovery
 
-No state file. All state comes from the project: re-glob `.claude/agents/` and `docs/specs/`, re-read `CLAUDE.md`, and re-run the PHASE 3 scan to rebuild scope.
+No state file. All state comes from the project: re-glob `.claude/agents/` and `docs/specs/`, re-read `AGENTS.md`, and re-run the PHASE 3 scan to rebuild scope.

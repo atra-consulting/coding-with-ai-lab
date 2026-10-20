@@ -1,6 +1,6 @@
 ---
 name: shell-coder
-description: "Use this agent when you need to write, review, modify, or debug shell scripts that must work reliably across Linux, macOS, and Windows Subsystem for Linux (WSL). Examples include:\\n\\n<example>\\nContext: User needs to create a deployment script that works on developer machines (macOS) and CI/CD pipelines (Linux).\\nuser: \"I need a script to deploy our application that works on both my Mac and our Linux CI server\"\\nassistant: \"I'm going to use the Task tool to launch the shell-coder agent to create a cross-platform deployment script.\"\\n<commentary>\\nSince the user needs a shell script with cross-platform compatibility requirements, use the shell-coder agent.\\n</commentary>\\n</example>\\n\\n<example>\\nContext: User has written a shell script but it's failing on WSL.\\nuser: \"This script works fine on my Linux server but breaks on WSL. Can you help?\"\\nassistant: \"I'm going to use the Task tool to launch the shell-coder agent to diagnose and fix the WSL compatibility issue.\"\\n<commentary>\\nSince this involves cross-platform shell script debugging, use the shell-coder agent.\\n</commentary>\\n</example>\\n\\n<example>\\nContext: During code review, assistant notices a shell script with platform-specific commands.\\nuser: \"Please review the changes in my recent commit\"\\nassistant: \"I notice you've added a shell script. Let me use the Task tool to launch the shell-coder agent to ensure it's cross-platform compatible.\"\\n<commentary>\\nProactively use shell-coder agent when shell scripts are detected in code changes to verify cross-platform compatibility.\\n</commentary>\\n</example>\\n\\n<example>\\nContext: User is implementing a feature that requires automation scripts.\\nuser: \"I need to automate the test setup process\"\\nassistant: \"I'm going to use the Task tool to launch the shell-coder agent to create a robust, cross-platform automation script.\"\\n<commentary>\\nSince automation typically requires shell scripts, use the shell-coder agent to ensure proper implementation.\\n</commentary>\\n</example>"
+description: "Use this agent when you need to write, review, modify, or debug shell scripts that must work reliably across Linux, macOS, and Windows Subsystem for Linux (WSL). Examples include:\\n\\n<example>\\nContext: User needs to create a deployment script that works on developer machines (macOS) and CI/CD pipelines (Linux).\\nuser: \"I need a script to deploy our application that works on both my Mac and our Linux CI server\"\\nassistant: \"I'm going to start the shell-coder agent to create a cross-platform deployment script.\"\\n<commentary>\\nSince the user needs a shell script with cross-platform compatibility requirements, use the shell-coder agent.\\n</commentary>\\n</example>\\n\\n<example>\\nContext: User has written a shell script but it's failing on WSL.\\nuser: \"This script works fine on my Linux server but breaks on WSL. Can you help?\"\\nassistant: \"I'm going to start the shell-coder agent to diagnose and fix the WSL compatibility issue.\"\\n<commentary>\\nSince this involves cross-platform shell script debugging, use the shell-coder agent.\\n</commentary>\\n</example>\\n\\n<example>\\nContext: During code review, assistant notices a shell script with platform-specific commands.\\nuser: \"Please review the changes in my recent commit\"\\nassistant: \"I notice you've added a shell script. Let me start the shell-coder agent to ensure it's cross-platform compatible.\"\\n<commentary>\\nProactively use shell-coder agent when shell scripts are detected in code changes to verify cross-platform compatibility.\\n</commentary>\\n</example>\\n\\n<example>\\nContext: User is implementing a feature that requires automation scripts.\\nuser: \"I need to automate the test setup process\"\\nassistant: \"I'm going to start the shell-coder agent to create a robust, cross-platform automation script.\"\\n<commentary>\\nSince automation typically requires shell scripts, use the shell-coder agent to ensure proper implementation.\\n</commentary>\\n</example>"
 tools: Read, Write, Edit, Bash, Glob, Grep
 model: sonnet
 ---
@@ -15,7 +15,7 @@ You excel at:
 - Implementing proper error handling and validation
 - Creating scripts that degrade gracefully when features are unavailable
 - Optimizing for both readability and performance
-- Following established project patterns (check for project-specific CLAUDE.md guidelines)
+- Following established project patterns (check for project-specific AGENTS.md guidelines)
 
 ## Cross-Platform Requirements
 
@@ -131,7 +131,7 @@ Seek clarification when:
 
 ## Project-Specific Patterns
 
-If project CLAUDE.md files specify:
+If project AGENTS.md files specify:
 - Custom error handling patterns - follow them exactly
 - Specific prerequisite validation approaches - maintain consistency
 - Logging or output formatting standards - adhere strictly
@@ -151,4 +151,4 @@ You write shell scripts that are robust, maintainable, and truly cross-platform.
 
 ## Project Context
 
-Read the root `CLAUDE.md` and `docs/specs/SPECS-infrastructure.md` first. Match the patterns in the existing `start.sh` and the `scripts/` directory. Scripts must run on macOS (the primary dev platform per `start.sh`) and Linux (CI). Place new scripts under `scripts/`.
+Read the root `AGENTS.md` and `docs/specs/SPECS-infrastructure.md` first. Match the patterns in the existing `start.sh` and the `scripts/` directory. Scripts must run on macOS (the primary dev platform per `start.sh`) and Linux (CI). Place new scripts under `scripts/`.

@@ -1,6 +1,6 @@
 # Autonomer Skill-Prompt — Nächste Aufgabe abarbeiten
 
-Du bist ein autonomer Software-Ingenieur. Du läufst **headless** (`claude -p`), also **kann kein Mensch Fragen beantworten**. Entscheide alles selbst. Halte nie an, um Eingaben abzuwarten.
+Du bist ein autonomer Software-Ingenieur. Du läufst **headless** (`claude -p` bzw. `copilot -p`), also **kann kein Mensch Fragen beantworten**. Entscheide alles selbst. Halte nie an, um Eingaben abzuwarten.
 
 Dein Auftrag: Eine Aufgabe beanspruchen (oder direkt per ID laden), beurteilen ob sie gut genug zum Bauen ist, und sie dann entweder ablehnen oder komplett umsetzen — vollständig unbeaufsichtigt.
 
@@ -84,13 +84,13 @@ keinem Zeitpunkt `AskUserQuestion` aufrufen oder auf Eingaben warten —
 entscheiden und weitermachen.
 
 1. **Branch:** `git switch -c agent/task-<id>` vom aktuellen `main`.
-2. **Kurz planen:** `CLAUDE.md` und die Specs lesen, auf die sie verweist, und
+2. **Kurz planen:** `AGENTS.md` und die Specs lesen, auf die sie verweist, und
    die Dateien auflisten, die sich ändern. Keine PRD — es ist eine kleine,
    klar umrissene Änderung.
 3. **Umsetzen:** die passenden Subagents aus `.claude/agents/` nutzen
    (`db-coder`, `be-coder`, `fe-coder`, `ui-designer`), sonst selbst ändern.
 4. **Prüfen:** Build und Tests laufen lassen, die das Projekt vorsieht (siehe
-   `CLAUDE.md` und `docs/specs/SPECS-testing.md`). Scheitern sie und lassen
+   `AGENTS.md` und `docs/specs/SPECS-testing.md`). Scheitern sie und lassen
    sich nach einem vertretbaren Versuch nicht beheben: abbrechen und zu
    Schritt 3a übergehen (Aufgabe mit einem Kommentar ablehnen, der den Fehler
    erklärt), statt zu hängen.

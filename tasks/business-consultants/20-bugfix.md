@@ -2,7 +2,7 @@
 
 **Dauer:** 30 min
 **Sozialform:** Paare
-**Werkzeug:** Claude Code
+**Werkzeug:** KI-Assistent (Claude Code oder Copilot CLI)
 **Voraussetzung:** Lab läuft unter `localhost:7200`
 **Ziel:** Aus der Support-Meldung aus Aufgabe 04 wird ein Fehlerbericht, der dem Agenten als Spezifikation genügt, und ein Fix, der sich Zeile für Zeile gegen diesen Fehlerbericht abhaken lässt.
 
@@ -25,8 +25,8 @@ unter dem Feld, kein Speichern negativer Werte.
    ausfüllen, ins Feld **Wert** `-100` eintragen.
 2. Schreibt drei Zeilen auf — **Schritte · Beobachtet · Erwartet** —, das
    ist euer Fehlerbericht.
-3. Startet Claude Code im Projekt-Root
-   (`claude --dangerously-skip-permissions`) und gebt den Prompt ein.
+3. Startet den KI-Assistenten im Projekt-Root
+   (`claude --dangerously-skip-permissions` bzw. `copilot --allow-all`) und gebt den Prompt ein.
 4. Prüft am Plan-Checkpoint, ob der Plan die Formular-Datei der Chance und
    das Backend-Schema (`validation.ts`) nennt und nichts enthält, das ihr
    nicht bestellt habt — sonst `Edit`: „Nur den Hinweis und die
@@ -40,7 +40,7 @@ unter dem Feld, kein Speichern negativer Werte.
 
 1. Fehler nachstellen: Wert `-100`, Speichern bleibt grau.
 2. Fehlerbericht schreiben — Schritte · Beobachtet · Erwartet.
-3. Claude Code starten, Prompt vom Blatt geben.
+3. KI-Assistenten starten, Prompt vom Blatt geben.
 4. Plan lesen: nur Formular und Validierung?
 5. Im Browser prüfen, dann `git diff main --stat`.
 

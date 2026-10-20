@@ -2,31 +2,33 @@
 
 Dieses Projekt hat 26 Subagents. Sie liegen in `.claude/agents/`. Jeder Agent ist eine Markdown-Datei.
 
+**Beide Tools, dieselben Agents.** Quelle ist `.claude/agents/<name>.md`. Claude Code liest sie dort. GitHub Copilot CLI liest die Kopie `.github/agents/<name>.agent.md`. Die Kopie ist generiert (`node scripts/sync-agents.mjs`). Ein Hook erzeugt sie neu, sobald eine KI `.claude/agents/` ändert. Kopie nie von Hand ändern.
+
 ## Was ist ein Subagent?
 
-Ein Subagent ist ein Spezialist. Claude ruft ihn für eine klare Aufgabe auf. Der Subagent bekommt eigenen Kontext, eigene Werkzeuge und einen eigenen Auftrag.
+Ein Subagent ist ein Spezialist. Die KI ruft ihn für eine klare Aufgabe auf. Der Subagent bekommt eigenen Kontext, eigene Werkzeuge und einen eigenen Auftrag.
 
-Beispiel: Du willst neuen Backend-Code. Claude ruft `be-coder`. Der schreibt den Code. Danach ruft Claude `be-reviewer`. Der prüft den Code.
+Beispiel: Du willst neuen Backend-Code. Die KI ruft `be-coder`. Der schreibt den Code. Danach ruft sie `be-reviewer`. Der prüft den Code.
 
 ## Warum Subagents nutzen?
 
 - **Fokus.** Jeder Agent kennt nur seinen Bereich. Er liest die passenden Specs. Er kennt die Regeln.
 - **Weniger Fehler.** Ein Reviewer prüft, was ein Coder baut. Vier Augen.
-- **Passendes Modell.** Einfache Aufgaben laufen auf `haiku`. Schwere auf `opus`. Das spart Zeit und Geld.
+- **Passendes Modell.** Einfache Aufgaben laufen auf `haiku`. Schwere auf `opus`. Das spart Zeit und Geld. (Nur Claude Code. Copilot CLI nutzt das Modell der Session — Wahl mit `/model`.)
 - **Sauberer Kontext.** Der Haupt-Chat bleibt kurz. Der Agent arbeitet in seinem eigenen Fenster.
 
 ## Wie rufst du einen Subagent auf?
 
 Zwei Wege:
 
-1. **Automatisch.** Claude liest die `description` jedes Agents. Passt die Aufgabe, ruft Claude den Agent selbst. Du machst nichts.
-2. **Per Name.** Du bittest direkt: „Nutze den `be-reviewer`, um diese Route zu prüfen." Claude startet genau diesen Agent.
+1. **Automatisch.** Die KI liest die `description` jedes Agents. Passt die Aufgabe, ruft sie den Agent selbst. Du machst nichts.
+2. **Per Name.** Du bittest direkt: „Nutze den `be-reviewer`, um diese Route zu prüfen." Die KI startet genau diesen Agent. In Copilot CLI zeigt `/agent` alle Agents und wählt einen aus.
 
 Skills wie `/review` rufen mehrere Agents nacheinander — jeder Reviewer prüft seinen Bereich.
 
 ## Die Agents im Überblick
 
-Jede Zeile: Name, Zweck, Modell. Das Modell steht in der Agent-Datei (`model:`).
+Jede Zeile: Name, Zweck, Modell. Das Modell steht in der Agent-Datei (`model:`). Es gilt nur in Claude Code.
 
 ### Coding — Code schreiben
 
@@ -72,7 +74,7 @@ Jede Zeile: Name, Zweck, Modell. Das Modell steht in der Agent-Datei (`model:`).
 
 ### Tooling — allgemein, nicht an die CRM-Domäne gebunden
 
-Diese neun Agents kennen die CRM-Specs nicht. Sie lesen nur die Root-`CLAUDE.md`. `shell-*` liest zusätzlich `docs/specs/SPECS-infrastructure.md`. Du kannst sie leicht in andere Projekte übernehmen.
+Diese neun Agents kennen die CRM-Specs nicht. Sie lesen nur die Root-`AGENTS.md`. `shell-*` liest zusätzlich `docs/specs/SPECS-infrastructure.md`. Du kannst sie leicht in andere Projekte übernehmen.
 
 | Agent | Zweck | Modell |
 |-------|-------|--------|
@@ -81,7 +83,7 @@ Diese neun Agents kennen die CRM-Specs nicht. Sie lesen nur die Root-`CLAUDE.md`
 | `python-reviewer` | Prüft Python. Korrektheit, Portabilität, externe Daten. | sonnet |
 | `shell-coder` | Schreibt Shell-Skripte für macOS, Linux, WSL. | sonnet |
 | `shell-reviewer` | Prüft Shell-Skripte. Hänger, Endlosschleifen, Portabilität. | sonnet |
-| `skill-coder` | Erstellt und ändert Claude-Code-Skills und -Subagents. | sonnet |
+| `skill-coder` | Erstellt und ändert Skills und Subagents (Claude Code und Copilot CLI). | sonnet |
 | `skill-reviewer` | Prüft Skills und Subagents. | sonnet |
 | `data-reader` | Sammelt Fakten aus Dateien oder dem Web. Nur lesend. | haiku |
 | `data-writer` | Schreibt fertigen Inhalt in eine Datei an einem bekannten Pfad. Nur schreibend. | haiku |
@@ -93,6 +95,6 @@ Diese neun Agents kennen die CRM-Specs nicht. Sie lesen nur die Root-`CLAUDE.md`
 
 ## Mehr Details
 
-- Agent-Dateien: `.claude/agents/`
-- Rollen-Tabelle und Spec-Zuordnung: [CLAUDE.md](../CLAUDE.md)
+- Agent-Dateien: `.claude/agents/` (Quelle) · `.github/agents/` (generierte Copilot-Kopie)
+- Rollen-Tabelle und Spec-Zuordnung: [AGENTS.md](../AGENTS.md)
 - Übernahme in dein Projekt: [TRANSFER.md](TRANSFER.md)

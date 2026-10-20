@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "hooks": {
+    "postToolUse": [
+      {
+        "type": "command",
+        "bash": "node scripts/sync-agents.mjs --hook",
+        "powershell": "node scripts/sync-agents.mjs --hook",
+        "timeoutSec": 30
+      }
+    ]
+  }
+}

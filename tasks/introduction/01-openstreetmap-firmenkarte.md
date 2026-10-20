@@ -2,7 +2,7 @@
 
 **Dauer:** 60 min
 **Sozialform:** einzeln
-**Werkzeug:** Claude Code
+**Werkzeug:** KI-Assistent (Claude Code oder Copilot CLI)
 **Voraussetzung:** Lab läuft unter `localhost:7200`
 **Ziel:** Die Firmen-Detailseite zeigt die Adressen der Firma als Marker auf einer Leaflet-Karte unter den Stammdaten, die automatisch auf alle Marker zoomt.
 
@@ -12,7 +12,7 @@ Karte. Keine Geokodierung nötig.
 
 ## Schritte
 
-1. Claude Code im Projekt-Root starten: `claude --dangerously-skip-permissions`.
+1. KI-Assistent im Projekt-Root starten: `claude --dangerously-skip-permissions` (Claude Code) bzw. `copilot --allow-all` (Copilot CLI).
 2. Den Prompt einfügen und an den Checkpoints PRD, Plan und Review lesen,
    dann `Continue`.
 3. App neu starten (`./start.sh`) und eine Firma mit mehreren Adressen

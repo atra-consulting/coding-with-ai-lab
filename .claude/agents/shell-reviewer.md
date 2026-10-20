@@ -97,4 +97,4 @@ Note recurring patterns in your review output so the requester can track trends 
 
 ## Project Context
 
-Read the root `CLAUDE.md` and `docs/specs/SPECS-infrastructure.md` first. Match the patterns in the existing `start.sh` and the `scripts/` directory. Scripts must run on macOS (the primary dev platform per `start.sh`) and Linux (CI). Place new scripts under `scripts/`.
+Read the root `AGENTS.md` and `docs/specs/SPECS-infrastructure.md` first. Match the patterns in the existing `start.sh` and the `scripts/` directory. Scripts must run on macOS (the primary dev platform per `start.sh`) and Linux (CI). Place new scripts under `scripts/`.

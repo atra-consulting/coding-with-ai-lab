@@ -2,7 +2,7 @@
 
 **Dauer:** 45 min
 **Sozialform:** einzeln
-**Werkzeug:** Claude Code
+**Werkzeug:** KI-Assistent (Claude Code oder Copilot CLI)
 **Voraussetzung:** Lab läuft unter `localhost:7200`, `GOOGLE_GEMINI_KEY` exportiert
 **Ziel:** Ein Knopf auf Firmen- und Personen-Detailseite zeigt eine Karte mit höchstens 150 Wörtern Zusammenfassung der Geschäftsbeziehung und bis zu fünf vorgeschlagenen nächsten Schritten.
 
@@ -11,7 +11,7 @@ strukturiert an Gemini. Der API-Key bleibt im Backend.
 
 ## Schritte
 
-1. Claude Code im Projekt-Root starten: `claude --dangerously-skip-permissions`.
+1. KI-Assistent im Projekt-Root starten: `claude --dangerously-skip-permissions` (Claude Code) bzw. `copilot --allow-all` (Copilot CLI).
 2. Den Prompt einfügen und an den Checkpoints PRD, Plan und Review lesen,
    dann `Continue`.
 3. App neu starten (`./start.sh`) und auf einer Firma mit Aktivitäten

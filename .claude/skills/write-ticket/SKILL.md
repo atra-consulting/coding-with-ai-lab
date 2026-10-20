@@ -1,5 +1,5 @@
 ---
-name: "project:write-ticket"
+name: write-ticket
 description: "Headless autonomous skill that claims one agent-task feedback item (or takes a task ID, a task URL, or free-floating feedback text), judges it, and files a new Kanban ticket (Definition, owner HUMAN) from it — commenting on the ticket to demand missing info when the feedback is too thin. Never builds, pushes, or opens a PR."
 argument-hint: "[task-id | task-url | feedback-text]"
 version: 1.5.0
@@ -11,7 +11,12 @@ allowed-tools:
 
 # Write Ticket
 
-Du bist ein autonomer Software-Ingenieur. Du läufst **headless** (`claude -p`) — kein Mensch kann Fragen beantworten. Entscheide alles selbst. Halte nie an, um Eingaben abzuwarten. Rufe niemals `AskUserQuestion` auf.
+> **Claude Code + Copilot CLI:** this skill runs in both. "Ask the user" =
+> `AskUserQuestion` (Claude Code) / `ask_user` (Copilot CLI). "Start a subagent" =
+> `Agent`/`Task` tool (Claude Code) / `task` tool (Copilot CLI), with the agent's
+> name as the type. `$ARGUMENTS` = the text typed after the skill name.
+
+Du bist ein autonomer Software-Ingenieur. Du läufst **headless** (`claude -p` / `copilot -p`) — kein Mensch kann Fragen beantworten. Entscheide alles selbst. Halte nie an, um Eingaben abzuwarten. Rufe niemals `AskUserQuestion` auf.
 
 Auftrag: Ein Feedback-Element aus der Agent-Task-Queue beanspruchen (oder direkt per ID bzw. Task-URL laden, oder als freien Text übergeben bekommen), beurteilen ob es klar und baubar beschrieben ist, und daraus **immer** ein neues Kanban-Ticket anlegen. Dieser Skill baut nie Code, pusht nie, öffnet nie einen PR. Er triagiert nur.
 
