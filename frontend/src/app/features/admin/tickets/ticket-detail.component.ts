@@ -102,7 +102,7 @@ import { BerlinDateTimePipe } from '../../../shared/pipes/berlin-date-time.pipe'
                     <div class="comment-header">
                       <span class="comment-author">
                         <fa-icon [icon]="comment.author === 'AGENT' ? faRobot : faUser" class="me-1" />
-                        {{ comment.author === 'AGENT' ? 'Claude Code' : (comment.authorName ?? 'Mensch') }}
+                        {{ comment.author === 'AGENT' ? 'KI-Agent' : (comment.authorName ?? 'Mensch') }}
                       </span>
                       <span class="comment-time text-muted small">{{ comment.createdAt | berlinDateTime }}</span>
                     </div>

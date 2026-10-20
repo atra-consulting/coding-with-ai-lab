@@ -1,17 +1,20 @@
 # Setup — AI Coding Lab
 
-Diese Anleitung beschreibt, wie du deine Arbeitsumgebung für das **AI Coding Lab** einrichtest: Laufzeitumgebung, AI-Assistent, IDE und Markdown-Viewer. Nach Abschluss kannst du das Projekt starten und mit Claude Code produktiv arbeiten.
+Diese Anleitung beschreibt, wie du deine Arbeitsumgebung für das **AI Coding Lab** einrichtest: Laufzeitumgebung, AI-Assistent, IDE und Markdown-Viewer. Nach Abschluss kannst du das Projekt starten und mit deinem KI-Assistenten produktiv arbeiten.
+
+**Welcher KI-Assistent?** Je nach Schulung **Claude Code** oder **GitHub Copilot CLI**. Du brauchst nur eins von beiden. Beide nutzen dieselben Projektregeln (`CLAUDE.md`), Skills (`.claude/skills/`) und Subagents (Quelle `.claude/agents/`, Copilot-Kopie in `.github/agents/`, generiert).
 
 ## Inhalt
 
 - [Node.js](#nodejs)
 - [Claude Code](#claude-code)
+- [GitHub Copilot CLI](#github-copilot-cli)
 - [IDE](#ide)
 - [Markdown-Viewer](#markdown-viewer)
 
 ## Node.js
 
-**Node.js 20.19 oder neuer** (Voraussetzung für Angular 21). npm wird mit Node.js mitgeliefert.
+**Node.js 20.19 oder neuer** (Voraussetzung für Angular 21). Für **Copilot CLI: Node.js 22 oder neuer**. npm wird mit Node.js mitgeliefert. Empfehlung: Node.js 24.
 
 ### Node.js installieren
 
@@ -110,13 +113,49 @@ claude
 
 Beim ersten Start führt Claude Code durch die Anmeldung (Browser-basiertes OAuth mit einem Anthropic-Konto oder API-Key). Danach steht der AI-Assistent im Terminal zur Verfügung.
 
+Spickzettel: [CHEATSHEET-CLAUDE-CODE.md](CHEATSHEET-CLAUDE-CODE.md)
+
+## GitHub Copilot CLI
+
+[GitHub Copilot CLI](https://github.com/github/copilot-cli) ist GitHubs CLI für AI-gestütztes Programmieren. Für die Copilot-Schulung statt Claude Code.
+
+**Voraussetzungen:**
+
+- GitHub-Konto mit aktivem Copilot-Abo. Bei Copilot Business oder Enterprise muss die Organisation Copilot CLI freigeben.
+- Node.js 22 oder neuer.
+- Windows: PowerShell 6 oder neuer (`winget install --id Microsoft.PowerShell -e`, dann `pwsh` nutzen).
+
+### Installation
+
+```bash
+npm install -g @github/copilot
+copilot --version
+```
+
+### Erste Schritte
+
+Im Projektverzeichnis starten:
+
+```bash
+copilot
+```
+
+Beim ersten Start fragt Copilot CLI, ob du dem Ordner vertraust. Danach `/login` eingeben und der Anmeldung im Browser folgen (GitHub-Konto).
+
+- Skills: `/review`, `/write-ticket`, `/update-agent-files` — `/skills` zeigt alle.
+- Subagents: `/agent` zeigt und wählt sie. Oder im Klartext anfordern.
+- Modell wählen: `/model`. Modus wechseln (z. B. Plan-Modus): `Shift+Tab`.
+- Headless: `copilot -p "..."`.
+
+Spickzettel: [CHEATSHEET-COPILOT-CLI.md](CHEATSHEET-COPILOT-CLI.md)
+
 ## IDE
 
 Für das AI Coding Lab empfehlen wir Teilnehmenden **Visual Studio Code**, wenn sie noch keine bevorzugte IDE haben. Wer bereits mit IntelliJ IDEA, WebStorm, Cursor o.ä. arbeitet, kann diese weiter verwenden.
 
 ### Visual Studio Code
 
-Kostenlos, plattformübergreifend, mit guter TypeScript- und Angular-Unterstützung und einer offiziellen Claude-Code-Integration.
+Kostenlos, plattformübergreifend, mit guter TypeScript- und Angular-Unterstützung und offiziellen Integrationen für Claude Code und GitHub Copilot.
 
 **Installation:**
 

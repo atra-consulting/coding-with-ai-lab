@@ -5,7 +5,7 @@ description: "Use this agent for read-only fact-finding: answering a question by
 <example>
 Context: Before changing a config key, the user wants to know everywhere it is read.
 user: \"Which files read the `audience` config key, and on which lines?\"
-assistant: \"I'll use the Task tool to launch the data-reader agent to find every place that reads it and report back the file paths and line numbers.\"
+assistant: \"I'll start the data-reader agent to find every place that reads it and report back the file paths and line numbers.\"
 <commentary>
 This is a pure lookup — grep across the repo for one key and report locations. Handing it to data-reader keeps the raw grep output out of the main conversation and off a more expensive worker.
 </commentary>
@@ -14,7 +14,7 @@ This is a pure lookup — grep across the repo for one key and report locations.
 <example>
 Context: Before editing a set of reference files, the assistant wants a quick inventory.
 user: \"Collect the current line count and section headings of every file under .claude/skills/review/.\"
-assistant: \"I'm going to use the Task tool to launch the data-reader agent to gather that inventory and report it back as a short list.\"
+assistant: \"I'm going to start the data-reader agent to gather that inventory and report it back as a short list.\"
 <commentary>
 Reading and summarizing several files is mechanical fact-gathering, not planning or coding. data-reader does it cheaply and returns only the inventory, not the files themselves.
 </commentary>

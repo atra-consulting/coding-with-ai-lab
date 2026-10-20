@@ -62,7 +62,7 @@ Comments on tickets. Author is either `AGENT` (question or closing note from the
 | id | integer | PK, autoIncrement |
 | ticketId | integer | NOT NULL, FK → ticket(id) CASCADE DELETE |
 | author | text | NOT NULL — `TICKET_COMMENT_AUTHOR` enum |
-| authorName | text | nullable — display name (e.g. `"Claude Code"`) |
+| authorName | text | nullable — display name (e.g. `"KI-Agent"`) |
 | body | text | NOT NULL |
 | createdAt | text | NOT NULL, default `datetime('now')` |
 

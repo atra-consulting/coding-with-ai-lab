@@ -2,21 +2,23 @@
 
 Dieses Projekt hat drei eigene Skills. Sie liegen in `.claude/skills/`. Jeder Skill ist ein Ordner mit einer `SKILL.md`.
 
+**Beide Tools, dieselben Skills.** Claude Code und GitHub Copilot CLI laden die Skills aus `.claude/skills/`. Gleicher Ordner, gleiche Namen, gleicher Aufruf. Der Ordnername kommt von Claude Code — Copilot CLI liest ihn auch.
+
 ## Was ist ein Skill?
 
-Ein Skill ist ein fester Arbeitsablauf. Du rufst ihn mit einem Schrägstrich auf: `/name`. Claude folgt dann den Schritten in der `SKILL.md`.
+Ein Skill ist ein fester Arbeitsablauf. Du rufst ihn mit einem Schrägstrich auf: `/name`. Die KI folgt dann den Schritten in der `SKILL.md`.
 
 Ein Subagent ist ein Spezialist für eine Aufgabe. Ein Skill ist ein ganzer Prozess. Skills rufen oft mehrere Subagents nacheinander. Mehr zu Agents: [SUBAGENTS.md](SUBAGENTS.md).
 
 ## Wie rufst du einen Skill auf?
 
-Tippe den Namen mit Schrägstrich in Claude Code:
+Tippe den Namen mit Schrägstrich in Claude Code oder Copilot CLI:
 
 ```
 /review Prüfe besonders die Fehlerbehandlung
 ```
 
-Manche Skills nehmen Argumente. Manche laufen ohne. Details stehen unten.
+Manche Skills nehmen Argumente. Manche laufen ohne. Details stehen unten. `/skills` zeigt alle verfügbaren Skills.
 
 ## Die Skills
 
@@ -39,22 +41,22 @@ Prüft deinen Branch gegen `main`. Mit mehreren Runden aus Prüfen und Fixen.
   ```
 - Datei: `.claude/skills/review/SKILL.md`
 
-### `/update-claude-files` — Doku mit dem Code synchron halten
+### `/update-agent-files` — Doku mit dem Code synchron halten
 
-Aktualisiert `.claude/agents/`, `docs/specs/` und `CLAUDE.md`. Passend zu den Code-Änderungen.
+Aktualisiert `.claude/agents/`, `docs/specs/` und `CLAUDE.md`. Passend zu den Code-Änderungen. Früherer Name: `/update-claude-files`.
 
 - **Wann nutzen:** Ein Feature ist fertig. Das Schema ändert sich. Die Infrastruktur wandert.
-- **Was passiert:** Reviewer-Agents vergleichen Code und Doku. Sie melden, was veraltet ist. Writer-Agents fixen genau diese Stellen. Der Skill legt keine neue Agent- oder Spec-Datei an. Er passt nur bestehende an.
+- **Was passiert:** Reviewer-Agents vergleichen Code und Doku. Sie melden, was veraltet ist. Writer-Agents fixen genau diese Stellen. Standard: Der Skill passt bestehende Dateien an. Fehlt eine Spec für einen Code-Bereich, legt er sie an. Veraltete Dateien löscht er nur nach Rückfrage. Einen neuen Agent legt er nur an, wenn du es ausdrücklich verlangst.
 - **Argumente (optional):** freier Text als Fokus, oder `embedded` — interner Modus für Agenten-Prompts und andere Skills, etwa vor einem PR. Mit `embedded base:<sha>` grenzt der Lauf sich auf die Änderungen seit diesem Commit ein.
 - **Beispiel:**
   ```
-  /update-claude-files Fokus auf die neue Ticket-API
+  /update-agent-files Fokus auf die neue Ticket-API
   ```
-- Datei: `.claude/skills/update-claude-files/SKILL.md`
+- Datei: `.claude/skills/update-agent-files/SKILL.md`
 
 ### `/write-ticket` — Feedback in ein neues Ticket triagieren
 
-Läuft headless (`claude -p`). Kein Mensch antwortet. Baut nie Code.
+Läuft headless (`claude -p` bzw. `copilot -p`). Kein Mensch antwortet. Baut nie Code.
 
 - **Wann nutzen:** In CI. Um Feedback aus der Agent-Task-Queue in ein Kanban-Ticket zu verwandeln. Oder um freien Text direkt in ein Ticket zu triagieren.
 - **Was passiert:** Der Skill nimmt ein Feedback-Element (Agent-Task aus der Queue, per ID, per Task-URL, oder freier Text). Er beurteilt es selbst. Er legt immer ein neues Ticket an — Status „Definition", Owner Mensch. Ist das Feedback zu dünn, kommentiert er genau, was fehlt. Er pusht nie und öffnet nie einen PR.
@@ -75,4 +77,4 @@ Willst du diese Skills in dein eigenes Projekt holen? Siehe [TRANSFER.md](TRANSF
 
 ## Nicht aktiv: `plan-and-do`
 
-Der frühere End-to-End-Skill `/plan-and-do` liegt unter `resources/skills/plan-and-do/`. Dort ist er kein aktiver Skill — Claude lädt ihn nicht und ruft ihn nicht auf. Er bleibt zum Nachlesen, etwa als Beispiel für einen großen Workflow-Skill.
+Der frühere End-to-End-Skill `/plan-and-do` liegt unter `resources/skills/plan-and-do/`. Dort ist er kein aktiver Skill — kein Tool lädt ihn oder ruft ihn auf. Er bleibt zum Nachlesen, etwa als Beispiel für einen großen Workflow-Skill.

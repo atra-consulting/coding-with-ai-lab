@@ -63,7 +63,7 @@ Agent Support:
 
 Integrations:
   - git (required): Diff analysis
-  - Task tool (optional): Agent delegation
+  - Subagent tool (optional): Agent delegation
 
 Version: 1.8.0
 ```

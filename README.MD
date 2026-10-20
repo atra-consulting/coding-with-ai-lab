@@ -19,9 +19,16 @@
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-Drizzle%20ORM-003b57.svg">
 </p>
 
-> **Erstmal hier starten:** Für die vollständige Installationsanleitung (Node.js, Claude Code, IDE) bitte **[docs/SETUP.md](docs/SETUP.md)** lesen.
+## Schulung? Hier starten
 
-> **English?** See **[docs/welcome_EN.MD](docs/welcome_EN.MD)** for an English introduction.
+| Schulung | Deutsch | English |
+|----------|---------|---------|
+| **Claude-Code-Schulung** | [docs/welcome_DE.MD](docs/welcome_DE.MD) | [docs/welcome_EN.MD](docs/welcome_EN.MD) |
+| **Copilot-Schulung** (GitHub Copilot CLI) | [docs/welcome-copilot_DE.MD](docs/welcome-copilot_DE.MD) | [docs/welcome-copilot_EN.MD](docs/welcome-copilot_EN.MD) |
+
+Nimm die Einführung zu deiner Schulung. Beide Tools nutzen dieselben Skills, Subagents und Aufgaben.
+
+> Vollständige Installationsanleitung (Node.js, KI-Assistent, IDE): **[docs/SETUP.md](docs/SETUP.md)**.
 
 ---
 
@@ -71,7 +78,7 @@ atra.consulting [bietet KI-Training an](https://atra.consulting/ki-loesungen/), 
 |------|---------|-------|
 | **Node.js** | 20.19+ | Backend + Frontend bauen und starten |
 | **Git CLI** | beliebig | Versionskontrolle und Branches |
-| **Claude Code** | aktuell | AI-gestütztes Programmieren im Terminal |
+| **Claude Code** oder **GitHub Copilot CLI** | aktuell | AI-gestütztes Programmieren im Terminal (je nach Schulung) |
 
 Vollständige Installationsanleitung: **[docs/SETUP.md](docs/SETUP.md)**
 
@@ -175,7 +182,7 @@ git checkout -b training-0626/max-mustermann
 ### Aufgabe starten
 
 1. Aufgaben findest du im Ordner **`/tasks/`**
-2. Lies Ziel und Ergebnis der Aufgabe und beauftrage Claude Code im Klartext — so, wie du es einem neuen Kollegen erklären würdest. Lass dir zuerst den Plan zeigen, bevor gebaut wird.
+2. Lies Ziel und Ergebnis der Aufgabe und beauftrage deinen KI-Assistenten (Claude Code oder Copilot CLI) im Klartext — so, wie du es einem neuen Kollegen erklären würdest. Lass dir zuerst den Plan zeigen, bevor gebaut wird.
 3. Vor dem Abschluss: `/review` prüft deine Änderungen.
 
 ---
@@ -185,10 +192,12 @@ git checkout -b training-0626/max-mustermann
 | Befehl | Zweck |
 |--------|-------|
 | `/review` | Code-Änderungen mit iterativem Feedback prüfen |
-| `/simplify` | Code auf Qualität, Wiederverwendung und Effizienz prüfen |
-| `/help` | Hilfe zu Claude Code |
-| `/clear` | Konversationshistorie löschen |
+| `/write-ticket` | Feedback in ein neues Kanban-Ticket verwandeln |
+| `/update-agent-files` | Agents, Specs und `CLAUDE.md` mit dem Code synchron halten |
+| `/help` | Hilfe zum Tool |
 | `/compact` | Kontext komprimieren |
+
+`/review`, `/write-ticket` und `/update-agent-files` sind Projekt-Skills. Sie laufen in beiden Tools gleich. Weitere Befehle je Tool: [Claude-Code-Spickzettel](docs/CHEATSHEET-CLAUDE-CODE.md) · [Copilot-CLI-Spickzettel](docs/CHEATSHEET-COPILOT-CLI.md).
 
 ---
 
@@ -213,7 +222,7 @@ git checkout -b training-0626/max-mustermann
 
 Architektur-Details: **[docs/specs/SPECS.md](docs/specs/SPECS.md)**
 
-Konventionen und Patterns für AI-gestützte Entwicklung: **[AGENTS.md](AGENTS.md)**
+Konventionen und Patterns für AI-gestützte Entwicklung: **[CLAUDE.md](CLAUDE.md)**
 
 ---
 
@@ -221,16 +230,19 @@ Konventionen und Patterns für AI-gestützte Entwicklung: **[AGENTS.md](AGENTS.m
 
 | Dokument | Inhalt |
 |----------|--------|
-| [docs/SETUP.md](docs/SETUP.md) | Vollständige Installationsanleitung (Node.js, Claude Code, IDE) |
+| [docs/SETUP.md](docs/SETUP.md) | Vollständige Installationsanleitung (Node.js, Claude Code / Copilot CLI, IDE) |
 | [docs/CHEATSHEET-CLAUDE-CODE.md](docs/CHEATSHEET-CLAUDE-CODE.md) | Claude Code Spickzettel für Einsteiger |
-| [docs/welcome_DE.MD](docs/welcome_DE.MD) | Deutsche Workshop-Einführung |
-| [docs/welcome_EN.MD](docs/welcome_EN.MD) | English workshop introduction |
+| [docs/CHEATSHEET-COPILOT-CLI.md](docs/CHEATSHEET-COPILOT-CLI.md) | Copilot CLI Spickzettel für Einsteiger |
+| [docs/welcome_DE.MD](docs/welcome_DE.MD) | Workshop-Einführung Claude Code (Deutsch) |
+| [docs/welcome_EN.MD](docs/welcome_EN.MD) | Workshop introduction Claude Code (English) |
+| [docs/welcome-copilot_DE.MD](docs/welcome-copilot_DE.MD) | Workshop-Einführung Copilot CLI (Deutsch) |
+| [docs/welcome-copilot_EN.MD](docs/welcome-copilot_EN.MD) | Workshop introduction Copilot CLI (English) |
 | [docs/SUBAGENTS.md](docs/SUBAGENTS.md) | Alle 26 Subagents erklärt |
-| [docs/SKILLS.md](docs/SKILLS.md) | Alle 4 Custom-Skills erklärt |
+| [docs/SKILLS.md](docs/SKILLS.md) | Alle 3 Custom-Skills erklärt |
 | [docs/TRANSFER.md](docs/TRANSFER.md) | Skills & Subagents ins eigene Projekt übernehmen |
 | [docs/TOOLS.md](docs/TOOLS.md) | Produktivitäts-Rechner, Agent-Tasks, Ticket-Board |
-| [AGENTS.md](AGENTS.md) | Anweisungen und Konventionen für AI-Coding-Assistenten (tool-neutral) |
-| [CLAUDE.md](CLAUDE.md) | Claude-Code-Spezifika (Subagents, Spec-Leselisten) — importiert `AGENTS.md` |
+| [CLAUDE.md](CLAUDE.md) | Alle Projektregeln für AI-Coding-Assistenten (gilt für beide Tools) |
+| [AGENTS.md](AGENTS.md) | Verweist nur auf `CLAUDE.md` |
 | [docs/specs/SPECS.md](docs/specs/SPECS.md) | Detaillierte Spezifikationen pro Bereich |
 | [docs/adr/](docs/adr/) | Architecture Decision Records |
 | [docs/prds/](docs/prds/) | Product Requirement Documents |
@@ -245,8 +257,10 @@ Konventionen und Patterns für AI-gestützte Entwicklung: **[AGENTS.md](AGENTS.m
 ├── docs/             Installationsanleitung, Architektur, Specs, ADRs, PRDs, Tasks
 ├── start.sh          Startskript (macOS/Linux)
 ├── start.bat         Startskript (Windows)
-├── AGENTS.md         Anweisungen für AI-Coding-Assistenten (tool-neutral)
-└── CLAUDE.md         Claude-Code-Spezifika (importiert AGENTS.md)
+├── .claude/          Skills und Subagents (Quelle, beide Tools)
+├── .github/agents/   Copilot-Kopie der Subagents (generiert)
+├── CLAUDE.md         Projektregeln für AI-Coding-Assistenten (beide Tools)
+└── AGENTS.md         Verweist nur auf CLAUDE.md
 ```
 
 ---

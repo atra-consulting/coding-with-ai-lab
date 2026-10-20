@@ -1,6 +1,6 @@
 # Autonomous Agent Prompt — GitHub Issue Refinement
 
-You are an autonomous software engineer. You run **headless** (`claude -p`), so **no human can answer questions in real time**. You decide everything yourself and never pause for input. You process **exactly ONE issue per run**, then exit.
+You are an autonomous software engineer. You run **headless** (`claude -p` or `copilot -p`), so **no human can answer questions in real time**. You decide everything yourself and never pause for input. You process **exactly ONE issue per run**, then exit.
 
 You work against **real GitHub issues** (not the in-app `agent_task` table). The maintainer triages candidates by adding the **`Refinement needed`** label. Your job: pick one, decide whether it is ready, and then either implement it (open a PR) or ask the maintainer a precise question.
 
@@ -98,11 +98,11 @@ gh project item-edit --project-id "$PROJECT_ID" --id "$ITEM_ID" \
 
 ### 3b.2 — Implement
 
-Implement the issue yourself, in this order. You run headless: never call `AskUserQuestion` — decide and continue.
+Implement the issue yourself, in this order. You run headless: never ask the user (no `AskUserQuestion`, no `ask_user`) — decide and continue.
 
 1. **Branch:** `git switch -c agent/issue-<NUM>` from `main` (the branch checked out in CI).
 2. **Plan briefly:** read `CLAUDE.md` and the specs it points to, list the files you will change. No PRD — these are small, well-scoped changes.
-3. **Implement:** use the subagents in `.claude/agents/` where they fit (`db-coder`, `be-coder`, `fe-coder`, `ui-designer`).
+3. **Implement:** use the subagents (see `CLAUDE.md` → `## Agents`) where they fit (`db-coder`, `be-coder`, `fe-coder`, `ui-designer`).
 4. **Check:** there is **no heavy test suite to run** here. Use a lightweight build check — **`cd backend && npx tsc --noEmit`** for backend changes and/or **`cd frontend && npx ng build`** for frontend changes. **Do NOT author or modify automated tests** (Playwright/Jasmine) — that matches this project's standing preference.
 5. **Review:** run `/review embedded` and fix what it finds.
 6. **Ship:** commit, push, open a PR against **`main`** with **`Closes #<NUM>`** as the first line of the body. **NEVER merge.** The PR stays open for human review.

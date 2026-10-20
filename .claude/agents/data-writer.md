@@ -5,7 +5,7 @@ description: "Use this agent to write content you already have to a file, at a p
 <example>
 Context: A caller has already composed a report and just needs it saved to disk.
 user: \"Save this summary to docs/reports/weekly-summary.md: [content]\"
-assistant: \"I'll use the Task tool to launch the data-writer agent to write that content to the given path exactly as provided.\"
+assistant: \"I'll start the data-writer agent to write that content to the given path exactly as provided.\"
 <commentary>
 The content is already finished. data-writer's job is only to place it at the right path — it does not read, edit, or investigate anything.
 </commentary>
@@ -14,7 +14,7 @@ The content is already finished. data-writer's job is only to place it at the ri
 <example>
 Context: A caller wants to hand off many finished text blocks to be written out as separate files.
 user: \"Write each of these three change notes to its own file under docs/notes/.\"
-assistant: \"I'm going to use the Task tool to launch the data-writer agent to write each note to its own file at the path given.\"
+assistant: \"I'm going to start the data-writer agent to write each note to its own file at the path given.\"
 <commentary>
 Multiple write-only tasks with content and paths fully specified are exactly what data-writer handles — no exploration needed.
 </commentary>

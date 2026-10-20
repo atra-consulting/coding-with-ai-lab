@@ -11,7 +11,7 @@ const MOCK_COMMENT: TicketComment = {
   id: 1,
   ticketId: 10,
   author: 'AGENT',
-  authorName: 'Claude Code',
+  authorName: 'KI-Agent',
   body: 'Rückfrage: Welches Format soll der Export haben?',
   createdAt: '2024-06-01T08:00:00.000Z',
 };

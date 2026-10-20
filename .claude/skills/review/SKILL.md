@@ -1,5 +1,5 @@
 ---
-name: "project:review"
+name: review
 description: "Local code review with multi-round review & fix cycle. Use for reviewing code, checking changes, getting feedback on a branch, or before creating a PR."
 argument-hint: (optional special instructions)
 version: 1.8.2
@@ -16,6 +16,11 @@ allowed-tools:
 ---
 
 # Review Skill
+
+> **Claude Code + Copilot CLI:** this skill runs in both. "Ask the user" =
+> `AskUserQuestion` (Claude Code) / `ask_user` (Copilot CLI). "Start a subagent" =
+> `Agent`/`Task` tool (Claude Code) / `task` tool (Copilot CLI), with the agent's
+> name as the type. `$ARGUMENTS` = the text typed after the skill name.
 
 You are executing the **review** skill, which provides local code review with a multi-round review & fix cycle on a feature branch vs main.
 
@@ -44,13 +49,13 @@ When displaying any file path to the user, ALWAYS use the full absolute path. Ge
 
 ## HOW TO ASK THE USER FOR DECISIONS
 
-Use the AskUserQuestion tool for all user prompts. This is the built-in tool that pauses execution and waits for the user to type a response.
+Use the ask-user tool (`AskUserQuestion` / `ask_user`) for all user prompts. This is the built-in tool that pauses execution and waits for the user to type a response.
 
 **Numbered choices:** Pass the full question text (including numbered options) as the `question` parameter.
 
 **Freeform input:** Pass the question as the `question` parameter.
 
-**Wait rule:** After calling AskUserQuestion, you MUST wait for the user's response before taking any further action. Never assume a choice, skip the question, or proceed without the user's answer. The user's response drives what happens next.
+**Wait rule:** After calling the ask-user tool, you MUST wait for the user's response before taking any further action. Never assume a choice, skip the question, or proceed without the user's answer. The user's response drives what happens next.
 
 ## User Autonomy
 
@@ -75,7 +80,7 @@ Parse arguments to determine mode:
 
 **If NOT embedded mode:**
 
-Check if Claude Code is in plan mode.
+Check if the session is in plan mode.
 
 If in plan mode, output:
 ```
@@ -140,7 +145,7 @@ Proceed to PHASE 1.3: TASK UNDERSTANDING CONFIRMATION.
 
 Repeat back your understanding of the review focus to the user:
 
-Output understanding, then call AskUserQuestion:
+Output understanding, then call the ask-user tool:
 ```
 My understanding: Review local changes with focus on [brief summary of special_instructions].
 
@@ -150,8 +155,8 @@ My understanding: Review local changes with focus on [brief summary of special_i
 
 Wait for the user's response before continuing:
 - "1" or "ok"/"yes"/"correct" → Continue to PHASE 1.5.
-- "2" or "clarify"/"change" → Call AskUserQuestion: "What should I change?" Wait for response. Update `special_instructions`. Return to this step.
-- Anything else → Call AskUserQuestion again with the same options. Wait for response.
+- "2" or "clarify"/"change" → Call the ask-user tool: "What should I change?" Wait for response. Update `special_instructions`. Return to this step.
+- Anything else → Call the ask-user tool again with the same options. Wait for response.
 
 **If no special_instructions (default review mode):**
 - Skip confirmation (nothing custom to confirm).
@@ -400,7 +405,7 @@ If not found: Infer project context from repository name and structure.
 
 ### Step 4.2: Read CLAUDE.md (if exists)
 
-Search using Glob tool with patterns `**/CLAUDE.md` and `**/claude.md`.
+Search using Glob tool with pattern `**/CLAUDE.md`.
 
 If found: Read with Read tool (use offset/limit for files >220KB). Extract required/prohibited practices, code conventions, technology stack, testing requirements.
 
@@ -452,7 +457,7 @@ Display: `--- Review Round <current_round>/<max_rounds> ---`
    - If no pattern matches any changed file, include all reviewers as fallback
 
 2. If `applicable_reviewers` is non-empty:
-   - Launch each applicable reviewer agent via Task tool (in parallel - multiple Task calls in one message)
+   - Launch each applicable reviewer agent via the subagent tool (in parallel - several calls in one message)
    - Each agent reviews changed files in its domain
    - Collect findings from all agents
    - Tag each finding with `found_by` = the reviewer agent name that produced it
@@ -580,7 +585,7 @@ Display: `--- Fix Planning (Round <current_round>) ---`
    - `skill-*` coder → files under `.claude/`
    - If no pattern matches, use the nearest domain match or all coders as fallback
 
-2. Launch applicable fixer agents via Task tool (in parallel - multiple Task calls in one message)
+2. Launch applicable fixer agents via the subagent tool (in parallel - several calls in one message)
 
 3. Each agent receives:
    - Findings from current review round relevant to its domain
@@ -617,7 +622,7 @@ Round <current_round> — Findings & Proposed Fixes
 | 2 | WARNING  | path/to/route.ts:15 | description | built-in review | proposed fix description | be-coder |
 ```
 
-Then call the `AskUserQuestion` tool with:
+Then call the ask-user tool with:
 1. Approve all fixes, proceed
 2. Approve some, skip others (specify which to skip)
 3. Skip all fixes this round (record issues only)
@@ -625,7 +630,7 @@ Then call the `AskUserQuestion` tool with:
 Wait for the user's response.
 
 - **Approve all** → mark every finding for execution. Continue to Step 5.3.
-- **Approve some** → call the `AskUserQuestion` tool to ask which issue numbers to skip. For each skipped issue, set `proposed_fix` = "—", `proposed_fix_by` = "—". Continue to Step 5.3 with the approved subset only.
+- **Approve some** → call the ask-user tool to ask which issue numbers to skip. For each skipped issue, set `proposed_fix` = "—", `proposed_fix_by` = "—". Continue to Step 5.3 with the approved subset only.
 - **Skip all** → clear `proposed_fix` / `proposed_fix_by` for all findings (back to null). Skip Steps 5.3 and 5.4. Proceed **directly to Step 5.5** (terminate the loop — the user declined fixes this round, so re-reviewing would only re-find the same issues).
 
 This is the one genuine decision point in the review loop — it does not violate User Autonomy, which only forbids status-check interruptions.
@@ -634,7 +639,7 @@ This is the one genuine decision point in the review loop — it does not violat
 
 Display: `--- Plan Review (Round <current_round>) ---`
 
-Pass only **approved** fix plans (findings whose `proposed_fix` is set and not "—", per Step 5.2.5) to reviewers. Launch reviewer agents with those fix plans via Task tool (in parallel - multiple Task calls in one message).
+Pass only **approved** fix plans (findings whose `proposed_fix` is set and not "—", per Step 5.2.5) to reviewers. Launch reviewer agents with those fix plans via the subagent tool (in parallel - several calls in one message).
 
 Each reviewer validates fixes in its domain:
 - Fix addresses the identified issue
@@ -663,7 +668,7 @@ Display: `--- Applying Fixes (Round <current_round>) ---`
 - Still update each issue's `fix_description` and `fixed_by` in `all_round_results` for the review file
 
 **If dry_run_mode = false:**
-1. Launch coder/designer agents to implement approved fixes via Task tool (in parallel - multiple Task calls in one message)
+1. Launch coder/designer agents to implement approved fixes via the subagent tool (in parallel - several calls in one message)
 2. Each agent applies fixes to files in its domain using Edit/Write tools
 3. Display each fix applied: `Fixed: <file>:<line> — <brief description> (by: <agent-name>)`
 4. Display: `Round <current_round> fixes applied: <count> files modified`
@@ -762,7 +767,7 @@ Clean pass. No issues found.
 - Create PR when ready
 
 ---
-Generated with Claude Code - review v1.8.2
+Generated by the review skill v1.8.2
 ```
 
 ### Step 6.3: Write Review File

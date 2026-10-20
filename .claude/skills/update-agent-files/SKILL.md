@@ -1,5 +1,5 @@
 ---
-name: "project:update-claude-files"
+name: update-agent-files
 description: "Update .claude/agents, docs/specs, and CLAUDE.md from source code changes — updates existing docs in place, and creates missing ones or removes obsolete ones when the code clearly demands it. Use when features land, the schema changes, or infrastructure shifts. Keeps project documentation in sync with the code."
 argument-hint: (optional special instructions)
 version: 1.2.1
@@ -17,7 +17,12 @@ allowed-tools:
   - AskUserQuestion
 ---
 
-# Update Claude Files
+# Update Agent Files
+
+> **Claude Code + Copilot CLI:** this skill runs in both. "Ask the user" =
+> `AskUserQuestion` (Claude Code) / `ask_user` (Copilot CLI). "Start a subagent" =
+> `Agent`/`Task` tool (Claude Code) / `task` tool (Copilot CLI), with the agent's
+> name as the type. `$ARGUMENTS` = the text typed after the skill name.
 
 You keep this project's docs in sync with its code. Targets: `.claude/agents/*.md`, `docs/specs/*.md` (the `SPECS*.md` set plus `DOMAIN.md`), and `CLAUDE.md`.
 
@@ -33,7 +38,7 @@ Show full absolute paths. Get the root with `pwd` and prepend it. This lets user
 
 ## HOW TO ASK THE USER FOR DECISIONS
 
-Use the `AskUserQuestion` tool for every prompt. Never print a question as prose and wait. Never read stdin. **Embedded mode never prompts** — see PHASE 0.
+Use the ask-user tool (`AskUserQuestion` / `ask_user`) for every prompt. Never print a question as prose and wait. Never read stdin. **Embedded mode never prompts** — see PHASE 0.
 
 ## Preserve Human-Authored Content
 
@@ -49,7 +54,7 @@ Default: update an existing file. Create or delete only when the code leaves no 
 
 **Delete a spec or agent** only when the area it documents is fully gone from the code — an entity removed, a whole subsystem deleted. Never delete a file just because it looks stale.
 
-**Standalone:** always confirm creates and deletes with `AskUserQuestion` before applying. List exactly which files you will create and which you will delete.
+**Standalone:** always confirm creates and deletes with the ask-user tool before applying. List exactly which files you will create and which you will delete.
 **Embedded:** may create a clearly-missing spec. Never delete a file — too risky mid-PR. Note any file you would have deleted in the result file's Notes instead.
 
 ## Subagents
@@ -73,7 +78,7 @@ Skill receives: `$ARGUMENTS`
 
 Parse the first token:
 
-- **`embedded`** → Embedded mode. A calling skill or agent prompt uses this before it opens a PR. Optional second token `base:<sha>` scopes the run to the branch. Skip the header and every confirmation. Never call `AskUserQuestion`.
+- **`embedded`** → Embedded mode. A calling skill or agent prompt uses this before it opens a PR. Optional second token `base:<sha>` scopes the run to the branch. Skip the header and every confirmation. Never call the ask-user tool.
 - **Empty / whitespace** → Standalone mode (default).
 - **Any other text** → Standalone mode. Treat the text as `special_instructions` — focus the update there, but still cover every stale target.
 
@@ -83,17 +88,17 @@ There is no `help` or `doctor` mode.
 
 **Embedded:** skip this check and the header. Jump to PHASE 1.
 
-**Standalone:** if Claude Code is in plan mode, display:
+**Standalone:** if the session is in plan mode, display:
 ```
 Plan mode detected. This skill cannot run in plan mode.
-Exit plan mode, then run: /update-claude-files
+Exit plan mode, then run: /update-agent-files
 ```
 Then STOP.
 
 ### Skill Header (standalone only)
 
 ```
-Update Claude Files (v1.2.1)
+Update Agent Files (v1.2.1)
 ****************************
 
 Sync .claude/agents, docs/specs, and CLAUDE.md with the code.
@@ -114,7 +119,7 @@ Do this as the very first embedded action — before the git check — so any la
 
 ```bash
 mkdir -p docs/state
-rm -f docs/state/UPDATE-CLAUDE-FILES-RESULT.md
+rm -f docs/state/UPDATE-AGENT-FILES-RESULT.md
 ```
 
 This clears any stale result from a previous run. The result file is gitignored — it never gets committed.
@@ -127,7 +132,7 @@ git rev-parse --git-dir
 
 If it fails (not a git repository):
 - **Standalone:** display "Not a git repository. Run this skill inside the repo." Then STOP.
-- **Embedded:** write `docs/state/UPDATE-CLAUDE-FILES-RESULT.md` with `status: error` (PHASE 8 schema, note "not a git repo"), then STOP. Never block the caller.
+- **Embedded:** write `docs/state/UPDATE-AGENT-FILES-RESULT.md` with `status: error` (PHASE 8 schema, note "not a git repo"), then STOP. Never block the caller.
 
 Capture `project_root` (`pwd`) and `current_branch` (`git branch --show-current`).
 
@@ -229,7 +234,7 @@ Every other target from this table is tagged `update`. PHASE 5 and PHASE 6 branc
 
 **DOMAIN.md vs SPECS-database.md.** `DOMAIN.md` holds business meaning only — no schema. A pure schema change (column type, index, nullable) flags `SPECS-database.md` only. A change to relationships, cascade / delete behavior, roles, or the sales pipeline flags `DOMAIN.md` too. Read the diff to decide.
 
-Build the final edit list: intersect candidate targets with `stale_targets` (standalone) or with what the diff actually changed (embedded). Track `agents_changed`, `specs_changed`, `claude_md_changed` for the summary.
+Build the final edit list: intersect candidate targets with `stale_targets` (standalone) or with what the diff actually changed (embedded). Track `agents_changed`, `specs_changed`, `agents_md_changed` for the summary.
 
 **No target flagged.** If the final edit list is empty — the changes touched only files outside this mapping (e.g. only `.claude/skills/**`, `docs/**`, `.gitignore`) — there is nothing to update:
 - **Standalone:** display "No documentation updates needed." STOP.
@@ -311,7 +316,7 @@ git rm <path>
 
 `git rm` deletes the file and stages the removal in one step. Agent-file deletes stay with `skill-coder` — it has Bash and can run `git rm` itself.
 
-Collect the files each updater (and the orchestrator, for spec deletes) changed, created, and deleted. Track `agents_changed`, `agents_created`, `agents_deleted`, `specs_changed`, `specs_created`, `specs_deleted`, `claude_md_changed` for the summary.
+Collect the files each updater (and the orchestrator, for spec deletes) changed, created, and deleted. Track `agents_changed`, `agents_created`, `agents_deleted`, `specs_changed`, `specs_created`, `specs_deleted`, `agents_md_changed` for the summary.
 
 Report: "Agents: [N] updated. Specs: [N] updated. CLAUDE.md: [sections or none]."
 
@@ -326,7 +331,15 @@ Quick self-check on the edited files:
 - `CLAUDE.md` `## Agents` and `## Specifications` tables list every file now on disk, including files created this run and excluding files deleted this run.
 - Human-authored prose preserved — the diff touches only stale facts.
 
-Fix any issue inline with the Edit tool. Then continue to PHASE 8.
+Fix any issue inline with the Edit tool.
+
+If any `.claude/agents/` file changed, was created, or was deleted this run, refresh the Copilot CLI copies:
+```bash
+node scripts/sync-agents.mjs
+```
+It rewrites `.github/agents/*.agent.md` from `.claude/agents/`. Never edit `.github/agents/` by hand.
+
+Then continue to PHASE 8.
 
 ---
 
@@ -336,8 +349,8 @@ Fix any issue inline with the Edit tool. Then continue to PHASE 8.
 
 Commit the docs you changed, including any file you created or deleted:
 ```bash
-git add -A -- .claude/agents docs/specs CLAUDE.md
-git commit -m "docs: Update project documentation via update-claude-files"
+git add -A -- .claude/agents .github/agents docs/specs CLAUDE.md
+git commit -m "docs: Update project documentation via update-agent-files"
 ```
 `git add -A` on these paths stages new and deleted files too, not just edits. Stage only the areas you touched. If nothing changed, say "No changes to commit." Then print a summary:
 ```
@@ -361,7 +374,7 @@ Do NOT commit — in embedded mode the caller commits real changes. Always write
 mkdir -p docs/state
 ```
 
-Write `docs/state/UPDATE-CLAUDE-FILES-RESULT.md` (gitignored, never committed) with this exact schema:
+Write `docs/state/UPDATE-AGENT-FILES-RESULT.md` (gitignored, never committed) with this exact schema:
 
 ```markdown
 # Documentation Update Result
@@ -388,7 +401,7 @@ status: updated | no-changes | skipped-no-agents | error
 [full paths, one per line, or "none"]
 ```
 
-Never call `AskUserQuestion` in embedded mode. If anything fails mid-run, write `status: error` with the reason into the result file and return — never propagate a hard stop that could block the PR.
+Never call the ask-user tool in embedded mode. If anything fails mid-run, write `status: error` with the reason into the result file and return — never propagate a hard stop that could block the PR.
 
 STOP — update complete.
 
