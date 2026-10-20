@@ -409,7 +409,7 @@ Plan-Modus: `Shift + Tab` wechselt den Modus.
 |-----|--------|--------|
 | Skills | `.claude/skills/` | `/review`, `/write-ticket`, `/update-agent-files` — `/skills` zeigt alle |
 | Subagents | `.github/agents/` | `/agent` zeigt und wählt sie. Oder im Klartext: „Nutze den `be-reviewer` …" |
-| Projektregeln | `AGENTS.md` | Copilot CLI liest die Datei automatisch |
+| Projektregeln | `CLAUDE.md` | Copilot CLI liest die Datei automatisch |
 
 Die Skills liegen im Ordner `.claude/skills/`, weil beide unterstützten KI-Tools sie gemeinsam nutzen — den Ordnernamen kannst du ignorieren.
 Die Dateien in `.github/agents/` sind generiert. Bitte nicht von Hand ändern.

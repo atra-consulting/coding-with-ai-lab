@@ -1,4 +1,4 @@
-# KI-Coding-Workshop — Aufgaben
+# Claude Code Workshop — Aufgaben
 
 Dreizehn Aufgaben rund um das CRM-Lab, aufgeteilt in zehn
 **Fortgeschrittenen-Aufgaben** (45–120 Min, mit KI-Integration, Karten,
@@ -6,14 +6,13 @@ Import-Pipelines oder komplett neuen Apps) und drei **Anfänger-Aufgaben**
 (10–25 Min, gut als Warm-up).
 
 Jede Aufgabe nutzt das `/plan-and-do`-Skill aus dem Lab-Repo. Das Skill
-erkennt automatisch die Sub-Agenten aus der `AGENTS.md` (be-coder, fe-coder,
+erkennt automatisch die Sub-Agenten aus der `CLAUDE.md` (be-coder, fe-coder,
 be-reviewer, fe-reviewer, db-coder, …) und ruft sie in den richtigen Phasen
 auf.
 
 ## Ablauf je Aufgabe
 
-1. KI-Assistent (Claude Code oder Copilot CLI) im Projekt-Root starten:
-   `claude --dangerously-skip-permissions` bzw. `copilot --allow-all`
+1. Claude Code im Projekt-Root starten: `claude --dangerously-skip-permissions`
 2. Den Prompt aus der jeweiligen Aufgaben-Datei einfügen.
 3. Bei den Checkpoints (PRD/Plan/Review) `Continue` wählen, außer ihr wollt
    den Plan editieren.
@@ -56,8 +55,8 @@ starten — beide sind sehr visuell und schnell fertig. Aufgabe 11 zeigt den
 kompletten Full-Stack-Durchlauf inklusive Datei-Download.
 
 **Zeit-Angaben** beinhalten: Plan-Review durch den Teilnehmer, Implementierung
-durch die KI (inklusive Sub-Agent-Orchestrierung), Code-Review, Dev-Server-Neustart
-und kurzer Browser-Test. Reine KI-Rechenzeit ist deutlich kürzer.
+durch Claude (inklusive Sub-Agent-Orchestrierung), Code-Review, Dev-Server-Neustart
+und kurzer Browser-Test. Reine Claude-Rechenzeit ist deutlich kürzer.
 
 ## Voraussetzungen
 
@@ -70,11 +69,11 @@ und kurzer Browser-Test. Reine KI-Rechenzeit ist deutlich kürzer.
 
 ## Tipps für alle Aufgaben
 
-- **`--dangerously-skip-permissions` bzw. `--allow-all`:** Spart wertvolle Workshop-Zeit, da
-  die KI Datei-Edits und Shell-Kommandos nicht einzeln bestätigen lässt.
+- **`--dangerously-skip-permissions`:** Spart wertvolle Workshop-Zeit, da
+  Claude Datei-Edits und Shell-Kommandos nicht einzeln bestätigen lässt.
   Nur in isolierten Workshop-Umgebungen verwenden — niemals in produktiven
   Projekten.
-- **Plan-Checkpoint nutzen:** Bei Checkpoint 7 (Plan-Approval) zeigt die KI
+- **Plan-Checkpoint nutzen:** Bei Checkpoint 7 (Plan-Approval) zeigt Claude
   einen detaillierten Plan. Kurz durchlesen — wenn etwas fehlt, „Edit"
   wählen und ergänzen lassen.
 - **Dev-Server neu starten:** Backend lädt per `tsx --watch` automatisch neu.

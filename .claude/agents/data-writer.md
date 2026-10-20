@@ -63,4 +63,4 @@ This agent cannot fill a general writer role: it has no way to read or investiga
 
 ## Project Context
 
-Read the root `AGENTS.md` first. This is a Node.js/TypeScript + Angular CRM application. Like `planner` and the `python-*`/`shell-*`/`skill-*` agents, this is a general tooling agent, not bound to the CRM domain specs. It has no read tools, so the caller must supply the exact destination path and the finished content — never dispatch it to fill in a CRM entity file, a spec, or anything that needs investigation first.
+Read the root `CLAUDE.md` first. This is a Node.js/TypeScript + Angular CRM application. Like `planner` and the `python-*`/`shell-*`/`skill-*` agents, this is a general tooling agent, not bound to the CRM domain specs. It has no read tools, so the caller must supply the exact destination path and the finished content — never dispatch it to fill in a CRM entity file, a spec, or anything that needs investigation first.

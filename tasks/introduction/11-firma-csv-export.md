@@ -2,7 +2,7 @@
 
 **Dauer:** 20 min
 **Sozialform:** einzeln
-**Werkzeug:** KI-Assistent (Claude Code oder Copilot CLI)
+**Werkzeug:** Claude Code
 **Voraussetzung:** Lab läuft unter `localhost:7200`
 **Ziel:** Ein Knopf über der Firmenliste lädt alle Firmen als `firmen-YYYY-MM-DD.csv` herunter, die Excel direkt und mit korrekten Umlauten öffnet — gebaut ohne Skill und ohne Subagent.
 
@@ -15,7 +15,7 @@ Excel-Kompatibilität.
 Diese Aufgabe läuft **ohne** `/plan-and-do`: Sie ist die erste im Kurs, und
 gezeigt werden soll die Schleife darunter — Prompt, Plan, Arbeit, Prüfung.
 
-1. KI-Assistent im Projekt-Root starten: `claude --permission-mode auto` (Claude Code) bzw. `copilot` und mit Shift+Tab in den Autopilot-Modus (Copilot CLI).
+1. Claude Code im Projekt-Root starten: `claude --permission-mode auto`.
 2. Mit „Shift"+„Tab" in den Plan-Modus schalten (steht links unten) und mit `/model`
    Sonnet auswählen.
 3. Den Prompt einfügen, den Plan lesen und korrigieren, dann laufen lassen.

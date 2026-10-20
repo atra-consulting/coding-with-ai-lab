@@ -2,7 +2,7 @@
 
 **Dauer:** 75 min
 **Sozialform:** einzeln
-**Werkzeug:** KI-Assistent (Claude Code oder Copilot CLI)
+**Werkzeug:** Claude Code
 **Voraussetzung:** Lab läuft unter `localhost:7200`, `GOOGLE_GEMINI_KEY` exportiert
 **Ziel:** Beim CSV-Import schlägt die KI vor, welche CSV-Spalte zu welchem CRM-Feld gehört, und der Nutzer bestätigt oder korrigiert den Vorschlag pro Spalte, bevor Daten entstehen.
 
@@ -15,7 +15,7 @@ den nächsten mit erneutem `/plan-and-do`.
 
 ## Schritte
 
-1. KI-Assistent im Projekt-Root starten: `claude --dangerously-skip-permissions` (Claude Code) bzw. `copilot --allow-all` (Copilot CLI).
+1. Claude Code im Projekt-Root starten: `claude --dangerously-skip-permissions`.
 2. Den Prompt einfügen und an den Checkpoints PRD, Plan und Review lesen,
    dann `Continue`.
 3. App neu starten (`./start.sh`) und eine CSV mit absichtlich anders

@@ -2,7 +2,7 @@
 
 **Dauer:** 10 min
 **Sozialform:** einzeln
-**Werkzeug:** KI-Assistent (Claude Code oder Copilot CLI)
+**Werkzeug:** Claude Code
 **Voraussetzung:** Lab läuft unter `localhost:7200`
 **Ziel:** In der Aktivitäten-Liste steht vor dem Typ ein passendes FontAwesome-Icon: fünf Typ-Icons plus ein neutrales Fallback.
 
@@ -12,7 +12,7 @@ Mapping-Vorschlag (FontAwesome Solid): `ANRUF` → `faPhone`, `EMAIL` →
 
 ## Schritte
 
-1. KI-Assistent im Projekt-Root starten: `claude --dangerously-skip-permissions` (Claude Code) bzw. `copilot --allow-all` (Copilot CLI).
+1. Claude Code im Projekt-Root starten: `claude --dangerously-skip-permissions`.
 2. Den Prompt einfügen und an den Checkpoints PRD, Plan und Review lesen,
    dann `Continue`.
 3. App neu starten (`./start.sh`) und die Aktivitäten-Liste öffnen.
@@ -38,7 +38,7 @@ Mapping-Vorschlag (FontAwesome Solid): `ANRUF` → `faPhone`, `EMAIL` →
 |---------|--------|
 | `FaIconComponent` wird nicht erkannt | Standalone-Component importieren: `imports: [FaIconComponent]` in `@Component`. |
 | Icon wird nicht angezeigt | Import prüfen: `import { faPhone, faEnvelope, ... } from '@fortawesome/free-solid-svg-icons';`. Icon-Referenzen als Properties im Component ablegen. |
-| Enum-Werte weichen ab | Die KI die Model-Datei lesen lassen und Mapping anpassen. |
+| Enum-Werte weichen ab | Claude Model-Datei lesen lassen und Mapping anpassen. |
 | ag-Grid rendert Angular-Component nicht | `cellRenderer` als Angular-Component-Renderer registrieren — reiner Template-String reicht nicht. Alternative: String mit HTML-Badge, aber dann kein FA-Icon. |
 | Icons in verschiedenen Größen | FontAwesome-Größen-Attribut nutzen: `<fa-icon [icon]="…" size="lg"></fa-icon>`. |
 

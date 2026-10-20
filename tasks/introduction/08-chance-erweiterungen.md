@@ -2,7 +2,7 @@
 
 **Dauer:** 40 min
 **Sozialform:** einzeln
-**Werkzeug:** KI-Assistent (Claude Code oder Copilot CLI)
+**Werkzeug:** Claude Code
 **Voraussetzung:** Lab läuft unter `localhost:7200`
 **Ziel:** Die Phase einer Chance erscheint als farbiger Badge, und Chancen bekommen ein freies Notiz-Feld — zwei Erweiterungen aus einem Durchlauf, eine rein visuell im Frontend, eine durch den ganzen Stack.
 
@@ -13,13 +13,13 @@ rot (danger). Teil 2 gibt der Chance ein mehrzeiliges Notiz-Feld — etwa für
 Protokoll-Auszüge wie „Kunde braucht noch Budget-Freigabe" —, und das geht
 durch Schema, Service, DTO, Form und Detail.
 
-Gute Aufgabe, um zu zeigen, wie die KI `db-coder`, `be-coder` und `fe-coder`
+Gute Aufgabe, um zu zeigen, wie Claude `db-coder`, `be-coder` und `fe-coder`
 parallel orchestriert und gleichzeitig eine rein visuelle Frontend-Änderung
 bündelt.
 
 ## Schritte
 
-1. KI-Assistent im Projekt-Root starten: `claude --dangerously-skip-permissions` (Claude Code) bzw. `copilot --allow-all` (Copilot CLI).
+1. Claude Code im Projekt-Root starten: `claude --dangerously-skip-permissions`.
 2. Den Prompt einfügen und an den Checkpoints PRD, Plan und Review lesen,
    dann `Continue`.
 3. App neu starten (`./start.sh`) und Chancen-Liste sowie Detailseite auf
@@ -66,9 +66,9 @@ Teil 2 (Datenbank + Backend + Frontend): Chance bekommt ein neues, optionales No
 | „no such column: notes" beim Laden | Migration lief nicht. App-Restart hilft meist, sonst `./start.sh --reset-db`. |
 | Validation schlägt fehl, obwohl Feld leer | Feld ist als optional gedacht. Im Zod-Schema: `z.string().max(2000).optional().nullable()`. |
 | Zeilenumbrüche im Detail verschwinden | CSS `white-space: pre-wrap` auf das Detail-Element setzen. |
-| Drizzle-Schema und migrate.ts driften auseinander | Beide müssen die Spalte haben. `migrate.ts` ist Runtime-Source-of-Truth, Drizzle-Schema für Typ-Inferenz. Die KI bitten, beide zu synchronisieren. |
+| Drizzle-Schema und migrate.ts driften auseinander | Beide müssen die Spalte haben. `migrate.ts` ist Runtime-Source-of-Truth, Drizzle-Schema für Typ-Inferenz. Claude bitten, beide zu synchronisieren. |
 | Update-Request liefert 400 | Zod-Schema für Update ebenfalls ergänzen (nicht nur Create). |
-| Person hat bereits ein Notes-Feld — Verwirrung | Ja, das ist gewollt. Chance hat noch keines. Die KI darf den Person-Weg als Vorlage nehmen. |
+| Person hat bereits ein Notes-Feld — Verwirrung | Ja, das ist gewollt. Chance hat noch keines. Claude darf den Person-Weg als Vorlage nehmen. |
 
 ## Diskussion
 

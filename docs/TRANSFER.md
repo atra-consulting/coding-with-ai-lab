@@ -54,7 +54,7 @@ Die KI liest deinen Code. Sie ändert die Agent- und Skill-Dateien.
 
 Beende den KI-Assistenten. Starte ihn neu.
 
-**Warum?** Das Tool lädt Agents, Skills und `AGENTS.md` (bzw. `CLAUDE.md`) beim Start. Neue oder geänderte Dateien greifen erst nach einem Neustart.
+**Warum?** Das Tool lädt Agents, Skills und `CLAUDE.md` beim Start. Neue oder geänderte Dateien greifen erst nach einem Neustart.
 
 ### Schritt 4 — Prüfen (mindestens 3×)
 
@@ -82,7 +82,7 @@ Sie müssen wirklich zur Technologie, zu den Regeln und zu den
 Best Practices dieses Projekts passen.
 ```
 
-Die KI schreibt die Specs in `docs/specs/` und passt `AGENTS.md` an.
+Die KI schreibt die Specs in `docs/specs/` und passt `CLAUDE.md` an.
 
 ### Schritt 7 — Prüfen (mindestens 3×)
 

@@ -40,7 +40,7 @@ Prefer many small groups over few large ones. A vague large group hides the hard
 
 Every task group names the agent that owns it and the model tier it runs on, with a one-line reason.
 
-Pick the agent by domain from this project's own roster (see `AGENTS.md` → `## Agents`):
+Pick the agent by domain from this project's own roster (see `CLAUDE.md` → `## Agents`):
 
 - **Business** — `ba-writer`, `ba-reviewer`
 - **Backend** — `be-coder`, `be-reviewer`

@@ -193,7 +193,7 @@ git checkout -b training-0626/max-mustermann
 |--------|-------|
 | `/review` | Code-Änderungen mit iterativem Feedback prüfen |
 | `/write-ticket` | Feedback in ein neues Kanban-Ticket verwandeln |
-| `/update-agent-files` | Agents, Specs und `AGENTS.md` mit dem Code synchron halten |
+| `/update-agent-files` | Agents, Specs und `CLAUDE.md` mit dem Code synchron halten |
 | `/help` | Hilfe zum Tool |
 | `/compact` | Kontext komprimieren |
 
@@ -222,7 +222,7 @@ git checkout -b training-0626/max-mustermann
 
 Architektur-Details: **[docs/specs/SPECS.md](docs/specs/SPECS.md)**
 
-Konventionen und Patterns für AI-gestützte Entwicklung: **[AGENTS.md](AGENTS.md)**
+Konventionen und Patterns für AI-gestützte Entwicklung: **[CLAUDE.md](CLAUDE.md)**
 
 ---
 
@@ -241,8 +241,8 @@ Konventionen und Patterns für AI-gestützte Entwicklung: **[AGENTS.md](AGENTS.m
 | [docs/SKILLS.md](docs/SKILLS.md) | Alle 3 Custom-Skills erklärt |
 | [docs/TRANSFER.md](docs/TRANSFER.md) | Skills & Subagents ins eigene Projekt übernehmen |
 | [docs/TOOLS.md](docs/TOOLS.md) | Produktivitäts-Rechner, Agent-Tasks, Ticket-Board |
-| [AGENTS.md](AGENTS.md) | Alle Projektregeln für AI-Coding-Assistenten (tool-neutral, gilt für beide Tools) |
-| [CLAUDE.md](CLAUDE.md) | Importiert nur `AGENTS.md` (`@AGENTS.md`) |
+| [CLAUDE.md](CLAUDE.md) | Alle Projektregeln für AI-Coding-Assistenten (gilt für beide Tools) |
+| [AGENTS.md](AGENTS.md) | Verweist nur auf `CLAUDE.md` |
 | [docs/specs/SPECS.md](docs/specs/SPECS.md) | Detaillierte Spezifikationen pro Bereich |
 | [docs/adr/](docs/adr/) | Architecture Decision Records |
 | [docs/prds/](docs/prds/) | Product Requirement Documents |
@@ -259,8 +259,8 @@ Konventionen und Patterns für AI-gestützte Entwicklung: **[AGENTS.md](AGENTS.m
 ├── start.bat         Startskript (Windows)
 ├── .claude/          Skills und Subagents (Quelle, beide Tools)
 ├── .github/agents/   Copilot-Kopie der Subagents (generiert)
-├── AGENTS.md         Projektregeln für AI-Coding-Assistenten (tool-neutral)
-└── CLAUDE.md         Importiert nur AGENTS.md
+├── CLAUDE.md         Projektregeln für AI-Coding-Assistenten (beide Tools)
+└── AGENTS.md         Verweist nur auf CLAUDE.md
 ```
 
 ---

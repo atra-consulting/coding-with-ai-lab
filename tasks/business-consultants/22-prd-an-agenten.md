@@ -2,7 +2,7 @@
 
 **Dauer:** 45 min
 **Sozialform:** Paare
-**Werkzeug:** KI-Assistent (Claude Code oder Copilot CLI)
+**Werkzeug:** Claude Code
 **Voraussetzung:** PRD aus Aufgabe 02 liegt seit Aufgabe 11 unter `docs/prds/PRD-FIRMA-FAVORIT.md`
 **Ziel:** Der Agent setzt euer eigenes PRD durch alle Schichten um, von der Datenbank bis zur Oberfläche, und ihr nehmt jede PRD-Anforderung einzeln mit Ja oder Nein ab.
 
@@ -15,8 +15,8 @@ nimmt das Feature aus dem Prompt unten — es ist dasselbe.
 
 ## Schritte
 
-1. Startet den KI-Assistenten im Projekt-Root
-   (`claude --dangerously-skip-permissions` bzw. `copilot --allow-all`) und gebt den Prompt ein.
+1. Startet Claude Code im Projekt-Root
+   (`claude --dangerously-skip-permissions`) und gebt den Prompt ein.
 2. Legt am Plan-Checkpoint PRD und Plan nebeneinander und prüft, ob jede
    nummerierte Anforderung eine Aufgabe findet — quer durch Datenbank,
    Backend und Oberfläche —, ob etwas aus den „Nicht-Zielen" auftaucht und

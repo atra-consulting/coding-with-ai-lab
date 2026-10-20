@@ -84,4 +84,4 @@ Note recurring patterns in your review output so the requester can track trends 
 
 ## Project Context
 
-Read the root `AGENTS.md` first for project conventions. This is a Node.js/TypeScript + Angular CRM application — Python here is for standalone tooling, data analysis, and one-off scripts, never application code. Keep Python out of `backend/` and `frontend/`. Place reusable scripts under `scripts/` and match the style of the existing scripts there.
+Read the root `CLAUDE.md` first for project conventions. This is a Node.js/TypeScript + Angular CRM application — Python here is for standalone tooling, data analysis, and one-off scripts, never application code. Keep Python out of `backend/` and `frontend/`. Place reusable scripts under `scripts/` and match the style of the existing scripts there.

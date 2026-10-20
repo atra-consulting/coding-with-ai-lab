@@ -2,7 +2,7 @@
 
 **Dauer:** 60 min
 **Sozialform:** einzeln
-**Werkzeug:** KI-Assistent (Claude Code oder Copilot CLI)
+**Werkzeug:** Claude Code
 **Voraussetzung:** Lab läuft unter `localhost:7200` (`GOOGLE_GEMINI_KEY` nur für den optionalen Schritt 3)
 **Ziel:** Beim Anlegen einer Firma oder Person warnt die Anwendung vor einem sehr ähnlichen bestehenden Eintrag: Ein Dialog zeigt mögliche Duplikate mit Ähnlichkeits-Score und bietet an, trotzdem anzulegen, den vorhandenen Eintrag zu öffnen oder abzubrechen.
 
@@ -11,7 +11,7 @@ der User die Einträge zusammenführen.
 
 ## Schritte
 
-1. KI-Assistent im Projekt-Root starten: `claude --dangerously-skip-permissions` (Claude Code) bzw. `copilot --allow-all` (Copilot CLI).
+1. Claude Code im Projekt-Root starten: `claude --dangerously-skip-permissions`.
 2. Den Prompt einfügen und an den Checkpoints PRD, Plan und Review lesen,
    dann `Continue`.
 3. App neu starten (`./start.sh`) und eine Firma anlegen, deren Name einer

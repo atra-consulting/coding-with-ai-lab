@@ -43,7 +43,7 @@ Prüft deinen Branch gegen `main`. Mit mehreren Runden aus Prüfen und Fixen.
 
 ### `/update-agent-files` — Doku mit dem Code synchron halten
 
-Aktualisiert `.claude/agents/`, `docs/specs/` und `AGENTS.md`. Passend zu den Code-Änderungen. Früherer Name: `/update-claude-files`.
+Aktualisiert `.claude/agents/`, `docs/specs/` und `CLAUDE.md`. Passend zu den Code-Änderungen. Früherer Name: `/update-claude-files`.
 
 - **Wann nutzen:** Ein Feature ist fertig. Das Schema ändert sich. Die Infrastruktur wandert.
 - **Was passiert:** Reviewer-Agents vergleichen Code und Doku. Sie melden, was veraltet ist. Writer-Agents fixen genau diese Stellen. Standard: Der Skill passt bestehende Dateien an. Fehlt eine Spec für einen Code-Bereich, legt er sie an. Veraltete Dateien löscht er nur nach Rückfrage. Einen neuen Agent legt er nur an, wenn du es ausdrücklich verlangst.

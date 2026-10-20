@@ -38,13 +38,13 @@ Prerequisites:
 
 Features:
   - Automatic detection of changed files vs main branch
-  - Project context validation (PRD.md, AGENTS.md)
+  - Project context validation (PRD.md, CLAUDE.md)
   - Security-focused review checklist
   - Language-agnostic code quality checks
   - Multi-round review & fix cycle (3 rounds with agents, 1 round without)
   - Reviewer agents find issues, coder/designer agents plan and apply fixes
   - Reviewers approve fix plans before execution
-  - Agent discovery (reviewers, coders, designers from AGENTS.md)
+  - Agent discovery (reviewers, coders, designers from CLAUDE.md)
   - Writes review to docs/reviews/ folder
   - Doctor mode for health checks
   - Dry-run mode for simulation
@@ -54,7 +54,7 @@ Output:
   or REVIEW-YYYY-MM-DD-hh-mm.md
 
 Agent Support:
-  If the project AGENTS.md defines an ## Agents section:
+  If the project CLAUDE.md defines an ## Agents section:
   - Reviewer agents (*-reviewer) analyze code and approve fix plans
   - Coder agents (*-coder) and designer agents (ui-designer) plan and apply fixes
   - Three review rounds with automated fix cycles
@@ -117,17 +117,17 @@ git diff --name-only main...HEAD 2>/dev/null | wc -l
 
 ### Doctor.2: Project Checks
 
-**AGENTS.md**:
+**CLAUDE.md**:
 ```bash
-test -f AGENTS.md && echo "found" || echo "not found"
+test -f CLAUDE.md && echo "found" || echo "not found"
 ```
-- If found: "AGENTS.md found"
-- If not found: "AGENTS.md not found (optional)"
+- If found: "CLAUDE.md found"
+- If not found: "CLAUDE.md not found (optional)"
 
 **Agent Discovery**:
-- Read AGENTS.md for ## Agents section
+- Read CLAUDE.md for ## Agents section
   - If found: List discovered reviewer agents and coder/designer agents
-  - If not found: "No agents in project AGENTS.md (uses built-in checklist, single round)"
+  - If not found: "No agents in project CLAUDE.md (uses built-in checklist, single round)"
 
 **Docs Folder**:
 ```bash
@@ -155,7 +155,7 @@ Determine overall health:
 - Can write files
 
 **PARTIAL**: Some optional checks note issues
-- No AGENTS.md
+- No CLAUDE.md
 - No agents
 - On main/master branch
 

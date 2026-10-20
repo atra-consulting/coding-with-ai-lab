@@ -74,7 +74,7 @@ Jede Zeile: Name, Zweck, Modell. Das Modell steht in der Agent-Datei (`model:`).
 
 ### Tooling — allgemein, nicht an die CRM-Domäne gebunden
 
-Diese neun Agents kennen die CRM-Specs nicht. Sie lesen nur die Root-`AGENTS.md`. `shell-*` liest zusätzlich `docs/specs/SPECS-infrastructure.md`. Du kannst sie leicht in andere Projekte übernehmen.
+Diese neun Agents kennen die CRM-Specs nicht. Sie lesen nur die Root-`CLAUDE.md`. `shell-*` liest zusätzlich `docs/specs/SPECS-infrastructure.md`. Du kannst sie leicht in andere Projekte übernehmen.
 
 | Agent | Zweck | Modell |
 |-------|-------|--------|
@@ -96,5 +96,5 @@ Diese neun Agents kennen die CRM-Specs nicht. Sie lesen nur die Root-`AGENTS.md`
 ## Mehr Details
 
 - Agent-Dateien: `.claude/agents/` (Quelle) · `.github/agents/` (generierte Copilot-Kopie)
-- Rollen-Tabelle und Spec-Zuordnung: [AGENTS.md](../AGENTS.md)
+- Rollen-Tabelle und Spec-Zuordnung: [CLAUDE.md](../CLAUDE.md)
 - Übernahme in dein Projekt: [TRANSFER.md](TRANSFER.md)

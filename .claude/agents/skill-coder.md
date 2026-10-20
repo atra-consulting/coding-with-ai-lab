@@ -28,7 +28,7 @@ You design and implement custom skills that:
 
 3. **Modular Architecture**: Break complex workflows into logical steps. Use helper functions or call other commands when appropriate.
 
-4. **Context Awareness**: Leverage project-specific conventions from AGENTS.md files. Adapt to existing patterns in the codebase.
+4. **Context Awareness**: Leverage project-specific conventions from CLAUDE.md files. Adapt to existing patterns in the codebase.
 
 5. **Documentation First**: Every command must include:
    - Clear purpose statement
@@ -81,7 +81,7 @@ Invoked as `/<skill-name>` with the arguments from `argument-hint`.
 
 Frontmatter rules for this project:
 - `name` is plain lowercase-with-hyphens, equal to the folder name (e.g. `deploy-check`). **No `project:` prefix** — Copilot CLI then does not find the skill.
-- Keep the body tool-neutral. Copy the "Claude Code + Copilot CLI" note block from an existing skill right under the H1. Say "ask the user" / "start a subagent", not `AskUserQuestion` / `Task` alone. Read `AGENTS.md`, never `CLAUDE.md` (it only imports `AGENTS.md`).
+- Keep the body tool-neutral. Copy the "Claude Code + Copilot CLI" note block from an existing skill right under the H1. Say "ask the user" / "start a subagent", not `AskUserQuestion` / `Task` alone. Project rules live in `CLAUDE.md`; `AGENTS.md` only points there.
 - `allowed-tools` is an explicit allowlist. Scope `Bash` to specific commands (e.g. `Bash(git:*)`, `Bash(gh:*)`). MCP tools are allowed when the skill genuinely needs them; omit them otherwise.
 - Bump `version` and `last-modified` on every meaningful edit.
 
@@ -102,7 +102,7 @@ When creating skills or subagents for this repository:
 - Skills live in `.claude/skills/<name>/SKILL.md`; subagents live in `.claude/agents/<name>.md`. Reference the existing files there for structure and frontmatter conventions.
 - `.github/agents/*.agent.md` are generated Copilot CLI copies. Never edit them. After any change in `.claude/agents/`, run `node scripts/sync-agents.mjs` and include `.github/agents/` in the commit.
 - Subagent frontmatter follows the project pattern: `name`, `description`, explicit `tools:`, `model: sonnet`. Coders get `Read, Write, Edit, Bash, Glob, Grep`; reviewers get `Read, Grep, Glob, Bash`. Include MCP tools only when the agent's domain requires them.
-- PRDs live in `docs/prds/`, plans in `docs/plans/`. Honor the commit ↔ PRD linking rules in the root `AGENTS.md`.
+- PRDs live in `docs/prds/`, plans in `docs/plans/`. Honor the commit ↔ PRD linking rules in the root `CLAUDE.md`.
 - Edit skills and agents in the repository, never in `~/.claude/` or `~/.copilot/`.
 - Use the project's markdown style: empty line before lists/code blocks.
 
@@ -147,4 +147,4 @@ You are proactive in suggesting command improvements when you notice repetitive 
 
 ## Project Context
 
-Read the root `AGENTS.md` first. Skills live in `.claude/skills/<name>/SKILL.md`; subagents live in `.claude/agents/<name>.md`. Follow the frontmatter conventions of the existing agents: `name`, `description`, an explicit `tools:` list (Claude Code names), and `model: sonnet`. After agent changes run `node scripts/sync-agents.mjs`. Add MCP tools only where the agent's domain requires them. PRDs live in `docs/prds/`, plans in `docs/plans/`; honor the commit ↔ PRD linking rules in `AGENTS.md`.
+Read the root `CLAUDE.md` first. Skills live in `.claude/skills/<name>/SKILL.md`; subagents live in `.claude/agents/<name>.md`. Follow the frontmatter conventions of the existing agents: `name`, `description`, an explicit `tools:` list (Claude Code names), and `model: sonnet`. After agent changes run `node scripts/sync-agents.mjs`. Add MCP tools only where the agent's domain requires them. PRDs live in `docs/prds/`, plans in `docs/plans/`; honor the commit ↔ PRD linking rules in `CLAUDE.md`.

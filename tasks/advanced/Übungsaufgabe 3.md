@@ -10,13 +10,13 @@ WIr nehmen den eben erzeugten Skill, um Aufgaben vollautomatisch abzuarbeiten �
 
 Die Anwendung mit `start.sh/start.bat` starten und als Admin einloggen. Dann unter "ADMINISTRATION" den Abschnitt "Agent-Aufgaben" anschauen. Dort gibt es drei Kategorien: Customer Emails, Application Logs und Error Reports. Jede Kategorie hat sechs Aufgaben, die man mit "Aufgaben anzeigen" sehen kann. Zwei Aufgaben sind jeweils zu ungenau oder unvollständig, um implementiert zu werden, zwei sind schon erledigt. Die zwei Aufgaben mit den **größten IDs** sind machbar für den SKill. Suche Dir eine Aufgabe heraus, die implementiert werden kann, und eine, die nicht automatisch gebaut werden kann. Merke Dir die IDs von beiden
 
-Starte deinen KI-Assistenten (Claude Code oder Copilot CLI) und gehe mit mehrmaligem "Shift"-"Tab" in den Auto-Modus (in Copilot CLI: Autopilot-Modus; wird links unten angezeigt). Mit `/model` Sonnet auswählen. Dann rufe den Skill auf, den Du in Übung 2 gebaut hast, und übergib ihm die ID der nicht automatisch lösbaren Aufgabe:
+Starte Claude Code und gehe mit mehrmaligem "Shift"-"Tab" in den Auto-Modus (wird links unten angezeigt). Mit `/model` Sonnet auswählen. Dann rufe den Skill auf, den Du in Übung 2 gebaut hast, und übergib ihm die ID der nicht automatisch lösbaren Aufgabe:
 
 ```
 /project:do-factory-automatic X
 ```
 
-Der KI-Assistent sollte die Aufgabe nicht abarbeiten, weil sie unvollständig ist.
+Claude Code sollte die Aufgabe nicht abarbeiten, weil sie unvollständig ist.
 
 Dann lösche den Context mit `/clear` und rufe den Skill erneut auf, dieses Mal mit der ID der machbaren Aufgabe.
 
@@ -24,7 +24,7 @@ Dann lösche den Context mit `/clear` und rufe den Skill erneut auf, dieses Mal 
 /project:do-factory-automatic Y
 ```
 
-Der KI-Assistent sollte diese Aufgabe jetzt korrekt abarbeiten.
+Claude Code sollte diese Aufgabe jetzt korrekt abarbeiten.
 
 ## Fehlerbehebung
 

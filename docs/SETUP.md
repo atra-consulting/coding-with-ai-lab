@@ -2,7 +2,7 @@
 
 Diese Anleitung beschreibt, wie du deine Arbeitsumgebung für das **AI Coding Lab** einrichtest: Laufzeitumgebung, AI-Assistent, IDE und Markdown-Viewer. Nach Abschluss kannst du das Projekt starten und mit deinem KI-Assistenten produktiv arbeiten.
 
-**Welcher KI-Assistent?** Je nach Schulung **Claude Code** oder **GitHub Copilot CLI**. Du brauchst nur eins von beiden. Beide nutzen dieselben Projektregeln (`AGENTS.md`), Skills (`.claude/skills/`) und Subagents (Quelle `.claude/agents/`, Copilot-Kopie in `.github/agents/`, generiert).
+**Welcher KI-Assistent?** Je nach Schulung **Claude Code** oder **GitHub Copilot CLI**. Du brauchst nur eins von beiden. Beide nutzen dieselben Projektregeln (`CLAUDE.md`), Skills (`.claude/skills/`) und Subagents (Quelle `.claude/agents/`, Copilot-Kopie in `.github/agents/`, generiert).
 
 ## Inhalt
 

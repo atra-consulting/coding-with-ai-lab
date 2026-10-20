@@ -2,7 +2,7 @@
 
 **Dauer:** 35 min
 **Sozialform:** Paare
-**Werkzeug:** KI-Assistent (Claude Code oder Copilot CLI)
+**Werkzeug:** Claude Code
 **Voraussetzung:** Lab läuft unter `localhost:7200`
 **Ziel:** Neben dem Gesamtwert der Chancen-Liste steht der gewichtete Wert — Wert mal Wahrscheinlichkeit —, und die Zahl hält eurer Handrechnung stand. Davor stehen drei Entscheidungen, die ihr vor dem Prompt trefft.
 
@@ -25,8 +25,8 @@ wenn ihr anders entscheidet, aber lasst keine Frage offen.
    Antworten auf.
 2. Passt den Prompt an eure Entscheidungen an, wenn sie von den
    vorgegebenen abweichen.
-3. Startet den KI-Assistenten im Projekt-Root
-   (`claude --dangerously-skip-permissions` bzw. `copilot --allow-all`) und gebt den Prompt ein.
+3. Startet Claude Code im Projekt-Root
+   (`claude --dangerously-skip-permissions`) und gebt den Prompt ein.
 4. Prüft am Plan-Checkpoint, ob drinsteht, wie mit leerer
    Wahrscheinlichkeit umgegangen wird — gibt der Plan eure Entscheidung
    anders wieder, dann `Edit`.

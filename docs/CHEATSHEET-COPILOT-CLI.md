@@ -6,7 +6,7 @@
 
 ## Was ist Copilot CLI?
 
-GitHubs CLI für KI-gestütztes Programmieren. Läuft in jedem Terminal, liest den Projektkontext (`AGENTS.md`), bearbeitet Dateien und führt Befehle aus.
+GitHubs CLI für KI-gestütztes Programmieren. Läuft in jedem Terminal, liest den Projektkontext (`CLAUDE.md`), bearbeitet Dateien und führt Befehle aus.
 
 ---
 
@@ -29,7 +29,7 @@ Beim ersten Start: Ordner als vertrauenswürdig bestätigen, dann `/login` (GitH
 |--------|-----------|
 | `/review` | Projekt-Skill: Code-Änderungen mit iterativem Feedback prüfen (ersetzt das eingebaute `/review`) |
 | `/write-ticket` | Projekt-Skill: Feedback in ein neues Kanban-Ticket verwandeln |
-| `/update-agent-files` | Projekt-Skill: Agents, Specs und `AGENTS.md` mit dem Code synchron halten |
+| `/update-agent-files` | Projekt-Skill: Agents, Specs und `CLAUDE.md` mit dem Code synchron halten |
 | `/skills` | Alle Skills anzeigen |
 | `/agent` | Subagents anzeigen und auswählen |
 

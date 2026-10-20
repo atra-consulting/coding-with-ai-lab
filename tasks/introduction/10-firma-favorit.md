@@ -2,7 +2,7 @@
 
 **Dauer:** 30 min
 **Sozialform:** einzeln
-**Werkzeug:** KI-Assistent (Claude Code oder Copilot CLI)
+**Werkzeug:** Claude Code
 **Voraussetzung:** Lab läuft unter `localhost:7200`
 **Ziel:** Ein Stern-Icon in der Firmenliste markiert eine Firma als Favorit, eine Checkbox filtert darauf, und der Favoritenstatus steht pro Firma in der Datenbank und übersteht das Neuladen.
 
@@ -11,7 +11,7 @@ Zustand wird pro Firma gespeichert, nicht pro User.
 
 ## Schritte
 
-1. KI-Assistent im Projekt-Root starten: `claude --dangerously-skip-permissions` (Claude Code) bzw. `copilot --allow-all` (Copilot CLI).
+1. Claude Code im Projekt-Root starten: `claude --dangerously-skip-permissions`.
 2. Den Prompt einfügen und an den Checkpoints PRD, Plan und Review lesen,
    dann `Continue`.
 3. App neu starten (`./start.sh`) und in der Firmenliste zwei Sterne

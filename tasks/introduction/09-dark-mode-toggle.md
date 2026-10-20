@@ -2,7 +2,7 @@
 
 **Dauer:** 20 min
 **Sozialform:** einzeln
-**Werkzeug:** KI-Assistent (Claude Code oder Copilot CLI)
+**Werkzeug:** Claude Code
 **Voraussetzung:** Lab läuft unter `localhost:7200`
 **Ziel:** Ein Icon-Button im Header schaltet die App zwischen hell und dunkel; der Zustand steht in `localStorage` und wird beim nächsten Öffnen wiederhergestellt.
 
@@ -11,7 +11,7 @@ eigenes CSS braucht es dafür nicht.
 
 ## Schritte
 
-1. KI-Assistent im Projekt-Root starten: `claude --dangerously-skip-permissions` (Claude Code) bzw. `copilot --allow-all` (Copilot CLI).
+1. Claude Code im Projekt-Root starten: `claude --dangerously-skip-permissions`.
 2. Den Prompt einfügen und an den Checkpoints PRD, Plan und Review lesen,
    dann `Continue`.
 3. App neu starten (`./start.sh`) und den Button rechts oben klicken.

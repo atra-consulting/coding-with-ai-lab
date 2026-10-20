@@ -74,8 +74,8 @@ coding-with-ai-lab/
 │   └── settings.json           # Claude Code hook: re-sync agents after edits
 ├── scripts/sync-agents.mjs     # Generates .github/agents/ from .claude/agents/
 ├── start.sh                    # Full-stack launcher
-├── AGENTS.md                   # AI coding instructions (tool-neutral, read by both tools)
-├── CLAUDE.md                   # Only `@AGENTS.md` (Claude Code import)
+├── AGENTS.md                   # Only points to CLAUDE.md
+├── CLAUDE.md                   # AI coding instructions (read by Claude Code and Copilot CLI)
 └── README.MD                   # Project overview
 ```
 

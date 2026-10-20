@@ -192,7 +192,7 @@ If succeeds:
 
 ## PHASE 1.7: AGENT DISCOVERY
 
-Read the project's AGENTS.md (the one in the project root, not this skill file) and look for an `## Agents` section.
+Read the project's CLAUDE.md (the one in the project root, not this skill file) and look for an `## Agents` section.
 
 **If `## Agents` section found:**
 
@@ -207,7 +207,7 @@ Read the project's AGENTS.md (the one in the project root, not this skill file) 
 9. Display: "Review agents: [list of reviewer agent names]"
 10. Display: "Fix agents: [list of coder and designer agent names]"
 
-**If no `## Agents` section found or AGENTS.md missing:**
+**If no `## Agents` section found or CLAUDE.md missing:**
 
 - Set `review_agents_available = false`
 - Set `fix_agents_available = false`
@@ -403,9 +403,9 @@ If found: Read with Read tool (use offset/limit for files >220KB). Extract purpo
 
 If not found: Infer project context from repository name and structure.
 
-### Step 4.2: Read AGENTS.md (if exists)
+### Step 4.2: Read CLAUDE.md (if exists)
 
-Search using Glob tool with pattern `**/AGENTS.md`.
+Search using Glob tool with pattern `**/CLAUDE.md`.
 
 If found: Read with Read tool (use offset/limit for files >220KB). Extract required/prohibited practices, code conventions, technology stack, testing requirements.
 
@@ -413,7 +413,7 @@ If not found: Infer conventions from existing code files.
 
 ### Step 4.3: Combine Context
 
-Create context summary from PRD (purpose, goals, requirements) and AGENTS.md (conventions, prohibited practices). Store for review phase.
+Create context summary from PRD (purpose, goals, requirements) and CLAUDE.md (conventions, prohibited practices). Store for review phase.
 
 ---
 
@@ -493,7 +493,7 @@ Check each item:
 
 **Project Alignment**:
 - Changes align with project goals and requirements from PRD (if exists)
-- Changes follow conventions and patterns from AGENTS.md (if exists)
+- Changes follow conventions and patterns from CLAUDE.md (if exists)
 - Changes match established patterns in this repository
 
 **Code Quality**:
@@ -590,7 +590,7 @@ Display: `--- Fix Planning (Round <current_round>) ---`
 3. Each agent receives:
    - Findings from current review round relevant to its domain
    - The changed files in its domain
-   - Project context (PRD, AGENTS.md conventions)
+   - Project context (PRD, CLAUDE.md conventions)
 
 4. Each agent produces a fix plan listing per issue:
    - Issue # (reference to the issue index from Step 5.1.3)
@@ -644,7 +644,7 @@ Pass only **approved** fix plans (findings whose `proposed_fix` is set and not "
 Each reviewer validates fixes in its domain:
 - Fix addresses the identified issue
 - Fix does not introduce new problems
-- Fix follows project conventions from AGENTS.md
+- Fix follows project conventions from CLAUDE.md
 - Fix aligns with PRD requirements
 
 Collect reviewer feedback.
@@ -757,7 +757,7 @@ Clean pass. No issues found.
 
 ## Project Context Validation
 
-<Results from PRD and AGENTS.md analysis>
+<Results from PRD and CLAUDE.md analysis>
 
 ## Next Steps
 

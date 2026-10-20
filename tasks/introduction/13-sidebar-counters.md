@@ -2,7 +2,7 @@
 
 **Dauer:** 15 min
 **Sozialform:** einzeln
-**Werkzeug:** KI-Assistent (Claude Code oder Copilot CLI)
+**Werkzeug:** Claude Code
 **Voraussetzung:** Lab läuft unter `localhost:7200`
 **Ziel:** Neben den vier Menüpunkten der Seitennavigation steht die Anzahl der Datensätze als vier graue Badges, befüllt aus einem einzigen Request an `/api/dashboard`.
 
@@ -12,7 +12,7 @@ Aktivitäten-Zahl reicht ein kleiner Zusatz.
 
 ## Schritte
 
-1. KI-Assistent im Projekt-Root starten: `claude --dangerously-skip-permissions` (Claude Code) bzw. `copilot --allow-all` (Copilot CLI).
+1. Claude Code im Projekt-Root starten: `claude --dangerously-skip-permissions`.
 2. Den Prompt einfügen und an den Checkpoints PRD, Plan und Review lesen,
    dann `Continue`.
 3. App neu starten (`./start.sh`) und die Zahlen im Seitenmenü mit den
