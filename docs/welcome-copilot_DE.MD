@@ -399,7 +399,7 @@ git checkout -b training-0626/max-mustermann
 
 ## Aufgaben
 
-Die Aufgaben liegen im Ordner **`/tasks/`**. Du beauftragst Copilot CLI im Klartext,
+Die Aufgaben bekommst du im Schulungsportal. Du beauftragst Copilot CLI im Klartext,
 lässt dir den Plan zeigen und prüfst das Ergebnis — am Ende mit `/review`.
 Plan-Modus: `Shift + Tab` wechselt den Modus.
 
