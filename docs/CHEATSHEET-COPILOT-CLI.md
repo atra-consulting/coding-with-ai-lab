@@ -27,7 +27,7 @@ Beim ersten Start: Ordner als vertrauenswürdig bestätigen, dann `/login` (GitH
 
 | Befehl | Bedeutung |
 |--------|-----------|
-| `/review` | Projekt-Skill: Code-Änderungen mit iterativem Feedback prüfen (ersetzt das eingebaute `/review`) |
+| `/local-review` | Projekt-Skill: Code-Änderungen mit iterativem Feedback prüfen (eigener Name, damit es nicht mit dem eingebauten `/review` kollidiert) |
 | `/write-ticket` | Projekt-Skill: Feedback in ein neues Kanban-Ticket verwandeln |
 | `/update-agent-files` | Projekt-Skill: Agents, Specs und `CLAUDE.md` mit dem Code synchron halten |
 | `/skills` | Alle Skills anzeigen |

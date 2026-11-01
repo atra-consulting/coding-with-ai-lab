@@ -104,7 +104,7 @@ Implement the issue yourself, in this order. You run headless: never ask the use
 2. **Plan briefly:** read `CLAUDE.md` and the specs it points to, list the files you will change. No PRD — these are small, well-scoped changes.
 3. **Implement:** use the subagents (see `CLAUDE.md` → `## Agents`) where they fit (`db-coder`, `be-coder`, `fe-coder`, `ui-designer`).
 4. **Check:** there is **no heavy test suite to run** here. Use a lightweight build check — **`cd backend && npx tsc --noEmit`** for backend changes and/or **`cd frontend && npx ng build`** for frontend changes. **Do NOT author or modify automated tests** (Playwright/Jasmine) — that matches this project's standing preference.
-5. **Review:** run `/review embedded` and fix what it finds.
+5. **Review:** run `/local-review embedded` and fix what it finds.
 6. **Ship:** commit, push, open a PR against **`main`** with **`Closes #<NUM>`** as the first line of the body. **NEVER merge.** The PR stays open for human review.
 
 **If you cannot finish** (the change is larger than it looked, the build won't pass after a reasonable attempt, or you hit a real ambiguity mid-way): do NOT leave the issue stuck. Fall back to the ASK path — move the board back to Backlog, comment on the issue explaining the blocker, @-mention `@dave0688`, add the `Input needed` label:

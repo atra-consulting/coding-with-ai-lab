@@ -94,7 +94,7 @@ entscheiden und weitermachen.
    sich nach einem vertretbaren Versuch nicht beheben: abbrechen und zu
    Schritt 3a übergehen (Aufgabe mit einem Kommentar ablehnen, der den Fehler
    erklärt), statt zu hängen.
-5. **Review:** `/review embedded` ausführen und beheben, was es findet.
+5. **Review:** `/local-review embedded` ausführen und beheben, was es findet.
 6. **Abschließen:** committen, pushen, einen PR gegen `main` öffnen.
 
 ## Schritt 4 — Aufgabe als erledigt markieren

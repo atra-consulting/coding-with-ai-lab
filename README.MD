@@ -183,7 +183,7 @@ git checkout -b training-0626/max-mustermann
 
 1. Aufgaben findest du im Ordner **`/tasks/`**
 2. Lies Ziel und Ergebnis der Aufgabe und beauftrage deinen KI-Assistenten (Claude Code oder Copilot CLI) im Klartext — so, wie du es einem neuen Kollegen erklären würdest. Lass dir zuerst den Plan zeigen, bevor gebaut wird.
-3. Vor dem Abschluss: `/review` prüft deine Änderungen.
+3. Vor dem Abschluss: `/local-review` prüft deine Änderungen.
 
 ---
 
@@ -191,13 +191,13 @@ git checkout -b training-0626/max-mustermann
 
 | Befehl | Zweck |
 |--------|-------|
-| `/review` | Code-Änderungen mit iterativem Feedback prüfen |
+| `/local-review` | Code-Änderungen mit iterativem Feedback prüfen |
 | `/write-ticket` | Feedback in ein neues Kanban-Ticket verwandeln |
 | `/update-agent-files` | Agents, Specs und `CLAUDE.md` mit dem Code synchron halten |
 | `/help` | Hilfe zum Tool |
 | `/compact` | Kontext komprimieren |
 
-`/review`, `/write-ticket` und `/update-agent-files` sind Projekt-Skills. Sie laufen in beiden Tools gleich. Weitere Befehle je Tool: [Claude-Code-Spickzettel](docs/CHEATSHEET-CLAUDE-CODE.md) · [Copilot-CLI-Spickzettel](docs/CHEATSHEET-COPILOT-CLI.md).
+`/local-review`, `/write-ticket` und `/update-agent-files` sind Projekt-Skills. Sie laufen in beiden Tools gleich. Weitere Befehle je Tool: [Claude-Code-Spickzettel](docs/CHEATSHEET-CLAUDE-CODE.md) · [Copilot-CLI-Spickzettel](docs/CHEATSHEET-COPILOT-CLI.md).
 
 ---
 

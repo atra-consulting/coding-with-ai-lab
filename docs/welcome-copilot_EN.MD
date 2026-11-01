@@ -400,14 +400,14 @@ git checkout -b training-0626/john-doe
 ## Tasks
 
 Tasks live in the **`/tasks/`** folder. Describe the task to Copilot CLI in plain
-words, have it show you the plan first, and check the result — finally with `/review`.
+words, have it show you the plan first, and check the result — finally with `/local-review`.
 Plan mode: `Shift + Tab` cycles the modes.
 
 ## Where skills and agents live
 
 | What | Folder | How to use |
 |------|--------|------------|
-| Skills | `.claude/skills/` | `/review`, `/write-ticket`, `/update-agent-files` — `/skills` lists all |
+| Skills | `.claude/skills/` | `/local-review`, `/write-ticket`, `/update-agent-files` — `/skills` lists all |
 | Subagents | `.github/agents/` | `/agent` lists and selects them. Or in plain words: "Use the `be-reviewer` …" |
 | Project rules | `CLAUDE.md` | Copilot CLI reads the file automatically |
 
@@ -418,7 +418,7 @@ The files in `.github/agents/` are generated. Please do not edit them by hand.
 
 | Command | Purpose |
 |---------|---------|
-| `/review` | Review code changes with a multi-round feedback cycle (project skill) |
+| `/local-review` | Review code changes with a multi-round feedback cycle (project skill) |
 | `/model` | Pick the AI model |
 | `/agent` | List and select subagents |
 | `/skills` | List skills |

@@ -449,7 +449,7 @@ If exists: append random 6-digit number to `branch_name`.
 
 ### Step 4.4: Create and Push Branch
 
-**If `is_git_repo = false`:** Skip this step entirely. `original_head` stays `null`; Step 10.1 then uses plain `/project:review "embedded"`. Continue to Step 5.
+**If `is_git_repo = false`:** Skip this step entirely. `original_head` stays `null`; Step 10.1 then uses plain `/project:local-review "embedded"`. Continue to Step 5.
 
 Get current branch → store as `original_branch`. Capture the starting commit → `original_head = git rev-parse HEAD`. Capture both BEFORE any branch creation, so `original_head` records the true starting point. (For the kept-branch path and the create-branch path, `original_head` is the same starting commit — it is captured once here, before branching.)
 
@@ -787,13 +787,13 @@ To make changes instead, the user can interrupt and run `/plan-and-do <key> resu
 Pick the invocation by whether `original_head` is set:
 
 ```
-If `original_head` is set:    /project:review "embedded base:[original_head]"
-If `original_head` is unset:  /project:review "embedded"
+If `original_head` is set:    /project:local-review "embedded base:[original_head]"
+If `original_head` is unset:  /project:local-review "embedded"
 ```
 
-**Always invoke the project skill `project:review`** — never a plugin or global skill of the same base name (e.g. `bpf:review`). The `project:` prefix is required to disambiguate.
+**Always invoke the project skill `project:local-review`** — never a plugin or global skill of the same base name (e.g. `bpf:review`). The `project:` prefix is required to disambiguate.
 
-Pass `original_head` (the starting branch's commit, from `config.original_head`) as the review base. This scopes the review to changes made since the skill started — not main/master. When `original_head` is unset (e.g., non-git mode), use plain `/project:review "embedded"` so review defaults to main/master. Never pass the literal `base:[original_head]` — substitute the SHA or drop the token.
+Pass `original_head` (the starting branch's commit, from `config.original_head`) as the review base. This scopes the review to changes made since the skill started — not main/master. When `original_head` is unset (e.g., non-git mode), use plain `/project:local-review "embedded"` so review defaults to main/master. Never pass the literal `base:[original_head]` — substitute the SHA or drop the token.
 
 Wait for completion.
 
@@ -813,9 +813,9 @@ Display artifact paths per the ARTIFACT PATH DISPLAY RULE.
 **If no issues:** Continue without prompting.
 
 **If issues found:**
-- `workflow_scope == "full"` AND this is the first review round → Auto-fix: delegate each finding to the coding agent that owns the file, tier by severity (a typo is `haiku`, a security or design flaw is `opus`). Group findings by agent and launch in parallel via Task tool. Fix directly only when `coding_agents` is empty or `agents_available == false`. Failed fixes run the escalation loop (`plan-and-do-delegation.md` → `## 8. ESCALATION LOOP`). Record each dispatch in `delegation.assignments` (step "Review fix: [file]"). Commit `fix: Address code review findings. [task_key]` (with `PRD:` footer if applicable), re-run `/project:review`, return to 10.2. No prompt.
+- `workflow_scope == "full"` AND this is the first review round → Auto-fix: delegate each finding to the coding agent that owns the file, tier by severity (a typo is `haiku`, a security or design flaw is `opus`). Group findings by agent and launch in parallel via Task tool. Fix directly only when `coding_agents` is empty or `agents_available == false`. Failed fixes run the escalation loop (`plan-and-do-delegation.md` → `## 8. ESCALATION LOOP`). Record each dispatch in `delegation.assignments` (step "Review fix: [file]"). Commit `fix: Address code review findings. [task_key]` (with `PRD:` footer if applicable), re-run `/project:local-review`, return to 10.2. No prompt.
 - Second review round, OR `workflow_scope == "implement-review"`, OR the same finding survives → Call the `AskUserQuestion` tool with: 1-Fix findings, 2-Skip to summary, 3-Quit.
-  - Fix → delegate each finding to the coding agent that owns the file, tier by severity (a typo is `haiku`, a security or design flaw is `opus`). Group findings by agent and launch in parallel. Fix directly only when `coding_agents` is empty or `agents_available == false`. Failed fixes run the escalation loop. Record each dispatch in `delegation.assignments` (step "Review fix: [file]"). Commit, re-run `/project:review`, return to 10.2.
+  - Fix → delegate each finding to the coding agent that owns the file, tier by severity (a typo is `haiku`, a security or design flaw is `opus`). Group findings by agent and launch in parallel. Fix directly only when `coding_agents` is empty or `agents_available == false`. Failed fixes run the escalation loop. Record each dispatch in `delegation.assignments` (step "Review fix: [file]"). Commit, re-run `/project:local-review`, return to 10.2.
   - Skip → continue
 
 **After Checkpoint 10 resolves (no issues or user chose Skip):** If `workflow_scope == "implement-review"`, skip to STEP 13 (summary). Do not ask — the user already chose this scope at plan approval.
@@ -963,7 +963,7 @@ Then display the final ticket status: on success `Ticket <id> → Erledigt (Done
 - PRD created or explicitly skipped
 - Detailed plan created with test cases
 - Implementation matches plan; tests pass
-- Code review via /project:review completed
+- Code review via /project:local-review completed
 - No uncommitted changes when skill finishes
 - Agents used when available (fallback to direct mode)
 

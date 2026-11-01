@@ -381,13 +381,13 @@ git checkout -b training-0626/max-mustermann
 ## Aufgaben
 
 Die Aufgaben liegen im Ordner **`/tasks/`**. Du beauftragst Claude Code im Klartext,
-lässt dir den Plan zeigen und prüfst das Ergebnis — am Ende mit `/review`.
+lässt dir den Plan zeigen und prüfst das Ergebnis — am Ende mit `/local-review`.
 
 ## Nützliche Befehle
 
 | Befehl | Zweck |
 |--------|-------|
-| `/review` | Code-Änderungen prüfen, mit iterativem Feedback |
+| `/local-review` | Code-Änderungen prüfen, mit iterativem Feedback |
 | `/simplify` | Code auf Qualität, Wiederverwendung und Effizienz prüfen |
 | `/help` | Hilfe zu Claude Code |
 | `/clear` | Konversationshistorie löschen |

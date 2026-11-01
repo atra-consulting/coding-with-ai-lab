@@ -400,14 +400,14 @@ git checkout -b training-0626/max-mustermann
 ## Aufgaben
 
 Die Aufgaben liegen im Ordner **`/tasks/`**. Du beauftragst Copilot CLI im Klartext,
-lässt dir den Plan zeigen und prüfst das Ergebnis — am Ende mit `/review`.
+lässt dir den Plan zeigen und prüfst das Ergebnis — am Ende mit `/local-review`.
 Plan-Modus: `Shift + Tab` wechselt den Modus.
 
 ## Wo Skills und Agents liegen
 
 | Was | Ordner | Aufruf |
 |-----|--------|--------|
-| Skills | `.claude/skills/` | `/review`, `/write-ticket`, `/update-agent-files` — `/skills` zeigt alle |
+| Skills | `.claude/skills/` | `/local-review`, `/write-ticket`, `/update-agent-files` — `/skills` zeigt alle |
 | Subagents | `.github/agents/` | `/agent` zeigt und wählt sie. Oder im Klartext: „Nutze den `be-reviewer` …" |
 | Projektregeln | `CLAUDE.md` | Copilot CLI liest die Datei automatisch |
 
@@ -418,7 +418,7 @@ Die Dateien in `.github/agents/` sind generiert. Bitte nicht von Hand ändern.
 
 | Befehl | Zweck |
 |--------|-------|
-| `/review` | Code-Änderungen prüfen, mit iterativem Feedback (Projekt-Skill) |
+| `/local-review` | Code-Änderungen prüfen, mit iterativem Feedback (Projekt-Skill) |
 | `/model` | KI-Modell wählen |
 | `/agent` | Subagents anzeigen und auswählen |
 | `/skills` | Skills anzeigen |
