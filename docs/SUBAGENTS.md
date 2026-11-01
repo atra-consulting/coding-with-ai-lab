@@ -24,7 +24,7 @@ Zwei Wege:
 1. **Automatisch.** Die KI liest die `description` jedes Agents. Passt die Aufgabe, ruft sie den Agent selbst. Du machst nichts.
 2. **Per Name.** Du bittest direkt: „Nutze den `be-reviewer`, um diese Route zu prüfen." Die KI startet genau diesen Agent. In Copilot CLI zeigt `/agent` alle Agents und wählt einen aus.
 
-Skills wie `/review` rufen mehrere Agents nacheinander — jeder Reviewer prüft seinen Bereich.
+Skills wie `/local-review` rufen mehrere Agents nacheinander — jeder Reviewer prüft seinen Bereich.
 
 ## Die Agents im Überblick
 

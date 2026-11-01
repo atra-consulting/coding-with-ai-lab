@@ -15,14 +15,14 @@ Ein Subagent ist ein Spezialist für eine Aufgabe. Ein Skill ist ein ganzer Proz
 Tippe den Namen mit Schrägstrich in Claude Code oder Copilot CLI:
 
 ```
-/review Prüfe besonders die Fehlerbehandlung
+/local-review Prüfe besonders die Fehlerbehandlung
 ```
 
 Manche Skills nehmen Argumente. Manche laufen ohne. Details stehen unten. `/skills` zeigt alle verfügbaren Skills.
 
 ## Die Skills
 
-### `/review` — lokaler Code Review
+### `/local-review` — lokaler Code Review
 
 Prüft deinen Branch gegen `main`. Mit mehreren Runden aus Prüfen und Fixen.
 
@@ -37,9 +37,9 @@ Prüft deinen Branch gegen `main`. Mit mehreren Runden aus Prüfen und Fixen.
   - freier Text → Sonderanweisungen für den Review
 - **Beispiel:**
   ```
-  /review Prüfe besonders die Fehlerbehandlung
+  /local-review Prüfe besonders die Fehlerbehandlung
   ```
-- Datei: `.claude/skills/review/SKILL.md`
+- Datei: `.claude/skills/local-review/SKILL.md`
 
 ### `/update-agent-files` — Doku mit dem Code synchron halten
 

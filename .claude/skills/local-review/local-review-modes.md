@@ -1,6 +1,6 @@
 # Review — Special Modes
 
-Reference file for review skill. Read and execute the matching section when help, doctor, or dryrun mode is detected.
+Reference file for local-review skill. Read and execute the matching section when help, doctor, or dryrun mode is detected.
 
 ---
 
@@ -15,21 +15,21 @@ Review Skill - Help
 Purpose: Local code review with multi-round review & fix cycle
 
 Usage:
-  /review                          # Review local changes
-  /review "special instructions"   # Review with extra instructions
-  /review help                     # This help
-  /review doctor                   # Health checks
-  /review dryrun                   # Simulate review
+  /local-review                          # Review local changes
+  /local-review "special instructions"   # Review with extra instructions
+  /local-review help                     # This help
+  /local-review doctor                   # Health checks
+  /local-review dryrun                   # Simulate review
 
 Examples:
   # Review local changes
-  /review
+  /local-review
 
   # Review with focus on security
-  /review "Focus on authentication changes"
+  /local-review "Focus on authentication changes"
 
   # Simulate review (dry-run)
-  /review dryrun
+  /local-review dryrun
 
 Prerequisites:
   - git (required)

@@ -58,10 +58,10 @@ Beende den KI-Assistenten. Starte ihn neu.
 
 ### Schritt 4 — Prüfen (mindestens 3×)
 
-Lass die KI die angepassten Dateien prüfen. Nutze `/review`. Wiederhole den Prompt. Stopp erst, wenn keine nützlichen Findings mehr kommen. Meist reichen drei Runden.
+Lass die KI die angepassten Dateien prüfen. Nutze `/local-review`. Wiederhole den Prompt. Stopp erst, wenn keine nützlichen Findings mehr kommen. Meist reichen drei Runden.
 
 ```
-/review Du hast gerade diese Subagents und Skills kopiert und angepasst: ...
+/local-review Du hast gerade diese Subagents und Skills kopiert und angepasst: ...
 Prüfe, ob sie wirklich zur Technologie, zu den Regeln und zu den
 Best Practices dieses Projekts passen. Think hard!
 ```
@@ -89,7 +89,7 @@ Die KI schreibt die Specs in `docs/specs/` und passt `CLAUDE.md` an.
 Wie Schritt 4. Diesmal für die Specs und die Domänen-Doku. Wiederhole. Stopp, wenn keine nützlichen Findings mehr kommen.
 
 ```
-/review Du hast gerade die Specs und die Domänen-Doku für dieses Projekt
+/local-review Du hast gerade die Specs und die Domänen-Doku für dieses Projekt
 erstellt. Prüfe, ob sie wirklich zur Technologie, zu den Regeln und zu den
 Best Practices dieses Projekts passen. Think hard!
 ```
@@ -103,14 +103,14 @@ Beende den KI-Assistenten. Starte ihn neu. Fertig.
 1. Dateien nach `.claude/` kopieren (Copilot CLI: plus `sync-agents.mjs`).
 2. Die KI anpassen lassen.
 3. Neu starten.
-4. `/review` 3× (Agents + Skills).
+4. `/local-review` 3× (Agents + Skills).
 5. Neu starten.
 6. `/update-agent-files` (Specs + Domäne neu).
-7. `/review` 3× (Specs + Domäne).
+7. `/local-review` 3× (Specs + Domäne).
 8. Neu starten.
 
 ## Danach
 
-Teste die Skills an einer kleinen Änderung. Zum Beispiel `/review` auf einem Branch mit einem kleinen Feature. Läuft das sauber, passt die Übernahme.
+Teste die Skills an einer kleinen Änderung. Zum Beispiel `/local-review` auf einem Branch mit einem kleinen Feature. Läuft das sauber, passt die Übernahme.
 
 Mehr zu den Bausteinen: [SUBAGENTS.md](SUBAGENTS.md) · [SKILLS.md](SKILLS.md)

@@ -102,8 +102,8 @@ entscheiden und weitermachen.
    sich nach einem vertretbaren Versuch nicht beheben: abbrechen und zu
    Schritt 3a übergehen (Aufgabe mit einem Kommentar ablehnen, der den Fehler
    erklärt), statt zu hängen.
-5. **Review:** den Projekt-Skill `review` im Modus `embedded` ausführen
-   (`/review embedded`) und beheben, was er findet.
+5. **Review:** den Projekt-Skill `local-review` im Modus `embedded` ausführen
+   (`/local-review embedded`) und beheben, was er findet.
 6. **Abschließen:** committen, pushen, einen PR gegen `main` öffnen.
 
 ## Schritt 4 — Aufgabe als erledigt markieren

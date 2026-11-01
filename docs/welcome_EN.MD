@@ -381,13 +381,13 @@ git checkout -b training-0626/john-doe
 ## Tasks
 
 Tasks live in the **`/tasks/`** folder. Describe the task to Claude Code in plain
-words, have it show you the plan first, and check the result — finally with `/review`.
+words, have it show you the plan first, and check the result — finally with `/local-review`.
 
 ## Useful commands
 
 | Command | Purpose |
 |---------|---------|
-| `/review` | Review code changes with a multi-round feedback cycle |
+| `/local-review` | Review code changes with a multi-round feedback cycle |
 | `/simplify` | Check code for quality, reuse, and efficiency |
 | `/help` | Get help with Claude Code |
 | `/clear` | Clear the conversation history |

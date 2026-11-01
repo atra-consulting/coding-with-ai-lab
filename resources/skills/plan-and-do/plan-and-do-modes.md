@@ -52,7 +52,7 @@ Features:
   - Creates detailed plan with test cases
   - Implements code changes with tests
   - Runs automated tests (with auto-fix capability)
-  - Performs local code review using /review
+  - Performs local code review using /local-review
   - Checkpoint persistence (quit/resume at any checkpoint)
   - Detects an existing PR early; auto-derives PR prefix (feat/fix/chore) from commits
   - PR creation/update and merge workflow
@@ -99,7 +99,7 @@ Workflow Steps:
   7. Detailed Plan (with test cases)
   8. Implementation
   9. Testing (with auto-fix)
-  10. Code Review (local, via /review)
+  10. Code Review (local, via /local-review)
   11. Post-Review Testing
   12. Documentation Updates
   13. Summary, PR Creation, Merge

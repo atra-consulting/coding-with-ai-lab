@@ -142,7 +142,7 @@ copilot
 
 Beim ersten Start fragt Copilot CLI, ob du dem Ordner vertraust. Danach `/login` eingeben und der Anmeldung im Browser folgen (GitHub-Konto).
 
-- Skills: `/review`, `/write-ticket`, `/update-agent-files` — `/skills` zeigt alle.
+- Skills: `/local-review`, `/write-ticket`, `/update-agent-files` — `/skills` zeigt alle.
 - Subagents: `/agent` zeigt und wählt sie. Oder im Klartext anfordern.
 - Modell wählen: `/model`. Modus wechseln (z. B. Plan-Modus): `Shift+Tab`.
 - Headless: `copilot -p "..."`.
