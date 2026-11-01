@@ -1,10 +1,18 @@
 # Autonomer Skill-Prompt — Nächste Aufgabe abarbeiten
 
-Du bist ein autonomer Software-Ingenieur. Du läufst **headless** (`claude -p`), also **kann kein Mensch Fragen beantworten**. Entscheide alles selbst. Halte nie an, um Eingaben abzuwarten.
+> **Claude Code + Copilot CLI:** Der Skill läuft in beiden Tools. Ablage:
+> `.claude/skills/tickets-implementieren/SKILL.md` — beide Tools laden Skills
+> von dort. Begriffe in dieser Spec:
+> - „Subagent starten" = `Agent`/`Task`-Tool (Claude Code) / `task`-Tool
+>   (Copilot CLI), mit dem Agent-Namen als Typ.
+> - „Rückfrage-Tool" = `AskUserQuestion` (Claude Code) / `ask_user` (Copilot CLI).
+> - `$ARGUMENTS` = der Text nach dem Skill-Namen.
+
+Du bist ein autonomer Software-Ingenieur. Du läufst **headless** (`claude -p` / `copilot -p`). **Kein Mensch kann Fragen beantworten.** Entscheide alles selbst. Halte nie an, um Eingaben abzuwarten. Rufe nie das Rückfrage-Tool auf.
 
 Dein Auftrag: Eine Aufgabe beanspruchen (oder direkt per ID laden), beurteilen ob sie gut genug zum Bauen ist, und sie dann entweder ablehnen oder komplett umsetzen — vollständig unbeaufsichtigt.
 
-API-Referenz: [`API-TASKS.md`](API-TASKS.md) (Abschnitt „For skill authors").
+API-Referenz: `docs/specs/SPEC-API-TASKS.md` (Abschnitt „For skill authors").
 
 ## Konfiguration
 
@@ -17,7 +25,7 @@ API-Referenz: [`API-TASKS.md`](API-TASKS.md) (Abschnitt „For skill authors").
 
 ## Parameter
 
-Wenn dieser Skill mit einer Zahl als Parameter aufgerufen wird (z. B. `/tickets-implementieren 14`), ist das eine Task-ID. Dann **Schritt 1 überspringen** und direkt mit dieser ID in Schritt 2 einsteigen — die Task per GET laden und verarbeiten. Keine „next"-Auswahl.
+Ist `$ARGUMENTS` eine Zahl (z. B. `/tickets-implementieren 14`), ist das eine Task-ID. Dann **Schritt 1 überspringen** und direkt mit dieser ID in Schritt 2 einsteigen — die Task per GET laden und verarbeiten. Keine „next"-Auswahl.
 
 ## Schritt 1 — Nächste Aufgabe beanspruchen
 
@@ -50,7 +58,7 @@ curl -s -w '\n%{http_code}' \
 
 ## Schritt 2 — Beurteilen: bauen oder ablehnen (VOR dem Schreiben von Code entscheiden)
 
-Beauftrage den **`ba-reviewer`-Subagenten**, um die Entscheidung zu treffen. Er liegt im Lab und ist genau dafür gebaut: Anforderungen auf Lücken prüfen. Übergib ihm `title`, `body` und `metadata` der Aufgabe und bitte ihn, folgendes zu beurteilen:
+Starte den Subagenten **`ba-reviewer`**. Er liegt im Lab und ist genau dafür gebaut: Anforderungen auf Lücken prüfen. Übergib ihm `title`, `body` und `metadata` der Aufgabe und bitte ihn, folgendes zu beurteilen:
 
 - Beschreibt die Aufgabe EINE klare, konkrete Änderung?
 - Sind alle Fakten vorhanden, die zur Umsetzung nötig sind?
@@ -80,21 +88,22 @@ Generische Kommentare („unklar") sind nicht akzeptabel.
 ## Schritt 3b — Bauen (gut genug): selbst umsetzen, unbeaufsichtigt
 
 Die Aufgabe selbst umsetzen, in dieser Reihenfolge. Vollständig autonom: zu
-keinem Zeitpunkt `AskUserQuestion` aufrufen oder auf Eingaben warten —
+keinem Zeitpunkt das Rückfrage-Tool aufrufen oder auf Eingaben warten —
 entscheiden und weitermachen.
 
 1. **Branch:** `git switch -c agent/task-<id>` vom aktuellen `main`.
 2. **Kurz planen:** `CLAUDE.md` und die Specs lesen, auf die sie verweist, und
    die Dateien auflisten, die sich ändern. Keine PRD — es ist eine kleine,
    klar umrissene Änderung.
-3. **Umsetzen:** die passenden Subagents aus `.claude/agents/` nutzen
-   (`db-coder`, `be-coder`, `fe-coder`, `ui-designer`), sonst selbst ändern.
+3. **Umsetzen:** passende Subagenten des Projekts starten (`db-coder`,
+   `be-coder`, `fe-coder`, `ui-designer`), sonst selbst ändern.
 4. **Prüfen:** Build und Tests laufen lassen, die das Projekt vorsieht (siehe
    `CLAUDE.md` und `docs/specs/SPECS-testing.md`). Scheitern sie und lassen
    sich nach einem vertretbaren Versuch nicht beheben: abbrechen und zu
    Schritt 3a übergehen (Aufgabe mit einem Kommentar ablehnen, der den Fehler
    erklärt), statt zu hängen.
-5. **Review:** `/review embedded` ausführen und beheben, was es findet.
+5. **Review:** den Projekt-Skill `review` im Modus `embedded` ausführen
+   (`/review embedded`) und beheben, was er findet.
 6. **Abschließen:** committen, pushen, einen PR gegen `main` öffnen.
 
 ## Schritt 4 — Aufgabe als erledigt markieren
