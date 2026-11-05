@@ -33,8 +33,8 @@ getippt wurde.
    `git add docs/prds/PRD-FIRMA-FAVORIT.md`, `git status` (jetzt „to be
    committed"), `git commit -m "docs: PRD Firmen als Favorit markieren"`,
    dann `git log --oneline -3` und `git show --stat`.
-5. Ändert einen Satz im PRD, seht euch mit `git diff` die Zeilen mit − und
-   + an — so sieht der Agent seine Änderung — und committet erneut mit
+5. Ändert einen Satz im PRD, seht euch mit `git diff` die Zeilen mit `−`
+   und `+` an — so sieht der Agent seine Änderung — und committet erneut mit
    `git add -A && git commit -m "docs: PRD präzisiert"`.
 6. Öffnet im Browser einen Pull Request des Lab-Repos
    (<https://github.com/atra-consulting/coding-with-ai-lab/pulls>, auch
