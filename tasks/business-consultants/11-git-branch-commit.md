@@ -27,8 +27,8 @@ getippt wurde.
    `git checkout -b training-0926/max-mustermann`, wobei `MMJJ` für Monat
    und Jahr steht, dann `git status` zur Kontrolle.
 3. Legt `docs/prds/PRD-FIRMA-FAVORIT.md` an und kopiert das PRD aus
-   Aufgabe 03 hinein — wer keins hat, nimmt das Muster-PRD aus Aufgabe 03,
-   unter demselben Dateinamen.
+   Aufgabe 03 hinein — wer keins hat, kopiert das Muster-PRD aus Aufgabe 03:
+   `cp tasks/business-consultants/material/PRD-FIRMA-FAVORIT.md docs/prds/`.
 4. Schreibt die Datei fest: `git status` (neue Datei, „untracked"),
    `git add docs/prds/PRD-FIRMA-FAVORIT.md`, `git status` (jetzt „to be
    committed"), `git commit -m "docs: PRD Firmen als Favorit markieren"`,
