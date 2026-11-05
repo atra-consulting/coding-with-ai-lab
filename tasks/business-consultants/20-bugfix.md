@@ -26,7 +26,7 @@ unter dem Feld, kein Speichern negativer Werte.
 2. Schreibt drei Zeilen auf — **Schritte · Beobachtet · Erwartet** —, das
    ist euer Fehlerbericht.
 3. Startet Claude Code im Projekt-Root
-   (`claude --dangerously-skip-permissions`) und gebt den Prompt ein.
+   (`claude --permission-mode auto`) und gebt den Prompt ein.
 4. Prüft am Plan-Checkpoint, ob der Plan die Formular-Datei der Chance und
    das Backend-Schema (`validation.ts`) nennt und nichts enthält, das ihr
    nicht bestellt habt — sonst `Edit`: „Nur den Hinweis und die
