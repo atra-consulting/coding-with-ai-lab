@@ -4,7 +4,7 @@
 **Sozialform:** Paare
 **Werkzeug:** Claude Code
 **Voraussetzung:** Lab läuft unter `localhost:7200`
-**Ziel:** Aus der Support-Meldung aus Aufgabe 04 wird ein Fehlerbericht, der dem Agenten als Spezifikation genügt, und ein Fix, der sich Zeile für Zeile gegen diesen Fehlerbericht abhaken lässt.
+**Ziel:** Aus der Support-Meldung in den Rohnotizen von Aufgabe 01 wird ein Fehlerbericht, der dem Agenten als Spezifikation genügt, und ein Fix, der sich Zeile für Zeile gegen diesen Fehlerbericht abhaken lässt.
 
 Die Meldung lautet: „Ich kann keine Chance mehr speichern, der Knopf ist
 grau." Ihr stellt den Fehler nach, schreibt einen Fehlerbericht, den ein
@@ -26,7 +26,7 @@ unter dem Feld, kein Speichern negativer Werte.
 2. Schreibt drei Zeilen auf — **Schritte · Beobachtet · Erwartet** —, das
    ist euer Fehlerbericht.
 3. Startet Claude Code im Projekt-Root
-   (`claude --dangerously-skip-permissions`) und gebt den Prompt ein.
+   (`claude --permission-mode auto`) und gebt den Prompt ein.
 4. Prüft am Plan-Checkpoint, ob der Plan die Formular-Datei der Chance und
    das Backend-Schema (`validation.ts`) nennt und nichts enthält, das ihr
    nicht bestellt habt — sonst `Edit`: „Nur den Hinweis und die

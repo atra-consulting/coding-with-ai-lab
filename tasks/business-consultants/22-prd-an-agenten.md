@@ -3,20 +3,25 @@
 **Dauer:** 45 min
 **Sozialform:** Paare
 **Werkzeug:** Claude Code
-**Voraussetzung:** PRD aus Aufgabe 02 liegt seit Aufgabe 11 unter `docs/prds/PRD-FIRMA-FAVORIT.md`
+**Voraussetzung:** PRD aus Aufgabe 03 liegt seit Aufgabe 11 unter `docs/prds/PRD-FIRMA-FAVORIT.md`
 **Ziel:** Der Agent setzt euer eigenes PRD durch alle Schichten um, von der Datenbank bis zur Oberfläche, und ihr nehmt jede PRD-Anforderung einzeln mit Ja oder Nein ab.
 
 Der Bogen von Tag 1 schließt sich: Euer PRD „Firmen als Favorit markieren"
 liegt im Repo. Ihr prüft am Plan-Checkpoint, ob der Agent es verstanden hat,
 und am Ende, ob das Ergebnis dem PRD entspricht. Wer kein PRD im Repo hat,
-nimmt das Feature aus dem Prompt unten — es ist dasselbe.
+nimmt das Muster-PRD aus Aufgabe 03 oder das Feature aus dem Prompt unten —
+es ist dasselbe.
+
+Der Agent braucht für ein Feature durch alle Schichten Zeit. Die Wartezeit
+gehört zur Aufgabe: Während er arbeitet, schreibt ihr aus eurem PRD die
+Abnahme-Checkliste, mit der ihr am Ende prüft.
 
 <!-- include: warnung-rechte -->
 
 ## Schritte
 
 1. Startet Claude Code im Projekt-Root
-   (`claude --dangerously-skip-permissions`) und gebt den Prompt ein.
+   (`claude --permission-mode auto`) und gebt den Prompt ein.
 2. Legt am Plan-Checkpoint PRD und Plan nebeneinander und prüft, ob jede
    nummerierte Anforderung eine Aufgabe findet — quer durch Datenbank,
    Backend und Oberfläche —, ob etwas aus den „Nicht-Zielen" auftaucht und
@@ -24,11 +29,15 @@ nimmt das Feature aus dem Prompt unten — es ist dasselbe.
    der Nummer der Anforderung.
 3. Beantwortet die Fragen, die der Agent am Plan-Checkpoint stellt;
    durchwinken heißt, dass er sie selbst entscheidet.
-4. Lest am Review-Checkpoint nur, ob unter den Befunden etwas Fachliches
+4. Während der Agent umsetzt: Schreibt die Abnahme-Checkliste — je
+   nummerierter Anforderung aus dem PRD eine Zeile, die sich im Browser mit
+   Ja oder Nein prüfen lässt („Klick auf den leeren Stern füllt ihn").
+5. Lest am Review-Checkpoint nur, ob unter den Befunden etwas Fachliches
    ist („Filter vergisst Zustand beim Neuladen").
-5. Prüft im Browser: Stern klicken und Seite neu laden, Checkbox an, Firma
-   bearbeiten und speichern — bleibt der Favorit jedes Mal?
-6. Seht euch den Diff an — `git diff main --stat` zeigt Datenbank
+6. Prüft im Browser Zeile für Zeile eurer Checkliste: Stern klicken und
+   Seite neu laden, Checkbox an, Firma bearbeiten und speichern — bleibt der
+   Favorit jedes Mal?
+7. Seht euch den Diff an — `git diff main --stat` zeigt Datenbank
    (`schema.ts`, Migration), Backend (`firmen.ts`, Service, Validierung)
    und Frontend (Liste, Service, Model): drei Schichten für ein Sternchen,
    das ist der Preis eines „kleinen" Features durch den ganzen Stack.
@@ -38,8 +47,9 @@ nimmt das Feature aus dem Prompt unten — es ist dasselbe.
 1. Prompt geben — das PRD im Repo ist die Spezifikation.
 2. PRD und Plan nebeneinander: jede Anforderung drin?
 3. Offene Fragen des Agenten beantworten, nicht durchwinken.
-4. Stern im Browser testen: klicken, neu laden, filtern.
-5. `git diff main --stat`: drei Schichten für ein Sternchen.
+4. Während der Agent arbeitet: Abnahme-Checkliste aus dem PRD schreiben.
+5. Stern im Browser gegen die Checkliste testen: klicken, neu laden, filtern.
+6. `git diff main --stat`: drei Schichten für ein Sternchen.
 
 ## Prompt
 
@@ -63,8 +73,8 @@ steht eine Checkbox „Nur Favoriten anzeigen"; aktiv zeigt die Liste nur Favori
 
 - Firmenliste mit Stern je Zeile, Klick schaltet um und bleibt nach Neuladen.
 - Checkbox „Nur Favoriten anzeigen" filtert die Liste.
-- Jede Anforderung eures PRD lässt sich mit Ja oder Nein abnehmen — und
-  ihr habt es getan.
+- Jede Anforderung eures PRD steht als Zeile auf eurer Abnahme-Checkliste
+  und ist mit Ja oder Nein abgehakt.
 
 ## Troubleshooting
 
