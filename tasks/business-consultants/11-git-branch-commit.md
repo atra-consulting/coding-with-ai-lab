@@ -3,7 +3,7 @@
 **Dauer:** 25 min
 **Sozialform:** Paare
 **Werkzeug:** Claude Code, VS Code, Browser
-**Voraussetzung:** Lab geklont und gestartet, Starttest mit `claude` geschafft (Aufgabe 10); VS Code installiert
+**Voraussetzung:** Aufgabe 10 erledigt: Lab läuft, VS Code ist mit dem Projektordner offen, der Starttest mit `claude` hat geklappt
 **Ziel:** Claude legt euren Branch an und schreibt euer PRD als Commit fest — ihr seht in VS Code nach, was passiert ist: zwei eigene Commits auf eurem Branch, das PRD unter `docs/prds/`, die geänderte Zeile in der Vergleichsansicht.
 
 So arbeiten Business Consultants mit Git: Die Befehle tippt der Agent, ihr
@@ -20,8 +20,9 @@ PRD liegen auf dem Rechner, auf dem Claude gearbeitet hat.
 
 ## Schritte
 
-1. **VS Code öffnen.** Öffnet in VS Code den Ordner `coding-with-ai-lab`
-   (Datei › Ordner öffnen). Klickt links auf **Quellcodeverwaltung** (das
+1. **VS Code ansehen.** VS Code ist aus Aufgabe 10 mit dem Ordner
+   `coding-with-ai-lab` offen (sonst: Datei › Ordner öffnen). Klickt links auf
+   **Quellcodeverwaltung** (das
    Symbol mit den verzweigten Linien, `Ctrl+Shift+G`). Unten seht ihr den
    **Graph** mit den bisherigen Commits; unten links in der Statusleiste steht
    der aktuelle Branch: `main`.
@@ -50,7 +51,7 @@ PRD liegen auf dem Rechner, auf dem Claude gearbeitet hat.
 
 ## Folienschritte
 
-1. VS Code: Ordner öffnen, Quellcodeverwaltung ansehen.
+1. VS Code: Quellcodeverwaltung ansehen.
 2. Claude: Branch anlegen, PRD ablegen, committen — mitlesen.
 3. In VS Code nachsehen: Branch, Datei, Commit.
 4. Satz ändern lassen, in VS Code ansehen, committen lassen.
