@@ -29,6 +29,9 @@ Thumbs.db
 /*.png
 /*.jpg
 
+# Playwright MCP scratch output (page snapshots, console logs)
+.playwright-mcp/
+
 # Claude Code local settings
 .claude/settings.local.json
 
