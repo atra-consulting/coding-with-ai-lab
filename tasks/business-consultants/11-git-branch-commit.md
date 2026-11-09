@@ -1,89 +1,110 @@
-# 11 — Branch, Änderung, Commit
+# 11 — Branch und Commit mit Claude, nachsehen in VS Code
 
 **Dauer:** 25 min
-**Sozialform:** einzeln oder Paare
-**Werkzeug:** Terminal
-**Voraussetzung:** Lab geklont und gestartet (Aufgabe 10)
-**Ziel:** Ihr durchlauft den Arbeitszyklus einmal selbst — Branch anlegen, ändern, Unterschied ansehen, festschreiben: `git log --oneline -3` zeigt zwei eigene Commits auf eurem Branch, `git diff main --stat` genau eine geänderte Datei.
+**Sozialform:** Paare
+**Werkzeug:** Claude Code, VS Code, Browser
+**Voraussetzung:** Lab geklont und gestartet, Starttest mit `claude` geschafft (Aufgabe 10); VS Code installiert
+**Ziel:** Claude legt euren Branch an und schreibt euer PRD als Commit fest — ihr seht in VS Code nach, was passiert ist: zwei eigene Commits auf eurem Branch, das PRD unter `docs/prds/`, die geänderte Zeile in der Vergleichsansicht.
 
-An Tag 2 tut der Agent genau das — ihr sollt es einmal selbst getan haben,
-um zu wissen, was ein Diff und ein Commit sind.
+So arbeiten Business Consultants mit Git: Die Befehle tippt der Agent, ihr
+gebt den Auftrag und prüft das Ergebnis. Dafür müsst ihr wissen, wo ihr
+nachseht — welcher Branch, welcher Commit, welche Datei, welche Zeile.
 
 Die Änderung ist echt: Euer PRD aus Aufgabe 03 kommt als Datei ins Repo,
-dort, wo das Lab seine PRDs ablegt. Der Agent liest sie an Tag 2.
+dort, wo das Lab seine PRDs ablegt. Der Agent liest sie im Lab.
 
-Die Aufgabe geht gut in Paaren: Eine Person tippt, die andere liest die
-Schritte vor und sagt nach jedem Befehl, was `git status` jetzt zeigen
-müsste. Nach Schritt 4 tauscht ihr. Jede Person arbeitet dabei in ihrem
-eigenen Lab — der Branch und das PRD liegen auf dem Rechner, auf dem
-getippt wurde.
+Arbeitet zu zweit: Eine Person gibt Claude den Auftrag, die andere liest die
+Befehle mit, die Claude ausführt, und sagt, was sie in VS Code erwartet. Nach
+Schritt 3 tauscht ihr. Jede Person arbeitet in ihrem eigenen Lab — Branch und
+PRD liegen auf dem Rechner, auf dem Claude gearbeitet hat.
 
 ## Schritte
 
-1. Prüft im Projektordner `coding-with-ai-lab` (zweites Terminal) den
-   Stand mit `git status` — sauber, und auf welchem Branch? — und
-   `git log --oneline -5`.
-2. Legt euren Branch nach dem Namensschema des Lab-Repos an:
-   `git checkout -b training-0926/max-mustermann`, wobei `MMJJ` für Monat
-   und Jahr steht, dann `git status` zur Kontrolle.
-3. Legt `docs/prds/PRD-FIRMA-FAVORIT.md` an und kopiert das PRD aus
-   Aufgabe 03 hinein — wer keins hat, kopiert das Muster-PRD aus Aufgabe 03:
-   `cp tasks/business-consultants/material/PRD-FIRMA-FAVORIT.md docs/prds/`.
-4. Schreibt die Datei fest: `git status` (neue Datei, „untracked"),
-   `git add docs/prds/PRD-FIRMA-FAVORIT.md`, `git status` (jetzt „to be
-   committed"), `git commit -m "docs: PRD Firmen als Favorit markieren"`,
-   dann `git log --oneline -3` und `git show --stat`.
-5. Ändert einen Satz im PRD, seht euch mit `git diff` die Zeilen mit `−`
-   und `+` an — so sieht der Agent seine Änderung — und committet erneut mit
-   `git add -A && git commit -m "docs: PRD präzisiert"`.
-6. Öffnet im Browser einen Pull Request des Lab-Repos
-   (<https://github.com/atra-consulting/coding-with-ai-lab/pulls>, auch
-   geschlossene) und lest Beschreibung, Reiter „Files changed" und
-   Kommentare — pushen könnt ihr nicht, im Lab-Repo fehlen die Rechte, und
-   euer Branch bleibt lokal.
+1. **VS Code öffnen.** Öffnet in VS Code den Ordner `coding-with-ai-lab`
+   (Datei › Ordner öffnen). Klickt links auf **Quellcodeverwaltung** (das
+   Symbol mit den verzweigten Linien, `Ctrl+Shift+G`). Unten seht ihr den
+   **Graph** mit den bisherigen Commits; unten links in der Statusleiste steht
+   der aktuelle Branch: `main`.
+2. **Claude den Auftrag geben.** Startet im zweiten Terminal im Projektordner
+   `claude` und gebt den Prompt unten ein — mit eurem Namen und eurem PRD aus
+   Aufgabe 03. Wer kein PRD hat, nimmt den zweiten Prompt mit dem Muster-PRD.
+   Lest mit, welche Befehle Claude ausführt: Ihr kennt sie von der Folie.
+3. **In VS Code nachsehen.**
+   - Statusleiste: Auf welchem Branch seid ihr jetzt?
+   - Explorer: Wo liegt `PRD-FIRMA-FAVORIT.md`?
+   - Graph: Welcher Commit ist neu — mit welcher Nachricht, von wem, wann?
+   - Klickt auf den Commit und dann auf die Datei: Die Vergleichsansicht zeigt
+     grün, was neu ist.
+4. **Eine Änderung vor dem Commit ansehen.** Sagt Claude: „Ändere im PRD einen
+   Satz, damit er genauer wird. Committe noch nicht.“ In VS Code erscheint die
+   Datei unter **Änderungen** mit einem `M`. Ein Klick zeigt links den alten,
+   rechts den neuen Stand. Passt die Änderung, sagt Claude: „Committe das mit
+   der Nachricht ‚docs: PRD präzisiert‘.“ Im Graph steht jetzt ein zweiter
+   eigener Commit.
+5. **Auf GitHub vergleichen.** Öffnet
+   <https://github.com/atra-consulting/coding-with-ai-lab> im Browser: oben die
+   Liste der Commits, darunter der Ordner `docs/prds`. Wo ist euer Commit?
+   Wer mag, öffnet einen geschlossenen Pull Request
+   (<https://github.com/atra-consulting/coding-with-ai-lab/pulls?q=is%3Aclosed>)
+   und sieht sich den Reiter „Files changed“ an.
 
 ## Folienschritte
 
-1. `git status` und `git log --oneline -5` ansehen.
-2. Branch `training-<MMJJ>/<vornamenachname>` anlegen.
-3. PRD aus Aufgabe 03 unter `docs/prds/` ablegen.
-4. `git add`, `git commit`, `git log --oneline -3`.
-5. Einen Satz ändern, `git diff` lesen, erneut committen.
+1. VS Code: Ordner öffnen, Quellcodeverwaltung ansehen.
+2. Claude: Branch anlegen, PRD ablegen, committen — mitlesen.
+3. In VS Code nachsehen: Branch, Datei, Commit.
+4. Satz ändern lassen, in VS Code ansehen, committen lassen.
+5. Auf GitHub: Warum fehlt euer Commit?
+
+## Prompt
+
+```
+Ich möchte mein PRD in diesem Repository ablegen.
+
+1. Lege den Branch training-1126/<vorname-nachname> an.
+2. Speichere den Text unten als docs/prds/PRD-FIRMA-FAVORIT.md.
+3. Committe die Datei mit der Nachricht "docs: PRD Firmen als Favorit markieren".
+
+Sag mir vor jedem Schritt, welchen Git-Befehl du ausführst und warum.
+Pushe nicht.
+
+<hier euer PRD aus Aufgabe 03 einfügen>
+```
+
+Ohne eigenes PRD:
+
+```
+Lege den Branch training-1126/<vorname-nachname> an, kopiere
+tasks/business-consultants/material/PRD-FIRMA-FAVORIT.md nach docs/prds/
+und committe die Datei mit der Nachricht "docs: PRD Firmen als Favorit markieren".
+Sag mir vor jedem Schritt, welchen Git-Befehl du ausführst und warum.
+Pushe nicht.
+```
 
 ## Abnahme
 
-- Ihr könnt in einem Satz sagen, was `git status`, `git diff` und
-  `git log` jeweils zeigen.
-- Ihr wisst, warum der Agent an Tag 2 auf einem eigenen Branch arbeitet.
-
-## Zwei Fallen beim ersten Commit
-
-**Git kennt euch noch nicht.** Git schreibt in jeden Commit, wer ihn gemacht
-hat. Auf einem Rechner, auf dem noch nie committet wurde, fehlen Name und
-E-Mail — dann bricht der Commit mit `Please tell me who you are` ab. Das ist
-kein Fehler von euch, sondern eine Einrichtung, die einmal pro Rechner nötig
-ist:
-
-```
-git config --global user.name "Max Mustermann"
-git config --global user.email "max@example.com"
-```
-
-Danach den Commit wiederholen. `git config --global --list` zeigt, was
-eingetragen ist. Das Lab bleibt lokal; jede Adresse genügt.
-
-**Ein Editor geht auf.** Wer `git commit` ohne `-m "…"` eintippt, landet in
-einem Editor im Terminal, meist vim: links eine Spalte mit `~`, oben ein
-leerer Bereich für die Commit-Nachricht, die Maus tut nichts. Raus kommt ihr
-mit `Esc`, dann `:q!` und Enter — der Commit wird abgebrochen, kaputt ist
-nichts. Danach den Commit mit `-m "Nachricht"` wiederholen. Unter Windows
-erscheint statt vim manchmal nano (unten eine Zeile mit `^X Exit`): `Ctrl+X`
-beendet ihn.
+- [ ] In VS Code steht euer Branch in der Statusleiste, und der Graph zeigt
+      zwei eigene Commits darauf.
+- [ ] Ihr könnt zeigen, wo das PRD liegt und welche Zeile ihr im zweiten
+      Commit geändert habt.
+- [ ] Ihr könnt sagen, warum euer Commit auf GitHub fehlt.
+- [ ] Ihr erkennt die Befehle wieder, die Claude benutzt hat:
+      `git switch -c`, `git add`, `git commit`, `git status`, `git log`.
 
 ## Troubleshooting
 
 | Problem | Lösung |
 |---|---|
-| `Please tell me who you are` beim Commit | `git config --global user.name "Max Mustermann"` und `git config --global user.email "max@example.com"`, dann Commit wiederholen. |
-| Editor öffnet sich beim Commit (vim) | `Esc`, dann `:q!` — und `-m "…"` mitgeben. |
-| `nothing to commit` | `git add` vergessen, oder Datei liegt außerhalb des Projektordners: `git status` sagt es. |
+| Claude meldet `Please tell me who you are` | Git kennt euch auf diesem Rechner noch nicht. Sagt Claude: „Trag für Git meinen Namen ‹Name› und meine E-Mail ‹Adresse› ein und wiederhole den Commit.“ Das Lab bleibt lokal; jede Adresse genügt. |
+| VS Code zeigt keine Quellcodeverwaltung oder keinen Graph | Falscher Ordner: genau `coding-with-ai-lab` öffnen, nicht den Ordner darüber. Fehlt nur der Graph: VS Code aktualisieren und im Bereich Quellcodeverwaltung über `…` den Graph einblenden. |
+| Der neue Commit erscheint nicht | Im Bereich Quellcodeverwaltung auf das Aktualisieren-Symbol klicken. |
+| Claude will pushen oder einen Pull Request anlegen | Ablehnen. Im Lab-Repo fehlen euch die Rechte, und euer Branch bleibt lokal. |
+| Claude macht mehr als bestellt | Stoppen mit `Esc` und sagen: „Nur die drei Schritte, sonst nichts.“ |
+
+## Diskussion
+
+- Welchen Befehl von Claude hättet ihr ohne die Folie nicht verstanden?
+- Woran hättet ihr gemerkt, wenn Claude die Datei an die falsche Stelle
+  gelegt oder auf `main` committet hätte?
+- Was müsste passieren, damit euer Commit auf GitHub erscheint — und wer gibt
+  ihn dort frei?
