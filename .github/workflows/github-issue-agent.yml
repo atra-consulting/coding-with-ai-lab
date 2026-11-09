@@ -26,7 +26,7 @@
 #   CLAUDE_CODE_OAUTH_TOKEN - subscription OAuth token (create with `claude setup-token`).
 #                             Use INSTEAD of ANTHROPIC_API_KEY; do not set both.
 #   AGENT_API_TOKEN         - shared secret for the /api/cron/runs/<id>/complete callback.
-#   APP_BASE_URL            - base URL of the DEPLOYED app (e.g. https://your-app.vercel.app).
+#   APP_BASE_URL            - base URL of the DEPLOYED app (e.g. https://your-app.example.com).
 
 name: GitHub Issue Agent
 

@@ -6,7 +6,7 @@
  * (db.ts, middleware) reads process.env at load time.
  *
  * Rules:
- * - Missing .env file is fine (CI, Vercel, production all set real env vars).
+ * - Missing .env file is fine (CI and production set real env vars).
  * - Real environment variables ALWAYS win — an existing process.env key is never
  *   overwritten. So `AGENT_API_TOKEN=... npx tsx src/index.ts` and GitHub Actions
  *   secrets take precedence over the file.

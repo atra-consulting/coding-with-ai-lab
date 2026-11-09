@@ -10,7 +10,7 @@ const __dirname = dirname(__filename);
 
 // Resolve backend/data/ relative to this file (src/config/db.ts → backend/data/)
 // Using __dirname (not cwd) so the path is correct regardless of working directory
-// (e.g. when running from the repo root via api/index.ts on Vercel).
+// (e.g. when started from the repo root).
 const dataDir = join(__dirname, '..', '..', 'data');
 
 const tursoUrl = process.env['TURSO_DATABASE_URL'];
@@ -48,9 +48,9 @@ if (isPlaywrightWorker && !isTest && process.env['ALLOW_DEV_DB_TESTS'] !== '1') 
 const dbFileName = isTest ? 'crmdb.test.sqlite' : 'crmdb.sqlite';
 const dbPath = join(dataDir, dbFileName);
 
-// Only create the local data dir when actually using a local file — on
-// Vercel (TURSO_DATABASE_URL set, not testing) the filesystem is
-// read-only and mkdirSync at import time crashes the whole function.
+// Only create the local data dir when actually using a local file — with
+// Turso (TURSO_DATABASE_URL set, not testing) no local file is needed,
+// and on read-only filesystems mkdirSync at import time would crash.
 if (!tursoUrl || isTest) {
   mkdirSync(dataDir, { recursive: true });
 }

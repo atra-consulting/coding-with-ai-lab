@@ -5,8 +5,8 @@
 # decide to solve or reject each, implement them, and merge to main — autonomously.
 #
 # Triggers:
-#   - repository_dispatch (type: solve-agent-tasks): fired by the Vercel cron
-#     endpoint (GET /api/cron/agent-tasks) every 10 min when OPEN tasks exist.
+#   - repository_dispatch (type: solve-agent-tasks): fired by the cron
+#     endpoint (GET /api/cron/agent-tasks) when OPEN tasks exist.
 #     client_payload.cronRunId links this run back to a cron_run audit row; the
 #     final step calls POST /api/cron/runs/<id>/complete to close that row.
 #   - workflow_dispatch: manual run from the Actions UI (no cronRunId → no callback).
@@ -16,12 +16,12 @@
 #
 # Required repository secrets:
 #   AGENT_API_TOKEN         - shared secret for /api/agent-tasks/* AND /api/cron/runs/*/complete
-#   APP_BASE_URL            - base URL of the DEPLOYED app (e.g. https://your-app.vercel.app)
+#   APP_BASE_URL            - base URL of the DEPLOYED app (e.g. https://your-app.example.com)
 #   CLAUDE_CODE_OAUTH_TOKEN - subscription OAuth token Claude Code uses to authenticate.
 #                             Create it locally with `claude setup-token`. Use this INSTEAD
 #                             of ANTHROPIC_API_KEY (a pay-as-you-go API key); do not set both.
 #
-# The Vercel-side env vars (CRON_SECRET, GH_DISPATCH_TOKEN) live in Vercel, not here —
+# The app-side env vars (CRON_SECRET, GH_DISPATCH_TOKEN) live in the app's hosting env, not here —
 # see docs/specs/SPEC-API-TASKS.md "Environment Variables".
 
 name: Agent Task Runner
@@ -59,7 +59,7 @@ jobs:
     runs-on: ubuntu-latest
 
     # Exposed to step `if:` conditions. Empty unless this run came from the
-    # Vercel cron (repository_dispatch), which carries client_payload.cronRunId.
+    # cron endpoint (repository_dispatch), which carries client_payload.cronRunId.
     env:
       CRON_RUN_ID: ${{ github.event.client_payload.cronRunId }}
 

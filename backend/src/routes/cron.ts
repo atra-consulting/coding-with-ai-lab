@@ -32,7 +32,7 @@ const router = Router();
 // ─── requireCronAuth ──────────────────────────────────────────────────────────
 //
 // Accepts EITHER:
-//   • Path 1 (CRON):   Authorization: Bearer <CRON_SECRET> — for Vercel cron.
+//   • Path 1 (CRON):   Authorization: Bearer <CRON_SECRET> — for an external cron scheduler.
 //                      Uses timingSafeEqual (consistent with requireAgentToken).
 //                      Disabled when CRON_SECRET env var is not set.
 //   • Path 2 (MANUAL): Valid admin session (userId → findById → roles includes 'ADMIN').
@@ -79,8 +79,8 @@ async function requireCronAuth(req: Request, _res: Response, next: NextFunction)
 //
 // Create a RUNNING cron_run row, fire the GitHub repository_dispatch, and respond
 // 200 with the run. If the dispatch throws (e.g. GH_DISPATCH_TOKEN unset) the run
-// is marked FAILED. ALWAYS responds 200 — a 4xx/5xx would make Vercel cron
-// auto-retry, potentially creating duplicate RUNNING rows.
+// is marked FAILED. ALWAYS responds 200 — a 4xx/5xx could make a cron
+// scheduler auto-retry, potentially creating duplicate RUNNING rows.
 //
 async function createRunAndDispatch(
   job: string,
@@ -101,7 +101,7 @@ async function createRunAndDispatch(
 
 // ─── GET /api/cron/agent-tasks ────────────────────────────────────────────────
 //
-// Triggered by Vercel cron (every 10 min) or by an admin clicking "Run now".
+// Triggered by an external cron (CRON_SECRET) or by an admin clicking "Run now".
 // Drains the in-app agent_task queue (sources EMAIL/GITHUB_ISSUE/APP_LOG/...).
 //
 router.get(
@@ -134,7 +134,7 @@ router.get(
 // ─── GET /api/cron/github-issues ──────────────────────────────────────────────
 //
 // Triggered by an admin clicking "Jetzt ausführen" on the github-issue agent card
-// (manual only — there is no Vercel cron for this job). Fires the
+// (manual only — there is no scheduled cron for this job). Fires the
 // `solve-github-issues` workflow, which runs the AI agent (Claude Code) against ONE open GitHub
 // issue labelled "Refinement needed".
 //

@@ -179,13 +179,13 @@ Triggers and records scheduled/manual CI workflow dispatches. Backed by the `cro
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| GET | `/api/cron/agent-tasks` | requireCronAuth | Drain agent_task queue (Vercel cron or admin manual trigger) |
+| GET | `/api/cron/agent-tasks` | requireCronAuth | Drain agent_task queue (external cron or admin manual trigger) |
 | GET | `/api/cron/github-issues` | requireCronAuth | Trigger GitHub-issue agent (manual only) |
 | POST | `/api/cron/runs/:id/complete` | requireAgentToken | Called by GitHub Actions to record run result |
 | GET | `/api/cron/runs` | requireAuth + requireRole('ADMIN') | Paginated cron run history; filter by `job` |
 | GET | `/api/cron/jobs` | requireAuth + requireRole('ADMIN') | All configured jobs with their latest run |
 
-`requireCronAuth` (defined inline in `routes/cron.ts`) accepts either a `CRON_SECRET` bearer token (Vercel cron) or a valid admin session. It sets `req.cronTrigger` to `'CRON'` or `'MANUAL'` accordingly.
+`requireCronAuth` (defined inline in `routes/cron.ts`) accepts either a `CRON_SECRET` bearer token (external cron) or a valid admin session. It sets `req.cronTrigger` to `'CRON'` or `'MANUAL'` accordingly.
 
 ### Standard CRUD pattern
 
@@ -233,7 +233,7 @@ Sort fields are validated against a per-entity whitelist in `src/utils/paginatio
 - Login: `bcryptjs.compareSync()` compares submitted password to stored hash.
 - Session fixation protection: `req.session.regenerate()` on successful login.
 - Logout: `req.session.destroy()` + clear cookie.
-- `app.set('trust proxy', 1)` is set so that `cookie.secure` works correctly behind Vercel's edge proxy.
+- `app.set('trust proxy', 1)` is set so that `cookie.secure` works correctly behind a reverse proxy.
 
 ### Users
 

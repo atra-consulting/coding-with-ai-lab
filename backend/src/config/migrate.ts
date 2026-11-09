@@ -20,9 +20,8 @@ const AGILE_KI_DEFAULT_JSON =
 // place — there is no prior guarded-ALTER precedent here.)
 //
 // The try/catch swallowing "duplicate column" is a concurrent-cold-start
-// guard: on Vercel, multiple serverless instances can cold-start concurrently
-// against the same Turso DB (each has its own `initPromise`, not shared
-// cross-instance — see `api/index.ts`). Two instances can both pass the
+// guard: multiple app instances can start concurrently against the same
+// Turso DB. Two instances can both pass the
 // `table_info` check below and both attempt the ALTER; SQLite has no
 // `ADD COLUMN IF NOT EXISTS`, so the loser fails with "duplicate column
 // name". Swallow only that error — mirrors the `isUniqueConstraintError()`
@@ -305,7 +304,7 @@ export async function runMigrations(): Promise<void> {
   await ensureTicketAgentTaskIdColumn();
 
   // Idempotent data seed: agent tasks are inserted on every deployment via
-  // INSERT OR IGNORE so they are always present (Vercel/Turso included),
+  // INSERT OR IGNORE so they are always present (Turso included),
   // independent of the firma-empty guard in runDataMigration(). Existing rows
   // (e.g. DONE/REJECTED/IN_PROGRESS) are never overwritten.
   await seedAgentTasks();

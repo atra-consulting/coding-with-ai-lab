@@ -261,7 +261,7 @@ All errors use the app-wide handler:
 
 ## Cron Runner API
 
-Turns the agent-task queue into a scheduled, self-driving loop. A Vercel cron hits the dispatcher every 10 min; it fires a GitHub `repository_dispatch` that runs `.github/workflows/agent-task-runner.yml`, which drains every source and calls back to close the audit row. Base path: **`/api/cron`**.
+Turns the agent-task queue into a scheduled, self-driving loop. An external cron (or the admin "Run now" button) hits the dispatcher; it fires a GitHub `repository_dispatch` that runs `.github/workflows/agent-task-runner.yml`, which drains every source and calls back to close the audit row. Base path: **`/api/cron`**.
 
 Source of truth: `backend/src/routes/cron.ts`, `backend/src/services/cronService.ts`, `backend/src/config/cronJobs.ts`.
 
@@ -287,7 +287,7 @@ Source of truth: `backend/src/routes/cron.ts`, `backend/src/services/cronService
 
 ### Authentication
 
-- `GET /api/cron/agent-tasks` accepts **either** `Authorization: Bearer <CRON_SECRET>` (Vercel cron → trigger `CRON`) **or** an admin session (the "Run now" button → trigger `MANUAL`).
+- `GET /api/cron/agent-tasks` accepts **either** `Authorization: Bearer <CRON_SECRET>` (external cron → trigger `CRON`) **or** an admin session (the "Run now" button → trigger `MANUAL`).
 - `POST /api/cron/runs/:id/complete` uses the agent token (`AGENT_API_TOKEN`), same scheme as `/api/agent-tasks/*`.
 - `GET /api/cron/runs` and `GET /api/cron/jobs` use an admin session (`requireAuth` + `requireRole('ADMIN')`).
 
@@ -296,10 +296,10 @@ Single-flight + skip-when-idle, then dispatch:
 - A run already `RUNNING` (orphans older than 30 min are auto-expired first) → records a `SKIPPED` run.
 - No OPEN tasks across any source → records a `SKIPPED` run.
 - Otherwise creates a `RUNNING` run and fires `repository_dispatch` (`solve-agent-tasks`, `client_payload.cronRunId`). Dispatch failure → the run is marked `FAILED`.
-- **Always returns `200`** with the `cron_run` object — a 4xx/5xx would make Vercel cron auto-retry and create duplicate runs.
+- **Always returns `200`** with the `cron_run` object — a 4xx/5xx could make a cron scheduler auto-retry and create duplicate runs.
 
 ### GET `/api/cron/github-issues` — GitHub-issue agent dispatcher
-Same auth as `/agent-tasks` (admin session via the per-job "Jetzt ausführen" button, or `CRON_SECRET`). Manual-only — there is no Vercel cron for it.
+Same auth as `/agent-tasks` (admin session via the per-job "Jetzt ausführen" button, or `CRON_SECRET`). Manual-only — no scheduled cron for it.
 - A `solve-github-issues` run already `RUNNING` → records a `SKIPPED` run.
 - Otherwise creates a `RUNNING` run and fires `repository_dispatch` (`solve-github-issues`, `client_payload.cronRunId`) → the [`github-issue-agent.yml`](../../.github/workflows/github-issue-agent.yml) workflow. Dispatch failure → `FAILED`.
 - No work-queue pre-check (the issues live on GitHub): it always dispatches; the agent reports the outcome via the same `/runs/:id/complete` callback (`tasksSolved=1` implemented, `tasksRejected=1` input-needed, both `0` if no issue was open).
@@ -329,16 +329,16 @@ Each job renders as its own card in `/admin/cron` with a dedicated "Jetzt ausfü
 
 | Var | Where | Used by |
 |-----|-------|---------|
-| `AGENT_API_TOKEN` | Vercel **and** GitHub repo secret (same value) | agent-task API + cron callback auth |
-| `CRON_SECRET` | Vercel only | validates the Vercel cron `Authorization: Bearer` header |
-| `GH_DISPATCH_TOKEN` | Vercel only | the dispatcher's `repository_dispatch` call (fine-grained PAT: Contents R/W + Actions R/W) |
-| `GH_DISPATCH_REPO` | Vercel only (optional) | overrides the dispatch target; defaults to `atra-consulting/coding-with-ai-lab` |
+| `AGENT_API_TOKEN` | App env **and** GitHub repo secret (same value) | agent-task API + cron callback auth |
+| `CRON_SECRET` | App env only | validates an external cron's `Authorization: Bearer` header |
+| `GH_DISPATCH_TOKEN` | App env only | the dispatcher's `repository_dispatch` call (fine-grained PAT: Contents R/W + Actions R/W) |
+| `GH_DISPATCH_REPO` | App env only (optional) | overrides the dispatch target; defaults to `atra-consulting/coding-with-ai-lab` |
 | `APP_BASE_URL` | GitHub repo secret | runner → app base URL for the callback |
 | `ANTHROPIC_API_KEY` | GitHub repo secret | Claude CLI in the agent-task runner |
 | `CLAUDE_CODE_OAUTH_TOKEN` | GitHub repo secret | Claude CLI auth in the GitHub-issue agent (subscription token via `claude setup-token`; use **instead of** `ANTHROPIC_API_KEY`) |
 | `GH_PROJECT_TOKEN` | GitHub repo secret | **GitHub-issue agent only.** Classic PAT with scopes `repo`, `project`, `read:org`. Used by `gh` + `git` for issue/label/PR/push **and** moving the issue on Project board #7. The default `GITHUB_TOKEN` cannot write Projects v2. |
 
-All are read from `process.env`; never commit values. The Vercel cron is set to **once daily** (`0 2 * * *`) because Hobby plans reject sub-daily schedules at deploy time — bump it to `*/10 * * * *` only after upgrading to **Pro**. The admin "Run now" button (`/admin/cron`) triggers the same dispatch on demand on **any** plan, and is also the local-dev test path (Vercel crons don't fire locally).
+All are read from `process.env`; never commit values. No cron schedule is configured. The admin "Run now" button (`/admin/cron`) triggers the dispatch on demand, also locally.
 
 ---
 
