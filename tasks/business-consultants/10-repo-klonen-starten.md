@@ -81,7 +81,7 @@ Fünf Fragen beantwortet das Repository selbst — hier steht, wo:
 3. `./start.sh`, im Browser anmelden mit `admin / admin123`.
 4. Fünf Minuten durchklicken und eine Chance anlegen.
 5. VS Code: Repository lesen, drei Antworten notieren.
-6. Starttest: `claude` oder `copilot`, „Was macht dieses Projekt?“, beenden.
+6. Starttest: `claude` oder `copilot` — eine Frage, beenden.
 
 ## Abnahme
 
