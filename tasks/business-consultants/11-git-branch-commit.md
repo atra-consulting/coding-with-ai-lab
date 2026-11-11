@@ -15,10 +15,10 @@ welche Zeile.
 Die Änderung ist echt: Euer PRD aus Aufgabe 03 kommt als Datei ins Repo,
 dort, wo das Lab seine PRDs ablegt. Der Agent liest sie im Lab.
 
-Arbeitet zu zweit: Eine Person gibt dem Agenten den Auftrag, die andere liest
-die Befehle mit, die der Agent ausführt, und sagt, was sie in VS Code erwartet. Nach
-Schritt 3 tauscht ihr. Jede Person arbeitet in ihrem eigenen Lab — Branch und
-PRD liegen auf dem Rechner, auf dem der Agent gearbeitet hat.
+Arbeitet zu zweit, aber jede Person an ihrem eigenen Rechner — Branch und PRD
+braucht ihr beide für Aufgabe 22. Erst macht Person A die Schritte 2 bis 4,
+Person B liest die Befehle mit und sagt, was sie in VS Code erwartet. Dann
+macht B dieselben Schritte an ihrem Rechner, und A liest mit.
 
 ## Schritte
 

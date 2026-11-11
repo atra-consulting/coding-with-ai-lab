@@ -28,8 +28,8 @@ markieren“ nehmt ihr in Aufgabe 03 mit.
    die Entscheidungen mit Prompt 2 zurück. Was ihr nicht entscheiden könnt,
    bleibt als offene Frage stehen — mit dem Namen der Person aus den Notizen,
    die es entscheiden müsste.
-4. **Angreifen lassen.** Lasst die Stories mit Prompt 3 aus Sicht einer
-   Testerin prüfen. Schärft die Kriterien nach, die sich nicht mit Ja oder
+4. **Kritisch prüfen lassen.** Lasst die Stories mit Prompt 3 aus Sicht
+   einer Testerin prüfen: Was fehlt, was lässt sich nicht prüfen? Schärft die Kriterien nach, die sich nicht mit Ja oder
    Nein prüfen lassen.
 5. **Aufheben.** Speichert die Story „Firmen als Favorit markieren“ samt
    Kriterien in eurer Notizdatei — Aufgabe 03 macht daraus ein PRD.
@@ -39,7 +39,7 @@ markieren“ nehmt ihr in Aufgabe 03 mit.
 1. Epics und Stories mit Annahmen anfordern (Prompt 1).
 2. Annahmen lesen: Welche sind fachliche Entscheidungen?
 3. Drei davon selbst entscheiden und zurückschreiben (Prompt 2).
-4. Aus Testersicht angreifen lassen, Kriterien nachschärfen (Prompt 3).
+4. Aus Testersicht kritisch prüfen lassen, Kriterien nachschärfen (Prompt 3).
 
 ## Prompt
 

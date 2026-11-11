@@ -33,7 +33,7 @@ Assistent.
 
 ## Folienschritte
 
-1. Vorher entscheiden: Zählt eine Wiedervorlage? Zählen genau 90 Tage?
+1. Vorher entscheiden: Gilt eine Wiedervorlage als Kontakt? Gelten genau 90 Tage schon?
 2. Testfälle und Testdaten anfordern (Prompt 1).
 3. Erwartungswerte selbst nachzählen.
 4. Eine Entscheidung ändern, neu bestimmen lassen (Prompt 2).

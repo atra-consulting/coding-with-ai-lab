@@ -7,9 +7,9 @@
 **Ziel:** Aus einem Screenshot mit handschriftlicher Änderung wird ein Ticket im Ticket-Board: geprüfte User Story mit Akzeptanzkriterien, Status Definition, nichts verloren und nichts dazuerfunden.
 
 Ein Screenshot aus dem CRM, auf dem jemand von Hand eine Änderung eingezeichnet
-hat — so landen Anforderungen oft auf deinem Tisch. Du machst daraus ein Ticket,
+hat — so landen Anforderungen oft auf eurem Tisch. Ihr macht daraus ein Ticket,
 mit dem das Team arbeiten kann: Der Chat-Assistent liest das Bild und schreibt
-eine User Story, du prüfst sie gegen den Screenshot und legst das Ticket im
+eine User Story, ihr prüft sie gegen den Screenshot und legt das Ticket im
 Ticket-Board des Labs an.
 
 Das Ticket-Board kennt keine Anhänge. Deshalb muss alles, was im Bild steckt,
@@ -17,28 +17,28 @@ als Text ins Ticket — genau das ist die Übung.
 
 ## Schritte
 
-1. **Erst selbst hinsehen.** Öffne den Screenshot. Notiere in zwei, drei
+1. **Erst selbst hinsehen.** Öffnet den Screenshot. Notiert in zwei, drei
    Stichpunkten, was sich ändern soll und welcher Bildschirm des CRM betroffen
-   ist. Was kannst du nicht eindeutig lesen?
-2. **Den Assistenten lesen lassen.** Gib den Screenshot deinem Chat-Assistenten
-   und nutze den Prompt unten.
-3. **Gegen das Bild prüfen.** Vergleiche die Antwort mit dem Screenshot und mit
-   deinen Notizen: Steht jede handschriftliche Änderung in der Story? Hat der
+   ist. Was könnt ihr nicht eindeutig lesen?
+2. **Den Assistenten lesen lassen.** Gebt den Screenshot eurem Chat-Assistenten
+   und nutzt den Prompt unten.
+3. **Gegen das Bild prüfen.** Vergleicht die Antwort mit dem Screenshot und mit
+   euren Notizen: Steht jede handschriftliche Änderung in der Story? Hat der
    Assistent etwas dazuerfunden? Sind seine offenen Fragen berechtigt?
-   Beantworte sie oder lass sie bewusst als offene Frage im Ticket stehen.
-4. **Ticket anlegen.** Öffne <http://localhost:7200/admin/tickets>
-   (Login `admin` / `admin123`) und klicke **Neues Ticket**.
+   Beantwortet sie oder lasst sie bewusst als offene Frage im Ticket stehen.
+4. **Ticket anlegen.** Öffnet <http://localhost:7200/admin/tickets>
+   (Login `admin` / `admin123`) und klickt **Neues Ticket**.
    - **Typ:** `FEATURE` — oder `BUG`, wenn der Screenshot einen Fehler zeigt.
    - **Titel:** kurz und fachlich, aus Sicht des Nutzers.
    - **Beschreibung:** die geprüfte User Story mit Akzeptanzkriterien, offenen
      Fragen und einer Zeile zur Herkunft: „Vorlage: Screenshot
      ‹Dateiname› vom ‹Datum›".
-5. **Ticket prüfen.** Das Ticket steht in der Spalte **Definition**, Owner ist
-   der Mensch. Öffne es und lies es so, als hättest du den Screenshot nie
-   gesehen: Versteht man, was zu tun ist? Merk dir die Ticketnummer — Aufgabe
+5. **Ticket prüfen.** Das Ticket steht in der Spalte **Definition**, Owner
+   (zuständig) ist der Mensch. Öffnet es und lest es so, als hättet ihr den
+   Screenshot nie gesehen: Versteht man, was zu tun ist? Merkt euch die Ticketnummer — Aufgabe
    23 macht mit genau diesem Ticket weiter.
 
-**Gib das Ticket noch nicht an die KI ab** — kein „An KI übergeben", kein „Nach
+**Gebt das Ticket noch nicht an die KI ab** — kein „An KI übergeben", kein „Nach
 Bereit". Es bleibt in Definition; die nächsten Schritte im Prozess kommen in
 Aufgabe 23.
 
@@ -81,13 +81,13 @@ Halte dich an das, was im Bild steht. Keine zusätzlichen Features.
 | Problem | Lösung |
 |---|---|
 | Kein „Neues Ticket" auf dem Board | Anlegen dürfen nur Admins: ab- und als `admin` / `admin123` wieder anmelden. |
-| Der Assistent liest die Handschrift falsch | Nachfragen mit dem, was du siehst: „Im Kreis steht ‚…', nicht ‚…'." Oder den Ausschnitt größer zuschneiden und noch einmal geben. |
-| Die Story enthält Dinge, die nicht im Bild stehen | Streichen. Wenn sie dir sinnvoll erscheinen: als offene Frage ins Ticket, nicht als Anforderung. |
+| Der Assistent liest die Handschrift falsch | Nachfragen mit dem, was ihr seht: „Im Kreis steht ‚…', nicht ‚…'." Oder den Ausschnitt größer zuschneiden und noch einmal geben. |
+| Die Story enthält Dinge, die nicht im Bild stehen | Streichen. Wenn sie euch sinnvoll erscheinen: als offene Frage ins Ticket, nicht als Anforderung. |
 | Kein Bild-Upload im Chat-Assistenten | Freie Stufen begrenzen manchmal Uploads — zu zweit an einem Rechner weiterarbeiten, auf dem es geht. |
 
 ## Diskussion
 
-- Was hat der Assistent im Bild gesehen, das dir entgangen war — und umgekehrt?
+- Was hat der Assistent im Bild gesehen, das euch entgangen war — und umgekehrt?
 - Welche Information aus dem Screenshot ging auf dem Weg ins Ticket verloren?
 - Hätte ein Entwickler (oder ein Agent) mit dem Screenshot allein mehr oder
-  weniger verstanden als mit deinem Ticket?
+  weniger verstanden als mit eurem Ticket?
