@@ -17,7 +17,7 @@ Abhängigkeiten und dauert einige Minuten.
 
 - **Im Terminal** steht nach einigen Minuten `Backend is ready!`, darunter
   `=== CRM Application Started ===` und `>>>  http://localhost:7200  <<<`;
-  zuletzt meldet Angular, dass die Oberfläche unter `localhost:7200` bereitsteht.
+  zuletzt meldet die Oberfläche (Angular), dass sie unter `localhost:7200` bereitsteht.
 - **Das Terminal bleibt belegt:** Es erscheint keine neue Eingabezeile, weil
   die Anwendung darin läuft. Das ist richtig so — für den Agenten öffnet ihr
   später ein zweites Terminalfenster. `Ctrl+C` im ersten Fenster beendet die
@@ -32,7 +32,8 @@ Abhängigkeiten und dauert einige Minuten.
 
 1. Öffnet ein Terminal — macOS: Programm „Terminal", Windows: „Git Bash"
    (nicht PowerShell, damit `./start.sh` funktioniert) — und werdet mit
-   `pwd`, `ls` und `cd ~` warm.
+   `pwd` (wo bin ich?), `ls` (was liegt hier?) und `cd ~` (zurück in den
+   Benutzerordner) warm.
 2. Prüft die Werkzeuge mit `node --version` (mindestens 20.19, mit
    GitHub Copilot CLI mindestens 22, empfohlen 24 LTS) und `git --version`;
    fehlt eine Versionsnummer, hilft `docs/SETUP.md` im Lab-Repo oder
@@ -52,10 +53,10 @@ Abhängigkeiten und dauert einige Minuten.
 
    **Mit GitHub Copilot CLI:** Beim ersten Start fragt Copilot, ob ihr dem
    Ordner vertraut — wählt „Yes, and remember this folder for future
-   sessions“. Will Copilot später einen Befehl ausführen oder eine Datei
-   ändern, fragt es nach. Wählt „Yes, and approve … for the rest of the
-   running session“, dann fragt es für dieses Werkzeug bis zum Ende der
-   Sitzung nicht mehr. Unter Windows startet ihr `copilot` in PowerShell
+   sessions“. Will Copilot einen Befehl ausführen, fragt es nach. Befehle, die
+   nur lesen (zum Beispiel `ls`, `cat`, `grep`), dürft ihr mit „Yes, and
+   approve … for the rest of the running session“ für die ganze Sitzung
+   erlauben. Alles, was etwas ändert, lest ihr und erlaubt es einzeln. Unter Windows startet ihr `copilot` in PowerShell
    (ab Version 6, Befehl `pwsh`), nicht in Git Bash — so verlangt es GitHub.
 
 6. **Den Agenten fragen.** Gebt den Prompt unten ein. Der Agent liest die
@@ -75,7 +76,7 @@ Abhängigkeiten und dauert einige Minuten.
 2. Klonen, `cd coding-with-ai-lab`, `./start.sh`.
 3. Anmelden, durchklicken, eine Chance anlegen.
 4. Zweites Fenster: `claude` oder `copilot`.
-5. Agent fragen: Was ist das, wo steht was?
+5. Prompt aus der Aufgabe: sechs Fragen an den Agenten.
 6. Zwei Antworten in VS Code nachprüfen.
 
 ## Prompt
@@ -88,8 +89,8 @@ oder den Ordner, in dem du sie gefunden hast:
 1. Was ist das für eine Anwendung, und wie startet man sie?
 2. Was bedeuten Firma, Chance und Phase fachlich?
 3. Wo liegt die Oberfläche, wo die Logik, wo die Daten?
-4. Wie viele Feature-Ordner hat das Frontend?
-5. Welche Route liefert die Firmenliste?
+4. Mit welchen Benutzern kann man sich anmelden, und was dürfen sie?
+5. Welche Phasen kann eine Chance durchlaufen?
 6. Was passiert fachlich, wenn eine Firma gelöscht wird?
 
 Ändere nichts, lies nur.
@@ -111,8 +112,8 @@ oder den Ordner, in dem du sie gefunden hast:
 | Was ist das, wie starte ich es? | `README.MD`, auf Deutsch `docs/welcome_DE.MD` |
 | Was bedeuten Firma, Chance, Phase fachlich? | `docs/specs/DOMAIN.md` |
 | Wo liegt Oberfläche, wo Logik, wo Daten? | Ordner `frontend/src/app/features` · Ordner `backend/src/routes` · Datei `backend/src/db/schema/schema.ts` |
-| Wie viele Feature-Ordner hat das Frontend? | Ordner `frontend/src/app/features` — im Explorer aufklappen und zählen |
-| Welche Route liefert die Firmenliste? | `backend/src/routes/firmen.ts`, mit `Ctrl+F` nach `router.get` suchen |
+| Mit welchen Benutzern kann man sich anmelden? | `README.MD`, Abschnitt mit der Tabelle der Benutzer (admin, user, demo) |
+| Welche Phasen hat eine Chance? | `docs/specs/DOMAIN.md`, Tabelle „ChancePhase“ (NEU bis GEWONNEN/VERLOREN) |
 | Was passiert beim Löschen einer Firma? | `docs/specs/DOMAIN.md` |
 
 ## Troubleshooting
@@ -120,7 +121,7 @@ oder den Ordner, in dem du sie gefunden hast:
 | Problem | Lösung |
 |---|---|
 | `destination path 'coding-with-ai-lab' already exists` | Ihr habt schon in der Vorbereitung geklont — kein Fehler. `cd coding-with-ai-lab`, dann `./start.sh`. |
-| `port 7070 is already in use` | `./end.sh` ausführen, dann `./start.sh` erneut. |
+| `port 7070 is already in use` (7070 ist der Server im Hintergrund) | `./end.sh` ausführen, dann `./start.sh` erneut. |
 | `Node.js 20.19 or later is required` | Node.js nach `docs/SETUP.md` aktualisieren — empfohlen ist 24 LTS —, Terminal neu öffnen. |
 | Klonen bricht ab (Proxy, Zertifikat) | Firmennetz filtert — Hotspot vom Handy für den Klon, danach mit der IT klären. |
 | `./start.sh: Permission denied` | `bash start.sh` |

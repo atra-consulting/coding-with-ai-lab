@@ -6,7 +6,7 @@
 **Voraussetzung:** Ticket aus Aufgabe 13 steht in Definition; Lab läuft unter `localhost:7200`
 **Ziel:** Euer Ticket aus Aufgabe 13 läuft einmal durch alle Spalten des Ticket-Boards — Definition, Bereit, In Arbeit, gegebenenfalls Wartet, Erledigt —, und ihr entscheidet an jeder Übergabe, ob es weitergeht.
 
-Das Ticket aus Aufgabe 13 liegt in **Definition**, Owner Mensch. Jetzt geht es
+Das Ticket aus Aufgabe 13 liegt in **Definition**, Owner (zuständig) Mensch. Jetzt geht es
 den Weg, den im Team jedes Ticket geht: Ihr verfeinert es, gebt es an die KI,
 die KI arbeitet es ab — und fragt nach, wenn etwas fehlt. Am Ende prüft ihr das
 Ergebnis im Browser gegen eure Akzeptanzkriterien.
@@ -60,8 +60,10 @@ http://localhost:7070; von localhost brauchst du kein Token.
 2. Ist etwas unklar, rate nicht: Stelle genau eine Frage mit
    POST /api/tickets/<Nr>/ask und hör dann auf.
 3. Sonst zeig mir einen kurzen Plan und warte auf mein Okay.
-4. Setze nur um, was im Ticket steht. Nur Frontend.
-5. Schließe mit POST /api/tickets/<Nr>/done und einem Kommentar, was du
+4. Lege von main aus den Branch feature/ticket-<Nr> an. Setze nur um, was im
+   Ticket steht. Nur Frontend.
+5. Committe die Änderung auf dem Branch.
+6. Schließe mit POST /api/tickets/<Nr>/done und einem Kommentar, was du
    geändert hast und wie man es prüft.
 
 Erstelle keinen PR und pushe nicht — du hast bei diesem Repo nicht die Rechte
@@ -83,7 +85,7 @@ dazu. Schreibe keine Tests, die den Browser automatisieren.
 | Problem | Lösung |
 |---|---|
 | „Nach Bereit" fehlt oder ist ausgegraut | Sichtbar nur als Admin und nur, solange das Ticket in Definition steht; gehört es schon der KI, ist der Knopf ausgegraut. |
-| Der Agent bekommt `401` von der API | `backend/.env` fehlt oder ist alt: `cp backend/.env.example backend/.env`, dann `./start.sh` neu. |
+| Der Agent bekommt `401` von der API | Handheben — oder dem Agenten sagen: „Die Ticket-API antwortet mit 401. Prüfe die Einstellungen in backend/.env nach docs/SETUP.md." |
 | Der Agent bekommt `409` beim Start | Das Ticket steht nicht in Bereit oder gehört nicht der KI — auf dem Board prüfen, ggf. „Nach Bereit" klicken. |
 | Das Ticket bleibt in In Arbeit hängen | Der Agent hat `done` vergessen: „Schließe Ticket ‹Nr› mit POST /done und einem Kommentar." |
 | Der Agent baut mehr als verlangt | Am Plan stoppen: „Nur das, was im Ticket steht." |

@@ -31,8 +31,9 @@ wenn ihr anders entscheidet, aber lasst keine Frage offen.
 4. Prüft am Plan-Checkpoint, ob drinsteht, wie mit leerer
    Wahrscheinlichkeit umgegangen wird — gibt der Plan eure Entscheidung
    anders wieder, schreibt dem Agenten, was gilt.
-5. Achtet beim Review auf einen Test für „Chance ohne
-   Wahrscheinlichkeit" — das ist der Fall, der später kaputtgeht.
+5. Fragt nach dem Gegenlesen (Review): „Gibt es einen automatischen Test
+   für eine Chance ohne Wahrscheinlichkeit?" — das ist der Fall, der später
+   kaputtgeht.
 6. Macht die Rechenprobe im Browser und seht euch den Diff an:
    `git diff main --stat`.
 
@@ -66,26 +67,28 @@ stehen: die Summe aus Wert × Wahrscheinlichkeit ÷ 100 über alle geladenen Cha
 Chancen ohne Wahrscheinlichkeit oder ohne Wert zählen mit 0. Chancen in den Phasen
 GEWONNEN und VERLOREN werden bei der gewichteten Summe nicht mitgezählt, beim Gesamtwert
 bleibt alles wie bisher. Formatierung wie der Gesamtwert (Euro, deutsches Zahlenformat).
-Nur Frontend, keine Backend-Änderung.
+Nur Frontend, keine Backend-Änderung. Schreibe einen kleinen automatischen Test
+für eine Chance ohne Wahrscheinlichkeit.
 ```
 
 ## Abnahme
 
-- Chancen-Liste zeigt „Gesamtwert: …" und „Gewichtet: …" nebeneinander.
-- Rechenprobe mit den Seed-Daten: Nehmt drei Chancen aus der Liste, rechnet
-  Wert × Wahrscheinlichkeit ÷ 100 von Hand — passt die Summe zur Anzeige?
-  Legt eine Chance mit Wert 10.000 und Wahrscheinlichkeit 50 an: die
-  gewichtete Summe steigt um 5.000.
-- `git diff main --stat`: Änderungen nur unter
-  `frontend/src/app/features/chance/chance-list/`.
+- [ ] Die Chancen-Liste zeigt „Gesamtwert: …" und „Gewichtet: …" nebeneinander.
+- [ ] Rechenprobe: Notiert die Zahl bei „Gewichtet". Legt eine Chance mit Wert
+      10.000 und Wahrscheinlichkeit 50 in Phase NEU an — steigt die Zahl um
+      genau 5.000? Setzt die Chance dann auf GEWONNEN — fällt die Zahl wieder
+      um 5.000?
+- [ ] `git diff main --stat`: Änderungen nur unter
+      `frontend/src/app/features/chance/chance-list/`.
 
 ## Troubleshooting
 
 | Problem | Lösung |
 |---|---|
 | Summe passt nicht zur Handrechnung | Filter aktiv? Die Summe geht über die geladenen Chancen. Sonst zurück an den Agenten mit eurer Rechnung als Beispiel. |
-| Agent will einen Backend-Endpoint bauen | Am Plan-Checkpoint antworten: „Nur Frontend, die Daten sind schon da." |
-| „Gewichtet" bricht in die nächste Zeile | Kosmetik — an den Agenten: „Beide Werte in einer Zeile, Abstand wie im Bootstrap-Standard." |
+| Agent will den Server (Backend) ändern | Am Plan-Checkpoint antworten: „Nur Frontend, die Daten sind schon da." |
+| „Gewichtet" bricht in die nächste Zeile | Kosmetik — an den Agenten: „Beide Werte in einer Zeile." |
+| Der Agent findet die Reviewer nicht | Sagt: „Prüfe die Änderung selbst wie ein Reviewer und zeig mir die Befunde.“ |
 
 ## Diskussion
 

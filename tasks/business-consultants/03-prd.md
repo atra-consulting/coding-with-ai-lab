@@ -30,17 +30,19 @@ später mit dem Wahrscheinlichen.
    Entscheidet mindestens drei und lasst das PRD mit Prompt 2 überarbeiten.
    Achtet darauf, dass jede Entscheidung als nummerierte Anforderung oder als
    Nicht-Ziel im PRD steht.
-4. **Aus Entwicklersicht angreifen.** Lasst das PRD mit Prompt 3 prüfen.
+4. **Aus Entwicklersicht prüfen lassen.** Lasst das PRD mit Prompt 3
+   prüfen: Welche Fragen bleiben einem Entwickler offen?
    Nehmt die Einwände auf, die eine echte Lücke zeigen.
-5. **Speichern.** Legt das fertige PRD als Text in eure Notizdatei, mit dem
-   Dateinamen `PRD-FIRMA-FAVORIT.md` — in Aufgabe 11 kopiert ihr es ins Repo.
+5. **Aufheben.** Kopiert das fertige PRD in eure Notizdatei. In Aufgabe 11
+   fügt ihr den Text in den Prompt ein, und der Agent legt daraus die Datei
+   `docs/prds/PRD-FIRMA-FAVORIT.md` im Projekt an.
 
 ## Folienschritte
 
 1. Muster-PRD quer lesen: Aufbau und Länge.
 2. PRD aus eurer Story schreiben lassen (Prompt 1).
 3. Drei offene Fragen entscheiden, überarbeiten lassen (Prompt 2).
-4. Aus Entwicklersicht angreifen lassen (Prompt 3).
+4. Aus Entwicklersicht prüfen lassen (Prompt 3).
 
 ## Prompt
 

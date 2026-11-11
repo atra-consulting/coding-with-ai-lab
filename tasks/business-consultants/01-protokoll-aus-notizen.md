@@ -17,6 +17,10 @@ das ihr in Aufgabe 10 startet. Sie begleiten euch weiter: Aufgabe 02 macht
 daraus User Stories, Aufgabe 03 ein PRD, und die Support-Meldung zum grauen
 Speichern-Knopf kommt in Aufgabe 20 als Bugfix zurück.
 
+**Eure Notizdatei:** Legt euch jetzt ein leeres Dokument an — in Word, in
+den Notizen oder einem Texteditor. Dort sammelt ihr den Tag über Prompts und
+geprüfte Ergebnisse. Das PRD daraus braucht ihr nach der Mittagspause.
+
 ## Schritte
 
 1. **Notizen lesen.** Öffnet die Rohnotizen und lest sie einmal ganz. Was ist
@@ -84,7 +88,7 @@ Stelle, an der du etwas ergänzt hast, das nicht wörtlich in den Notizen steht.
 |---|---|
 | Der Assistent findet nach Prompt 2 „keine Ergänzungen“ | Konkret nachfragen: „Woher kommt das Datum in der Aufgabentabelle?“ Eine Frage nach der Quelle wirkt besser als eine Bitte um Sorgfalt. |
 | Das Protokoll ist viel länger als die Notizen | Nachschärfen: „Höchstens eine halbe Seite, keine Einleitung, keine Zusammenfassung am Ende.“ |
-| Kein Datei-Upload im Chat | Die Notizen aus dem Codeblock kopieren und direkt unter den Prompt einfügen. |
+| Kein Datei-Upload im Chat | Den Text der Rohnotizen (grau hinterlegter Kasten) kopieren und direkt unter den Prompt einfügen. |
 | Ihr findet im eigenen Protokoll nichts | Gut — dann Schritt 5 mit dem vorbereiteten Protokoll. |
 
 ## Diskussion
