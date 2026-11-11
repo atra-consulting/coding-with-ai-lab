@@ -2,8 +2,8 @@
 
 **Dauer:** 35 min
 **Sozialform:** einzeln
-**Werkzeug:** Terminal, Browser, VS Code, Claude Code
-**Ziel:** Ihr lest das Repository wie eine Akte: Das CRM-Lab läuft unter `localhost:7200`, eine Chance ist angelegt, ihr könnt zu drei Fragen sagen, in welcher Datei die Antwort steht — und Claude Code startet im Projektordner.
+**Werkzeug:** Terminal, Browser, VS Code, Claude Code oder GitHub Copilot CLI
+**Ziel:** Ihr lest das Repository wie eine Akte: Das CRM-Lab läuft unter `localhost:7200`, eine Chance ist angelegt, ihr könnt zu drei Fragen sagen, in welcher Datei die Antwort steht — und euer Agent (Claude Code oder GitHub Copilot CLI) startet im Projektordner.
 
 Die drei Handgriffe, die jeder Entwickler täglich macht — Terminal öffnen,
 Repository klonen, Anwendung starten —, dazu das Lesen des Repositorys:
@@ -26,7 +26,7 @@ Fünf Fragen beantwortet das Repository selbst — hier steht, wo:
   `=== CRM Application Started ===` und `>>>  http://localhost:7200  <<<`;
   zuletzt meldet Angular, dass die Oberfläche unter `localhost:7200` bereitsteht.
 - **Das Terminal bleibt belegt:** Es erscheint keine neue Eingabezeile, weil
-  die Anwendung darin läuft. Das ist richtig so — für Claude Code öffnet ihr
+  die Anwendung darin läuft. Das ist richtig so — für den Agenten öffnet ihr
   später ein zweites Terminalfenster. `Ctrl+C` im ersten Fenster beendet die
   Anwendung.
 - **Im Browser** zeigt <http://localhost:7200> die Anmeldeseite „CRM System";
@@ -40,8 +40,8 @@ Fünf Fragen beantwortet das Repository selbst — hier steht, wo:
 1. Öffnet ein Terminal — macOS: Programm „Terminal", Windows: „Git Bash"
    (nicht PowerShell, damit `./start.sh` funktioniert) — und werdet mit
    `pwd`, `ls` und `cd ~` warm.
-2. Prüft die Werkzeuge mit `node --version` (mindestens 20.19, empfohlen
-   24 LTS) und `git --version`; fehlt eine Versionsnummer, hilft
+2. Prüft die Werkzeuge mit `node --version` (mindestens 20.19, mit
+   GitHub Copilot CLI mindestens 22, empfohlen 24 LTS) und `git --version`; fehlt eine Versionsnummer, hilft
    `docs/SETUP.md` im Lab-Repo oder Handheben.
 3. Klont und startet das Lab:
    `git clone https://github.com/atra-consulting/coding-with-ai-lab.git`,
@@ -59,10 +59,20 @@ Fünf Fragen beantwortet das Repository selbst — hier steht, wo:
    welche Route liefert die Firmenliste (`backend/src/routes/firmen.ts`,
    mit `Ctrl+F` nach `router.get` suchen), und was passiert fachlich, wenn
    eine Firma gelöscht wird (`DOMAIN.md`)?
-7. **Starttest für Claude Code.** Öffnet ein zweites Terminalfenster (das
+7. **Starttest für den Agenten.** Öffnet ein zweites Terminalfenster (das
    erste zeigt die Anwendung), geht mit `cd coding-with-ai-lab` ins Projekt
-   und startet `claude`. Fragt „Was macht dieses Projekt?“ und beendet mit
-   `/exit`. Mehr nicht — mit Claude gearbeitet wird ab Aufgabe 11.
+   und startet euren Agenten: `claude` für Claude Code, `copilot` für
+   GitHub Copilot CLI. Fragt „Was macht dieses Projekt?“ und beendet —
+   Claude Code mit `/exit`, Copilot mit zweimal `Ctrl+C`. Mehr nicht —
+   mit dem Agenten gearbeitet wird ab Aufgabe 11.
+
+   **Mit GitHub Copilot CLI:** Beim ersten Start fragt Copilot, ob ihr dem
+   Ordner vertraut — wählt „Yes, and remember this folder for future
+   sessions“. Will Copilot später einen Befehl ausführen oder eine Datei
+   ändern, fragt es nach. Wählt „Yes, and approve … for the rest of the
+   running session“, dann fragt es für dieses Werkzeug bis zum Ende der
+   Sitzung nicht mehr. Unter Windows startet ihr `copilot` in PowerShell
+   (ab Version 6, Befehl `pwsh`), nicht in Git Bash — so verlangt es GitHub.
 
 ## Folienschritte
 
@@ -71,7 +81,7 @@ Fünf Fragen beantwortet das Repository selbst — hier steht, wo:
 3. `./start.sh`, im Browser anmelden mit `admin / admin123`.
 4. Fünf Minuten durchklicken und eine Chance anlegen.
 5. VS Code: Repository lesen, drei Antworten notieren.
-6. Starttest: `claude`, „Was macht dieses Projekt?“, `/exit`.
+6. Starttest: `claude` oder `copilot`, „Was macht dieses Projekt?“, beenden.
 
 ## Abnahme
 
@@ -79,8 +89,8 @@ Fünf Fragen beantwortet das Repository selbst — hier steht, wo:
 - Zu den drei Fragen aus Schritt 6 könnt ihr die Datei nennen, in der die
   Antwort steht.
 - VS Code ist mit dem Ordner `coding-with-ai-lab` offen.
-- `claude` startet im Projektordner ohne erneute Anmeldung und beantwortet
-  eure Frage.
+- `claude` bzw. `copilot` startet im Projektordner ohne erneute Anmeldung
+  und beantwortet eure Frage.
 
 ## Troubleshooting
 
@@ -93,4 +103,6 @@ Fünf Fragen beantwortet das Repository selbst — hier steht, wo:
 | `./start.sh: Permission denied` | `bash start.sh` |
 | Windows: `start.sh` nicht gefunden | Ihr seid in PowerShell — Git Bash öffnen. |
 | VS Code zeigt den Ordner nicht | Genau `coding-with-ai-lab` öffnen, nicht den Ordner darüber. |
-| `claude` startet nicht oder will sich anmelden und es klappt nicht | Sofort Handheben — bis zum Lab ist Zeit für eine Lösung oder ein Paar. |
+| `claude` oder `copilot` startet nicht oder will sich anmelden und es klappt nicht | Sofort Handheben — bis zum Lab ist Zeit für eine Lösung oder ein Paar. |
+| Windows: `copilot` startet in Git Bash nicht oder verhält sich seltsam | PowerShell 6 oder neuer öffnen (`pwsh`), dort `cd coding-with-ai-lab` und `copilot`. Die Anwendung läuft weiter in Git Bash. |
+| Copilot meldet, dass ihr keinen Zugang habt | Euer GitHub-Konto braucht ein Copilot-Abo, und eure Firma darf die Copilot CLI nicht gesperrt haben — Handheben. |

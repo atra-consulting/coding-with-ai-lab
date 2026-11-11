@@ -2,7 +2,7 @@
 
 **Dauer:** 45 min
 **Sozialform:** Paare
-**Werkzeug:** Claude Code
+**Werkzeug:** Claude Code oder GitHub Copilot CLI
 **Voraussetzung:** PRD aus Aufgabe 03 liegt seit Aufgabe 11 unter `docs/prds/PRD-FIRMA-FAVORIT.md`
 **Ziel:** Der Agent setzt euer eigenes PRD durch alle Schichten um, von der Datenbank bis zur Oberfläche, und ihr nehmt jede PRD-Anforderung einzeln mit Ja oder Nein ab.
 
@@ -20,19 +20,20 @@ Abnahme-Checkliste, mit der ihr am Ende prüft.
 
 ## Schritte
 
-1. Startet Claude Code im Projekt-Root
-   (`claude --permission-mode auto`) und gebt den Prompt ein.
+1. Startet den Agenten im zweiten Terminalfenster im Projektordner —
+   `claude` für Claude Code, `copilot` für GitHub Copilot CLI — und gebt
+   den Prompt ein.
 2. Legt am Plan-Checkpoint PRD und Plan nebeneinander und prüft, ob jede
    nummerierte Anforderung eine Aufgabe findet — quer durch Datenbank,
    Backend und Oberfläche —, ob etwas aus den „Nicht-Zielen" auftaucht und
-   ob der Agent eine offene Frage still entschieden hat — dann `Edit`, mit
-   der Nummer der Anforderung.
+   ob der Agent eine offene Frage still entschieden hat — dann schreibt ihm,
+   was fehlt, mit der Nummer der Anforderung. Passt alles: „Okay, setz um."
 3. Beantwortet die Fragen, die der Agent am Plan-Checkpoint stellt;
    durchwinken heißt, dass er sie selbst entscheidet.
 4. Während der Agent umsetzt: Schreibt die Abnahme-Checkliste — je
    nummerierter Anforderung aus dem PRD eine Zeile, die sich im Browser mit
    Ja oder Nein prüfen lässt („Klick auf den leeren Stern füllt ihn").
-5. Lest am Review-Checkpoint nur, ob unter den Befunden etwas Fachliches
+5. Lest beim Review nur, ob unter den Befunden etwas Fachliches
    ist („Filter vergisst Zustand beim Neuladen").
 6. Prüft im Browser Zeile für Zeile eurer Checkliste: Stern klicken und
    Seite neu laden, Checkbox an, Firma bearbeiten und speichern — bleibt der
@@ -54,14 +55,24 @@ Abnahme-Checkliste, mit der ihr am Ende prüft.
 ## Prompt
 
 ```
-/plan-and-do Firmen als Favorit markieren. Erstelle keinen PR und pushe nicht — du hast bei
-diesem Repo nicht die Rechte dazu. Schreibe keine Tests, die den Browser automatisieren,
-und mache nur eine statt drei Review-Runden. Aktualisiere am Schluss auch nicht die Specs
-und Subagents.
+Firmen als Favorit markieren. So gehst du vor:
+
+1. Lege den Branch feature/firma-favorit an, ausgehend von dem Branch, auf dem
+   ich gerade bin — dort liegt das PRD.
+2. Zeig mir einen kurzen Plan: welche Dateien du änderst und warum.
+   Wo das PRD eine Frage offen lässt, frag mich, statt selbst zu
+   entscheiden. Warte dann auf mein Okay.
+3. Setze nur um, was ich bestellt habe.
+4. Lass die Änderung einmal von den passenden Reviewer-Subagents prüfen
+   (fe-reviewer, be-reviewer, db-reviewer). Zeig mir ihre Befunde und behebe sie.
+5. Committe die Änderung auf dem Branch.
+
+Erstelle keinen PR und pushe nicht — du hast bei diesem Repo nicht die Rechte
+dazu. Schreibe keine Tests, die den Browser automatisieren. Ändere keine Specs
+und keine Subagents.
 
 Die Spezifikation steht in docs/prds/PRD-FIRMA-FAVORIT.md — lies sie und behandle sie als
-PRD; erzeuge keine eigene PRD, sondern gehe direkt zum Plan. Wo das PRD eine Frage offen
-lässt, frag mich am Plan-Checkpoint, statt selbst zu entscheiden.
+PRD. Ändere das PRD nicht und schreibe keine eigene.
 
 Kurzfassung für den Fall, dass die Datei fehlt: In der Firmenliste steht vor jedem Namen
 ein Stern-Icon. Klick markiert die Firma als Favorit (voller Stern) oder hebt es auf
@@ -82,8 +93,8 @@ steht eine Checkbox „Nur Favoriten anzeigen"; aktiv zeigt die Liste nur Favori
 |---|---|
 | Stern verschwindet nach Neuladen | Speichern schlägt fehl — Network-Tab (`F12`): welcher Status kommt auf den PATCH-Aufruf? Meldung an den Agenten weitergeben. |
 | „no such column: istFavorit" | Datenbankschema alt: `./end.sh`, dann `./start.sh --reset-db` — die Datenbank wird neu aufgebaut. |
-| Agent schreibt trotzdem eine eigene PRD | Am PRD-Checkpoint `Quit`, Prompt wiederholen mit „Überspring die PRD, die Datei ist die PRD". |
-| Zeit läuft davon | Nach der Umsetzung `Continue` bis zum Ende; Browser-Test reicht, der Diff kann warten. |
+| Agent will das PRD umschreiben oder eine eigene PRD anlegen | Stoppen mit `Esc` und sagen: „Das PRD bleibt, wie es ist — nur umsetzen." |
+| Zeit läuft davon | Dem Agenten sagen: „Lass das Review weg und committe." Browser-Test reicht, der Diff kann warten. |
 
 ## Diskussion
 

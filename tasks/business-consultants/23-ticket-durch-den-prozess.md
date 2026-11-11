@@ -2,7 +2,7 @@
 
 **Dauer:** 40 min
 **Sozialform:** Paare
-**Werkzeug:** Ticket-Board, Claude Code
+**Werkzeug:** Ticket-Board, Claude Code oder GitHub Copilot CLI
 **Voraussetzung:** Ticket aus Aufgabe 13 steht in Definition; Lab läuft unter `localhost:7200`
 **Ziel:** Euer Ticket aus Aufgabe 13 läuft einmal durch alle Spalten des Ticket-Boards — Definition, Bereit, In Arbeit, gegebenenfalls Wartet, Erledigt —, und ihr entscheidet an jeder Übergabe, ob es weitergeht.
 
@@ -27,15 +27,15 @@ Screenshot [`bilder/13-chancen-neu-blau.png`](bilder/13-chancen-neu-blau.png).
    Spalte **Bereit**, Owner ist jetzt die KI. (Daneben gibt es „An KI
    übergeben" — das lässt das Ticket in Definition, damit die KI es nur
    verfeinert. Das brauchen wir heute nicht.)
-3. **Die KI nimmt es (In Arbeit).** Startet Claude Code im Projekt-Root
-   (`claude --permission-mode auto`) und gebt den Prompt unten ein — mit eurer
+3. **Die KI nimmt es (In Arbeit).** Startet den Agenten im Projektordner —
+   `claude` oder `copilot` — und gebt den Prompt unten ein — mit eurer
    Ticketnummer. Lasst das Board offen: Das Ticket springt auf **In Arbeit**.
-4. **Plan prüfen.** Claude zeigt euch einen Plan, bevor es baut. Steht darin
+4. **Plan prüfen.** Der Agent zeigt euch einen Plan, bevor er baut. Steht darin
    genau das, was im Ticket steht — und nicht mehr? Wenn nicht, korrigiert es.
 5. **Rückfrage beantworten (Wartet).** Stellt die KI eine Frage, springt das
    Ticket auf **Wartet**, Owner Mensch. Öffnet es, beantwortet die Frage als
    Kommentar und klickt **Zurück an KI** — das Ticket geht nach **Bereit**.
-   Sagt Claude dann: „Ticket ‹Nr› ist beantwortet, mach weiter."
+   Sagt dem Agenten dann: „Ticket ‹Nr› ist beantwortet, mach weiter."
 6. **Abnehmen (Erledigt).** Ist das Ticket in **Erledigt**, lest den letzten
    Kommentar der KI. Dann ladet <http://localhost:7200/chancen> neu und geht
    eure Akzeptanzkriterien einzeln durch. Zum Schluss: `git diff main --stat`.
@@ -44,7 +44,7 @@ Screenshot [`bilder/13-chancen-neu-blau.png`](bilder/13-chancen-neu-blau.png).
 
 1. Ticket verfeinern: Antworten als Kommentar.
 2. „Nach Bereit" — die KI ist dran.
-3. Claude Code holt das Ticket, ihr prüft den Plan.
+3. Der Agent holt das Ticket, ihr prüft den Plan.
 4. Rückfrage? Beantworten und „Zurück an KI".
 5. Erledigt: im Browser gegen die Akzeptanzkriterien abnehmen.
 
@@ -83,11 +83,11 @@ dazu. Schreibe keine Tests, die den Browser automatisieren.
 | Problem | Lösung |
 |---|---|
 | „Nach Bereit" fehlt oder ist ausgegraut | Sichtbar nur als Admin und nur, solange das Ticket in Definition steht; gehört es schon der KI, ist der Knopf ausgegraut. |
-| Claude bekommt `401` von der API | `backend/.env` fehlt oder ist alt: `cp backend/.env.example backend/.env`, dann `./start.sh` neu. |
-| Claude bekommt `409` beim Start | Das Ticket steht nicht in Bereit oder gehört nicht der KI — auf dem Board prüfen, ggf. „Nach Bereit" klicken. |
-| Das Ticket bleibt in In Arbeit hängen | Claude hat `done` vergessen: „Schließe Ticket ‹Nr› mit POST /done und einem Kommentar." |
-| Claude baut mehr als verlangt | Am Plan stoppen: „Nur das, was im Ticket steht." |
-| NEU ist nach dem Neuladen nicht blau | Frontend neu gebaut? Im Terminal mit `./start.sh` nach Fehlern sehen, sonst zurück an Claude mit dem, was ihr seht. |
+| Der Agent bekommt `401` von der API | `backend/.env` fehlt oder ist alt: `cp backend/.env.example backend/.env`, dann `./start.sh` neu. |
+| Der Agent bekommt `409` beim Start | Das Ticket steht nicht in Bereit oder gehört nicht der KI — auf dem Board prüfen, ggf. „Nach Bereit" klicken. |
+| Das Ticket bleibt in In Arbeit hängen | Der Agent hat `done` vergessen: „Schließe Ticket ‹Nr› mit POST /done und einem Kommentar." |
+| Der Agent baut mehr als verlangt | Am Plan stoppen: „Nur das, was im Ticket steht." |
+| NEU ist nach dem Neuladen nicht blau | Frontend neu gebaut? Im Terminal mit `./start.sh` nach Fehlern sehen, sonst zurück an den Agenten mit dem, was ihr seht. |
 
 ## Diskussion
 

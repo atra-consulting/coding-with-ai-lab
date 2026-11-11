@@ -1,10 +1,10 @@
-# 11 — Branch und Commit mit Claude, nachsehen in VS Code
+# 11 — Branch und Commit mit dem Agenten, nachsehen in VS Code
 
 **Dauer:** 25 min
 **Sozialform:** Paare
-**Werkzeug:** Claude Code, VS Code, Browser
-**Voraussetzung:** Aufgabe 10 erledigt: Lab läuft, VS Code ist mit dem Projektordner offen, der Starttest mit `claude` hat geklappt
-**Ziel:** Claude legt euren Branch an und schreibt euer PRD als Commit fest — ihr seht in VS Code nach, was passiert ist: zwei eigene Commits auf eurem Branch, das PRD unter `docs/prds/`, die geänderte Zeile in der Vergleichsansicht.
+**Werkzeug:** Claude Code oder GitHub Copilot CLI, VS Code, Browser
+**Voraussetzung:** Aufgabe 10 erledigt: Lab läuft, VS Code ist mit dem Projektordner offen, der Starttest mit `claude` oder `copilot` hat geklappt
+**Ziel:** Der Agent legt euren Branch an und schreibt euer PRD als Commit fest — ihr seht in VS Code nach, was passiert ist: zwei eigene Commits auf eurem Branch, das PRD unter `docs/prds/`, die geänderte Zeile in der Vergleichsansicht.
 
 So arbeiten Business Consultants mit Git: Die Befehle tippt der Agent, ihr
 gebt den Auftrag und prüft das Ergebnis. Dafür müsst ihr wissen, wo ihr
@@ -13,10 +13,10 @@ nachseht — welcher Branch, welcher Commit, welche Datei, welche Zeile.
 Die Änderung ist echt: Euer PRD aus Aufgabe 03 kommt als Datei ins Repo,
 dort, wo das Lab seine PRDs ablegt. Der Agent liest sie im Lab.
 
-Arbeitet zu zweit: Eine Person gibt Claude den Auftrag, die andere liest die
-Befehle mit, die Claude ausführt, und sagt, was sie in VS Code erwartet. Nach
+Arbeitet zu zweit: Eine Person gibt dem Agenten den Auftrag, die andere liest
+die Befehle mit, die der Agent ausführt, und sagt, was sie in VS Code erwartet. Nach
 Schritt 3 tauscht ihr. Jede Person arbeitet in ihrem eigenen Lab — Branch und
-PRD liegen auf dem Rechner, auf dem Claude gearbeitet hat.
+PRD liegen auf dem Rechner, auf dem der Agent gearbeitet hat.
 
 ## Schritte
 
@@ -26,20 +26,22 @@ PRD liegen auf dem Rechner, auf dem Claude gearbeitet hat.
    Symbol mit den verzweigten Linien, `Ctrl+Shift+G`). Unten seht ihr den
    **Graph** mit den bisherigen Commits; unten links in der Statusleiste steht
    der aktuelle Branch: `main`.
-2. **Claude den Auftrag geben.** Startet im zweiten Terminal im Projektordner
-   `claude` und gebt den Prompt unten ein — mit eurem Namen und eurem PRD aus
+2. **Dem Agenten den Auftrag geben.** Startet im zweiten Terminal im
+   Projektordner `claude` oder `copilot` und gebt den Prompt unten ein — mit eurem Namen und eurem PRD aus
    Aufgabe 03. Wer kein PRD hat, nimmt den zweiten Prompt mit dem Muster-PRD.
-   Lest mit, welche Befehle Claude ausführt: Ihr kennt sie von der Folie.
+   Lest mit, welche Befehle der Agent ausführt: Ihr kennt sie von der Folie.
+   Copilot fragt vor jedem neuen Befehl nach — lest ihn, bevor ihr
+   zustimmt.
 3. **In VS Code nachsehen.**
    - Statusleiste: Auf welchem Branch seid ihr jetzt?
    - Explorer: Wo liegt `PRD-FIRMA-FAVORIT.md`?
    - Graph: Welcher Commit ist neu — mit welcher Nachricht, von wem, wann?
    - Klickt auf den Commit und dann auf die Datei: Die Vergleichsansicht zeigt
      grün, was neu ist.
-4. **Eine Änderung vor dem Commit ansehen.** Sagt Claude: „Ändere im PRD einen
+4. **Eine Änderung vor dem Commit ansehen.** Sagt dem Agenten: „Ändere im PRD einen
    Satz, damit er genauer wird. Committe noch nicht.“ In VS Code erscheint die
    Datei unter **Änderungen** mit einem `M`. Ein Klick zeigt links den alten,
-   rechts den neuen Stand. Passt die Änderung, sagt Claude: „Committe das mit
+   rechts den neuen Stand. Passt die Änderung, sagt dem Agenten: „Committe das mit
    der Nachricht ‚docs: PRD präzisiert‘.“ Im Graph steht jetzt ein zweiter
    eigener Commit.
 5. **Auf GitHub vergleichen.** Öffnet
@@ -52,7 +54,7 @@ PRD liegen auf dem Rechner, auf dem Claude gearbeitet hat.
 ## Folienschritte
 
 1. VS Code: Quellcodeverwaltung ansehen.
-2. Claude: Branch anlegen, PRD ablegen, committen — mitlesen.
+2. Agent: Branch anlegen, PRD ablegen, committen — mitlesen.
 3. In VS Code nachsehen: Branch, Datei, Commit.
 4. Satz ändern lassen, in VS Code ansehen, committen lassen.
 5. Auf GitHub: Warum fehlt euer Commit?
@@ -89,23 +91,23 @@ Pushe nicht.
 - [ ] Ihr könnt zeigen, wo das PRD liegt und welche Zeile ihr im zweiten
       Commit geändert habt.
 - [ ] Ihr könnt sagen, warum euer Commit auf GitHub fehlt.
-- [ ] Ihr erkennt die Befehle wieder, die Claude benutzt hat:
+- [ ] Ihr erkennt die Befehle wieder, die der Agent benutzt hat:
       `git switch -c`, `git add`, `git commit`, `git status`, `git log`.
 
 ## Troubleshooting
 
 | Problem | Lösung |
 |---|---|
-| Claude meldet `Please tell me who you are` | Git kennt euch auf diesem Rechner noch nicht. Sagt Claude: „Trag für Git meinen Namen ‹Name› und meine E-Mail ‹Adresse› ein und wiederhole den Commit.“ Das Lab bleibt lokal; jede Adresse genügt. |
+| Der Agent meldet `Please tell me who you are` | Git kennt euch auf diesem Rechner noch nicht. Sagt dem Agenten: „Trag für Git meinen Namen ‹Name› und meine E-Mail ‹Adresse› ein und wiederhole den Commit.“ Das Lab bleibt lokal; jede Adresse genügt. |
 | VS Code zeigt keine Quellcodeverwaltung oder keinen Graph | Falscher Ordner: genau `coding-with-ai-lab` öffnen, nicht den Ordner darüber. Fehlt nur der Graph: VS Code aktualisieren und im Bereich Quellcodeverwaltung über `…` den Graph einblenden. |
 | Der neue Commit erscheint nicht | Im Bereich Quellcodeverwaltung auf das Aktualisieren-Symbol klicken. |
-| Claude will pushen oder einen Pull Request anlegen | Ablehnen. Im Lab-Repo fehlen euch die Rechte, und euer Branch bleibt lokal. |
-| Claude macht mehr als bestellt | Stoppen mit `Esc` und sagen: „Nur die drei Schritte, sonst nichts.“ |
+| Der Agent will pushen oder einen Pull Request anlegen | Ablehnen. Im Lab-Repo fehlen euch die Rechte, und euer Branch bleibt lokal. |
+| Der Agent macht mehr als bestellt | Stoppen mit `Esc` und sagen: „Nur die drei Schritte, sonst nichts.“ |
 
 ## Diskussion
 
-- Welchen Befehl von Claude hättet ihr ohne die Folie nicht verstanden?
-- Woran hättet ihr gemerkt, wenn Claude die Datei an die falsche Stelle
+- Welchen Befehl des Agenten hättet ihr ohne die Folie nicht verstanden?
+- Woran hättet ihr gemerkt, wenn der Agent die Datei an die falsche Stelle
   gelegt oder auf `main` committet hätte?
 - Was müsste passieren, damit euer Commit auf GitHub erscheint — und wer gibt
   ihn dort frei?

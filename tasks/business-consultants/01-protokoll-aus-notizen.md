@@ -2,7 +2,7 @@
 
 **Dauer:** 20 min
 **Sozialform:** einzeln
-**Werkzeug:** Chat-Assistent (Claude, ChatGPT oder Gemini)
+**Werkzeug:** Chat-Assistent (Claude, ChatGPT, Gemini oder Microsoft 365 Copilot)
 **Voraussetzung:** Rohnotizen [`material/vertriebsrunde-rohnotizen.md`](material/vertriebsrunde-rohnotizen.md)
 **Ziel:** Aus Rohnotizen wird ein Protokoll, das jemand versteht, der nicht dabei war — und jede Zeile darin geht auf eine Notiz zurück.
 
