@@ -2,7 +2,7 @@
 
 **Dauer:** 25 min
 **Sozialform:** einzeln
-**Werkzeug:** Chat-Assistent (Claude, ChatGPT oder Gemini)
+**Werkzeug:** Chat-Assistent (Claude, ChatGPT, Gemini oder Microsoft 365 Copilot)
 **Voraussetzung:** Story „Firmen als Favorit markieren“ aus Aufgabe 02; zum Vergleich das Muster-PRD [`material/PRD-FIRMA-FAVORIT.md`](material/PRD-FIRMA-FAVORIT.md)
 **Ziel:** Aus der Story entsteht ein PRD von einer Seite — nummerierte Anforderungen, Nicht-Ziele, offene Fragen —, das ein Entwickler oder ein Agent umsetzen kann, ohne zu raten.
 

@@ -2,7 +2,7 @@
 
 **Dauer:** 20 min
 **Sozialform:** einzeln oder Paare
-**Werkzeug:** Chat-Assistent (Claude, ChatGPT oder Gemini)
+**Werkzeug:** Chat-Assistent (Claude, ChatGPT, Gemini oder Microsoft 365 Copilot)
 **Voraussetzung:** Rohnotizen [`material/vertriebsrunde-rohnotizen.md`](material/vertriebsrunde-rohnotizen.md), Punkt 4 „Kontaktpflege“
 **Ziel:** Aus einer Fachfrage entstehen Testfälle und ein Testdatensatz mit Erwartungswerten — und ihr habt die Erwartungswerte selbst nachgezählt.
 

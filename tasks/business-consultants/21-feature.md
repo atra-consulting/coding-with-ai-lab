@@ -2,7 +2,7 @@
 
 **Dauer:** 35 min
 **Sozialform:** Paare
-**Werkzeug:** Claude Code
+**Werkzeug:** Claude Code oder GitHub Copilot CLI
 **Voraussetzung:** Lab läuft unter `localhost:7200`
 **Ziel:** Neben dem Gesamtwert der Chancen-Liste steht der gewichtete Wert — Wert mal Wahrscheinlichkeit —, und die Zahl hält eurer Handrechnung stand. Davor stehen drei Entscheidungen, die ihr vor dem Prompt trefft.
 
@@ -25,12 +25,13 @@ wenn ihr anders entscheidet, aber lasst keine Frage offen.
    Antworten auf.
 2. Passt den Prompt an eure Entscheidungen an, wenn sie von den
    vorgegebenen abweichen.
-3. Startet Claude Code im Projekt-Root
-   (`claude --permission-mode auto`) und gebt den Prompt ein.
+3. Startet den Agenten im zweiten Terminalfenster im Projektordner —
+   `claude` für Claude Code, `copilot` für GitHub Copilot CLI — und gebt
+   den Prompt ein.
 4. Prüft am Plan-Checkpoint, ob drinsteht, wie mit leerer
    Wahrscheinlichkeit umgegangen wird — gibt der Plan eure Entscheidung
-   anders wieder, dann `Edit`.
-5. Achtet am Review-Checkpoint auf einen Test für „Chance ohne
+   anders wieder, schreibt dem Agenten, was gilt.
+5. Achtet beim Review auf einen Test für „Chance ohne
    Wahrscheinlichkeit" — das ist der Fall, der später kaputtgeht.
 6. Macht die Rechenprobe im Browser und seht euch den Diff an:
    `git diff main --stat`.
@@ -38,17 +39,27 @@ wenn ihr anders entscheidet, aber lasst keine Frage offen.
 ## Folienschritte
 
 1. Die drei Fragen entscheiden und notieren.
-2. Prompt anpassen und in `/plan-and-do` geben.
+2. Prompt anpassen und dem Agenten geben.
 3. Plan und Review lesen: eure Entscheidungen drin?
 4. Rechenprobe im Browser, dann `git diff main --stat`.
 
 ## Prompt
 
 ```
-/plan-and-do Gewichteter Pipeline-Wert in der Chancen-Liste. Erstelle keinen PR und pushe
-nicht — du hast bei diesem Repo nicht die Rechte dazu. Schreibe keine Tests, die den Browser
-automatisieren, und mache nur eine statt drei Review-Runden. Aktualisiere am Schluss auch
-nicht die Specs und Subagents. Überspring die PRD und schreibe direkt einen Plan.
+Gewichteter Pipeline-Wert in der Chancen-Liste. So gehst du vor:
+
+1. Lege von main aus den Branch feature/gewichteter-wert an.
+2. Zeig mir einen kurzen Plan: welche Dateien du änderst und warum.
+   Nenne darin auch, wie du mit leerer Wahrscheinlichkeit umgehst.
+   Warte dann auf mein Okay.
+3. Setze nur um, was ich bestellt habe.
+4. Lass die Änderung einmal von den passenden Reviewer-Subagents prüfen
+   (fe-reviewer, be-reviewer, db-reviewer). Zeig mir ihre Befunde und behebe sie.
+5. Committe die Änderung auf dem Branch.
+
+Erstelle keinen PR und pushe nicht — du hast bei diesem Repo nicht die Rechte
+dazu. Schreibe keine Tests, die den Browser automatisieren. Ändere keine Specs
+und keine Subagents.
 
 Über der Chancen-Liste steht heute „Gesamtwert: …". Rechts daneben soll „Gewichtet: …"
 stehen: die Summe aus Wert × Wahrscheinlichkeit ÷ 100 über alle geladenen Chancen.
@@ -73,12 +84,12 @@ Nur Frontend, keine Backend-Änderung.
 | Problem | Lösung |
 |---|---|
 | Summe passt nicht zur Handrechnung | Filter aktiv? Die Summe geht über die geladenen Chancen. Sonst zurück an den Agenten mit eurer Rechnung als Beispiel. |
-| Agent will einen Backend-Endpoint bauen | Am Plan-Checkpoint `Edit`: „Nur Frontend, die Daten sind schon da." |
+| Agent will einen Backend-Endpoint bauen | Am Plan-Checkpoint antworten: „Nur Frontend, die Daten sind schon da." |
 | „Gewichtet" bricht in die nächste Zeile | Kosmetik — an den Agenten: „Beide Werte in einer Zeile, Abstand wie im Bootstrap-Standard." |
 
 ## Diskussion
 
 - Welche eurer drei Entscheidungen hätte der Agent anders getroffen, wenn
   ihr sie ihm überlassen hättet? (Probiert es: Prompt ohne die Sätze zu
-  Wahrscheinlichkeit und Phasen, Plan lesen, dann `Quit`.)
+  Wahrscheinlichkeit und Phasen, Plan lesen, dann mit `Esc` abbrechen.)
 - Gehört die gewichtete Summe eigentlich ins Frontend oder ins Backend?

@@ -2,7 +2,7 @@
 
 **Dauer:** 25 min
 **Sozialform:** einzeln
-**Werkzeug:** Chat-Assistent mit Bild-Upload, Ticket-Board
+**Werkzeug:** Chat-Assistent mit Bild-Upload (Claude, ChatGPT, Gemini oder Microsoft 365 Copilot), Ticket-Board
 **Voraussetzung:** Lab läuft unter `localhost:7200`; Screenshot [`bilder/13-chancen-neu-blau.png`](bilder/13-chancen-neu-blau.png) oder ein eigener vom Trainer
 **Ziel:** Aus einem Screenshot mit handschriftlicher Änderung wird ein Ticket im Ticket-Board: geprüfte User Story mit Akzeptanzkriterien, Status Definition, nichts verloren und nichts dazuerfunden.
 

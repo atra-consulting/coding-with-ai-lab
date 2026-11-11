@@ -2,7 +2,7 @@
 
 **Dauer:** 25 min
 **Sozialform:** einzeln
-**Werkzeug:** Chat-Assistent (Claude, ChatGPT oder Gemini)
+**Werkzeug:** Chat-Assistent (Claude, ChatGPT, Gemini oder Microsoft 365 Copilot)
 **Voraussetzung:** Rohnotizen [`material/vertriebsrunde-rohnotizen.md`](material/vertriebsrunde-rohnotizen.md), am besten im selben Gespräch wie Aufgabe 01
 **Ziel:** Aus denselben Notizen entstehen zwei bis drei Epics, je Epic User Stories mit prüfbaren Akzeptanzkriterien — und jede Annahme ist entweder von euch entschieden oder als offene Frage markiert.
 

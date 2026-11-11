@@ -2,7 +2,7 @@
 
 **Dauer:** 30 min
 **Sozialform:** Paare
-**Werkzeug:** Claude Code
+**Werkzeug:** Claude Code oder GitHub Copilot CLI
 **Voraussetzung:** Lab läuft unter `localhost:7200`
 **Ziel:** Aus der Support-Meldung in den Rohnotizen von Aufgabe 01 wird ein Fehlerbericht, der dem Agenten als Spezifikation genügt, und ein Fix, der sich Zeile für Zeile gegen diesen Fehlerbericht abhaken lässt.
 
@@ -25,13 +25,14 @@ unter dem Feld, kein Speichern negativer Werte.
    ausfüllen, ins Feld **Wert** `-100` eintragen.
 2. Schreibt drei Zeilen auf — **Schritte · Beobachtet · Erwartet** —, das
    ist euer Fehlerbericht.
-3. Startet Claude Code im Projekt-Root
-   (`claude --permission-mode auto`) und gebt den Prompt ein.
+3. Startet den Agenten im zweiten Terminalfenster im Projektordner —
+   `claude` für Claude Code, `copilot` für GitHub Copilot CLI — und gebt
+   den Prompt ein.
 4. Prüft am Plan-Checkpoint, ob der Plan die Formular-Datei der Chance und
    das Backend-Schema (`validation.ts`) nennt und nichts enthält, das ihr
-   nicht bestellt habt — sonst `Edit`: „Nur den Hinweis und die
-   Validierung, sonst nichts."
-5. Lest am Review-Checkpoint, was der Reviewer bemängelt — ihr müsst es
+   nicht bestellt habt. Passt er, schreibt „Okay, setz um." — sonst:
+   „Nur den Hinweis und die Validierung, sonst nichts."
+5. Lest nach dem Review, was der Reviewer bemängelt — ihr müsst es
    nicht verstehen, ihr müsst sehen, ob der Agent es behoben hat.
 6. Prüft das Ergebnis im Browser und danach den Diff:
    `git diff main --stat`.
@@ -40,17 +41,26 @@ unter dem Feld, kein Speichern negativer Werte.
 
 1. Fehler nachstellen: Wert `-100`, Speichern bleibt grau.
 2. Fehlerbericht schreiben — Schritte · Beobachtet · Erwartet.
-3. Claude Code starten, Prompt vom Blatt geben.
+3. Agent starten (`claude` oder `copilot`), Prompt vom Blatt geben.
 4. Plan lesen: nur Formular und Validierung?
 5. Im Browser prüfen, dann `git diff main --stat`.
 
 ## Prompt
 
 ```
-/plan-and-do Bugfix im Chancen-Formular. Erstelle keinen PR und pushe nicht — du hast bei
-diesem Repo nicht die Rechte dazu. Schreibe keine Tests, die den Browser automatisieren,
-und mache nur eine statt drei Review-Runden. Aktualisiere am Schluss auch nicht die Specs
-und Subagents. Überspring die PRD und schreibe direkt einen Plan.
+Bugfix im Chancen-Formular. So gehst du vor:
+
+1. Lege von main aus den Branch bugfix/chance-wert an.
+2. Zeig mir einen kurzen Plan: welche Dateien du änderst und warum.
+   Warte dann auf mein Okay.
+3. Setze nur um, was ich bestellt habe.
+4. Lass die Änderung einmal von den passenden Reviewer-Subagents prüfen
+   (fe-reviewer, be-reviewer, db-reviewer). Zeig mir ihre Befunde und behebe sie.
+5. Committe die Änderung auf dem Branch.
+
+Erstelle keinen PR und pushe nicht — du hast bei diesem Repo nicht die Rechte
+dazu. Schreibe keine Tests, die den Browser automatisieren. Ändere keine Specs
+und keine Subagents.
 
 Fehlerbericht: Beim Anlegen einer Chance wird ins Feld „Wert" −100 eingetragen.
 Beobachtet: Der Knopf „Speichern" wird grau, ohne dass ein Hinweis erscheint, warum.
@@ -72,7 +82,7 @@ einem Validierungsfehler ablehnen. Keine weiteren Änderungen.
 
 | Problem | Lösung |
 |---|---|
-| Der Agent will das Formular „modernisieren" | Am Plan-Checkpoint `Edit`: nur die im Fehlerbericht genannte Änderung. |
+| Der Agent will das Formular „modernisieren" | Am Plan-Checkpoint antworten: „Nur die im Fehlerbericht genannte Änderung." |
 | Änderung nicht im Browser sichtbar | Seite neu laden (`Cmd/Strg+Shift+R`); der Dev-Server lädt automatisch, der Browser cacht manchmal. |
 | Hinweis erscheint auch bei leerem Feld | Zurück an den Agenten: „Ein leeres Feld ist erlaubt — der Hinweis nur bei negativen Zahlen." |
 | Agent fragt, ob er Tests schreiben soll | Ja, Unit-Tests gern; nur keine Browser-Automation (dauert zu lang). |
