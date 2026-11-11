@@ -3,12 +3,14 @@
 **Dauer:** 25 min
 **Sozialform:** Paare
 **Werkzeug:** Claude Code oder GitHub Copilot CLI, VS Code, Browser
-**Voraussetzung:** Aufgabe 10 erledigt: Lab läuft, VS Code ist mit dem Projektordner offen, der Starttest mit `claude` oder `copilot` hat geklappt
-**Ziel:** Der Agent legt euren Branch an und schreibt euer PRD als Commit fest — ihr seht in VS Code nach, was passiert ist: zwei eigene Commits auf eurem Branch, das PRD unter `docs/prds/`, die geänderte Zeile in der Vergleichsansicht.
+**Voraussetzung:** Aufgabe 10 erledigt: Lab läuft, VS Code ist mit dem Projektordner offen, euer Agent (`claude` oder `copilot`) hat dort geantwortet
+**Ziel:** Der Agent legt euren Branch an, schreibt euer PRD als Commit fest und meldet, was er getan hat — ihr prüft seine Meldung in VS Code nach: zwei eigene Commits auf eurem Branch, das PRD unter `docs/prds/`, die geänderte Zeile in der Vergleichsansicht.
 
 So arbeiten Business Consultants mit Git: Die Befehle tippt der Agent, ihr
-gebt den Auftrag und prüft das Ergebnis. Dafür müsst ihr wissen, wo ihr
-nachseht — welcher Branch, welcher Commit, welche Datei, welche Zeile.
+gebt den Auftrag und prüft das Ergebnis — wie in Aufgabe 10: Der Agent sagt,
+was er getan hat, ihr seht in VS Code nach, ob es stimmt. Dafür müsst ihr
+wissen, wo ihr nachseht — welcher Branch, welcher Commit, welche Datei,
+welche Zeile.
 
 Die Änderung ist echt: Euer PRD aus Aufgabe 03 kommt als Datei ins Repo,
 dort, wo das Lab seine PRDs ablegt. Der Agent liest sie im Lab.
@@ -32,7 +34,9 @@ PRD liegen auf dem Rechner, auf dem der Agent gearbeitet hat.
    Lest mit, welche Befehle der Agent ausführt: Ihr kennt sie von der Folie.
    Copilot fragt vor jedem neuen Befehl nach — lest ihn, bevor ihr
    zustimmt.
-3. **In VS Code nachsehen.**
+3. **Nachprüfen in VS Code.** Der Agent hat am Ende drei Angaben gemacht:
+   Branch, Ablageort, Commit-Nachricht. Stimmen sie? Notiert für jede: stimmt
+   · stimmt nicht.
    - Statusleiste: Auf welchem Branch seid ihr jetzt?
    - Explorer: Wo liegt `PRD-FIRMA-FAVORIT.md`?
    - Graph: Welcher Commit ist neu — mit welcher Nachricht, von wem, wann?
@@ -55,7 +59,7 @@ PRD liegen auf dem Rechner, auf dem der Agent gearbeitet hat.
 
 1. VS Code: Quellcodeverwaltung ansehen.
 2. Agent: Branch anlegen, PRD ablegen, committen — mitlesen.
-3. In VS Code nachsehen: Branch, Datei, Commit.
+3. In VS Code nachprüfen: Stimmt, was der Agent meldet?
 4. Satz ändern lassen, in VS Code ansehen, committen lassen.
 5. Auf GitHub: Warum fehlt euer Commit?
 
@@ -69,7 +73,8 @@ Ich möchte mein PRD in diesem Repository ablegen.
 3. Committe die Datei mit der Nachricht "docs: PRD Firmen als Favorit markieren".
 
 Sag mir vor jedem Schritt, welchen Git-Befehl du ausführst und warum.
-Pushe nicht.
+Pushe nicht. Melde mir am Ende in drei Zeilen: auf welchem Branch ich bin,
+wo die Datei liegt und wie der Commit heißt.
 
 <hier euer PRD aus Aufgabe 03 einfügen>
 ```
@@ -81,7 +86,8 @@ Lege den Branch training-1126/<vorname-nachname> an, kopiere
 tasks/business-consultants/material/PRD-FIRMA-FAVORIT.md nach docs/prds/
 und committe die Datei mit der Nachricht "docs: PRD Firmen als Favorit markieren".
 Sag mir vor jedem Schritt, welchen Git-Befehl du ausführst und warum.
-Pushe nicht.
+Pushe nicht. Melde mir am Ende in drei Zeilen: auf welchem Branch ich bin,
+wo die Datei liegt und wie der Commit heißt.
 ```
 
 ## Abnahme
@@ -90,6 +96,8 @@ Pushe nicht.
       zwei eigene Commits darauf.
 - [ ] Ihr könnt zeigen, wo das PRD liegt und welche Zeile ihr im zweiten
       Commit geändert habt.
+- [ ] Ihr habt die drei Angaben des Agenten in VS Code nachgeprüft und könnt
+      sagen, ob sie stimmen.
 - [ ] Ihr könnt sagen, warum euer Commit auf GitHub fehlt.
 - [ ] Ihr erkennt die Befehle wieder, die der Agent benutzt hat:
       `git switch -c`, `git add`, `git commit`, `git status`, `git log`.
