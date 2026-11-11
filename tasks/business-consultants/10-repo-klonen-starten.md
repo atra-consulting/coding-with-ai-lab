@@ -72,10 +72,10 @@ Abhängigkeiten und dauert einige Minuten.
 ## Folienschritte
 
 1. Terminal öffnen, `node --version` und `git --version` prüfen.
-2. Lab-Repo klonen, `cd coding-with-ai-lab`, `./start.sh`.
-3. Im Browser anmelden, durchklicken, eine Chance anlegen.
-4. Zweites Fenster: `claude` oder `copilot` starten.
-5. Den Agenten fragen: Was ist das Projekt, wo steht was?
+2. Klonen, `cd coding-with-ai-lab`, `./start.sh`.
+3. Anmelden, durchklicken, eine Chance anlegen.
+4. Zweites Fenster: `claude` oder `copilot`.
+5. Agent fragen: Was ist das, wo steht was?
 6. Zwei Antworten in VS Code nachprüfen.
 
 ## Prompt
