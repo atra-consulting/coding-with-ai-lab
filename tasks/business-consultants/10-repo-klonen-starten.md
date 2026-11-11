@@ -1,24 +1,17 @@
-# 10 — Repo klonen, Anwendung starten, darin lesen
+# 10 — Repo klonen, Anwendung starten, mit dem Agenten darin lesen
 
 **Dauer:** 35 min
 **Sozialform:** einzeln
 **Werkzeug:** Terminal, Browser, VS Code, Claude Code oder GitHub Copilot CLI
-**Ziel:** Ihr lest das Repository wie eine Akte: Das CRM-Lab läuft unter `localhost:7200`, eine Chance ist angelegt, ihr könnt zu drei Fragen sagen, in welcher Datei die Antwort steht — und euer Agent (Claude Code oder GitHub Copilot CLI) startet im Projektordner.
+**Ziel:** Das CRM-Lab läuft unter `localhost:7200`, eine Chance ist angelegt, und euer Agent hat euch das Repository erklärt — ihr habt zwei seiner Antworten in VS Code nachgeprüft und könnt sagen, ob sie stimmen.
 
 Die drei Handgriffe, die jeder Entwickler täglich macht — Terminal öffnen,
-Repository klonen, Anwendung starten —, dazu das Lesen des Repositorys:
-README, Fachdomäne, Struktur, Tests, Issues. Gelesen wird in VS Code, nicht
-im Terminal. Das ist zugleich das Setup für das Lab am Nachmittag. Der erste
-Start lädt Abhängigkeiten und dauert einige Minuten.
-Fünf Fragen beantwortet das Repository selbst — hier steht, wo:
-
-| Frage | Wo die Antwort steht |
-|---|---|
-| Was ist das, wie starte ich es? | `README.MD`, auf Deutsch `docs/welcome_DE.MD` |
-| Was bedeuten Firma, Chance, Phase fachlich? | `docs/specs/DOMAIN.md` |
-| Wo liegt Oberfläche, wo Logik, wo Daten? | Ordner `frontend/src/app/features` · Ordner `backend/src/routes` · Datei `backend/src/db/schema/schema.ts` |
-| Gibt es Tests? | Ordner `backend/src/test`; im Frontend die Dateien auf `.spec.ts` — in VS Code mit `Ctrl+P` (macOS `Cmd+P`) und „spec.ts“ suchen |
-| Woran wird gerade gearbeitet? | <https://github.com/atra-consulting/coding-with-ai-lab/issues> und `/pulls` im Browser |
+Repository klonen, Anwendung starten —, macht ihr selbst. Danach liest ihr
+das Repository so, wie Business Consultants es tun: Ihr fragt den Agenten,
+und er sucht die Antworten. Eure Arbeit ist das Nachprüfen — die Datei, die
+er nennt, öffnet ihr in VS Code und seht nach, ob es dort wirklich steht.
+Das ist zugleich das Setup für das Lab am Nachmittag. Der erste Start lädt
+Abhängigkeiten und dauert einige Minuten.
 
 ## So sieht es aus, wenn es läuft
 
@@ -41,8 +34,9 @@ Fünf Fragen beantwortet das Repository selbst — hier steht, wo:
    (nicht PowerShell, damit `./start.sh` funktioniert) — und werdet mit
    `pwd`, `ls` und `cd ~` warm.
 2. Prüft die Werkzeuge mit `node --version` (mindestens 20.19, mit
-   GitHub Copilot CLI mindestens 22, empfohlen 24 LTS) und `git --version`; fehlt eine Versionsnummer, hilft
-   `docs/SETUP.md` im Lab-Repo oder Handheben.
+   GitHub Copilot CLI mindestens 22, empfohlen 24 LTS) und `git --version`;
+   fehlt eine Versionsnummer, hilft `docs/SETUP.md` im Lab-Repo oder
+   Handheben.
 3. Klont und startet das Lab:
    `git clone https://github.com/atra-consulting/coding-with-ai-lab.git`,
    `cd coding-with-ai-lab`, `./start.sh`, dann <http://localhost:7200>
@@ -52,19 +46,9 @@ Fünf Fragen beantwortet das Repository selbst — hier steht, wo:
 4. Klickt fünf Minuten durch Firmen, Personen, Chancen, Aktivitäten und
    Dashboard und legt eine Chance an — ihr braucht das Bild der Anwendung
    im Lab, wenn der Agent behauptet, etwas sei fertig.
-5. Öffnet in VS Code den Ordner `coding-with-ai-lab` (Datei › Ordner öffnen)
-   und beantwortet die fünf Fragen der Tabelle im Explorer links. Lasst
-   VS Code offen — ihr braucht es in Aufgabe 11 wieder.
-6. Notiert drei Antworten: Wie viele Feature-Ordner hat das Frontend,
-   welche Route liefert die Firmenliste (`backend/src/routes/firmen.ts`,
-   mit `Ctrl+F` nach `router.get` suchen), und was passiert fachlich, wenn
-   eine Firma gelöscht wird (`DOMAIN.md`)?
-7. **Starttest für den Agenten.** Öffnet ein zweites Terminalfenster (das
-   erste zeigt die Anwendung), geht mit `cd coding-with-ai-lab` ins Projekt
-   und startet euren Agenten: `claude` für Claude Code, `copilot` für
-   GitHub Copilot CLI. Fragt „Was macht dieses Projekt?“ und beendet —
-   Claude Code mit `/exit`, Copilot mit zweimal `Ctrl+C`. Mehr nicht —
-   mit dem Agenten gearbeitet wird ab Aufgabe 11.
+5. **Agent starten.** Öffnet ein zweites Terminalfenster (das erste zeigt
+   die Anwendung), geht mit `cd coding-with-ai-lab` ins Projekt und startet
+   euren Agenten: `claude` für Claude Code, `copilot` für GitHub Copilot CLI.
 
    **Mit GitHub Copilot CLI:** Beim ersten Start fragt Copilot, ob ihr dem
    Ordner vertraut — wählt „Yes, and remember this folder for future
@@ -74,23 +58,62 @@ Fünf Fragen beantwortet das Repository selbst — hier steht, wo:
    Sitzung nicht mehr. Unter Windows startet ihr `copilot` in PowerShell
    (ab Version 6, Befehl `pwsh`), nicht in Git Bash — so verlangt es GitHub.
 
+6. **Den Agenten fragen.** Gebt den Prompt unten ein. Der Agent liest die
+   Dateien selbst und nennt zu jeder Antwort die Datei, in der sie steht.
+7. **Nachprüfen in VS Code.** Öffnet in VS Code den Ordner
+   `coding-with-ai-lab` (Datei › Ordner öffnen). Nehmt zwei Antworten des
+   Agenten und öffnet die Datei, die er genannt hat — links im Explorer oder
+   mit `Ctrl+P` (macOS `Cmd+P`) und dem Dateinamen. Steht es dort wirklich
+   so? Notiert für jede: stimmt · stimmt halb · stimmt nicht. Lasst VS Code
+   offen — ihr braucht es in Aufgabe 11 wieder.
+8. Beendet den Agenten — Claude Code mit `/exit`, Copilot mit zweimal
+   `Ctrl+C`. Die Anwendung im ersten Fenster läuft weiter.
+
 ## Folienschritte
 
 1. Terminal öffnen, `node --version` und `git --version` prüfen.
-2. Lab-Repo klonen, dann `cd coding-with-ai-lab`.
-3. `./start.sh`, im Browser anmelden mit `admin / admin123`.
-4. Fünf Minuten durchklicken und eine Chance anlegen.
-5. VS Code: Repository lesen, drei Antworten notieren.
-6. Starttest: `claude` oder `copilot` — eine Frage, beenden.
+2. Lab-Repo klonen, `cd coding-with-ai-lab`, `./start.sh`.
+3. Im Browser anmelden, durchklicken, eine Chance anlegen.
+4. Zweites Fenster: `claude` oder `copilot` starten.
+5. Den Agenten fragen: Was ist das Projekt, wo steht was?
+6. Zwei Antworten in VS Code nachprüfen.
+
+## Prompt
+
+```
+Ich bin Business Consultant und lese dieses Projekt zum ersten Mal.
+Beantworte kurz und auf Deutsch, und nenne zu jeder Antwort die Datei
+oder den Ordner, in dem du sie gefunden hast:
+
+1. Was ist das für eine Anwendung, und wie startet man sie?
+2. Was bedeuten Firma, Chance und Phase fachlich?
+3. Wo liegt die Oberfläche, wo die Logik, wo die Daten?
+4. Wie viele Feature-Ordner hat das Frontend?
+5. Welche Route liefert die Firmenliste?
+6. Was passiert fachlich, wenn eine Firma gelöscht wird?
+
+Ändere nichts, lies nur.
+```
 
 ## Abnahme
 
-- Die Anwendung läuft, und im Browser steht die von euch angelegte Chance.
-- Zu den drei Fragen aus Schritt 6 könnt ihr die Datei nennen, in der die
-  Antwort steht.
-- VS Code ist mit dem Ordner `coding-with-ai-lab` offen.
-- `claude` bzw. `copilot` startet im Projektordner ohne erneute Anmeldung
-  und beantwortet eure Frage.
+- [ ] Die Anwendung läuft, und im Browser steht die von euch angelegte Chance.
+- [ ] Euer Agent startet im Projektordner ohne erneute Anmeldung und hat die
+      sechs Fragen beantwortet, jede mit einer Datei oder einem Ordner.
+- [ ] Zwei Antworten habt ihr in VS Code nachgeprüft und könnt sagen, ob sie
+      stimmen.
+- [ ] VS Code ist mit dem Ordner `coding-with-ai-lab` offen.
+
+## Zum Nachprüfen: wo die Antworten stehen
+
+| Frage | Wo die Antwort steht |
+|---|---|
+| Was ist das, wie starte ich es? | `README.MD`, auf Deutsch `docs/welcome_DE.MD` |
+| Was bedeuten Firma, Chance, Phase fachlich? | `docs/specs/DOMAIN.md` |
+| Wo liegt Oberfläche, wo Logik, wo Daten? | Ordner `frontend/src/app/features` · Ordner `backend/src/routes` · Datei `backend/src/db/schema/schema.ts` |
+| Wie viele Feature-Ordner hat das Frontend? | Ordner `frontend/src/app/features` — im Explorer aufklappen und zählen |
+| Welche Route liefert die Firmenliste? | `backend/src/routes/firmen.ts`, mit `Ctrl+F` nach `router.get` suchen |
+| Was passiert beim Löschen einer Firma? | `docs/specs/DOMAIN.md` |
 
 ## Troubleshooting
 
@@ -105,4 +128,6 @@ Fünf Fragen beantwortet das Repository selbst — hier steht, wo:
 | VS Code zeigt den Ordner nicht | Genau `coding-with-ai-lab` öffnen, nicht den Ordner darüber. |
 | `claude` oder `copilot` startet nicht oder will sich anmelden und es klappt nicht | Sofort Handheben — bis zum Lab ist Zeit für eine Lösung oder ein Paar. |
 | Windows: `copilot` startet in Git Bash nicht oder verhält sich seltsam | PowerShell 6 oder neuer öffnen (`pwsh`), dort `cd coding-with-ai-lab` und `copilot`. Die Anwendung läuft weiter in Git Bash. |
+| Der Agent nennt eine Datei, die es nicht gibt | Gut bemerkt — genau dafür prüft ihr nach. Sagt ihm: „Die Datei gibt es nicht. Such noch einmal und nenne den genauen Pfad.“ |
+| Der Agent will etwas ändern oder installieren | Ablehnen bzw. mit `Esc` stoppen: „Ändere nichts, lies nur.“ |
 | Copilot meldet, dass ihr keinen Zugang habt | Euer GitHub-Konto braucht ein Copilot-Abo, und eure Firma darf die Copilot CLI nicht gesperrt haben — Handheben. |
