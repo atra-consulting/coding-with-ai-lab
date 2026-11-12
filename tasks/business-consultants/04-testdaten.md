@@ -53,13 +53,14 @@ Meine Entscheidungen:
 - Eine Aktivität genau 90 Tage vor dem Stichtag zählt [als Kontakt / nicht
   als Kontakt].
 
-1. Nenne die Testfälle, die man für diese Liste braucht — besonders die
-   Grenzfälle. Je Testfall ein Satz.
+1. Nenne höchstens sechs Testfälle, die man für diese Liste braucht — die
+   wichtigsten Grenzfälle zuerst. Je Testfall ein Satz.
 2. Erzeuge einen Testdatensatz als Tabelle mit den Spalten Firma, Aktivität,
-   Typ, Datum. Höchstens 8 Firmen; jeder Testfall kommt mindestens einmal vor.
+   Typ, Datum. Höchstens 6 Firmen; jeder Testfall kommt mindestens einmal vor.
 3. Schreibe als Erwartungswert dazu, welche Firmen auf der Liste stehen
    müssen und welche nicht — je Firma mit Begründung und Anzahl der Tage bis
    zum Stichtag.
+4. Nenne höchstens zwei weitere Fragen, die meine Entscheidungen offenlassen.
 ```
 
 Prompt 2:
@@ -88,7 +89,7 @@ nenne nur die Firmen, die sich dadurch ändern.
 | Der Assistent schreibt SQL oder Programmcode | Zurück: „Keine Abfrage, kein Code — nur Testfälle, eine Tabelle und Erwartungswerte.“ |
 | Die Tage stimmen nicht | Nachfragen: „Rechne für Firma … die Tage zwischen … und dem 15.03.2026 Schritt für Schritt.“ Ein Kalender hilft beim Gegenprüfen. |
 | Der Assistent ignoriert eure Entscheidungen | Die Entscheidungen an den Anfang des Prompts stellen, nicht ans Ende. |
-| Zu viele Firmen | „Höchstens 8 Firmen, jeder Grenzfall genau einmal.“ |
+| Zu viele Firmen | „Höchstens 6 Firmen, jeder Grenzfall genau einmal.“ |
 
 ## Diskussion
 

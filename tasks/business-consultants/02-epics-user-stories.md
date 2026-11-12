@@ -18,6 +18,12 @@ Zählt eine Wiedervorlage als Aktivität? Diese Übung macht die Annahmen
 sichtbar, und ihr entscheidet sie selbst. Die Story „Firmen als Favorit
 markieren“ nehmt ihr in Aufgabe 03 mit.
 
+**Rahmen für den Nachmittag:** Aus dieser Story baut am Nachmittag ein Agent
+das Feature. Damit das in der Zeit klappt, gilt für die Favoriten: **Sie gelten
+für alle Benutzer** (alle sehen dieselben Favoriten), markiert wird mit einem
+**Stern** je Firma, und ein Filter **„Nur Favoriten anzeigen“** gehört dazu —
+so wie im Muster-PRD. Alles andere entscheidet ihr frei.
+
 ## Schritte
 
 1. **Epics und Stories anfordern.** Gebt Prompt 1 ein — im selben Gespräch
@@ -28,8 +34,8 @@ markieren“ nehmt ihr in Aufgabe 03 mit.
    die Entscheidungen mit Prompt 2 zurück. Was ihr nicht entscheiden könnt,
    bleibt als offene Frage stehen — mit dem Namen der Person aus den Notizen,
    die es entscheiden müsste.
-4. **Kritisch prüfen lassen.** Lasst die Stories mit Prompt 3 aus Sicht
-   einer Testerin prüfen: Was fehlt, was lässt sich nicht prüfen? Schärft die Kriterien nach, die sich nicht mit Ja oder
+4. **Kritisch prüfen lassen.** Lasst die Story „Firmen als Favorit
+   markieren“ mit Prompt 3 aus Sicht einer Testerin prüfen: Was fehlt, was lässt sich nicht prüfen? Schärft die Kriterien nach, die sich nicht mit Ja oder
    Nein prüfen lassen.
 5. **Aufheben.** Speichert die Story „Firmen als Favorit markieren“ samt
    Kriterien in eurer Notizdatei — Aufgabe 03 macht daraus ein PRD.
@@ -39,7 +45,7 @@ markieren“ nehmt ihr in Aufgabe 03 mit.
 1. Epics und Stories mit Annahmen anfordern (Prompt 1).
 2. Annahmen lesen: Welche sind fachliche Entscheidungen?
 3. Drei davon selbst entscheiden und zurückschreiben (Prompt 2).
-4. Aus Testersicht kritisch prüfen lassen, Kriterien nachschärfen (Prompt 3).
+4. Favoriten-Story aus Testersicht prüfen lassen, Kriterien nachschärfen (Prompt 3).
 
 ## Prompt
 
@@ -51,9 +57,9 @@ unser CRM ab. Schreibe je Epic zwei bis drei User Stories im Format
 „Als … möchte ich …, damit …“, je Story drei bis fünf Akzeptanzkriterien,
 die sich mit Ja oder Nein prüfen lassen.
 
-Liste danach alle Annahmen auf, die du treffen musstest, weil die Notizen
-dazu nichts sagen — nummeriert, je Annahme ein Satz. Triff keine Annahme
-stillschweigend.
+Liste danach die höchstens fünf Annahmen auf, die das Ergebnis am stärksten
+verändern und zu denen die Notizen nichts sagen — nummeriert, je Annahme ein
+Satz. Triff keine Annahme stillschweigend.
 ```
 
 Prompt 2:
@@ -70,9 +76,10 @@ Offen bleibt: … (entscheidet …).
 Prompt 3:
 
 ```
-Prüfe die Stories aus Sicht einer Testerin. Nenne jedes Akzeptanzkriterium,
-das sich nicht eindeutig mit Ja oder Nein prüfen lässt, und schlage eine
-prüfbare Fassung vor. Nenne außerdem Fälle, die keine Story abdeckt.
+Prüfe die Story „Firmen als Favorit markieren“ aus Sicht einer Testerin.
+Nenne höchstens drei Akzeptanzkriterien, die sich nicht eindeutig mit Ja oder
+Nein prüfen lassen, und schlage je eine prüfbare Fassung vor. Nenne außerdem
+höchstens drei Fälle, die die Story nicht abdeckt.
 ```
 
 ## Abnahme

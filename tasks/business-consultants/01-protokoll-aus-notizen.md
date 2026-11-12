@@ -3,7 +3,7 @@
 **Dauer:** 20 min
 **Sozialform:** einzeln
 **Werkzeug:** Chat-Assistent (Claude, ChatGPT, Gemini oder Microsoft 365 Copilot)
-**Voraussetzung:** Rohnotizen [`material/vertriebsrunde-rohnotizen.md`](material/vertriebsrunde-rohnotizen.md)
+**Voraussetzung:** Rohnotizen [`material/vertriebsrunde-rohnotizen.md`](material/vertriebsrunde-rohnotizen.md); das KI-Protokoll zum Vergleich erst in Schritt 5
 **Ziel:** Aus Rohnotizen wird ein Protokoll, das jemand versteht, der nicht dabei war — und jede Zeile darin geht auf eine Notiz zurück.
 
 Ein Protokoll schreibt der Assistent in Sekunden. Ob es stimmt, nicht. Er
@@ -26,16 +26,20 @@ geprüfte Ergebnisse. Das PRD daraus braucht ihr nach der Mittagspause.
 1. **Notizen lesen.** Öffnet die Rohnotizen und lest sie einmal ganz. Was ist
    entschieden, was ist offen geblieben?
 2. **Protokoll schreiben lassen.** Öffnet ein neues Gespräch im
-   Chat-Assistenten, kopiert Prompt 1 hinein und hängt die Rohnotizen an.
+   Chat-Assistenten, kopiert Prompt 1 hinein und hängt **nur** die Rohnotizen an.
+   Das KI-Protokoll zum Vergleich bleibt zu — sonst nimmt der Assistent euch
+   die Fehlerjagd ab.
 3. **Fehlerjagd.** Lest das Protokoll Zeile für Zeile gegen die Notizen:
    Steht das so in den Notizen? Achtet besonders auf Namen, Zahlen, Fristen
    und auf Sätze, die eine offene Frage wie eine Entscheidung klingen lassen.
    Jeden Fund notiert ihr mit der Stelle in den Notizen.
 4. **Nachschärfen.** Gebt eure Funde mit Prompt 2 zurück und lasst das
    Protokoll korrigieren. Prüft die neue Fassung noch einmal.
-5. **Gegenprobe.** Hat euer Assistent sauber gearbeitet? Dann nehmt das
-   vorbereitete [`material/vertriebsrunde-ki-protokoll.md`](material/vertriebsrunde-ki-protokoll.md):
-   Darin stecken fünf Fehler. Wie viele findet ihr in fünf Minuten?
+5. **Gegenprobe — nur, wenn ihr im eigenen Protokoll nichts findet.** Erst
+   jetzt öffnet ihr das vorbereitete
+   [`material/vertriebsrunde-zum-vergleich-ki-protokoll.md`](material/vertriebsrunde-zum-vergleich-ki-protokoll.md):
+   Darin stecken fünf Fehler. Wie viele findet ihr in fünf Minuten? Lest es
+   selbst gegen die Notizen — gebt es nicht dem Assistenten.
 
 ## Folienschritte
 
