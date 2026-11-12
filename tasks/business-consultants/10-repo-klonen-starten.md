@@ -22,9 +22,11 @@ Abhängigkeiten und dauert einige Minuten.
   die Anwendung darin läuft. Das ist richtig so — für den Agenten öffnet ihr
   später ein zweites Terminalfenster. `Ctrl+C` im ersten Fenster beendet die
   Anwendung.
-- **Im Browser** zeigt <http://localhost:7200> die Anmeldeseite „CRM System";
-  nach dem Login mit `admin / admin123` seht ihr das CRM mit Firmen, Personen,
-  Chancen, Aktivitäten und Dashboard.
+- **Im Browser** zeigt <http://localhost:7200> die Anmeldeseite „CRM System"
+  mit „Bitte Benutzer auswählen" und einer Kachel je Benutzer — ein
+  Passwortfeld gibt es nicht. Nach einem Klick auf die Kachel „Admin User"
+  (`admin`) seht ihr das CRM mit Firmen, Personen, Chancen, Aktivitäten und
+  Dashboard.
 - **Steht im Terminal eine Zeile mit `ERROR:`**, läuft die Anwendung nicht —
   die Lösung steht meist unter Troubleshooting.
 
@@ -41,7 +43,7 @@ Abhängigkeiten und dauert einige Minuten.
 3. Klont und startet das Lab:
    `git clone https://github.com/atra-consulting/coding-with-ai-lab.git`,
    `cd coding-with-ai-lab`, `./start.sh`, dann <http://localhost:7200>
-   im Browser mit Login `admin / admin123`. **Schon in der Vorbereitung
+   im Browser öffnen und die Kachel „Admin User" anklicken. **Schon in der Vorbereitung
    geklont?** Dann `git clone` weglassen: nur `cd coding-with-ai-lab` und
    `./start.sh`.
 4. Klickt fünf Minuten durch Firmen, Personen, Chancen, Aktivitäten und
