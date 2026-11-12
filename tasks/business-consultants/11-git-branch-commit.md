@@ -1,6 +1,6 @@
 # 11 — Branch und Commit mit dem Agenten, nachsehen in VS Code
 
-**Dauer:** 25 min
+**Dauer:** 35 min
 **Sozialform:** Paare
 **Werkzeug:** Claude Code oder GitHub Copilot CLI, VS Code, Browser
 **Voraussetzung:** Aufgabe 10 erledigt: Lab läuft, VS Code ist mit dem Projektordner offen, euer Agent (`claude` oder `copilot`) hat dort geantwortet
