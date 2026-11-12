@@ -11,6 +11,7 @@ import {
   TextEditorModule,
   ValidationModule,
   RowApiModule,
+  RowStyleModule,
 } from 'ag-grid-community';
 import { App } from './app/app';
 import { appConfig } from './app/app.config';
@@ -24,6 +25,7 @@ ModuleRegistry.registerModules([
   TextEditorModule,
   ValidationModule,
   RowApiModule,
+  RowStyleModule,
 ]);
 registerLocaleData(localeDe);
 
