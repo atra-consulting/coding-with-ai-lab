@@ -14,20 +14,46 @@ Diese Anleitung beschreibt, wie du deine Arbeitsumgebung für das **AI Coding La
 
 ## Node.js
 
-**Node.js 20.19 oder neuer** (Voraussetzung für Angular 21). Für **Copilot CLI: Node.js 22 oder neuer**. npm wird mit Node.js mitgeliefert. Empfehlung: Node.js 24.
+**Was ist Node.js?** Die Grundlage, auf der das Übungsprojekt läuft — für Angular, npm und die GitHub Copilot CLI. Du installierst es einmal und musst danach nichts damit tun.
+
+**Wie öffne ich das Terminal?** macOS: `Cmd + Leertaste`, „Terminal“ eintippen, Enter. Windows: Startmenü, „PowerShell“ eintippen, Enter.
+
+> **Befehle exakt kopieren, nicht abtippen.** Ein Tippfehler fällt hier nicht auf: `nvm install 2` statt `nvm install 24` installiert eine uralte Version, ohne zu meckern.
 
 ### Node.js installieren
 
 #### macOS
 
-```bash
-# Option 1: Homebrew (empfohlen)
-brew install node@24
+Standardweg ist **nvm** (Node Version Manager): Er braucht keine Administratorrechte und kein Homebrew.
 
-# Option 2: nvm (Node Version Manager)
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
-nvm install 24
-```
+1. Die Konfigurationsdatei anlegen, falls sie fehlt (auf neueren Macs oft der Fall — sonst trägt sich nvm nirgends ein):
+
+   ```bash
+   touch ~/.zshrc
+   ```
+
+2. nvm installieren:
+
+   ```bash
+   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+   ```
+
+3. **Terminal komplett schließen (`Cmd + Q`) und neu öffnen.** Ohne diesen Schritt kommt `command not found: nvm`.
+
+4. Node.js 24 installieren und als Standard setzen, damit jedes neue Terminal Node 24 nimmt:
+
+   ```bash
+   nvm install 24
+   nvm alias default 24
+   ```
+
+5. Prüfen — `node -v` muss `v24.x.x` zeigen:
+
+   ```bash
+   node -v
+   ```
+
+Alternative, wenn Homebrew schon installiert ist: `brew install node@24`. Fehlt Homebrew (`command not found: brew`), nimm den Weg mit nvm.
 
 #### Windows
 
@@ -38,10 +64,10 @@ nvm install 24
 > Alternativ manuell über den Installer: https://git-scm.com/download/win
 
 ```powershell
-# Option 1: Offizielle Installer von https://nodejs.org/ herunterladen und ausführen
-
-# Option 2: winget
+# Option 1: winget
 winget install OpenJS.NodeJS.LTS
+
+# Option 2: Offizieller Installer von https://nodejs.org/ herunterladen und ausführen
 
 # Option 3: nvm-windows (https://github.com/coreybutler/nvm-windows)
 nvm install 24
@@ -51,14 +77,17 @@ nvm use 24
 > **Wichtig bei der Installation über den offiziellen Installer:**
 > Im Installationsdialog die Checkbox **"Automatically install the necessary tools. [...]"** aktivieren. Damit werden Build-Tools (Python, Visual Studio Build Tools) mitinstalliert, die für native Module wie `better-sqlite3` benötigt werden.
 >
-> <!-- TODO: Screenshot des Installer-Dialogs einfügen (z.B. docs/images/node-installer-tools-checkbox.png) -->
->
 > **Bei Berechtigungsproblemen** (z.B. wenn Skripte nicht ausgeführt werden dürfen) in PowerShell folgenden Befehl ausführen:
 > ```powershell
 > Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 > ```
 
-#### Linux (Ubuntu/Debian)
+Danach die PowerShell schließen, ein neues Fenster öffnen und prüfen: `node -v` muss `v24.x.x` zeigen.
+
+<details>
+<summary><strong>Linux (Ubuntu/Debian, Fedora/RHEL)</strong></summary>
+
+Ubuntu/Debian:
 
 ```bash
 # Option 1: NodeSource-Repository (empfohlen)
@@ -68,9 +97,10 @@ sudo apt-get install -y nodejs
 # Option 2: nvm (Node Version Manager)
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
 nvm install 24
+nvm alias default 24
 ```
 
-#### Linux (Fedora/RHEL)
+Fedora/RHEL:
 
 ```bash
 # Option 1: NodeSource-Repository
@@ -80,14 +110,19 @@ sudo dnf install -y nodejs
 # Option 2: nvm
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
 nvm install 24
+nvm alias default 24
 ```
 
-### Version prüfen
+</details>
 
-```bash
-node --version   # Muss v20.19.0 oder neuer sein
-npm --version    # Wird mit Node.js mitgeliefert
-```
+<details>
+<summary>Welche Version genau? (Details für Interessierte)</summary>
+
+- Mindestens **Node.js 20.19** — das verlangt Angular 21.
+- Für die **GitHub Copilot CLI** mindestens **Node.js 22**.
+- Empfohlen: **Node.js 24**. npm kommt mit Node.js mit (`npm --version`).
+
+</details>
 
 ## Claude Code
 
@@ -95,11 +130,19 @@ npm --version    # Wird mit Node.js mitgeliefert
 
 ### Installation
 
-Claude Code wird plattformübergreifend via npm installiert (Node.js muss bereits eingerichtet sein):
+Offizieller Installer ([Anleitung](https://code.claude.com/docs/de/setup)); der Befehl zeigt keinen Fortschritt an — einfach warten:
 
 ```bash
-npm install -g @anthropic-ai/claude-code
+# macOS, Linux
+curl -fsSL https://claude.ai/install.sh | bash
 ```
+
+```powershell
+# Windows (PowerShell)
+irm https://claude.ai/install.ps1 | iex
+```
+
+Danach ein neues Terminal öffnen und prüfen: `claude --version`.
 
 Unter Windows ist zusätzlich **Git for Windows** erforderlich (siehe Windows-Abschnitt unter [Node.js installieren](#node-js-installieren)).
 
