@@ -34,7 +34,7 @@ The four data sources (customer emails, GitHub issues, application logs, error r
 
 ## 2. See the tasks (admin dashboard)
 
-1. Open `http://localhost:7200` and log in as `admin` / `admin123` (or `demo` / `demo1234`).
+1. Open `http://localhost:7200` and click the **Admin User** tile on the login page (or **Demo User**) — there is no password field.
 2. Click **Agent-Aufgaben** in the sidebar (Administration section — admins only).
 3. You see four cards (one per source) with OPEN / IN_PROGRESS / DONE / REJECTED counts. Click a card to drill into the task list, click a row to see the full task detail (body, metadata, comment, timestamps).
 

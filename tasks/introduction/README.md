@@ -17,7 +17,7 @@ auf.
 3. Bei den Checkpoints (PRD/Plan/Review) `Continue` wählen, außer ihr wollt
    den Plan editieren.
 4. App starten und Ergebnis im Browser testen: `./start.sh`
-   → Frontend auf <http://localhost:7200>, Login `admin / admin123`.
+   → Frontend auf <http://localhost:7200>, anmelden per Kachel „Admin User".
 
 ## Fortgeschrittenen-Aufgaben (45–120 Min)
 
