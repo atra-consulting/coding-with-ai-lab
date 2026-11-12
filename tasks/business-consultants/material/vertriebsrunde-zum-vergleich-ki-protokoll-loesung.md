@@ -1,7 +1,7 @@
 # Lösung: fünf Fehler im KI-Protokoll
 
 Für Trainerinnen und Trainer. Gehört zu
-[vertriebsrunde-ki-protokoll.md](vertriebsrunde-ki-protokoll.md) in Aufgabe 01.
+[vertriebsrunde-zum-vergleich-ki-protokoll.md](vertriebsrunde-zum-vergleich-ki-protokoll.md) in Aufgabe 01.
 
 | Nr. | Stelle im Protokoll | Was die Rohnotizen sagen | Art des Fehlers |
 |---|---|---|---|
