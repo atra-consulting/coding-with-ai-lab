@@ -1,6 +1,6 @@
 # 10 — Repo klonen, Anwendung starten, mit dem Agenten darin lesen
 
-**Dauer:** 35 min
+**Dauer:** 45 min
 **Sozialform:** einzeln
 **Werkzeug:** Terminal, Browser, VS Code, Claude Code oder GitHub Copilot CLI
 **Ziel:** Das CRM-Lab läuft unter `localhost:7200`, eine Chance ist angelegt, und euer Agent hat euch das Repository erklärt — ihr habt zwei seiner Antworten in VS Code nachgeprüft und könnt sagen, ob sie stimmen.
