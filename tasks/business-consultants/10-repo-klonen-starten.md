@@ -74,9 +74,15 @@ Anwendung, stoppt sie. Wer lieber die Maus nimmt: Rechtsklick ins Terminal
    ins Projekt und startet euren Agenten: `claude` für Claude Code, `copilot`
    für GitHub Copilot CLI.
 
-   **Mit GitHub Copilot CLI:** Beim ersten Start fragt Copilot, ob ihr dem
-   Ordner vertraut — wählt „Yes, and remember this folder for future
-   sessions“. Will Copilot einen Befehl ausführen, fragt es nach. Befehle, die
+   **Beim ersten Start fragen beide Agenten, ob ihr dem Ordner vertraut.**
+   Schaut zuerst auf den Pfad in der Frage: Er muss auf `coding-with-ai-lab`
+   enden. Steht dort nur euer Benutzerordner (etwa `/Users/<name>`), habt ihr
+   `cd coding-with-ai-lab` vergessen — dann „No, exit“ wählen, erst `cd`,
+   dann den Agenten neu starten. Stimmt der Pfad: bei Claude Code „Yes, I
+   trust this folder“, bei Copilot „Yes, and remember this folder for future
+   sessions“.
+
+   **Mit GitHub Copilot CLI:** Will Copilot einen Befehl ausführen, fragt es nach. Befehle, die
    nur lesen (zum Beispiel `ls`, `cat`, `grep`), dürft ihr mit „Yes, and
    approve … for the rest of the running session“ für die ganze Sitzung
    erlauben. Alles, was etwas ändert, lest ihr und erlaubt es einzeln. Unter Windows startet ihr `copilot` in PowerShell
