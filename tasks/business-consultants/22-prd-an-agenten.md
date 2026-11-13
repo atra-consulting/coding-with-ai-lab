@@ -35,9 +35,22 @@ ihr seht nur nach, ob der Agent sie behoben hat.
    was fehlt, mit der Nummer der Anforderung. Passt alles: „Okay, setz um."
 3. Beantwortet die Fragen, die der Agent am Plan-Checkpoint stellt;
    durchwinken heißt, dass er sie selbst entscheidet.
-4. Während der Agent umsetzt: Schreibt die Abnahme-Checkliste — je
-   nummerierter Anforderung aus dem PRD eine Zeile, die sich im Browser mit
-   Ja oder Nein prüfen lässt („Klick auf den leeren Stern füllt ihn").
+4. **Während der Agent umsetzt: die Abnahme-Checkliste schreiben.**
+   - **Wo:** in eurer Notizdatei vom Vormittag (oder auf Papier).
+   - **Woher:** aus dem Abschnitt „Anforderungen“ eures PRD — je
+     Anforderung A1, A2 … eine Zeile.
+   - **Wie:** Das PRD sagt, *was* gelten soll; die Checkliste sagt, *wie* ihr
+     es im Browser prüft. Jede Zeile beginnt mit einer Handlung (klicken, neu
+     laden, anmelden) und endet mit einer Frage, die sich mit Ja oder Nein
+     beantworten lässt.
+   - **Warum jetzt:** Die Liste ist fertig, bevor ihr das Ergebnis seht. So
+     prüft ihr gegen euer PRD — nicht gegen das, was der Agent gebaut hat.
+     Aus Anforderungen Abnahmekriterien machen ist BA-Alltag.
+
+   | Nr. | Was ich im Browser tue | Ja / Nein |
+   |---|---|---|
+   | A4 | Stern füllen, Seite neu laden (`Cmd+R` bzw. `F5`): Ist er noch gefüllt? | |
+   | A… | … | |
 5. Lest beim Gegenlesen (Review) nur, ob unter den Befunden etwas Fachliches
    ist („Filter vergisst Zustand beim Neuladen").
 6. Prüft im Browser Zeile für Zeile eurer Checkliste: Stern klicken und
