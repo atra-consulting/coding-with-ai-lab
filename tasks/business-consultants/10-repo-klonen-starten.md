@@ -92,7 +92,12 @@ Anwendung, stoppt sie. Wer lieber die Maus nimmt: Rechtsklick ins Terminal
    Dateien selbst und nennt zu jeder Antwort die Datei, in der sie steht.
 7. **Nachprüfen in VS Code.** Der Agent kann sich irren — deshalb seht ihr
    bei zwei Antworten selbst nach, ob sie in der genannten Datei stehen.
-   1. **Projekt öffnen:** VS Code starten, Menü Datei › Ordner öffnen …,
+   VS Code ist ein Programm zum Ansehen und Bearbeiten von Projektdateien —
+   so etwas wie der Datei-Explorer, nur mit Suche, farbiger Darstellung und
+   Git eingebaut. Ihr habt es in der Vorbereitung installiert.
+   1. **Projekt öffnen:** VS Code starten — macOS: `Cmd+Leertaste`,
+      `Visual Studio Code` tippen, Enter; Windows: Startmenü, `Visual Studio
+      Code`. Dann Menü Datei › Ordner öffnen …,
       im Benutzerordner `coding-with-ai-lab` markieren und „Öffnen“ klicken.
       Fragt VS Code, ob ihr den Autoren vertraut, „Ja“ wählen. Links steht
       jetzt die Liste der Ordner und Dateien (Explorer).
