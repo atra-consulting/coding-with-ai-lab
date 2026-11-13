@@ -28,6 +28,23 @@ Abhängigkeiten und dauert einige Minuten.
 - **Steht im Terminal eine Zeile mit `ERROR:`**, läuft die Anwendung nicht —
   die Lösung steht meist unter Troubleshooting.
 
+## Kopieren und Einfügen mit der Tastatur
+
+Befehle und den Prompt nicht abtippen: Ein einziger Tippfehler, und der
+Befehl scheitert mit einer schwer verständlichen Meldung. Markiert den Text
+hier mit der Maus und kopiert ihn mit der Tastatur:
+
+| | macOS | Windows |
+|---|---|---|
+| Kopieren (Text markiert) | `Cmd+C` | `Ctrl+C` |
+| Einfügen in Browser und VS Code | `Cmd+V` | `Ctrl+V` |
+| Einfügen im Terminal | `Cmd+V` | Git Bash: `Shift+Einfg` oder Rechtsklick › Paste · PowerShell: `Ctrl+V` oder Rechtsklick |
+
+Im Terminal heißt `Ctrl+C` nicht „Kopieren“, sondern „Abbrechen“ — auf dem
+Mac wie unter Windows. Drückt ihr es im Fenster mit der laufenden
+Anwendung, stoppt sie. Wer lieber die Maus nimmt: Rechtsklick ins Terminal
+› Einfügen geht überall.
+
 ## Schritte
 
 1. Öffnet ein Terminal — macOS: Programm „Terminal", Windows: „Git Bash"
