@@ -37,16 +37,30 @@ Prompt ruft sie nur beim Namen auf.
 
 ## Schritte
 
-1. Startet den Agenten im zweiten Terminalfenster im Projektordner —
-   `claude` für Claude Code, `copilot` für GitHub Copilot CLI — und gebt
-   den Prompt ein.
-2. Legt am Plan-Checkpoint PRD und Plan nebeneinander und prüft, ob jede
-   nummerierte Anforderung eine Aufgabe findet — quer durch Datenbank,
-   Server (Backend) und Oberfläche —, ob etwas aus den „Nicht-Zielen" auftaucht und
-   ob der Agent eine offene Frage still entschieden hat — dann schreibt ihm,
-   was fehlt, mit der Nummer der Anforderung. Passt alles: „Okay, setz um."
-3. Beantwortet die Fragen, die der Agent am Plan-Checkpoint stellt;
-   durchwinken heißt, dass er sie selbst entscheidet.
+1. **Gemeinsam: Prompt geben.** Startet den Agenten im zweiten
+   Terminalfenster im Projektordner — `claude` für Claude Code, `copilot`
+   für GitHub Copilot CLI — und gebt den Prompt ein.
+2. **Gemeinsam: Plan gegen das PRD abgleichen.** Öffnet das PRD daneben —
+   aus eurer Notizdatei, als Download `PRD-FIRMA-FAVORIT.md` im
+   Trainingsportal oder im Nachprüf-Fenster aus Aufgabe 11 mit
+   `open -a TextEdit docs/prds/PRD-FIRMA-FAVORIT.md` (Windows:
+   `notepad docs/prds/PRD-FIRMA-FAVORIT.md`). Der Plan hat je Anforderung
+   eine Zeile. Hakt ab, zum Beispiel in eurer Notizdatei:
+
+   | Was ihr prüft | Ja / Nein |
+   |---|---|
+   | A1 steht im Plan | |
+   | A2 … (je Anforderung eine Zeile) | |
+   | Ein Nicht-Ziel taucht im Plan auf | |
+   | Im Plan steht etwas, das ihr nicht bestellt habt | |
+
+   Fehlt etwas oder ist zu viel drin, schreibt es dem Agenten mit der
+   Nummer der Anforderung. Passt alles: „Okay, setz um."
+3. **Fragen des Agenten beantworten.** Fachliche Fragen — wie etwas
+   aussieht, wie es sich verhält — entscheidet ihr. Technische Rückfragen
+   (zum Beispiel zu einem Datumsfeld) dürft ihr nach der Empfehlung des
+   Agenten beantworten — aber bewusst, nicht durchwinken. Durchwinken heißt,
+   dass er alles selbst entscheidet.
 4. **Während der Agent umsetzt: die Abnahme-Checkliste schreiben.**
    - **Wo:** in eurer Notizdatei vom Vormittag (oder auf Papier).
    - **Woher:** aus dem Abschnitt „Anforderungen“ eures PRD — je
@@ -95,11 +109,11 @@ Wie das auf GitHub aussieht, zeigen die Trainer im Rückblick.
 
 ## Folienschritte
 
-1. Prompt geben — das PRD im Repo ist die Spezifikation.
-2. PRD und Plan nebeneinander: jede Anforderung drin?
-3. Offene Fragen des Agenten beantworten, nicht durchwinken.
+1. Gemeinsam: Prompt geben — das PRD im Repo ist die Spezifikation.
+2. Gemeinsam: PRD daneben, Plan abhaken — jede Anforderung drin, nichts extra?
+3. Fragen beantworten: fachliche entscheidet ihr, technische bewusst.
 4. Während der Agent arbeitet: Abnahme-Checkliste aus dem PRD schreiben.
-5. Stern im Browser gegen die Checkliste testen: klicken, neu laden, filtern.
+5. Im CRM unter Firmen gegen die Checkliste prüfen: klicken, neu laden, filtern.
 6. `git diff main --stat`: drei Schichten für ein Sternchen.
 
 ## Prompt
@@ -109,16 +123,18 @@ Firmen als Favorit markieren. So gehst du vor:
 
 1. Lege den Branch feature/firma-favorit an, ausgehend von meinem Branch
    training-1126/<vorname-nachname> aus Aufgabe 11 — dort liegt das PRD.
-2. Zeig mir einen kurzen Plan: welche Dateien du änderst und warum.
-   Wo das PRD eine Frage offen lässt, frag mich, statt selbst zu
-   entscheiden. Warte dann auf mein Okay.
+2. Zeig mir einen kurzen Plan in Fachsprache: je Anforderung aus dem PRD
+   (A1, A2 …) eine Zeile, was du dafür baust. Dateien nur am Rande.
+   Nenne die Nicht-Ziele, die du bewusst weglässt. Wo das PRD eine Frage
+   offen lässt, frag mich, statt selbst zu entscheiden. Warte dann auf
+   mein Okay.
 3. Setze nur um, was ich bestellt habe.
 4. Lass die Änderung einmal von den passenden Reviewer-Subagents prüfen
    (fe-reviewer, be-reviewer, db-reviewer). Zeig mir ihre Befunde und behebe sie.
 5. Committe die Änderung auf dem Branch.
 
 Erstelle keinen PR und pushe nicht — du hast bei diesem Repo nicht die Rechte
-dazu. Schreibe keine Tests, die den Browser automatisieren. Ändere keine Specs
+dazu. Schreibe keine Tests. Ändere keine Specs
 und keine Subagents.
 
 Die Spezifikation steht in docs/prds/PRD-FIRMA-FAVORIT.md — lies sie und behandle sie als
@@ -138,6 +154,8 @@ Branch, sag es mir und hör auf.
 | Problem | Lösung |
 |---|---|
 | Agent meldet, dass das PRD fehlt | Ihr habt kein PRD aus Aufgabe 11. Sagt: „Nimm stattdessen tasks/business-consultants/material/PRD-FIRMA-FAVORIT.md." |
+| Ihr seht die Änderung nicht | Richtige Seite? Links im Menü **Firmen** — nicht Chancen. Dann neu laden mit `Cmd+Shift+R` (Windows `Ctrl+F5`). |
+| Der Agent will die laufende Anwendung beenden | Nein — laufen lassen. Ihr braucht sie zum Prüfen. |
 | Stern verschwindet nach Neuladen | Dem Agenten sagen: „Der Stern ist nach dem Neuladen wieder leer. Finde heraus, warum das Speichern nicht klappt." |
 | „no such column: istFavorit" | Die Datenbank kennt den Favoriten noch nicht. Im ersten Fenster `Ctrl+C`, dann `./start.sh --reset-db` — die Datenbank wird neu aufgebaut. Achtung: Eure eigenen Einträge im CRM sind danach weg. Im Zweifel Handheben. |
 | Der Agent findet die Reviewer nicht | Sagt: „Prüfe die Änderung selbst wie ein Reviewer und zeig mir die Befunde.“ |
