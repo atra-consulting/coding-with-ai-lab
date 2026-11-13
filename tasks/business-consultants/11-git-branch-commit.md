@@ -42,7 +42,9 @@ macht B dieselben Schritte an ihrem Rechner, und A liest mit.
    **Euer PRD** steht in eurer Notizdatei vom Vormittag (Aufgabe 03): den
    ganzen Text kopieren und an der markierten Stelle im Prompt einfügen.
    **Kein PRD zur Hand?** Dann nehmt den zweiten Prompt „Ohne eigenes PRD“ —
-   das Muster-PRD liegt schon im Projekt, ihr müsst nichts einfügen.
+   das Muster-PRD liegt schon im Projekt, ihr müsst nichts einfügen. Zum
+   Lesen gibt es das Muster-PRD auch als Download `PRD-FIRMA-FAVORIT.md` im
+   Trainingsportal unter dieser Aufgabe.
    Lest mit, welche Befehle der Agent ausführt: Ihr kennt sie von der Folie.
    Copilot fragt vor jedem neuen Befehl nach — lest ihn, bevor ihr
    zustimmt.
