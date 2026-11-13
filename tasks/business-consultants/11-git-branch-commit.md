@@ -38,8 +38,11 @@ macht B dieselben Schritte an ihrem Rechner, und A liest mit.
    **Graph** mit den bisherigen Commits; unten links in der Statusleiste steht
    der aktuelle Branch: `main`.
 2. **Dem Agenten den Auftrag geben.** Startet im zweiten Terminal im
-   Projektordner `claude` oder `copilot` und gebt den Prompt unten ein — mit eurem Namen und eurem PRD aus
-   Aufgabe 03. Wer kein PRD hat, nimmt den zweiten Prompt mit dem Muster-PRD.
+   Projektordner `claude` oder `copilot` und gebt den Prompt unten ein — mit eurem Namen und eurem PRD.
+   **Euer PRD** steht in eurer Notizdatei vom Vormittag (Aufgabe 03): den
+   ganzen Text kopieren und an der markierten Stelle im Prompt einfügen.
+   **Kein PRD zur Hand?** Dann nehmt den zweiten Prompt „Ohne eigenes PRD“ —
+   das Muster-PRD liegt schon im Projekt, ihr müsst nichts einfügen.
    Lest mit, welche Befehle der Agent ausführt: Ihr kennt sie von der Folie.
    Copilot fragt vor jedem neuen Befehl nach — lest ihn, bevor ihr
    zustimmt.
