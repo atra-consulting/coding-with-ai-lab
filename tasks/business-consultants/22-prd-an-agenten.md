@@ -7,9 +7,15 @@
 **Ziel:** Der Agent setzt euer eigenes PRD durch alle Schichten um, von der Datenbank bis zur Oberfläche, und ihr nehmt jede PRD-Anforderung einzeln mit Ja oder Nein ab.
 
 Der Bogen vom Vormittag schließt sich: Euer PRD „Firmen als Favorit markieren"
-liegt im Repo. Ihr prüft am Plan-Checkpoint, ob der Agent es verstanden hat,
-und am Ende, ob das Ergebnis dem PRD entspricht. Wer kein eigenes PRD hat,
-nimmt das Muster-PRD — der Agent sagt Bescheid, wenn die Datei fehlt.
+liegt seit Aufgabe 11 im Repo. Ihr prüft am Plan-Checkpoint, ob der Agent es
+verstanden hat, und am Ende, ob das Ergebnis dem PRD entspricht. Wer kein
+eigenes PRD hat, nimmt das Muster-PRD — der Agent sagt Bescheid, wenn die
+Datei fehlt.
+
+Die ersten Schritte — Prompt eingeben, Plan lesen und gegen das PRD
+abgleichen — macht ihr gemeinsam mit den Trainern, danach arbeitet ihr zu
+zweit allein weiter. In Aufgabe 20 wiederholt ihr denselben Ablauf ohne
+Anleitung an einer kleinen Aufgabe.
 
 Der Agent braucht für ein Feature durch alle Schichten Zeit. Die Wartezeit
 gehört zur Aufgabe: Während er arbeitet, schreibt ihr aus eurem PRD die
