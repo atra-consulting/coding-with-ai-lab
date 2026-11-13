@@ -59,7 +59,10 @@ Prompt ruft sie nur beim Namen auf.
    | A… | … | |
 5. Lest beim Gegenlesen (Review) nur, ob unter den Befunden etwas Fachliches
    ist („Filter vergisst Zustand beim Neuladen").
-6. Prüft im Browser Zeile für Zeile eurer Checkliste: Stern klicken und
+6. Öffnet das CRM im Browser unter <http://localhost:7200> (Kachel `admin`
+   anklicken) und geht zur Firmenliste. Ist die Seite schon offen, einmal neu
+   laden (`Cmd+R` bzw. `F5`), damit ihr den neuen Stand seht. Prüft dann
+   Zeile für Zeile eurer Checkliste: Stern klicken und
    Seite neu laden, Checkbox an, Firma bearbeiten und speichern — bleibt der
    Favorit jedes Mal?
 7. Seht euch die Liste der geänderten Dateien an — `git diff main --stat`
