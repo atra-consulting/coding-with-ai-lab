@@ -12,8 +12,17 @@ was er getan hat, ihr seht in VS Code nach, ob es stimmt. Dafür müsst ihr
 wissen, wo ihr nachseht — welcher Branch, welcher Commit, welche Datei,
 welche Zeile.
 
-Die Änderung ist echt: Euer PRD aus Aufgabe 03 kommt als Datei ins Repo,
-dort, wo das Lab seine PRDs ablegt. Der Agent liest sie im Lab.
+**Warum das PRD ins Projekt kommt:** In Aufgabe 22 setzt der Agent euer PRD
+um. Er liest es nicht aus eurer Notizdatei, sondern aus dem Projekt — wie in
+einem echten Team liegt die Anforderung dort, wo der Code liegt. Der Commit
+hält fest, welche Fassung gilt: Fragt später jemand „Was war eigentlich
+bestellt?“, steht es im Projekt, mit Datum und Namen.
+
+**Warum auf einem eigenen Branch:** Der Branch ist euer eigener Arbeitsstand
+neben dem gemeinsamen, freigegebenen Stand `main` — wie ein Entwurf, an dem
+ihr arbeitet, ohne das freigegebene Dokument anzufassen. So kommt sich
+niemand in die Quere, und am Ende von Aufgabe 22 liegen auf eurem Branch
+beide Teile zusammen: euer PRD und der Code, den der Agent dafür schreibt.
 
 Arbeitet zu zweit, aber jede Person an ihrem eigenen Rechner — Branch und PRD
 braucht ihr beide für Aufgabe 22. Erst macht Person A die Schritte 2 bis 4,
