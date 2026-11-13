@@ -1,16 +1,16 @@
-# 11 — Branch und Commit mit dem Agenten, nachsehen in VS Code
+# 11 — Branch und Commit mit dem Agenten, nachsehen im Terminal
 
-**Dauer:** 35 min
+**Dauer:** 30 min
 **Sozialform:** Paare
-**Werkzeug:** Claude Code oder GitHub Copilot CLI, VS Code, Browser
-**Voraussetzung:** Aufgabe 10 erledigt: Lab läuft, VS Code ist mit dem Projektordner offen, euer Agent (`claude` oder `copilot`) hat dort geantwortet
-**Ziel:** Der Agent legt euren Branch an, schreibt euer PRD als Commit fest und meldet, was er getan hat — ihr prüft seine Meldung in VS Code nach: zwei eigene Commits auf eurem Branch, das PRD unter `docs/prds/`, die geänderte Zeile in der Vergleichsansicht.
+**Werkzeug:** Claude Code oder GitHub Copilot CLI, Terminal, Browser
+**Voraussetzung:** Aufgabe 10 erledigt: Lab läuft, euer Agent (`claude` oder `copilot`) hat im Projektordner geantwortet
+**Ziel:** Der Agent legt euren Branch an, schreibt euer PRD als Commit fest und meldet, was er getan hat — ihr prüft seine Meldung in einem eigenen Terminalfenster nach: zwei eigene Commits auf eurem Branch, das PRD unter `docs/prds/`, der geänderte Satz im Vergleich (`git diff`).
 
 So arbeiten Business Consultants mit Git: Die Befehle tippt der Agent, ihr
 gebt den Auftrag und prüft das Ergebnis — wie in Aufgabe 10: Der Agent sagt,
-was er getan hat, ihr seht in VS Code nach, ob es stimmt. Dafür müsst ihr
+was er getan hat, ihr seht im Terminal nach, ob es stimmt. Dafür müsst ihr
 wissen, wo ihr nachseht — welcher Branch, welcher Commit, welche Datei,
-welche Zeile.
+welcher Satz.
 
 **Warum das PRD ins Projekt kommt:** In Aufgabe 22 setzt der Agent euer PRD
 um. Er liest es nicht aus eurer Notizdatei, sondern aus dem Projekt — wie in
@@ -25,19 +25,13 @@ niemand in die Quere, und am Ende von Aufgabe 22 liegen auf eurem Branch
 beide Teile zusammen: euer PRD und der Code, den der Agent dafür schreibt.
 
 Arbeitet zu zweit, aber jede Person an ihrem eigenen Rechner — Branch und PRD
-braucht ihr beide für Aufgabe 22. Erst macht Person A die Schritte 2 bis 4,
-Person B liest die Befehle mit und sagt, was sie in VS Code erwartet. Dann
-macht B dieselben Schritte an ihrem Rechner, und A liest mit.
+braucht ihr beide für Aufgabe 22. Erst macht Person A die Schritte 1 bis 4,
+Person B liest die Befehle mit und sagt, was sie beim Nachprüfen erwartet.
+Dann macht B dieselben Schritte an ihrem Rechner, und A liest mit.
 
 ## Schritte
 
-1. **VS Code ansehen.** VS Code ist aus Aufgabe 10 mit dem Ordner
-   `coding-with-ai-lab` offen (sonst: Datei › Ordner öffnen). Klickt links auf
-   **Quellcodeverwaltung** (das
-   Symbol mit den verzweigten Linien, `Ctrl+Shift+G`). Unten seht ihr den
-   **Graph** mit den bisherigen Commits; unten links in der Statusleiste steht
-   der aktuelle Branch: `main`.
-2. **Dem Agenten den Auftrag geben.** Startet im zweiten Terminal im
+1. **Dem Agenten den Auftrag geben.** Startet im zweiten Terminal im
    Projektordner `claude` oder `copilot` und gebt den Prompt unten ein — mit eurem Namen und eurem PRD.
    **Euer PRD** steht in eurer Notizdatei vom Vormittag (Aufgabe 03): den
    ganzen Text kopieren und an der markierten Stelle im Prompt einfügen.
@@ -48,41 +42,55 @@ macht B dieselben Schritte an ihrem Rechner, und A liest mit.
    Lest mit, welche Befehle der Agent ausführt: Ihr kennt sie von der Folie.
    Copilot fragt vor jedem neuen Befehl nach — lest ihn, bevor ihr
    zustimmt.
-3. **Nachprüfen in VS Code.** Der Agent hat am Ende drei Angaben gemacht:
-   Branch, Ablageort, Commit-Nachricht. Stimmen sie? Notiert für jede: stimmt
-   · stimmt nicht.
-   - Statusleiste: Auf welchem Branch seid ihr jetzt?
-   - Explorer: Wo liegt `PRD-FIRMA-FAVORIT.md`?
-   - Graph: Welcher Commit ist neu — mit welcher Nachricht, von wem, wann?
-   - Klickt auf den Commit und dann auf die Datei: Die Vergleichsansicht zeigt
-     grün, was neu ist.
-4. **Eine Änderung vor dem Commit ansehen.** Sagt dem Agenten: „Ändere im PRD einen
-   Satz, damit er genauer wird. Committe noch nicht.“ In VS Code erscheint die
-   Datei unter **Änderungen** mit einem `M`. Ein Klick zeigt links den alten,
-   rechts den neuen Stand. Passt die Änderung, sagt dem Agenten: „Committe das mit
-   der Nachricht ‚docs: PRD präzisiert‘.“ Im Graph steht jetzt ein zweiter
-   eigener Commit.
-5. **Auf GitHub vergleichen.** Öffnet
-   <https://github.com/atra-consulting/coding-with-ai-lab> im Browser. Die
-   Liste der Commits öffnet ein kleiner Link rechts über der Dateiliste: ein
-   Uhr-Symbol und „… Commits“ (die Zahl wächst laufend).
+2. **Ein Fenster zum Nachprüfen öffnen.** Öffnet ein weiteres
+   Terminalfenster — macOS: `Cmd+N`; Windows: Git Bash noch einmal öffnen.
+   Es zeigt Git-Ausgaben in Farbe und ist besser lesbar als das
+   Agentenfenster.
+
+   **Zuerst `cd coding-with-ai-lab`.** Jedes neue Fenster beginnt im
+   Benutzerordner. Vergesst ihr das, meldet Git `not a git repository`.
+3. **Nachprüfen.** Der Agent hat am Ende drei Angaben gemacht: Branch,
+   Ablageort, Commit-Nachricht. Prüft jede im neuen Fenster und notiert:
+   stimmt · stimmt nicht.
+   - `git status` — die erste Zeile `On branch …` nennt euren Branch.
+   - `open docs/prds` (Windows: `explorer "docs\prds"`) — der Ordner öffnet
+     sich im Finder bzw. Explorer: Liegt `PRD-FIRMA-FAVORIT.md` darin?
+   - `git log --oneline -3` — die letzten drei Commits, der neueste oben:
+     Steht euer Commit mit der gemeldeten Nachricht ganz oben?
+4. **Eine Änderung vor dem Commit ansehen.** Den neuen Satz gebt ihr selbst
+   vor — was im PRD steht, entscheidet ihr, nicht die KI. Mit dem Muster-PRD
+   entscheidet ihr die offene Frage zu A6. Sagt dem Agenten:
+   „Ergänze im PRD bei A6 den Satz: ‚Nach dem Neuladen der Seite ist die
+   Checkbox wieder aus.‘ Lösche dafür die offene Frage. Committe noch nicht.“
+   Mit eigenem PRD: Entscheidet eine offene Frage daraus und gebt den Satz
+   genauso vor.
+
+   Im Nachprüf-Fenster zeigt `git diff` die Änderung: rot mit `-` der alte
+   Stand, grün mit `+` der neue. Steht unten `:` oder `(END)`, kommt ihr mit
+   `q` wieder heraus. Passt die Änderung, sagt dem Agenten: „Committe das
+   mit der Nachricht ‚docs: PRD präzisiert‘.“ Danach zeigt
+   `git log --oneline -3` zwei eigene Commits oben.
+
+   **Ohne zweites Fenster (für Neugierige):** Dieselben Befehle gehen auch
+   direkt im Agentenfenster mit `!` davor, zum Beispiel `! git diff` — ohne
+   `cd`, aber ohne Farben. Das klappt in Claude Code und in Copilot CLI.
+5. **Auf GitHub vergleichen.** Die Trainer haben euch die Commit-Liste auf
+   GitHub gezeigt. Öffnet <https://github.com/atra-consulting/coding-with-ai-lab>
+   und dort den Link rechts über der Dateiliste: Uhr-Symbol und „… Commits“.
 
    ![Der Link „Commits“ rechts über der Dateiliste](bilder/11-github-commits.png)
 
-   Sucht dort eure beiden Commits und danach im Ordner `docs/prds` euer PRD.
-   **Ihr findet beides nicht — und genau das ist das Ergebnis:** Eure Commits
-   liegen nur auf eurem Laptop. Ins gemeinsame Projekt auf GitHub kommen sie
-   erst, wenn sie hochgeladen (Push) und per Pull Request freigegeben werden.
-   Wer mag, öffnet einen geschlossenen Pull Request
-   (<https://github.com/atra-consulting/coding-with-ai-lab/pulls?q=is%3Aclosed>)
-   und sieht sich den Reiter „Files changed“ an.
+   Sucht eure beiden Commits. **Ihr findet sie nicht — und genau das ist das
+   Ergebnis:** Eure Commits liegen nur auf eurem Laptop. Ins gemeinsame
+   Projekt auf GitHub kommen sie erst, wenn sie hochgeladen (Push) und per
+   Pull Request freigegeben werden.
 
 ## Folienschritte
 
-1. VS Code: Quellcodeverwaltung ansehen.
-2. Agent: Branch anlegen, PRD ablegen, committen — mitlesen.
-3. In VS Code nachprüfen: Stimmt, was der Agent meldet?
-4. Satz ändern lassen, in VS Code ansehen, committen lassen.
+1. Agent: Branch anlegen, PRD ablegen, committen — mitlesen.
+2. Neues Terminalfenster — zuerst `cd coding-with-ai-lab`.
+3. Nachprüfen: `git status`, `open docs/prds`, `git log --oneline -3`.
+4. Satz selbst vorgeben, mit `git diff` ansehen, dann committen lassen.
 5. Auf GitHub: Warum fehlt euer Commit?
 
 ## Prompt
@@ -114,12 +122,12 @@ wo die Datei liegt und wie der Commit heißt.
 
 ## Abnahme
 
-- [ ] In VS Code steht euer Branch in der Statusleiste, und der Graph zeigt
+- [ ] `git status` zeigt euren Branch, und `git log --oneline -3` zeigt
       zwei eigene Commits darauf.
-- [ ] Ihr könnt zeigen, wo das PRD liegt und welche Zeile ihr im zweiten
+- [ ] Ihr könnt zeigen, wo das PRD liegt und welchen Satz ihr im zweiten
       Commit geändert habt.
-- [ ] Ihr habt die drei Angaben des Agenten in VS Code nachgeprüft und könnt
-      sagen, ob sie stimmen.
+- [ ] Ihr habt die drei Angaben des Agenten im Terminal nachgeprüft und
+      könnt sagen, ob sie stimmen.
 - [ ] Ihr könnt sagen, warum euer Commit auf GitHub fehlt.
 - [ ] Ihr erkennt die Befehle wieder, die der Agent benutzt hat:
       `git switch -c`, `git add`, `git commit`, `git status`, `git log`.
@@ -129,8 +137,10 @@ wo die Datei liegt und wie der Commit heißt.
 | Problem | Lösung |
 |---|---|
 | Der Agent meldet `Please tell me who you are` | Git kennt euch auf diesem Rechner noch nicht. Sagt dem Agenten: „Trag für Git meinen Namen ‹Name› und meine E-Mail ‹Adresse› ein und wiederhole den Commit.“ Das Lab bleibt lokal; jede Adresse genügt. |
-| VS Code zeigt keine Quellcodeverwaltung oder keinen Graph | Falscher Ordner: genau `coding-with-ai-lab` öffnen, nicht den Ordner darüber. Fehlt nur der Graph: VS Code aktualisieren und im Bereich Quellcodeverwaltung über `…` den Graph einblenden. |
-| Der neue Commit erscheint nicht | Im Bereich Quellcodeverwaltung auf das Aktualisieren-Symbol klicken. |
+| `fatal: not a git repository` | Das Fenster steht im Benutzerordner. `cd coding-with-ai-lab`, dann den Befehl wiederholen. |
+| Unten steht `:` oder `(END)`, das Fenster nimmt keine Befehle an | Git zeigt eine lange Ausgabe seitenweise. `q` drücken. |
+| `git diff` zeigt nichts | Der Agent hat schon committet. `git show` zeigt den letzten Commit mit rot und grün. |
+| `git status` zeigt `On branch main` | Der Agent hat keinen eigenen Branch angelegt. Handheben — die Trainer helfen, den Commit auf euren Branch zu bringen. |
 | Der Agent will pushen oder einen Pull Request anlegen | Ablehnen. Im Lab-Repo fehlen euch die Rechte, und euer Branch bleibt lokal. |
 | Der Agent macht mehr als bestellt | Stoppen mit `Esc` und sagen: „Nur die drei Schritte, sonst nichts.“ |
 
