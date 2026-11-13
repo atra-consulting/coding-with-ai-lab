@@ -60,7 +60,8 @@ Prompt ruft sie nur beim Namen auf.
 5. Lest beim Gegenlesen (Review) nur, ob unter den Befunden etwas Fachliches
    ist („Filter vergisst Zustand beim Neuladen").
 6. Öffnet das CRM im Browser unter <http://localhost:7200> (Kachel `admin`
-   anklicken) und geht zur Firmenliste. Ist die Seite schon offen, einmal neu
+   anklicken) und geht links im Menü auf **Firmen** — der Stern
+   steht in der Firmenliste, nicht bei den Chancen. Ist die Seite schon offen, einmal neu
    laden (`Cmd+R` bzw. `F5`), damit ihr den neuen Stand seht. Prüft dann
    Zeile für Zeile eurer Checkliste: Stern klicken und
    Seite neu laden, Checkbox an, Firma bearbeiten und speichern — bleibt der
