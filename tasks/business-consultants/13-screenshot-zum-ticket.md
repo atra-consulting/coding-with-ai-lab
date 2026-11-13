@@ -27,7 +27,7 @@ als Text ins Ticket — genau das ist die Übung.
    Assistent etwas dazuerfunden? Sind seine offenen Fragen berechtigt?
    Beantwortet sie oder lasst sie bewusst als offene Frage im Ticket stehen.
 4. **Ticket anlegen.** Öffnet <http://localhost:7200/admin/tickets>
-   (Login `admin` / `admin123`) und klickt **Neues Ticket**.
+   (Kachel `admin` anklicken) und klickt **Neues Ticket**.
    - **Typ:** `FEATURE` — oder `BUG`, wenn der Screenshot einen Fehler zeigt.
    - **Titel:** kurz und fachlich, aus Sicht des Nutzers.
    - **Beschreibung:** die geprüfte User Story mit Akzeptanzkriterien, offenen
@@ -80,7 +80,7 @@ Halte dich an das, was im Bild steht. Keine zusätzlichen Features.
 
 | Problem | Lösung |
 |---|---|
-| Kein „Neues Ticket" auf dem Board | Anlegen dürfen nur Admins: ab- und als `admin` / `admin123` wieder anmelden. |
+| Kein „Neues Ticket" auf dem Board | Anlegen dürfen nur Admins: abmelden und die Kachel `admin` anklicken. |
 | Der Assistent liest die Handschrift falsch | Nachfragen mit dem, was ihr seht: „Im Kreis steht ‚…', nicht ‚…'." Oder den Ausschnitt größer zuschneiden und noch einmal geben. |
 | Die Story enthält Dinge, die nicht im Bild stehen | Streichen. Wenn sie euch sinnvoll erscheinen: als offene Frage ins Ticket, nicht als Anforderung. |
 | Kein Bild-Upload im Chat-Assistenten | Freie Stufen begrenzen manchmal Uploads — zu zweit an einem Rechner weiterarbeiten, auf dem es geht. |
