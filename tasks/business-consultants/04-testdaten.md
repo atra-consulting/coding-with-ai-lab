@@ -11,6 +11,8 @@ seit 90 Tagen niemand Kontakt hatte. Bevor so eine Liste gebaut wird, braucht
 das Team Testdaten: ein paar erfundene Firmen und Aktivitäten, bei denen
 vorher feststeht, welche Firmen auf der Liste landen müssen. Mit diesen Daten
 prüft später jemand — ein Tester oder ein Agent —, ob die Liste stimmt.
+Am Nachmittag macht ihr dasselbe mit der Abnahme-Checkliste: vorher
+festlegen, was herauskommen muss, dann dagegen prüfen.
 
 Das Wertvollste daran sind die Grenzfälle: genau 90 Tage, eine Firma ganz
 ohne Aktivität, eine Wiedervorlage in der Zukunft. Ob eine geplante Aufgabe
@@ -21,15 +23,19 @@ Assistent.
 
 1. **Selbst entscheiden.** Legt vor dem Prompt fest: Zählt eine geplante
    Aufgabe (Wiedervorlage) in der Zukunft als Kontakt? Zählt eine Aktivität,
-   die genau 90 Tage vor dem Stichtag liegt? Schreibt eure Antworten auf.
+   die genau 90 Tage vor dem Stichtag liegt? Schreibt eure Antworten auf. Ohne eure Entscheidung entscheidet der
+   Assistent still, und die Erwartungswerte beruhen auf seiner Annahme.
 2. **Testfälle anfordern.** Gebt Prompt 1 ein und tragt eure beiden
    Entscheidungen ein.
 3. **Nachzählen.** Prüft den Testdatensatz Zeile für Zeile von Hand: Gehört
    jede Firma, die der Assistent als „auf der Liste“ markiert, wirklich
-   darauf? Rechnet die Tage zum Stichtag selbst nach.
+   darauf? Rechnet die Tage zum Stichtag selbst nach. Rechnen und Zählen sind
+   Schwächen eines Sprachmodells — ein falscher Erwartungswert macht später
+   jeden Test falsch.
 4. **Zweite Runde.** Ändert eine Entscheidung aus Schritt 1 und lasst die
    Erwartungswerte mit Prompt 2 neu bestimmen. Ändern sich genau die Firmen,
-   die sich ändern müssten?
+   die sich ändern müssten? So seht ihr, wie viel eine einzige fachliche
+   Entscheidung am Ergebnis ändert.
 
 ## Folienschritte
 

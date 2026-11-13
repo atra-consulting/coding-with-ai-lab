@@ -51,20 +51,27 @@ Anwendung, stoppt sie. Wer lieber die Maus nimmt: Rechtsklick ins Terminal
 1. Öffnet ein Terminal — macOS: Programm „Terminal", Windows: „Git Bash"
    (nicht PowerShell, damit `./start.sh` funktioniert) — und werdet mit
    `pwd` (wo bin ich?), `ls` (was liegt hier?) und `cd ~` (zurück in den
-   Benutzerordner) warm.
+   Benutzerordner) warm. Ihr braucht die Befehle gleich wieder: Der Agent arbeitet
+   in dem Ordner, in dem ihr ihn startet.
 2. Prüft die Werkzeuge mit `node --version` (mindestens 20.19, mit
    GitHub Copilot CLI mindestens 22, empfohlen 24 LTS) und `git --version`;
    fehlt eine Versionsnummer, hilft `docs/SETUP.md` im Lab-Repo oder
-   Handheben.
+   Handheben. Ohne passende Node.js-Version startet das CRM nicht, ohne
+   Git könnt ihr nicht klonen — besser jetzt merken als mitten im Start.
 3. Klont und startet das Lab:
    `git clone https://github.com/atra-consulting/coding-with-ai-lab.git`,
    `cd coding-with-ai-lab`, `./start.sh`, dann <http://localhost:7200>
    im Browser öffnen und die Kachel `admin` anklicken. **Schon in der Vorbereitung
    geklont?** Dann `git clone` weglassen: nur `cd coding-with-ai-lab` und
    `./start.sh`.
+   Klonen holt eine Kopie des Projekts auf euren Laptop. In genau diesen
+   Dateien arbeitet am Nachmittag der Agent, und in eurer eigenen laufenden
+   Anwendung prüft ihr sein Ergebnis.
 4. Klickt fünf Minuten durch Firmen, Personen, Chancen, Aktivitäten und
    Dashboard und legt eine Chance an — ihr braucht das Bild der Anwendung
-   im Lab, wenn der Agent behauptet, etwas sei fertig.
+   im Lab, wenn der Agent behauptet, etwas sei fertig. Das Chancen-Formular
+   kennt ihr dann schon: In Aufgabe 20 steckt dort der Fehler mit dem grauen
+   Speichern-Knopf.
 5. **Agent starten.** Öffnet ein zweites Terminalfenster — das erste zeigt
    die Anwendung und bleibt offen:
    - macOS: im Terminal `Cmd+N` (neues Fenster) oder Menü Shell › Neues Fenster

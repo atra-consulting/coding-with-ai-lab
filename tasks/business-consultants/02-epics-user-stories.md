@@ -27,16 +27,23 @@ so wie im Muster-PRD. Alles andere entscheidet ihr frei.
 ## Schritte
 
 1. **Epics und Stories anfordern.** Gebt Prompt 1 ein — im selben Gespräch
-   wie Aufgabe 01 oder in einem neuen mit den Rohnotizen im Anhang.
+   wie Aufgabe 01 oder in einem neuen mit den Rohnotizen im Anhang. Epics zeigen das große
+   Ganze. Weiter geht heute nur die Favoriten-Story; die anderen zeigen euch,
+   was nicht dazugehört.
 2. **Annahmen lesen.** Der Assistent listet seine Annahmen auf. Markiert die,
-   die eine fachliche Entscheidung sind — nicht eine technische.
+   die eine fachliche Entscheidung sind — nicht eine technische. Fachliche
+   Annahmen betreffen, was Nutzer sehen und tun dürfen — die entscheidet
+   ihr. Technische, etwa wo etwas gespeichert wird, entscheidet das Team.
 3. **Selbst entscheiden.** Entscheidet mindestens drei Annahmen und schreibt
    die Entscheidungen mit Prompt 2 zurück. Was ihr nicht entscheiden könnt,
    bleibt als offene Frage stehen — mit dem Namen der Person aus den Notizen,
-   die es entscheiden müsste.
+   die es entscheiden müsste. Mit Namen ist klar, wer antworten muss —
+   sonst bleibt die Frage liegen, und am Nachmittag entscheidet der Agent
+   sie selbst.
 4. **Kritisch prüfen lassen.** Lasst die Story „Firmen als Favorit
    markieren“ mit Prompt 3 aus Sicht einer Testerin prüfen: Was fehlt, was lässt sich nicht prüfen? Schärft die Kriterien nach, die sich nicht mit Ja oder
-   Nein prüfen lassen.
+   Nein prüfen lassen. Nur solche Kriterien könnt ihr am Nachmittag im Browser
+   abhaken.
 5. **Aufheben.** Speichert die Story „Firmen als Favorit markieren“ samt
    Kriterien in eurer Notizdatei — Aufgabe 03 macht daraus ein PRD.
 

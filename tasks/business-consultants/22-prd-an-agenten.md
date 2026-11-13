@@ -39,7 +39,9 @@ Prompt ruft sie nur beim Namen auf.
 
 1. **Gemeinsam: Prompt geben.** Startet den Agenten im zweiten
    Terminalfenster im Projektordner — `claude` für Claude Code, `copilot`
-   für GitHub Copilot CLI — und gebt den Prompt ein.
+   für GitHub Copilot CLI — und gebt den Prompt ein. Der Prompt verbietet, das PRD
+   zu ändern: Es ist euer Maßstab für die Abnahme. Ändert der Agent es,
+   misst er sich an seinem eigenen Text.
 2. **Gemeinsam: Plan gegen das PRD abgleichen.** Öffnet das PRD daneben —
    aus eurer Notizdatei, als Download `PRD-FIRMA-FAVORIT.md` im
    Trainingsportal oder im Nachprüf-Fenster aus Aufgabe 11 mit
@@ -85,7 +87,9 @@ Prompt ruft sie nur beim Namen auf.
    laden (`Cmd+R` bzw. `F5`), damit ihr den neuen Stand seht. Prüft dann
    Zeile für Zeile eurer Checkliste: Stern klicken und
    Seite neu laden, Checkbox an, Firma bearbeiten und speichern — bleibt der
-   Favorit jedes Mal?
+   Favorit jedes Mal? Neu laden zeigt, ob der Stern wirklich gespeichert ist
+   und nicht nur auf dem Bildschirm leuchtet; Bearbeiten und Speichern zeigt,
+   ob der Favorit dabei erhalten bleibt.
 7. Seht euch die Liste der geänderten Dateien an — `git diff main --stat`
    zeigt Dateien in drei Bereichen: Datenbank (`backend/src/db`), Server
    (`backend/src/routes`) und Oberfläche (`frontend/`), dazu euer PRD aus

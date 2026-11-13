@@ -24,21 +24,30 @@ nicht verstehen; ihr seht nur nach, ob der Agent sie behoben hat.
 ## Schritte
 
 1. Stellt den Fehler nach: im CRM Chancen → „Neue Chance", Titel und Firma
-   ausfüllen, ins Feld **Wert** `-100` eintragen.
+   ausfüllen, ins Feld **Wert** `-100` eintragen. In den Fehlerbericht kommt nur, was
+   ihr selbst gesehen habt — und ihr wisst danach, wie ihr den Fix prüft.
 2. Schreibt drei Zeilen auf — **Schritte · Beobachtet · Erwartet**. Das ist
-   euer Fehlerbericht, und er kommt gleich in den Prompt.
+   euer Fehlerbericht, und er kommt gleich in den Prompt. Ohne „Erwartet“
+   entscheidet der Agent selbst, wie es richtig aussieht. Gegen diese drei
+   Zeilen hakt ihr am Ende ab.
 3. Startet den Agenten im zweiten Terminalfenster im Projektordner —
    `claude` für Claude Code, `copilot` für GitHub Copilot CLI — und gebt
-   den Prompt ein, mit eurem Fehlerbericht an der markierten Stelle.
+   den Prompt ein, mit eurem Fehlerbericht an der markierten Stelle. Der Prompt legt
+   den Ablauf fest: eigener Branch, damit `main` unberührt bleibt; Plan und
+   Warten, damit ihr vor dem Bauen eingreifen könnt; „nur, was bestellt
+   ist“, weil Agenten gern Ungefragtes verbessern.
 4. Prüft am Plan-Checkpoint: Der Plan sollte zwei Stellen nennen — das
    Chancen-Formular (im Dateinamen steht `chance-form`) und die Prüfung der
    Eingaben auf dem Server (`validation.ts`). Steht noch etwas anderes drin,
    fragt: „Wozu brauchst du das?" Passt er, schreibt „Okay, setz um." —
-   sonst: „Nur den Hinweis und die Prüfung, sonst nichts."
+   sonst: „Nur den Hinweis und die Prüfung, sonst nichts." Am Plan könnt
+   ihr noch alles ändern — was ihr hier durchwinkt, setzt er um.
 5. Lest nach dem Gegenlesen (Review), was bemängelt wurde — ihr müsst es
    nicht verstehen, ihr müsst sehen, ob der Agent es behoben hat.
 6. Prüft das Ergebnis im Browser und danach den Diff:
-   `git diff main --stat`.
+   `git diff main --stat`. Der Browser zeigt, ob der Fix tut, was unter
+   „Erwartet“ steht. Die Dateiliste zeigt, ob der Agent nur dort geändert
+   hat, wo der Plan es angekündigt hat.
 
 ## Folienschritte
 

@@ -30,12 +30,18 @@ wenn ihr anders entscheidet, aber lasst keine Frage offen.
    den Prompt ein.
 4. Prüft am Plan-Checkpoint, ob drinsteht, wie mit leerer
    Wahrscheinlichkeit umgegangen wird — gibt der Plan eure Entscheidung
-   anders wieder, schreibt dem Agenten, was gilt.
+   anders wieder, schreibt dem Agenten, was gilt. Eine Chance ohne
+   Wahrscheinlichkeit ist der Fall, den der Agent sonst selbst entscheidet —
+   dann stimmt die Summe nicht mit eurer Handrechnung.
 5. Fragt nach dem Gegenlesen (Review): „Gibt es einen automatischen Test
    für eine Chance ohne Wahrscheinlichkeit?" — das ist der Fall, der später
-   kaputtgeht.
+   kaputtgeht. Ein automatischer Test rechnet ihn bei jeder künftigen
+   Änderung von selbst nach.
 6. Macht die Rechenprobe im Browser und seht euch den Diff an:
-   `git diff main --stat`.
+   `git diff main --stat`. Steigt die Zahl in der Rechenprobe (Abnahme)
+   um 5.000, stimmt die Formel; fällt sie bei GEWONNEN wieder, stimmt die
+   Regel für die Phasen. Der Diff zeigt, ob wie bestellt nur die
+   Chancen-Liste geändert wurde.
 
 ## Folienschritte
 

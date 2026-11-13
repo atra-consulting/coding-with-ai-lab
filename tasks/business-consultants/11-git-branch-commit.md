@@ -41,7 +41,9 @@ Dann macht B dieselben Schritte an ihrem Rechner, und A liest mit.
    Trainingsportal unter dieser Aufgabe.
    Lest mit, welche Befehle der Agent ausführt: Ihr kennt sie von der Folie.
    Copilot fragt vor jedem neuen Befehl nach — lest ihn, bevor ihr
-   zustimmt.
+   zustimmt. Ihr lest mit, weil ihr den Agenten am Nachmittag genauso
+   führt: sehen, was er tut, und stoppen, wenn er etwas anderes tut als
+   bestellt — zum Beispiel pushen will.
 2. **Ein Fenster zum Nachprüfen öffnen.** Öffnet ein weiteres
    Terminalfenster — macOS: `Cmd+N`; Windows: Git Bash noch einmal öffnen.
    Es zeigt Git-Ausgaben in Farbe und ist besser lesbar als das
@@ -69,7 +71,9 @@ Dann macht B dieselben Schritte an ihrem Rechner, und A liest mit.
    Stand, grün mit `+` der neue. Steht unten `:` oder `(END)`, kommt ihr mit
    `q` wieder heraus. Passt die Änderung, sagt dem Agenten: „Committe das
    mit der Nachricht ‚docs: PRD präzisiert‘.“ Danach zeigt
-   `git log --oneline -3` zwei eigene Commits oben.
+   `git log --oneline -3` zwei eigene Commits oben. Git hält jede Fassung
+   einzeln fest: Wer später fragt, welche Fassung des PRD der Agent
+   umgesetzt hat, findet beide in der Historie.
 
    **Ohne zweites Fenster (für Neugierige):** Dieselben Befehle gehen auch
    direkt im Agentenfenster mit `!` davor, zum Beispiel `! git diff` — ohne

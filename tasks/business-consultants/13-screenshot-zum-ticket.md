@@ -19,9 +19,13 @@ als Text ins Ticket — genau das ist die Übung.
 
 1. **Erst selbst hinsehen.** Öffnet den Screenshot. Notiert in zwei, drei
    Stichpunkten, was sich ändern soll und welcher Bildschirm des CRM betroffen
-   ist. Was könnt ihr nicht eindeutig lesen?
+   ist. Was könnt ihr nicht eindeutig lesen? Eure Stichpunkte sind der
+   Vergleich: So merkt ihr, ob der Assistent etwas übersieht oder
+   dazuerfindet.
 2. **Den Assistenten lesen lassen.** Gebt den Screenshot eurem Chat-Assistenten
-   und nutzt den Prompt unten.
+   und nutzt den Prompt unten. Der Prompt verlangt erst eine Beschreibung:
+   So seht ihr, ob der Assistent das Bild richtig gelesen hat, bevor er
+   daraus eine Story macht.
 3. **Gegen das Bild prüfen.** Vergleicht die Antwort mit dem Screenshot und mit
    euren Notizen: Steht jede handschriftliche Änderung in der Story? Hat der
    Assistent etwas dazuerfunden? Sind seine offenen Fragen berechtigt?
@@ -32,11 +36,13 @@ als Text ins Ticket — genau das ist die Übung.
    - **Titel:** kurz und fachlich, aus Sicht des Nutzers.
    - **Beschreibung:** die geprüfte User Story mit Akzeptanzkriterien, offenen
      Fragen und einer Zeile zur Herkunft: „Vorlage: Screenshot
-     ‹Dateiname› vom ‹Datum›".
+     ‹Dateiname› vom ‹Datum›". Der Screenshot kommt nicht mit ins
+     Ticket — die Zeile sagt allen, woher die Anforderung stammt.
 5. **Ticket prüfen.** Das Ticket steht in der Spalte **Definition**, Owner
    (zuständig) ist der Mensch. Öffnet es und lest es so, als hättet ihr den
    Screenshot nie gesehen: Versteht man, was zu tun ist? Merkt euch die Ticketnummer — Aufgabe
-   23 macht mit genau diesem Ticket weiter.
+   23 macht mit genau diesem Ticket weiter. Dort liest die KI euer Ticket genau so:
+   nur Beschreibung und Kommentare, nicht den Screenshot.
 
 **Gebt das Ticket noch nicht an die KI ab** — kein „An KI übergeben", kein „Nach
 Bereit". Es bleibt in Definition; die nächsten Schritte im Prozess kommen in

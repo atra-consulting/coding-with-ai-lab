@@ -38,9 +38,13 @@ das Feature für den Agenten am Nachmittag zu groß.
 3. **Offene Fragen entscheiden.** Lest die offenen Fragen am Ende des PRD.
    Entscheidet sie und lasst das PRD mit Prompt 2 überarbeiten.
    Achtet darauf, dass jede Entscheidung als nummerierte Anforderung oder als
-   Nicht-Ziel im PRD steht.
+   Nicht-Ziel im PRD steht. Der Agent liest am Nachmittag die Datei, nicht euren
+   Chat. Und jede nummerierte Anforderung wird in Aufgabe 22 eine Zeile
+   eurer Abnahme-Checkliste.
 4. **Aus Entwicklersicht prüfen lassen.** Lasst das PRD mit Prompt 3
-   prüfen: Welche Fragen bleiben einem Entwickler offen? Beantwortet die ein
+   prüfen: Welche Fragen bleiben einem Entwickler offen? Ein Agent fragt
+   selten nach, er baut das Wahrscheinliche — darum schließt ihr die Lücken
+   jetzt. Beantwortet die ein
    bis zwei Fragen, die eine echte fachliche Lücke zeigen — die Antwort wird
    eine Anforderung oder ein Nicht-Ziel. Technische Fragen (zum Beispiel, wo
    etwas gespeichert wird) entscheidet das Team, die lasst ihr weg. Unter
