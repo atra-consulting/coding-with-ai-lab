@@ -63,8 +63,16 @@ macht B dieselben Schritte an ihrem Rechner, und A liest mit.
    der Nachricht ‚docs: PRD präzisiert‘.“ Im Graph steht jetzt ein zweiter
    eigener Commit.
 5. **Auf GitHub vergleichen.** Öffnet
-   <https://github.com/atra-consulting/coding-with-ai-lab> im Browser: oben die
-   Liste der Commits, darunter der Ordner `docs/prds`. Wo ist euer Commit?
+   <https://github.com/atra-consulting/coding-with-ai-lab> im Browser. Die
+   Liste der Commits öffnet ein kleiner Link rechts über der Dateiliste: ein
+   Uhr-Symbol und „… Commits“ (die Zahl wächst laufend).
+
+   ![Der Link „Commits“ rechts über der Dateiliste](bilder/11-github-commits.png)
+
+   Sucht dort eure beiden Commits und danach im Ordner `docs/prds` euer PRD.
+   **Ihr findet beides nicht — und genau das ist das Ergebnis:** Eure Commits
+   liegen nur auf eurem Laptop. Ins gemeinsame Projekt auf GitHub kommen sie
+   erst, wenn sie hochgeladen (Push) und per Pull Request freigegeben werden.
    Wer mag, öffnet einen geschlossenen Pull Request
    (<https://github.com/atra-consulting/coding-with-ai-lab/pulls?q=is%3Aclosed>)
    und sieht sich den Reiter „Files changed“ an.
