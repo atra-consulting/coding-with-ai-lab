@@ -2,14 +2,14 @@
 
 **Dauer:** 45 min
 **Sozialform:** einzeln
-**Werkzeug:** Terminal, Browser, VS Code, Claude Code oder GitHub Copilot CLI
-**Ziel:** Das CRM-Lab läuft unter `localhost:7200`, eine Chance ist angelegt, und euer Agent hat euch das Repository erklärt — ihr habt zwei seiner Antworten in VS Code nachgeprüft und könnt sagen, ob sie stimmen.
+**Werkzeug:** Terminal, Browser, Claude Code oder GitHub Copilot CLI
+**Ziel:** Das CRM-Lab läuft unter `localhost:7200`, eine Chance ist angelegt, und euer Agent hat euch das Repository erklärt — ihr habt zwei seiner Antworten im CRM nachgeprüft und könnt sagen, ob sie stimmen.
 
 Die drei Handgriffe, die jeder Entwickler täglich macht — Terminal öffnen,
 Repository klonen, Anwendung starten —, macht ihr selbst. Danach liest ihr
 das Repository so, wie Business Consultants es tun: Ihr fragt den Agenten,
-und er sucht die Antworten. Eure Arbeit ist das Nachprüfen — die Datei, die
-er nennt, öffnet ihr in VS Code und seht nach, ob es dort wirklich steht.
+und er sucht die Antworten. Eure Arbeit ist das Nachprüfen — was er über
+die Anwendung sagt, seht ihr im CRM im Browser nach.
 Das ist zugleich das Setup für das Lab am Nachmittag. Der erste Start lädt
 Abhängigkeiten und dauert einige Minuten.
 
@@ -38,7 +38,7 @@ hier mit der Maus und kopiert ihn mit der Tastatur:
 | | macOS | Windows |
 |---|---|---|
 | Kopieren (Text markiert) | `Cmd+C` | `Ctrl+C` |
-| Einfügen in Browser und VS Code | `Cmd+V` | `Ctrl+V` |
+| Einfügen in Browser und Notizdatei | `Cmd+V` | `Ctrl+V` |
 | Einfügen im Terminal | `Cmd+V` | Git Bash: `Shift+Einfg` oder Rechtsklick › Paste · PowerShell: `Ctrl+V` oder Rechtsklick |
 
 Im Terminal heißt `Ctrl+C` nicht „Kopieren“, sondern „Abbrechen“ — auf dem
@@ -90,30 +90,19 @@ Anwendung, stoppt sie. Wer lieber die Maus nimmt: Rechtsklick ins Terminal
 
 6. **Den Agenten fragen.** Gebt den Prompt unten ein. Der Agent liest die
    Dateien selbst und nennt zu jeder Antwort die Datei, in der sie steht.
-7. **Nachprüfen in VS Code.** Der Agent kann sich irren — deshalb seht ihr
-   bei zwei Antworten selbst nach, ob sie in der genannten Datei stehen.
-   VS Code ist ein Programm zum Ansehen und Bearbeiten von Projektdateien —
-   so etwas wie der Datei-Explorer, nur mit Suche, farbiger Darstellung und
-   Git eingebaut. Ihr habt es in der Vorbereitung installiert.
-   1. **Projekt öffnen:** VS Code starten — macOS: `Cmd+Leertaste`,
-      `Visual Studio Code` tippen, Enter; Windows: Startmenü, `Visual Studio
-      Code`. Dann Menü Datei › Ordner öffnen …,
-      im Benutzerordner `coding-with-ai-lab` markieren und „Öffnen“ klicken.
-      Fragt VS Code, ob ihr den Autoren vertraut, „Ja“ wählen. Links steht
-      jetzt die Liste der Ordner und Dateien (Explorer).
-   2. **Antwort aussuchen:** Nehmt eine Antwort des Agenten, zum Beispiel zu
-      Frage 5 (Phasen einer Chance), und merkt euch die Datei, die er nennt,
-      etwa `docs/specs/DOMAIN.md`.
-   3. **Datei öffnen:** `Cmd+P` (Windows `Ctrl+P`) drücken, den Dateinamen
-      tippen, zum Beispiel `DOMAIN`, und Enter. Oder links im Explorer durch
-      die Ordner klicken: `docs` › `specs` › `DOMAIN.md`.
-   4. **Stelle finden:** `Cmd+F` (Windows `Ctrl+F`) und ein Stichwort aus
-      der Antwort suchen, zum Beispiel `Phase`.
-   5. **Vergleichen und notieren:** Steht es dort so, wie der Agent sagt?
-      Notiert: stimmt · stimmt halb · stimmt nicht.
+7. **Nachprüfen im CRM.** Der Agent kann sich irren — deshalb seht ihr bei
+   zwei Antworten selbst in der laufenden Anwendung nach. Genauso prüft ihr
+   am Nachmittag, ob stimmt, was der Agent über seine Arbeit sagt.
+   1. **Phasen (Frage 5):** Im CRM links **Chancen** › **Neue Chance**, dann
+      das Auswahlfeld **Phase** aufklappen. Stehen dort dieselben Phasen wie
+      in der Antwort? Danach **Abbrechen**.
+   2. **Benutzer (Frage 4):** Oben rechts **Abmelden**. Die Anmeldeseite
+      zeigt je Benutzer eine Kachel mit Namen und Rolle. Stimmen Benutzer und
+      Rollen mit der Antwort? Danach wieder die Kachel `admin` anklicken.
+   3. **Notieren:** je Antwort stimmt · stimmt halb · stimmt nicht.
 
-   Dasselbe für eine zweite Antwort. Lasst VS Code offen — ihr braucht es in
-   Aufgabe 11 wieder.
+   Die übrigen Antworten hört ihr euch an; die Tabelle unten sagt, was sich
+   im CRM prüfen lässt und was nicht.
 8. Beendet den Agenten — Claude Code mit `/exit`, Copilot mit zweimal
    `Ctrl+C`. Die Anwendung im ersten Fenster läuft weiter.
 
@@ -124,7 +113,7 @@ Anwendung, stoppt sie. Wer lieber die Maus nimmt: Rechtsklick ins Terminal
 3. Anmelden, durchklicken, eine Chance anlegen.
 4. Zweites Fenster: `claude` oder `copilot`.
 5. Prompt aus der Aufgabe: sechs Fragen an den Agenten.
-6. Zwei Antworten in VS Code nachprüfen.
+6. Zwei Antworten im CRM nachprüfen: Phasen und Benutzer.
 
 ## Prompt
 
@@ -148,20 +137,19 @@ oder den Ordner, in dem du sie gefunden hast:
 - [ ] Die Anwendung läuft, und im Browser steht die von euch angelegte Chance.
 - [ ] Euer Agent startet im Projektordner ohne erneute Anmeldung und hat die
       sechs Fragen beantwortet, jede mit einer Datei oder einem Ordner.
-- [ ] Zwei Antworten habt ihr in VS Code nachgeprüft und könnt sagen, ob sie
-      stimmen.
-- [ ] VS Code ist mit dem Ordner `coding-with-ai-lab` offen.
+- [ ] Zwei Antworten — Phasen und Benutzer — habt ihr im CRM nachgeprüft
+      und könnt sagen, ob sie stimmen.
 
-## Zum Nachprüfen: wo die Antworten stehen
+## Zum Nachprüfen: wo ihr es im CRM seht
 
-| Frage | Wo die Antwort steht |
-|---|---|
-| Was ist das, wie starte ich es? | `README.MD`, auf Deutsch `docs/welcome_DE.MD` |
-| Was bedeuten Firma, Chance, Phase fachlich? | `docs/specs/DOMAIN.md` |
-| Wo liegt Oberfläche, wo Logik, wo Daten? | Ordner `frontend/src/app/features` · Ordner `backend/src/routes` · Datei `backend/src/db/schema/schema.ts` |
-| Mit welchen Benutzern kann man sich anmelden? | `README.MD`, Abschnitt mit der Tabelle der Benutzer (admin, user, demo) |
-| Welche Phasen hat eine Chance? | `docs/specs/DOMAIN.md`, Tabelle „ChancePhase“ (NEU bis GEWONNEN/VERLOREN) |
-| Was passiert beim Löschen einer Firma? | `docs/specs/DOMAIN.md` |
+| Frage | Wo im CRM | Datei, die der Agent nennen sollte |
+|---|---|---|
+| Was ist das, wie starte ich es? | Habt ihr gerade selbst gemacht: `./start.sh`, dann <http://localhost:7200> | `README.MD`, auf Deutsch `docs/welcome_DE.MD` |
+| Was bedeuten Firma, Chance, Phase fachlich? | Teilweise: Im Formular „Neue Chance“ gehört jede Chance zu einer Firma (Pflichtfeld „Firma“) und hat eine Phase. | `docs/specs/DOMAIN.md` |
+| Wo liegt Oberfläche, wo Logik, wo Daten? | Nicht im CRM prüfbar — zuhören, nicht prüfen. | Ordner `frontend/src/app/features` · Ordner `backend/src/routes` · Datei `backend/src/db/schema/schema.ts` |
+| Mit welchen Benutzern kann man sich anmelden? | Abmelden (oben rechts): Die Anmeldeseite zeigt die Kacheln `admin`, `user`, `demo` mit ihrer Rolle (ADMIN oder USER). | `README.MD`, Abschnitt „Demo-Login“ |
+| Welche Phasen hat eine Chance? | Chancen › Neue Chance › Auswahlfeld „Phase“: NEU, QUALIFIZIERT, ANGEBOT, VERHANDLUNG, GEWONNEN, VERLOREN | `docs/specs/DOMAIN.md`, Tabelle „ChancePhase“ |
+| Was passiert beim Löschen einer Firma? | Nicht im CRM prüfbar — zuhören, nicht prüfen (ausprobieren hieße Daten löschen). | `docs/specs/DOMAIN.md` |
 
 ## Troubleshooting
 
@@ -173,9 +161,8 @@ oder den Ordner, in dem du sie gefunden hast:
 | Klonen bricht ab (Proxy, Zertifikat) | Firmennetz filtert — Hotspot vom Handy für den Klon, danach mit der IT klären. |
 | `./start.sh: Permission denied` | `bash start.sh` |
 | Windows: `start.sh` nicht gefunden | Ihr seid in PowerShell — Git Bash öffnen. |
-| VS Code zeigt den Ordner nicht | Genau `coding-with-ai-lab` öffnen, nicht den Ordner darüber. |
 | `claude` oder `copilot` startet nicht oder will sich anmelden und es klappt nicht | Sofort Handheben — bis zum Lab ist Zeit für eine Lösung oder ein Paar. |
 | Windows: `copilot` startet in Git Bash nicht oder verhält sich seltsam | PowerShell 6 oder neuer öffnen (`pwsh`), dort `cd coding-with-ai-lab` und `copilot`. Die Anwendung läuft weiter in Git Bash. |
-| Der Agent nennt eine Datei, die es nicht gibt | Gut bemerkt — genau dafür prüft ihr nach. Sagt ihm: „Die Datei gibt es nicht. Such noch einmal und nenne den genauen Pfad.“ |
+| Das CRM zeigt etwas anderes, als der Agent sagt | Gut bemerkt — genau dafür prüft ihr nach. Sagt ihm, was ihr seht: „Im CRM stehen bei Phase … Prüfe deine Antwort noch einmal.“ |
 | Der Agent will etwas ändern oder installieren | Ablehnen bzw. mit `Esc` stoppen: „Ändere nichts, lies nur.“ |
 | Copilot meldet, dass ihr keinen Zugang habt | Euer GitHub-Konto braucht ein Copilot-Abo, und eure Firma darf die Copilot CLI nicht gesperrt haben — Handheben. |
