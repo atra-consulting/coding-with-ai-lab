@@ -90,12 +90,25 @@ Anwendung, stoppt sie. Wer lieber die Maus nimmt: Rechtsklick ins Terminal
 
 6. **Den Agenten fragen.** Gebt den Prompt unten ein. Der Agent liest die
    Dateien selbst und nennt zu jeder Antwort die Datei, in der sie steht.
-7. **Nachprüfen in VS Code.** Öffnet in VS Code den Ordner
-   `coding-with-ai-lab` (Datei › Ordner öffnen). Nehmt zwei Antworten des
-   Agenten und öffnet die Datei, die er genannt hat — links im Explorer oder
-   mit `Ctrl+P` (macOS `Cmd+P`) und dem Dateinamen. Steht es dort wirklich
-   so? Notiert für jede: stimmt · stimmt halb · stimmt nicht. Lasst VS Code
-   offen — ihr braucht es in Aufgabe 11 wieder.
+7. **Nachprüfen in VS Code.** Der Agent kann sich irren — deshalb seht ihr
+   bei zwei Antworten selbst nach, ob sie in der genannten Datei stehen.
+   1. **Projekt öffnen:** VS Code starten, Menü Datei › Ordner öffnen …,
+      im Benutzerordner `coding-with-ai-lab` markieren und „Öffnen“ klicken.
+      Fragt VS Code, ob ihr den Autoren vertraut, „Ja“ wählen. Links steht
+      jetzt die Liste der Ordner und Dateien (Explorer).
+   2. **Antwort aussuchen:** Nehmt eine Antwort des Agenten, zum Beispiel zu
+      Frage 5 (Phasen einer Chance), und merkt euch die Datei, die er nennt,
+      etwa `docs/specs/DOMAIN.md`.
+   3. **Datei öffnen:** `Cmd+P` (Windows `Ctrl+P`) drücken, den Dateinamen
+      tippen, zum Beispiel `DOMAIN`, und Enter. Oder links im Explorer durch
+      die Ordner klicken: `docs` › `specs` › `DOMAIN.md`.
+   4. **Stelle finden:** `Cmd+F` (Windows `Ctrl+F`) und ein Stichwort aus
+      der Antwort suchen, zum Beispiel `Phase`.
+   5. **Vergleichen und notieren:** Steht es dort so, wie der Agent sagt?
+      Notiert: stimmt · stimmt halb · stimmt nicht.
+
+   Dasselbe für eine zweite Antwort. Lasst VS Code offen — ihr braucht es in
+   Aufgabe 11 wieder.
 8. Beendet den Agenten — Claude Code mit `/exit`, Copilot mit zweimal
    `Ctrl+C`. Die Anwendung im ersten Fenster läuft weiter.
 
