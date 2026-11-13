@@ -21,6 +21,12 @@ von zweiten, spezialisierten Agenten gegenlesen — wie ein Vier-Augen-Prinzip.
 (Backend), `db` für die Datenbank. Ihr müsst die Einwände nicht verstehen;
 ihr seht nur nach, ob der Agent sie behoben hat.
 
+Diese Prüf-Agenten legt der Agent nicht selbst an: Sie sind im Projekt
+schon vordefiniert — für Claude Code im Ordner `.claude/agents/`, für
+GitHub Copilot in `.github/agents/`. Jede Datei beschreibt eine Rolle mit
+eigener Prüfliste, so wie ein Team seine Review-Regeln festschreibt. Der
+Prompt ruft sie nur beim Namen auf.
+
 <!-- include: warnung-rechte -->
 
 ## Schritte
