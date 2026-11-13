@@ -65,9 +65,14 @@ Anwendung, stoppt sie. Wer lieber die Maus nimmt: Rechtsklick ins Terminal
 4. Klickt fünf Minuten durch Firmen, Personen, Chancen, Aktivitäten und
    Dashboard und legt eine Chance an — ihr braucht das Bild der Anwendung
    im Lab, wenn der Agent behauptet, etwas sei fertig.
-5. **Agent starten.** Öffnet ein zweites Terminalfenster (das erste zeigt
-   die Anwendung), geht mit `cd coding-with-ai-lab` ins Projekt und startet
-   euren Agenten: `claude` für Claude Code, `copilot` für GitHub Copilot CLI.
+5. **Agent starten.** Öffnet ein zweites Terminalfenster — das erste zeigt
+   die Anwendung und bleibt offen:
+   - macOS: im Terminal `Cmd+N` (neues Fenster) oder Menü Shell › Neues Fenster
+   - Windows: Git Bash ein zweites Mal aus dem Startmenü öffnen
+
+   Das neue Fenster beginnt im Benutzerordner. Geht mit `cd coding-with-ai-lab`
+   ins Projekt und startet euren Agenten: `claude` für Claude Code, `copilot`
+   für GitHub Copilot CLI.
 
    **Mit GitHub Copilot CLI:** Beim ersten Start fragt Copilot, ob ihr dem
    Ordner vertraut — wählt „Yes, and remember this folder for future
