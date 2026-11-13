@@ -71,6 +71,21 @@ Prompt ruft sie nur beim Namen auf.
    Aufgabe 11. Drei Bereiche für ein Sternchen — das ist der Preis eines
    „kleinen" Features.
 
+## Wo eure Änderung jetzt liegt
+
+Euer PRD und das Feature, das der Agent daraus gebaut hat, liegen auf eurem
+Branch — **nur auf eurem Laptop**. Auf GitHub, im gemeinsamen Projekt, sieht
+sie niemand. Dorthin käme die Änderung erst mit zwei weiteren Schritten:
+
+1. **Hochladen (Push):** Der Branch wird auf GitHub kopiert. Dafür braucht
+   man Schreibrechte — deshalb sagt der Prompt dem Agenten „pushe nicht“.
+2. **Pull Request:** Ihr schlagt vor, die Änderung in den freigegebenen
+   Stand `main` zu übernehmen. Eine andere Person prüft sie und gibt frei.
+
+Genau an dieser Stelle steht ihr im Projektalltag: Ihr bekommt einen Pull
+Request, prüft ihn gegen euer PRD und gebt frei — oder schreibt, was fehlt.
+Wie das auf GitHub aussieht, zeigen die Trainer im Rückblick.
+
 ## Folienschritte
 
 1. Prompt geben — das PRD im Repo ist die Spezifikation.
