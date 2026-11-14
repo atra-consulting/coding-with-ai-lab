@@ -26,7 +26,7 @@ Your spec reading list (paths are relative to the repo root):
 ## Project Context
 
 - Node.js 20.19+ / TypeScript 5.8 backend
-- @libsql/client ^0.17.3 with Drizzle ORM 0.41; all DB calls are async (`await client.execute(...)`, `await client.batch(...)`)
+- @libsql/client ^0.17.3 with Drizzle ORM 0.45; all DB calls are async (`await client.execute(...)`, `await client.batch(...)`)
 - SQLite database file: `backend/data/crmdb.sqlite`
 - Schema is expressed twice and must stay in sync:
   - **Drizzle schema**: `backend/src/db/schema/schema.ts` (used for typed queries)

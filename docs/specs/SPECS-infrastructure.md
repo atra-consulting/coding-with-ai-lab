@@ -87,10 +87,10 @@ Runtime: Node.js 20.19+. Language: TypeScript. Executed via `tsx`.
 | express | ^4.21.2 | HTTP server and routing |
 | express-session | ^1.18.1 | Session-based authentication |
 | @libsql/client | ^0.17.3 | libSQL/Turso database driver (local file or remote Turso) |
-| drizzle-orm | ^0.41.0 | Type-safe ORM for libSQL/SQLite |
+| drizzle-orm | ^0.45.4 | Type-safe ORM for libSQL/SQLite |
 | bcryptjs | ^2.4.3 | Password hashing |
 | cors | ^2.8.5 | CORS middleware |
-| zod | ^3.23.8 | Runtime input validation |
+| zod | ^4.6.7 | Runtime input validation |
 
 Dev dependencies:
 

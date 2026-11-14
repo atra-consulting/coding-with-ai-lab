@@ -1,0 +1,75 @@
+# Automatische Dependency-Updates via Dependabot (Vorbild: atra-academy).
+#
+# Zwei Ökosysteme:
+#   - github-actions: monatlich, hält die Actions in .github/workflows aktuell.
+#   - npm: wöchentlich für backend/ und frontend/. Minor-/Patch-Bumps kommen
+#     gebündelt als EIN Sammel-PR je Verzeichnis, Sicherheitsupdates ebenso
+#     (Gruppe `sicherheit`), Majors einzeln bzw. als Familie (siehe groups).
+#
+# PR-Checks: Der Workflow CI (deploy.yml) prüft jeden PR — Backend tsc und
+# Playwright-API-Tests, Frontend Unit-Tests und Build. Erst bei grüner CI mergen.
+#
+# Warum `cooldown`: Das häufigste npm-Angriffsmuster ist ein gekapertes
+#   Maintainer-Konto, das eine bösartige NEUE Version publiziert. Solche
+#   Versionen fallen meist binnen Stunden bis Tagen auf und werden entfernt.
+#   Mit Cooldown erscheinen sie nie als PR. Gilt nur für Versions-Updates,
+#   Security-Updates (aus Dependabot Alerts) kommen weiterhin sofort.
+version: 2
+updates:
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'monthly'
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: 'chore(ci)'
+
+  - package-ecosystem: 'npm'
+    directories:
+      - '/backend'
+      - '/frontend'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+      time: '06:00'
+      timezone: 'Europe/Berlin'
+    open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7
+      semver-patch-days: 5
+      semver-minor-days: 7
+      semver-major-days: 14
+    commit-message:
+      prefix: 'chore(deps)'
+      prefix-development: 'chore(deps-dev)'
+    ignore:
+      # @types/node beschreibt die API der Laufzeit, und die ist Node 22
+      # (.nvmrc, deploy.yml). Typen eines neueren Majors lassen Aufrufe durch
+      # den Typecheck, die es zur Laufzeit nicht gibt. Den Major hebt, wer die
+      # Laufzeit hebt.
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
+    groups:
+      minor-und-patch:
+        applies-to: version-updates
+        update-types:
+          - 'minor'
+          - 'patch'
+      # Alle Sicherheitsupdates eines Verzeichnisses als ein Sammel-PR statt
+      # als PR-Flut.
+      sicherheit:
+        applies-to: security-updates
+        patterns:
+          - '*'
+      # Über exakte peerDependencies gekoppelt (z. B. verlangt @angular/router
+      # 21.2.25 genau @angular/common 21.2.25), einzeln nicht installierbar.
+      angular-major:
+        applies-to: version-updates
+        update-types:
+          - 'major'
+        patterns:
+          - '@angular/*'
+          - '@angular-devkit/*'
+          - '@schematics/angular'
+      # Majors außerhalb der Gruppe bekommen je einen eigenen PR.

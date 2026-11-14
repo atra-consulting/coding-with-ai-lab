@@ -13,7 +13,7 @@ Cross-references:
 | Library | Version |
 |---------|---------|
 | @libsql/client | (libSQL / Turso) |
-| drizzle-orm | 0.41 |
+| drizzle-orm | 0.45 |
 
 The DB driver is `@libsql/client` (libSQL/Turso), not better-sqlite3. The API is **async**: `await client.execute(sql)`, `await client.executeMultiple(sql)` (non-transactional bulk DDL). Local development uses `file:backend/data/crmdb.sqlite`; production uses a `TURSO_DATABASE_URL` env var. Drizzle is initialized with `drizzle(client, { schema })` from `drizzle-orm/libsql`.
 

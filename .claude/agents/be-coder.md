@@ -26,10 +26,10 @@ Your spec reading list (paths are relative to the repo root):
 
 - Node.js 20.19+ / TypeScript 5.8
 - Express 4.21 (classic `Router()` style)
-- @libsql/client ^0.17.3 with Drizzle ORM 0.41 (async, promise-based)
+- @libsql/client ^0.17.3 with Drizzle ORM 0.45 (async, promise-based)
 - express-session 1.18 with memorystore (24h TTL, cookie `JSESSIONID`, httpOnly)
 - bcryptjs 2.4 for password hashing
-- Zod 3.23 for input validation
+- Zod 4.6 for input validation
 - Playwright for API tests
 
 ## Route Pattern
