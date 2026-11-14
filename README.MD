@@ -36,7 +36,7 @@ Nimm die Einführung zu deiner Schulung. Beide Tools nutzen dieselben Skills, Su
 
 Dieses Repo dient zwei Zielgruppen:
 
-- **Konferenz-Zuhörer** wollen die Skills und Subagents in ihr eigenes Projekt holen. Start: [Skills & Subagents übernehmen](#für-konferenz-zuhörer-skills--subagents-übernehmen).
+- **Interessierte Entwickler** wollen die Skills und Subagents in ihr eigenes Projekt holen. Start: [Skills & Subagents übernehmen](#für-konferenz-zuhörer-skills--subagents-übernehmen).
 - **Workshop-Teilnehmer** wollen Aufgaben in dieser App lösen. Start: [Aufgaben bearbeiten](#für-workshop-teilnehmer-aufgaben-bearbeiten).
 
 Der gemeinsame Teil (Schnellstart, Login, Tools) gilt für beide.
@@ -54,7 +54,7 @@ atra.consulting [bietet KI-Training an](https://atra.consulting/ki-loesungen/), 
 - [Demo-Login](#demo-login)
 - [Tools](#tools)
 
-**Für Konferenz-Zuhörer**
+**Für Interessierte Entwickler**
 
 - [Skills & Subagents übernehmen](#für-konferenz-zuhörer-skills--subagents-übernehmen)
 
@@ -148,7 +148,7 @@ Details zu jedem Tool: **[docs/TOOLS.md](docs/TOOLS.md)**
 
 ---
 
-## Für Konferenz-Zuhörer: Skills & Subagents übernehmen
+## Für Interessierte Entwickler: Skills & Subagents übernehmen
 
 Du willst die Skills und Subagents aus diesem Repo in dein eigenes Projekt holen? So geht es.
 
