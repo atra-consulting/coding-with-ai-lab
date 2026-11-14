@@ -18,13 +18,16 @@ Screenshot [`bilder/13-chancen-neu-blau.png`](bilder/13-chancen-neu-blau.png).
 ## Schritte
 
 1. **Verfeinern (Definition).** Öffnet euer Ticket unter
-   <http://localhost:7200/admin/tickets> (Login `admin` / `admin123`). Lest es
+   <http://localhost:7200/admin/tickets> (Kachel `admin` anklicken). Lest es
    wie ein Entwickler: Was würde er fragen? Welches Blau? Nur NEU oder auch die
    anderen Phasen? Ganze Zeile oder nur die Zelle? Schreibt eure Antworten als
-   Kommentar und klickt **Kommentar senden**. Offene Fragen, die ihr nicht
+   Kommentar und klickt **Kommentar senden**. Die KI liest gleich Beschreibung
+   und alle Kommentare — was ihr jetzt beantwortet, muss sie nicht fragen
+   oder raten. Offene Fragen, die ihr nicht
    beantworten könnt, dürfen stehen bleiben — die KI wird sie stellen.
 2. **Übergeben (Bereit).** Klickt **Nach Bereit**. Das Ticket wandert in die
-   Spalte **Bereit**, Owner ist jetzt die KI. (Daneben gibt es „An KI
+   Spalte **Bereit**, Owner ist jetzt die KI. Damit sagt ihr: Das Ticket ist klar genug, um es
+   abzugeben. Das Board zeigt allen, wer gerade dran ist. (Daneben gibt es „An KI
    übergeben" — das lässt das Ticket in Definition, damit die KI es nur
    verfeinert. Das brauchen wir heute nicht.)
 3. **Die KI nimmt es (In Arbeit).** Startet den Agenten im Projektordner —
@@ -34,11 +37,15 @@ Screenshot [`bilder/13-chancen-neu-blau.png`](bilder/13-chancen-neu-blau.png).
    genau das, was im Ticket steht — und nicht mehr? Wenn nicht, korrigiert es.
 5. **Rückfrage beantworten (Wartet).** Stellt die KI eine Frage, springt das
    Ticket auf **Wartet**, Owner Mensch. Öffnet es, beantwortet die Frage als
-   Kommentar und klickt **Zurück an KI** — das Ticket geht nach **Bereit**.
+   Kommentar und klickt **Zurück an KI** — das Ticket geht nach **Bereit**. Die
+   Antwort bleibt so beim Ticket: Wer es später liest, sieht, was gefragt und
+   was entschieden wurde.
    Sagt dem Agenten dann: „Ticket ‹Nr› ist beantwortet, mach weiter."
 6. **Abnehmen (Erledigt).** Ist das Ticket in **Erledigt**, lest den letzten
    Kommentar der KI. Dann ladet <http://localhost:7200/chancen> neu und geht
-   eure Akzeptanzkriterien einzeln durch. Zum Schluss: `git diff main --stat`.
+   eure Akzeptanzkriterien einzeln durch. Der Kommentar sagt, was die KI
+   geändert hat; geprüft wird trotzdem gegen eure Kriterien, nicht gegen
+   ihre Beschreibung. Zum Schluss: `git diff main --stat`.
 
 ## Folienschritte
 

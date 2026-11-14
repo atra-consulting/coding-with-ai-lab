@@ -10,7 +10,8 @@ Ein Protokoll schreibt der Assistent in Sekunden. Ob es stimmt, nicht. Er
 glättet: Aus „ca. 80k“ wird eine genaue Zahl, aus einer offenen Frage eine
 Entscheidung, und eine leere Spalte „Bis“ füllt er mit einem Datum, das nie
 gefallen ist. Deshalb besteht die Übung zur Hälfte aus Fehlerjagd: Was steht
-im Protokoll, das nicht in den Notizen stand?
+im Protokoll, das nicht in den Notizen stand? Dieselbe Frage stellt ihr am
+Nachmittag dem Agenten — dann ist die Vorlage euer PRD.
 
 Die Rohnotizen stammen aus einer erfundenen Vertriebsrunde zu genau dem CRM,
 das ihr in Aufgabe 10 startet. Sie begleiten euch weiter: Aufgabe 02 macht
@@ -24,7 +25,8 @@ geprüfte Ergebnisse. Das PRD daraus braucht ihr nach der Mittagspause.
 ## Schritte
 
 1. **Notizen lesen.** Öffnet die Rohnotizen und lest sie einmal ganz. Was ist
-   entschieden, was ist offen geblieben?
+   entschieden, was ist offen geblieben? So merkt ihr gleich, wenn das Protokoll
+   aus einer offenen Frage eine Entscheidung macht.
 2. **Protokoll schreiben lassen.** Öffnet ein neues Gespräch im
    Chat-Assistenten, kopiert Prompt 1 hinein und hängt **nur** die Rohnotizen an.
    Das KI-Protokoll zum Vergleich bleibt zu — sonst nimmt der Assistent euch
@@ -34,7 +36,10 @@ geprüfte Ergebnisse. Das PRD daraus braucht ihr nach der Mittagspause.
    und auf Sätze, die eine offene Frage wie eine Entscheidung klingen lassen.
    Jeden Fund notiert ihr mit der Stelle in den Notizen.
 4. **Nachschärfen.** Gebt eure Funde mit Prompt 2 zurück und lasst das
-   Protokoll korrigieren. Prüft die neue Fassung noch einmal.
+   Protokoll korrigieren. Prüft die neue Fassung noch einmal. Ihr übt dabei,
+   genau zu sagen, was falsch ist — „Woher kommt das Datum?“ wirkt besser als
+   „Sei sorgfältig“. Auch die korrigierte Fassung kommt vom Assistenten,
+   deshalb die zweite Prüfung.
 5. **Gegenprobe — nur, wenn ihr im eigenen Protokoll nichts findet.** Erst
    jetzt öffnet ihr das vorbereitete
    [`material/vertriebsrunde-zum-vergleich-ki-protokoll.md`](material/vertriebsrunde-zum-vergleich-ki-protokoll.md):

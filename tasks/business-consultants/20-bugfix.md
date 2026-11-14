@@ -1,45 +1,53 @@
 # 20 — Bugfix: Fehlerbericht → Fix → Prüfung
 
-**Dauer:** 30 min
+**Dauer:** 25 min
 **Sozialform:** Paare
 **Werkzeug:** Claude Code oder GitHub Copilot CLI
-**Voraussetzung:** Lab läuft unter `localhost:7200`
+**Voraussetzung:** Aufgabe 22 erledigt; Lab läuft unter `localhost:7200`
 **Ziel:** Aus der Support-Meldung in den Rohnotizen von Aufgabe 01 wird ein Fehlerbericht, der dem Agenten als Spezifikation genügt, und ein Fix, der sich Zeile für Zeile gegen diesen Fehlerbericht abhaken lässt.
 
-Die Meldung lautet: „Ich kann keine Chance mehr speichern, der Knopf ist
-grau." Ihr stellt den Fehler nach, schreibt einen Fehlerbericht, den ein
+Dieselben Schritte wie in Aufgabe 22 — jetzt zu zweit allein, ohne
+Anleitung, an einer kleinen Aufgabe. Die Meldung lautet: „Ich kann keine
+Chance mehr speichern, der Knopf ist grau." Ihr stellt den Fehler nach, schreibt einen Fehlerbericht, den ein
 Entwickler versteht — und gebt ihn statt an einen Entwickler an den Agenten.
 Der Fehlerbericht ist die Spezifikation.
 
 Zum Vergleich: Beim Feld „Wahrscheinlichkeit" erscheint bei `150` eine
 Meldung unter dem Feld. So soll es auch beim Feld „Wert" sein.
 
-**Gegenlesen (Review):** Bevor der Agent fertig ist, lässt er seine Änderung
-von zweiten, spezialisierten Agenten gegenlesen — wie ein Vier-Augen-Prinzip.
-`fe` steht für die Oberfläche (Frontend), `be` für den Server im Hintergrund
-(Backend), `db` für die Datenbank. Ihr müsst die Einwände nicht verstehen;
-ihr seht nur nach, ob der Agent sie behoben hat.
+**Gegenlesen (Review):** Wie in Aufgabe 22 lässt der Agent seine Änderung
+von den Prüf-Agenten `fe`, `be` und `db` gegenlesen. Ihr müsst die Einwände
+nicht verstehen; ihr seht nur nach, ob der Agent sie behoben hat.
 
 <!-- include: warnung-rechte -->
 
 ## Schritte
 
 1. Stellt den Fehler nach: im CRM Chancen → „Neue Chance", Titel und Firma
-   ausfüllen, ins Feld **Wert** `-100` eintragen.
+   ausfüllen, ins Feld **Wert** `-100` eintragen. In den Fehlerbericht kommt nur, was
+   ihr selbst gesehen habt — und ihr wisst danach, wie ihr den Fix prüft.
 2. Schreibt drei Zeilen auf — **Schritte · Beobachtet · Erwartet**. Das ist
-   euer Fehlerbericht, und er kommt gleich in den Prompt.
+   euer Fehlerbericht, und er kommt gleich in den Prompt. Ohne „Erwartet“
+   entscheidet der Agent selbst, wie es richtig aussieht. Gegen diese drei
+   Zeilen hakt ihr am Ende ab.
 3. Startet den Agenten im zweiten Terminalfenster im Projektordner —
    `claude` für Claude Code, `copilot` für GitHub Copilot CLI — und gebt
-   den Prompt ein, mit eurem Fehlerbericht an der markierten Stelle.
+   den Prompt ein, mit eurem Fehlerbericht an der markierten Stelle. Der Prompt legt
+   den Ablauf fest: eigener Branch, damit `main` unberührt bleibt; Plan und
+   Warten, damit ihr vor dem Bauen eingreifen könnt; „nur, was bestellt
+   ist“, weil Agenten gern Ungefragtes verbessern.
 4. Prüft am Plan-Checkpoint: Der Plan sollte zwei Stellen nennen — das
    Chancen-Formular (im Dateinamen steht `chance-form`) und die Prüfung der
    Eingaben auf dem Server (`validation.ts`). Steht noch etwas anderes drin,
    fragt: „Wozu brauchst du das?" Passt er, schreibt „Okay, setz um." —
-   sonst: „Nur den Hinweis und die Prüfung, sonst nichts."
+   sonst: „Nur den Hinweis und die Prüfung, sonst nichts." Am Plan könnt
+   ihr noch alles ändern — was ihr hier durchwinkt, setzt er um.
 5. Lest nach dem Gegenlesen (Review), was bemängelt wurde — ihr müsst es
    nicht verstehen, ihr müsst sehen, ob der Agent es behoben hat.
 6. Prüft das Ergebnis im Browser und danach den Diff:
-   `git diff main --stat`.
+   `git diff main --stat`. Der Browser zeigt, ob der Fix tut, was unter
+   „Erwartet“ steht. Die Dateiliste zeigt, ob der Agent nur dort geändert
+   hat, wo der Plan es angekündigt hat.
 
 ## Folienschritte
 
@@ -99,6 +107,7 @@ bei „Wahrscheinlichkeit" —, und der Knopf bleibt grau, bis der Wert gültig 
 | Hinweis erscheint auch bei leerem Feld | Zurück an den Agenten: „Ein leeres Feld ist erlaubt — der Hinweis nur bei negativen Zahlen." |
 | Die Chance wird mit −100 sogar gespeichert | Auch ein Fehler — schreibt das unter „Beobachtet". „Erwartet" bleibt gleich. |
 | Agent fragt, ob er Tests schreiben soll | Ja, kleine automatische Tests gern; keine Tests, die den Browser fernsteuern (dauert zu lange). |
+| Der Agent will die laufende Anwendung beenden | Nein — die Anwendung läuft weiter, ihr braucht sie zum Prüfen. |
 | Der Agent findet die Reviewer nicht | Sagt: „Prüfe die Änderung selbst wie ein Reviewer und zeig mir die Befunde.“ |
 
 ## Diskussion
