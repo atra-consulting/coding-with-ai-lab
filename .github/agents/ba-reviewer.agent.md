@@ -98,7 +98,7 @@ This is background for feasibility checks only. It does NOT belong in a PRD. Thi
 - PRDs live in `docs/prds/`
 - Plans live in `docs/plans/`
 - Backend: Node.js 20.19+ / TypeScript 5.8 / Express 4.21 with route → service → db layering (`backend/src/routes/` → `backend/src/services/` → `backend/src/config/db.ts`)
-- Database: @libsql/client with Drizzle ORM 0.41 (file-based SQLite at `backend/data/crmdb.sqlite`); async, promise-based API (`await client.execute(...)`)
+- Database: @libsql/client with Drizzle ORM 0.45 (file-based SQLite at `backend/data/crmdb.sqlite`); async, promise-based API (`await client.execute(...)`)
 - Auth: session-based (`express-session` + memorystore), hardcoded users in `backend/src/config/users.ts`, role and permission middleware in `backend/src/middleware/auth.ts`
 - Frontend: Angular 21 standalone components, Bootstrap 5
 - German domain model (Firma, Person, Abteilung, Adresse, Aktivitaet, Chance)

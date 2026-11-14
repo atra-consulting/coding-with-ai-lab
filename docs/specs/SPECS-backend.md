@@ -9,9 +9,9 @@ Node.js/TypeScript backend. Express 4.21 on port 7070. SQLite file database via 
 | Runtime | Node.js | 20.19+ |
 | Language | TypeScript | 5.8 |
 | Framework | Express | 4.21 |
-| ORM | Drizzle ORM | 0.41 |
+| ORM | Drizzle ORM | 0.45 |
 | Database driver | @libsql/client (async, promise-based) | 0.17.3 |
-| Validation | Zod | 3.23 |
+| Validation | Zod | 4.6 |
 | Auth | express-session + bcryptjs | 1.18 / 2.4 |
 | Session store | LibsqlSessionStore (custom, persists to `sessions` table) | — |
 | Dev runner | tsx --watch | 4.19 |

@@ -54,7 +54,7 @@ export type AdresseCreateDTO = z.infer<typeof AdresseCreateSchema>;
 
 // ─── Aktivitaet ───────────────────────────────────────────────────────────────
 export const AktivitaetCreateSchema = z.object({
-  typ: z.enum(AKTIVITAET_TYP, { errorMap: () => ({ message: 'Ungültiger Typ' }) }),
+  typ: z.enum(AKTIVITAET_TYP, { error: 'Ungültiger Typ' }),
   subject: z.string().min(1, 'Betreff ist erforderlich').max(255),
   description: z.string().optional().nullable(),
   datum: z.string().min(1, 'Datum ist erforderlich'),
@@ -69,7 +69,7 @@ export const ChanceCreateSchema = z.object({
   beschreibung: z.string().optional().nullable(),
   wert: z.number().optional().nullable(),
   currency: z.string().max(10).optional(),
-  phase: z.enum(CHANCE_PHASE, { errorMap: () => ({ message: 'Ungültige Phase' }) }).optional(),
+  phase: z.enum(CHANCE_PHASE, { error: 'Ungültige Phase' }).optional(),
   wahrscheinlichkeit: z.number().int().min(0).max(100).optional().nullable(),
   erwartetesDatum: z.string().optional().nullable(),
   firmaId: z.number().int().positive('Firma ist erforderlich'),

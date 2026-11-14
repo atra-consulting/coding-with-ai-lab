@@ -38,11 +38,11 @@ const CommentBodySchema = z.object({
   body: z.string().min(1, 'Kommentar-Text ist erforderlich'),
   handBackToAi: z.boolean().optional(),
   clearFullyReady: z.boolean().optional(),
-  author: z.enum(TICKET_COMMENT_AUTHOR, { errorMap: () => ({ message: 'Ungültiger Autor' }) }).optional(),
+  author: z.enum(TICKET_COMMENT_AUTHOR, { error: 'Ungültiger Autor' }).optional(),
 });
 
 const CreateBodySchema = z.object({
-  type: z.enum(TICKET_TYPE, { errorMap: () => ({ message: 'Ungültiger Ticket-Typ' }) }),
+  type: z.enum(TICKET_TYPE, { error: 'Ungültiger Ticket-Typ' }),
   title: z.string().min(1, 'Titel ist erforderlich'),
   body: z.string().min(1, 'Beschreibung ist erforderlich'),
   agentTaskId: z.number().int().positive().nullable().optional(),
@@ -50,11 +50,11 @@ const CreateBodySchema = z.object({
 });
 
 const StatusBodySchema = z.object({
-  status: z.enum(TICKET_STATUS, { errorMap: () => ({ message: 'Ungültiger Status' }) }),
+  status: z.enum(TICKET_STATUS, { error: 'Ungültiger Status' }),
 });
 
 const OwnerBodySchema = z.object({
-  owner: z.enum(TICKET_OWNER, { errorMap: () => ({ message: 'Ungültiger Eigentümer' }) }),
+  owner: z.enum(TICKET_OWNER, { error: 'Ungültiger Eigentümer' }),
 });
 
 // ─── Agent endpoints ──────────────────────────────────────────────────────────

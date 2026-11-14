@@ -27,7 +27,7 @@ Review database code for correctness, performance, and best practices in the CRM
 ## Stack Details
 
 - @libsql/client ^0.17.3 (async, promise-based API — every call is `await client.execute(...)`)
-- Drizzle ORM 0.41 for typed queries
+- Drizzle ORM 0.45 for typed queries
 - Schema lives in two places that MUST stay in sync:
   - Drizzle: `backend/src/db/schema/schema.ts`
   - SQL DDL: `backend/src/config/migrate.ts`
