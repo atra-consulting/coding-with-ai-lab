@@ -18,7 +18,7 @@ Screenshot [`bilder/13-chancen-neu-blau.png`](bilder/13-chancen-neu-blau.png).
 ## Schritte
 
 1. **Verfeinern (Definition).** Öffnet euer Ticket unter
-   <http://localhost:7200/admin/tickets> (Login `admin` / `admin123`). Lest es
+   <http://localhost:7200/admin/tickets> (Kachel „Admin User"). Lest es
    wie ein Entwickler: Was würde er fragen? Welches Blau? Nur NEU oder auch die
    anderen Phasen? Ganze Zeile oder nur die Zelle? Schreibt eure Antworten als
    Kommentar und klickt **Kommentar senden**. Offene Fragen, die ihr nicht
